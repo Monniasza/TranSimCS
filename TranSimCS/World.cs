@@ -53,29 +53,34 @@ namespace TranSimCS
     public struct LaneConnection
     {
         // Properties to hold the start and end nodes and their respective lane indices
+        //Properties for the first node
         public RoadNode StartNode { get; init; }
+        public int LeftStartIndex { get; init; } // Lane index at the start node for the first road segment
+        public int RightStartIndex { get; init; } // Lane index at the end node for the first road segment
+        public int StartShift { get; set; } // How many lanes are to the left of the lane connection from the start node
+
+        //Properties for the second node
         public RoadNode EndNode { get; init; }
-        public int StartLaneIndex1 { get; init; } // Lane index at the start node for the first road segment
-        public int EndLaneIndex1 { get; init; } // Lane index at the end node for the first road segment
-        public int StartLaneIndex2 { get; init; } // Lane index at the start node for the second road segment
-        public int EndLaneIndex2 { get; init; } // Lane index at the end node for the second road segment      
-        public int LaneShift1 { get; set; } // How many lanes are to the left of the lane connection from the start node
-        public int LaneShift2 { get; set; } // How many lanes are to the left of the lane connection from the end node
+        public int LeftEndIndex { get; init; } // Lane index at the start node for the second road segment
+        public int RightEndIndex { get; init; } // Lane index at the end node for the second road segment      
+        public int EndShift { get; set; } // How many lanes are to the left of the lane connection from the end node
+
+        //Properties for the lane connection
+        public LaneSpec LaneSpec { get; set; } = LaneSpec.Default; // Lane specification for the connection
 
         // Constructor to initialize the LaneConnection with start and end nodes and their lane indices
-        public LaneConnection(RoadNode startNode, RoadNode endNode, int startLaneIndex1, int endLaneIndex1, int startLaneIndex2, int endLaneIndex2)
+        public LaneConnection(RoadNode node1, RoadNode node2, int lsi, int rsi, int lei, int rei)
         {
-            StartNode = startNode;
-            EndNode = endNode;
-            StartLaneIndex1 = startLaneIndex1;
-            EndLaneIndex1 = endLaneIndex1;
-            StartLaneIndex2 = startLaneIndex2;
-            EndLaneIndex2 = endLaneIndex2;
+            StartNode = node1;
+            EndNode = node2;
+            LeftStartIndex = lsi;
+            RightStartIndex = rsi;
+            LeftEndIndex = lei;
+            RightEndIndex = rei;
         }
     }
 
-    public struct LaneSpec
-    {
+    public struct LaneSpec {
         public Color Color { get; set; } // Color of the lane
         public VehicleTypes VehicleTypes { get; set; } // Types of vehicles allowed in the lane
         // Constructor to initialize the LaneSpec with lane index, width, and offset
@@ -84,6 +89,18 @@ namespace TranSimCS
             Color = color;
             VehicleTypes = vehicleTypes;
         }
+
+        //Common presets for lane specifications
+        public static LaneSpec Default => new(Color.Gray, VehicleTypes.Vehicles);
+        public static LaneSpec Bicycle => new(Color.Green, VehicleTypes.Bicycle);
+        public static LaneSpec Pedestrian => new(Color.Blue, VehicleTypes.Pedestrian);
+        public static LaneSpec Parking => new(Color.Yellow, VehicleTypes.Parking);
+        public static LaneSpec Bus => new(Color.Orange, VehicleTypes.Bus);
+        public static LaneSpec Truck => new(Color.Brown, VehicleTypes.Truck);
+        public static LaneSpec Car => new(Color.Red, VehicleTypes.Car);
+        public static LaneSpec None => new(Color.Transparent, VehicleTypes.None);
+        public static LaneSpec All => new(Color.White, VehicleTypes.All); // All vehicle types allowed
+        
     }
 
     [Flags]
@@ -101,14 +118,16 @@ namespace TranSimCS
         // Composite types for convenience  
         Path = Bicycle | Pedestrian,
         MotorVehicles = Car | Truck | Bus,
-        All = -1 // All vehicle types
+        Vehicles = MotorVehicles | Bicycle, // All vehicles except parking
+        Transport = Vehicles | Pedestrian, // All traffic
+        All = -1 // All vehicle and parking types
     }
 
     public class RoadSegment
     {
         public List<RoadNode> Nodes { get; } = new List<RoadNode>();
         public World World { get; init; }
-        public List<LaneConnection> LaneConnections { get; } = new List<LaneConnection>();
+        public List<LaneConnection> LaneConnections { get; } = [];
         // Constructor to initialize the RoadSegment with start and end nodes and the world
         public RoadSegment(World world, List<RoadNode> nodes)
         {

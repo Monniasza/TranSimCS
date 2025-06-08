@@ -31,9 +31,9 @@ namespace TranSimCS
         /// <returns></returns>
         public static Vector3 calcLineEnd(Vector3 nodePos, float offset, int angle)
         {
-            float radians = (angle / (float)(1 << 32)) * MathF.PI * 2; // Convert angle to radians
+            float radians = (angle / (float)(1L << 32)) * MathF.PI * 2; // Convert angle to radians
             float x = nodePos.X + offset * MathF.Cos(radians);
-            float z = nodePos.Z + offset * MathF.Sin(radians); // Use Z for the vertical axis in 3D space
+            float z = nodePos.Z - offset * MathF.Sin(radians);
             return new Vector3(x, nodePos.Y, z); // Return the end position as a Vector3
         }
     }
