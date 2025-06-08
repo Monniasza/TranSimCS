@@ -59,7 +59,7 @@ namespace TranSimCS {
     internal class RenderBin {
         public RenderHelper RenderHelper { get; private init; }
         public List<VertexPositionColorTexture> Vertices { get; private init; } = [];
-        public List<short> Indices { get; private init; } = [];
+        public List<int> Indices { get; private init; } = [];
         public RenderBin(RenderHelper renderHelper) {
             RenderHelper = renderHelper;
         }
@@ -67,11 +67,11 @@ namespace TranSimCS {
             Vertices.Clear();
             Indices.Clear();
         }
-        public short AddVertex(VertexPositionColorTexture vertex) {
+        public int AddVertex(VertexPositionColorTexture vertex) {
             Vertices.Add(vertex);
-            return (short)(Vertices.Count - 1);
+            return Vertices.Count - 1;
         }
-        public void AddIndex(short index) {
+        public void AddIndex(int index) {
             Indices.Add(index);
         }
 
@@ -85,11 +85,11 @@ namespace TranSimCS {
         /// <param name="d">fourth vertex</param>
         private static readonly int[] indexDataQuadLookup = [0, 1, 2, 0, 2, 3];
         public void DrawQuad(VertexPositionColorTexture a, VertexPositionColorTexture b, VertexPositionColorTexture c, VertexPositionColorTexture d) {
-            short indexA = AddVertex(a);
-            short indexB = AddVertex(b);
-            short indexC = AddVertex(c);
-            short indexD = AddVertex(d);
-            short[] indexDataQuad = [indexA, indexB, indexC, indexD];
+            int indexA = AddVertex(a);
+            int indexB = AddVertex(b);
+            int indexC = AddVertex(c);
+            int indexD = AddVertex(d);
+            int[] indexDataQuad = [indexA, indexB, indexC, indexD];
             foreach (var index in indexDataQuadLookup) {
                 AddIndex(indexDataQuad[index]);
             }
@@ -102,9 +102,9 @@ namespace TranSimCS {
         /// <param name="b">second vertex</param>
         /// <param name="c">third vertex</param>
         public void DrawTriangle(VertexPositionColorTexture a, VertexPositionColorTexture b, VertexPositionColorTexture c) {
-            short indexA = AddVertex(a);
-            short indexB = AddVertex(b);
-            short indexC = AddVertex(c);
+            int indexA = AddVertex(a);
+            int indexB = AddVertex(b);
+            int indexC = AddVertex(c);
             AddIndex(indexA);
             AddIndex(indexB);
             AddIndex(indexC);
@@ -114,10 +114,10 @@ namespace TranSimCS {
         /// </summary>
         /// <param name="vertices">List of vertices</param>
         /// <param name="indices">List of indices</param>
-        public void DrawModel(VertexPositionColorTexture[] vertices, short[] indices) {
+        public void DrawModel(VertexPositionColorTexture[] vertices, int[] indices) {
             ArgumentNullException.ThrowIfNull(vertices);
             ArgumentNullException.ThrowIfNull(indices);
-            short[] newVertexIds = new short[indices.Length];
+            int[] newVertexIds = new int[indices.Length];
             for (int i = 0; i < vertices.Length; i++)
                 newVertexIds[i] = AddVertex(vertices[i]);
             foreach (var index in indices)
@@ -135,7 +135,7 @@ namespace TranSimCS {
             ArgumentNullException.ThrowIfNull(vertices);
             int height = vertices.GetLength(1);
             int width = vertices.GetLength(0);
-            short[,] newVertexIds = new short[width, height];
+            int[,] newVertexIds = new int[width, height];
             for (int i = 0; i < width; i++)
                 for (int j = 0; j < height; j++)
                     newVertexIds[i, j] = AddVertex(vertices[i, j]);
@@ -161,7 +161,7 @@ namespace TranSimCS {
         public void DrawStrip(VertexPositionColorTexture[] vertices) {
             ArgumentNullException.ThrowIfNull(vertices);
             if (vertices.Length < 3) throw new ArgumentException("At least three vertices are required to draw a strip.");
-            short[] newVertexIds = new short[vertices.Length];
+            int[] newVertexIds = new int[vertices.Length];
             for (int i = 0; i < vertices.Length; i++)
                 newVertexIds[i] = AddVertex(vertices[i]);
             for (int i = 0; i < newVertexIds.Length - 2; i++) {

@@ -114,7 +114,6 @@ namespace TranSimCS
         Pedestrian = 16,
         Parking = 32, // Parking spaces
 
-
         // Composite types for convenience  
         Path = Bicycle | Pedestrian,
         MotorVehicles = Car | Truck | Bus,

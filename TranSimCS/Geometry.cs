@@ -36,5 +36,6 @@ namespace TranSimCS
             float z = nodePos.Z - offset * MathF.Sin(radians);
             return new Vector3(x, nodePos.Y, z); // Return the end position as a Vector3
         }
+        public static Vector3 calcLineEnd(RoadNode node, int laneIndex)  => calcLineEnd(node.Position, node.PositionOffsets[laneIndex], node.Azimuth);
     }
 }

@@ -101,15 +101,8 @@ namespace TranSimCS
 
             // Draw the asphalt texture for the road
             DrawRoadSegments(world.RoadSegments, (connection) => {
-                Vector3 pos1L = Geometry.calcLineEnd(connection.StartNode.Position, connection.StartNode.PositionOffsets[connection.LeftStartIndex], connection.StartNode.Azimuth);
-                Vector3 pos1R = Geometry.calcLineEnd(connection.StartNode.Position, connection.StartNode.PositionOffsets[connection.RightStartIndex], connection.StartNode.Azimuth);
-                Vector3 pos2L = Geometry.calcLineEnd(connection.EndNode.Position, connection.EndNode.PositionOffsets[connection.LeftEndIndex], connection.EndNode.Azimuth);
-                Vector3 pos2R = Geometry.calcLineEnd(connection.EndNode.Position, connection.EndNode.PositionOffsets[connection.RightEndIndex], connection.EndNode.Azimuth);
                 
-                Mark(pos1L, Color.White);
-                Mark(pos1R, Color.Red);
-                Mark(pos2L, Color.Gray);
-                Mark(pos2R, Color.Maroon);
+                
 
                 //Calculate lane balances
                 int startingLanes = connection.RightStartIndex - connection.LeftStartIndex; // How many lanes are open at the start node
@@ -129,14 +122,23 @@ namespace TranSimCS
                 int unchangingLanesEndRight = connection.RightEndIndex - openingRightLanes;
                 int unchangingLanesCount = unchangingLanesStartRight - unchangingLanesStartLeft; // How many lanes remain unchanged
 
-                //Draw the changing lanes
-                Vector3 pos1IL = Geometry.calcLineEnd(connection.StartNode.Position, connection.StartNode.PositionOffsets[unchangingLanesStartLeft], connection.StartNode.Azimuth);
-                Vector3 pos1IR = Geometry.calcLineEnd(connection.StartNode.Position, connection.StartNode.PositionOffsets[unchangingLanesStartRight], connection.StartNode.Azimuth);
-                Vector3 pos2IL = Geometry.calcLineEnd(connection.EndNode.Position, connection.EndNode.PositionOffsets[unchangingLanesEndLeft], connection.EndNode.Azimuth);
-                Vector3 pos2IR = Geometry.calcLineEnd(connection.EndNode.Position, connection.EndNode.PositionOffsets[unchangingLanesEndRight], connection.EndNode.Azimuth);
-
+                //Calculate the positions of the lanes
+                Vector3 pos1L = Geometry.calcLineEnd(connection.StartNode, connection.LeftStartIndex);
+                Vector3 pos1R = Geometry.calcLineEnd(connection.StartNode, connection.RightStartIndex);
+                Vector3 pos2L = Geometry.calcLineEnd(connection.EndNode, connection.LeftEndIndex);
+                Vector3 pos2R = Geometry.calcLineEnd(connection.EndNode, connection.RightEndIndex);
+                Vector3 pos1IL = Geometry.calcLineEnd(connection.StartNode, unchangingLanesStartLeft);
+                Vector3 pos1IR = Geometry.calcLineEnd(connection.StartNode, unchangingLanesStartRight);
+                Vector3 pos2IL = Geometry.calcLineEnd(connection.EndNode, unchangingLanesEndLeft);
+                Vector3 pos2IR = Geometry.calcLineEnd(connection.EndNode, unchangingLanesEndRight);
                 DrawQuadrilateral(pos2L, pos2IL, pos1IL, pos1L, connection.LaneSpec.Color, roadTexture);
                 DrawQuadrilateral(pos2IR, pos2R, pos1R, pos1IR, connection.LaneSpec.Color, roadTexture);
+
+                //Draw markers
+                Mark(pos1L, Color.White);
+                Mark(pos1R, Color.Red);
+                Mark(pos2L, Color.Gray);
+                Mark(pos2R, Color.Maroon);
 
                 //Draw the unchanged lanes
                 for (int i = 0; i < unchangingLanesCount; i++) {
@@ -152,11 +154,10 @@ namespace TranSimCS
 
         private void DrawLane(int laneIndexStart, int laneIndexEnd, LaneConnection connection) {
             // Calculate the position of the lane based on the node's position and the lane index
-            Vector3 pos1L = Geometry.calcLineEnd(connection.StartNode.Position, connection.StartNode.PositionOffsets[laneIndexStart], connection.StartNode.Azimuth);
-            Vector3 pos1R = Geometry.calcLineEnd(connection.StartNode.Position, connection.StartNode.PositionOffsets[laneIndexStart+1], connection.StartNode.Azimuth);
-            Vector3 pos2L = Geometry.calcLineEnd(connection.EndNode.Position, connection.EndNode.PositionOffsets[laneIndexEnd], connection.EndNode.Azimuth);
-            Vector3 pos2R = Geometry.calcLineEnd(connection.EndNode.Position, connection.EndNode.PositionOffsets[laneIndexEnd+1], connection.EndNode.Azimuth);
-
+            Vector3 pos1L = Geometry.calcLineEnd(connection.StartNode, laneIndexStart);
+            Vector3 pos1R = Geometry.calcLineEnd(connection.StartNode, laneIndexStart + 1);
+            Vector3 pos2L = Geometry.calcLineEnd(connection.EndNode, laneIndexEnd);
+            Vector3 pos2R = Geometry.calcLineEnd(connection.EndNode, laneIndexEnd + 1);
             // Draw a quadrilateral representing the lane
             DrawQuadrilateral(pos2L, pos2R, pos1R, pos1L, connection.LaneSpec.Color, roadTexture);
         }
