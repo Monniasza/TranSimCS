@@ -15,6 +15,7 @@ namespace TranSimCS
         private World world;
         private BasicEffect effect;
         private Texture2D roadTexture; // Assuming you have a texture for the road
+        private RenderHelper renderHelper; // Assuming you have a RenderHelper class for rendering
 
         //private Camera camera; // Assuming you have a Camera class for handling camera logic
 
@@ -67,8 +68,8 @@ namespace TranSimCS
                 i++;
             }
 
-            effect = new BasicEffect(GraphicsDevice)
-            {
+            //Generate graphics stuff
+            effect = new BasicEffect(GraphicsDevice){
                 VertexColorEnabled = true,
                 TextureEnabled = true,
                 //View = Matrix.CreateLookAt(new Vector3(0, 100, 0), new Vector3(0, 0, -1), Vector3.Backward),
@@ -76,9 +77,7 @@ namespace TranSimCS
                 World = Matrix.Identity,
                 Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1f, 1000f),
             };
-
-            /*EffectTechnique techniques = new(effect.Techniques);
-            effect.CurrentTechnique = effect.Techniques["BasicEffect"];*/
+            renderHelper = new RenderHelper(GraphicsDevice, effect);
 
             //Load the road texture
             roadTexture = Content.Load<Texture2D>("laneTex");
@@ -94,9 +93,10 @@ namespace TranSimCS
         }
 
         protected override void Draw(GameTime gameTime) {
+            //Clear the screen to a solid color and clear the render helper
             GraphicsDevice.Clear(Color.ForestGreen);
+            renderHelper.Clear();
 
-            
             Texture2D testTexture = Content.Load<Texture2D>("test");
 
             // Draw the asphalt texture for the road
@@ -146,6 +146,9 @@ namespace TranSimCS
             });
 
             //Draw the lane lines
+
+            //Red the render helper
+            renderHelper.Render();
             base.Draw(gameTime);
         }
 
@@ -178,7 +181,9 @@ namespace TranSimCS
 
         private static readonly int[] indexData = [0, 1, 2, 0, 2, 3];
         private void DrawQuadrilateral(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, Texture2D tex){
-            effect.Texture = tex;
+            renderHelper.GetOrCreateRenderBin(tex).DrawQuad(a, b, c, d, color);
+
+            /*effect.Texture = tex;
 
             // Draw a quadrilateral using the provided positions and color
             var vertices = new VertexPositionColorTexture[4] {
@@ -200,7 +205,7 @@ namespace TranSimCS
                     0,                          // Offset in index array (0 for none)
                     2                           // Number of tris to draw (2 for a square)
                 );
-            }
+            }*/
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace TranSimCS {
@@ -20,6 +21,10 @@ namespace TranSimCS {
                 TextureEnabled = false,
                 LightingEnabled = false
             };
+        }
+        public RenderHelper(GraphicsDevice graphicsDevice, BasicEffect effect) {
+            GraphicsDevice = graphicsDevice;
+            Effect = effect ?? throw new ArgumentNullException(nameof(effect), "Effect cannot be null. Please provide a valid BasicEffect instance.");
         }
 
         //The helper method to add a render bin for a specific texture and populate it with vertices and indices.
@@ -96,6 +101,9 @@ namespace TranSimCS {
             foreach (var index in indexDataQuadLookup) {
                 AddIndex(indexDataQuad[index]);
             }
+        }
+        public void DrawQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color) {
+            DrawQuad(new(a, color, new(0, 0)), new(b, color, new(1, 0)), new(c, color, new(1, 1)), new(d, color, new(0, 1)));
         }
 
         /// <summary>
