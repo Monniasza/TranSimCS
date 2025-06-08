@@ -67,7 +67,7 @@ namespace TranSimCS
                 VertexColorEnabled = true,
                 TextureEnabled = true,
                 //View = Matrix.CreateLookAt(new Vector3(0, 100, 0), new Vector3(0, 0, -1), Vector3.Backward),
-                View = Matrix.CreateLookAt(new Vector3(0, 0, 8), Vector3.Zero, Vector3.Up),
+                View = Matrix.CreateScale(-1, -1, 1) * Matrix.CreateLookAt(new Vector3(0, 0, -8), Vector3.Zero, Vector3.Up),
                 World = Matrix.Identity,
                 Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1f, 1000f),
             };
@@ -95,6 +95,7 @@ namespace TranSimCS
             //GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
             Texture2D roadTexture = Content.Load<Texture2D>("laneTex");
+            Texture2D testTexture = Content.Load<Texture2D>("test");
 
             // Draw the asphalt texture for the road
             DrawRoadSegments(world.RoadSegments, (connection) =>
@@ -107,7 +108,9 @@ namespace TranSimCS
                 DrawQuadrilateral(pos1L, pos1R, pos2L, pos2R, Color.Gray, roadTexture);
             });
 
-            DrawQuadrilateral(new(-1, -1, 1), new(1, -1, 1), new(1, 1, 1), new(-1, 1, 1), Color.Gray, roadTexture);
+            DrawQuadrilateral(new(-1, -1, 1), new(1, -1, 1), new(1, 1, 1), new(-1, 1, 1), Color.Gray, testTexture);
+            DrawQuadrilateral(new(-1, 0, 1), new(1, 0, 1), new(1, 2, 1), new(-1, 2, 1), Color.Green, testTexture);
+            DrawQuadrilateral(new(0, -1, 1), new(2, -1, 1), new(2, 1, 1), new(0, 1, 1), Color.Red, testTexture);
 
             //Draw the lane lines
             base.Draw(gameTime);
@@ -135,10 +138,10 @@ namespace TranSimCS
             // Draw a quadrilateral using the provided positions and color
             var vertices = new VertexPositionColorTexture[4]
             {
-                new(d, color, new(0, 1)),
-                new(c, color, new(1, 1)),
-                new(b, color, new(1, 0)),
                 new(a, color, new(0, 0)),
+                new(b, color, new(1, 0)),
+                new(c, color, new(1, 1)),
+                new(d, color, new(0, 1)),
             };
 
             var passes = effect.CurrentTechnique.Passes;
