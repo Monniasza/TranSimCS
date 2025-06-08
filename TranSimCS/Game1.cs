@@ -13,7 +13,6 @@ namespace TranSimCS
         private SpriteBatch _spriteBatch;
         private World world;
         private BasicEffect effect;
-        private static readonly int[] indexData = [0, 1, 2, 2, 3, 0];
 
         //private Camera camera; // Assuming you have a Camera class for handling camera logic
 
@@ -68,7 +67,7 @@ namespace TranSimCS
                 VertexColorEnabled = true,
                 TextureEnabled = true,
                 //View = Matrix.CreateLookAt(new Vector3(0, 100, 0), new Vector3(0, 0, -1), Vector3.Backward),
-                View = Matrix.CreateLookAt(new Vector3(0, 0, 2), Vector3.Zero, Vector3.Up),
+                View = Matrix.CreateLookAt(new Vector3(0, 0, 8), Vector3.Zero, Vector3.Up),
                 World = Matrix.Identity,
                 Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1f, 1000f),
             };
@@ -128,18 +127,18 @@ namespace TranSimCS
         }
 
 
-
-        private void DrawQuadrilateral(Vector3 pos1L, Vector3 pos1R, Vector3 pos2L, Vector3 pos2R, Color color, Texture2D tex)
+        private static readonly int[] indexData = [0, 1, 2, 0, 2, 3];
+        private void DrawQuadrilateral(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, Texture2D tex)
         {
             effect.Texture = tex;
 
             // Draw a quadrilateral using the provided positions and color
             var vertices = new VertexPositionColorTexture[4]
             {
-                new(pos1L, color, new(0, 0)),
-                new(pos1R, color, new(1, 0)),
-                new(pos2R, color, new(1, 1)),
-                new(pos2L, color, new(0, 1))
+                new(d, color, new(0, 1)),
+                new(c, color, new(1, 1)),
+                new(b, color, new(1, 0)),
+                new(a, color, new(0, 0)),
             };
 
             var passes = effect.CurrentTechnique.Passes;
