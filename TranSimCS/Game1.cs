@@ -13,7 +13,7 @@ namespace TranSimCS
         private SpriteBatch _spriteBatch;
         private World world;
         private BasicEffect effect;
-        private static readonly int[] indexData = new[] { 0, 1, 2, 2, 3, 0 };
+        private static readonly int[] indexData = [0, 1, 2, 2, 3, 0];
 
         //private Camera camera; // Assuming you have a Camera class for handling camera logic
 
@@ -68,8 +68,7 @@ namespace TranSimCS
                 VertexColorEnabled = true,
                 TextureEnabled = true,
                 //View = Matrix.CreateLookAt(new Vector3(0, 100, 0), new Vector3(0, 0, -1), Vector3.Backward),
-                View = Matrix.CreateLookAt(new Vector3(0, 0, -2), Vector3.Zero,
-                Vector3.Up),
+                View = Matrix.CreateLookAt(new Vector3(0, 0, 2), Vector3.Zero, Vector3.Up),
                 World = Matrix.Identity,
                 Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1f, 1000f),
             };
@@ -109,7 +108,7 @@ namespace TranSimCS
                 DrawQuadrilateral(pos1L, pos1R, pos2L, pos2R, Color.Gray, roadTexture);
             });
 
-            DrawQuadrilateral(new(-1, -1, 1), new(-1, -1, 1), new(1, -1, 1), new(1, -1, 1), Color.Gray, roadTexture);
+            DrawQuadrilateral(new(-1, -1, 1), new(1, -1, 1), new(1, 1, 1), new(-1, 1, 1), Color.Gray, roadTexture);
 
             //Draw the lane lines
             base.Draw(gameTime);
