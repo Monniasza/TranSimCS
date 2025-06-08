@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Xml.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -13,6 +14,7 @@ namespace TranSimCS
         private SpriteBatch _spriteBatch;
         private World world;
         private BasicEffect effect;
+        private Texture2D roadTexture; // Assuming you have a texture for the road
 
         //private Camera camera; // Assuming you have a Camera class for handling camera logic
 
@@ -40,11 +42,10 @@ namespace TranSimCS
             var node1 = new RoadNode(world, "Node 1", new Vector3(0, 0.1f, 0), RoadNode.AZIMUTH_NORTH);
             var node2 = new RoadNode(world, "Node 2", new Vector3(0, 0.1f, 100), RoadNode.AZIMUTH_NORTH);
             var node3 = new RoadNode(world, "Node 3", new Vector3(0, 0.1f, 200), RoadNode.AZIMUTH_NORTH);
-            foreach (var node in new[] { node1, node2, node3 })
-            {
-                // Generate lanes for each node
-                Generator.GenerateLanes(2, node, 3.5f, 0);
-            }
+            // Generate lanes for each node
+            Generator.GenerateLanes(2, node1, 3.5f, 0);
+            Generator.GenerateLanes(2, node2, 3.5f, 0);
+            Generator.GenerateLanes(3, node3, 3.5f, 0);
             world.RoadNodes.Add(node1);
             world.RoadNodes.Add(node2);
             world.RoadNodes.Add(node3);
@@ -59,7 +60,7 @@ namespace TranSimCS
                 var laneSpec = laneSpecs[i % laneSpecs.Length];
                 var nnode1 = segment.Nodes[0];
                 var nnode2 = segment.Nodes[1];
-                var laneConnection1 = new LaneConnection(nnode1, nnode2, 0, 1, 0, 1);
+                var laneConnection1 = new LaneConnection(nnode1, nnode2, 0, nnode1.LaneSpecs.Count, 0, nnode2.LaneSpecs.Count);
                 laneConnection1.LaneSpec = laneSpec; // Assign the lane specification to the connection
                 segment.LaneConnections.Add(laneConnection1);
                 world.RoadSegments.Add(segment);
@@ -79,7 +80,8 @@ namespace TranSimCS
             /*EffectTechnique techniques = new(effect.Techniques);
             effect.CurrentTechnique = effect.Techniques["BasicEffect"];*/
 
-            // TODO: use this.Content to load your game content here
+            //Load the road texture
+            roadTexture = Content.Load<Texture2D>("laneTex");
         }
 
         protected override void Update(GameTime gameTime) {
@@ -94,7 +96,7 @@ namespace TranSimCS
         protected override void Draw(GameTime gameTime) {
             GraphicsDevice.Clear(Color.ForestGreen);
 
-            Texture2D roadTexture = Content.Load<Texture2D>("laneTex");
+            
             Texture2D testTexture = Content.Load<Texture2D>("test");
 
             // Draw the asphalt texture for the road
@@ -109,8 +111,37 @@ namespace TranSimCS
                 Mark(pos2L, Color.Gray);
                 Mark(pos2R, Color.Maroon);
 
+                //Calculate lane balances
+                int startingLanes = connection.RightStartIndex - connection.LeftStartIndex; // How many lanes are open at the start node
+                int endingLanes = connection.RightEndIndex - connection.LeftEndIndex; // How many lanes are open at the start node
+                int leftShift = connection.EndShift - connection.StartShift; // How many lanes open to the left (negative means that the left lanes close)
+                int rightShift = endingLanes - startingLanes - leftShift; // How many lanes open to the right (negative means that the right lanes close)
+                int totalLanes = startingLanes + Math.Abs(leftShift) + Math.Abs(rightShift); // Total lanes after the connection
+                int closingLeftLanes = Math.Max(0, -leftShift); // How many lanes close to the left
+                int openingLeftLanes = Math.Max(0, leftShift); // How many lanes open to the left
+                int closingRightLanes = Math.Max(0, -rightShift); // How many lanes close to the right
+                int openingRightLanes = Math.Max(0, rightShift); // How many lanes open to the right
+
+                //Calculate unchanging lanes
+                int unchangingLanesStartLeft = connection.LeftStartIndex + closingLeftLanes;
+                int unchangingLanesStartRight = connection.RightStartIndex - closingRightLanes;
+                int unchangingLanesEndLeft = connection.LeftEndIndex + openingLeftLanes;
+                int unchangingLanesEndRight = connection.RightEndIndex - openingRightLanes;
+                int unchangingLanesCount = unchangingLanesStartRight - unchangingLanesStartLeft; // How many lanes remain unchanged
+
+                //Draw lanes opening to the left
+
+                //Draw lanes opening to the right
+
+                //Draw the unchanged lanes
+                for (int i = 0; i < unchangingLanesCount; i++) {
+                    int startLaneIndex = unchangingLanesStartLeft + i; // Calculate the lane index at the start node
+                    int endLaneIndex = unchangingLanesEndLeft + i; // Calculate the lane index at the end node
+                    DrawLane(startLaneIndex, endLaneIndex, connection);
+                }
+
                 // Draw the road segment texture
-                DrawQuadrilateral(pos2L, pos2R, pos1R, pos1L, connection.LaneSpec.Color, roadTexture);
+                //DrawQuadrilateral(pos2L, pos2R, pos1R, pos1L, connection.LaneSpec.Color, roadTexture);
             });
 
             //DrawQuadrilateral(new(-1, -1, 1), new(1, -1, 1), new(1, 1, 1), new(-1, 1, 1), Color.Gray, testTexture);
@@ -120,6 +151,17 @@ namespace TranSimCS
 
             //Draw the lane lines
             base.Draw(gameTime);
+        }
+
+        private void DrawLane(int laneIndexStart, int laneIndexEnd, LaneConnection connection) {
+            // Calculate the position of the lane based on the node's position and the lane index
+            Vector3 pos1L = Geometry.calcLineEnd(connection.StartNode.Position, connection.StartNode.PositionOffsets[laneIndexStart], connection.StartNode.Azimuth);
+            Vector3 pos1R = Geometry.calcLineEnd(connection.StartNode.Position, connection.StartNode.PositionOffsets[laneIndexStart+1], connection.StartNode.Azimuth);
+            Vector3 pos2L = Geometry.calcLineEnd(connection.EndNode.Position, connection.EndNode.PositionOffsets[laneIndexEnd], connection.EndNode.Azimuth);
+            Vector3 pos2R = Geometry.calcLineEnd(connection.EndNode.Position, connection.EndNode.PositionOffsets[laneIndexEnd+1], connection.EndNode.Azimuth);
+
+            // Draw a quadrilateral representing the lane
+            DrawQuadrilateral(pos2L, pos2R, pos1R, pos1L, connection.LaneSpec.Color, roadTexture);
         }
 
         private void DrawRoadSegments(ICollection<RoadSegment> segments, Action<LaneConnection> action){
