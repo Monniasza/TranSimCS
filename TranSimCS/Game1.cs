@@ -129,9 +129,14 @@ namespace TranSimCS
                 int unchangingLanesEndRight = connection.RightEndIndex - openingRightLanes;
                 int unchangingLanesCount = unchangingLanesStartRight - unchangingLanesStartLeft; // How many lanes remain unchanged
 
-                //Draw lanes opening to the left
+                //Draw the changing lanes
+                Vector3 pos1IL = Geometry.calcLineEnd(connection.StartNode.Position, connection.StartNode.PositionOffsets[unchangingLanesStartLeft], connection.StartNode.Azimuth);
+                Vector3 pos1IR = Geometry.calcLineEnd(connection.StartNode.Position, connection.StartNode.PositionOffsets[unchangingLanesStartRight], connection.StartNode.Azimuth);
+                Vector3 pos2IL = Geometry.calcLineEnd(connection.EndNode.Position, connection.EndNode.PositionOffsets[unchangingLanesEndLeft], connection.EndNode.Azimuth);
+                Vector3 pos2IR = Geometry.calcLineEnd(connection.EndNode.Position, connection.EndNode.PositionOffsets[unchangingLanesEndRight], connection.EndNode.Azimuth);
 
-                //Draw lanes opening to the right
+                DrawQuadrilateral(pos2L, pos2IL, pos1IL, pos1L, connection.LaneSpec.Color, roadTexture);
+                DrawQuadrilateral(pos2IR, pos2R, pos1R, pos1IR, connection.LaneSpec.Color, roadTexture);
 
                 //Draw the unchanged lanes
                 for (int i = 0; i < unchangingLanesCount; i++) {
@@ -139,15 +144,7 @@ namespace TranSimCS
                     int endLaneIndex = unchangingLanesEndLeft + i; // Calculate the lane index at the end node
                     DrawLane(startLaneIndex, endLaneIndex, connection);
                 }
-
-                // Draw the road segment texture
-                //DrawQuadrilateral(pos2L, pos2R, pos1R, pos1L, connection.LaneSpec.Color, roadTexture);
             });
-
-            //DrawQuadrilateral(new(-1, -1, 1), new(1, -1, 1), new(1, 1, 1), new(-1, 1, 1), Color.Gray, testTexture);
-            //DrawQuadrilateral(new(-1, 0, 1), new(1, 0, 1), new(1, 2, 1), new(-1, 2, 1), Color.Green, testTexture);
-            //DrawQuadrilateral(new(0, -1, 1), new(2, -1, 1), new(2, 1, 1), new(0, 1, 1), Color.Red, testTexture);
-            //DrawQuadrilateral(new(-1, 0, 100), new(1, 0, 100), new(1, 0, 1), new(-1, 0, 1), Color.Blue, testTexture);
 
             //Draw the lane lines
             base.Draw(gameTime);
