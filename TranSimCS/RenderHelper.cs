@@ -11,7 +11,7 @@ namespace TranSimCS {
         public BasicEffect Effect { get; private init; }
 
         //List of data to render
-        private Dictionary<Texture, RenderBin> _renderBins = new();
+        private Dictionary<Texture2D, RenderBin> _renderBins = new();
 
         public RenderHelper(GraphicsDevice graphicsDevice) {
             GraphicsDevice = graphicsDevice;
@@ -23,15 +23,14 @@ namespace TranSimCS {
         }
 
         //The helper method to add a render bin for a specific texture and populate it with vertices and indices.
-        public RenderBin GetOrCreateRenderBin(Texture texture) {
+        public RenderBin GetOrCreateRenderBin(Texture2D texture) {
             return GetOrCreateRenderBin(texture, null);
         }
         public void Clear() {
-            foreach (var renderBin in _renderBins.Values) {
+            foreach (var renderBin in _renderBins.Values) 
                 renderBin.Clear();
-            }
         }
-        public RenderBin GetOrCreateRenderBin(Texture texture, Action<RenderBin>? action) {
+        public RenderBin GetOrCreateRenderBin(Texture2D texture, Action<RenderBin>? action) {
             if (!_renderBins.TryGetValue(texture, out var renderBin)) {
                 renderBin = new RenderBin(this);
                 _renderBins[texture] = renderBin;
@@ -40,14 +39,18 @@ namespace TranSimCS {
             return renderBin;
         }
 
-
-
         public void Render() {
-            foreach (var renderBin in _renderBins.Values) {
+            foreach (var row in _renderBins) {
+                var renderBin = row.Value;
+                var texture = row.Key;
+                Effect.Texture = texture;
                 if (renderBin.Vertices.Count == 0 || renderBin.Indices.Count == 0) continue;
-                GraphicsDevice.SetVertexBuffer(new VertexBuffer(GraphicsDevice, typeof(VertexPositionColorTexture), renderBin.Vertices.Count, BufferUsage.WriteOnly));
-                GraphicsDevice.Indices = new IndexBuffer(GraphicsDevice, IndexElementSize.SixteenBits, renderBin.Indices.Count, BufferUsage.WriteOnly);
-                GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderBin.Vertices.ToArray(), 0, renderBin.Vertices.Count, renderBin.Indices.ToArray(), 0, renderBin.Indices.Count / 3);
+                foreach (var pass in Effect.CurrentTechnique.Passes) {
+                    pass.Apply();
+                    GraphicsDevice.SetVertexBuffer(new VertexBuffer(GraphicsDevice, typeof(VertexPositionColorTexture), renderBin.Vertices.Count, BufferUsage.WriteOnly));
+                    GraphicsDevice.Indices = new IndexBuffer(GraphicsDevice, IndexElementSize.SixteenBits, renderBin.Indices.Count, BufferUsage.WriteOnly);
+                    GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderBin.Vertices.ToArray(), 0, renderBin.Vertices.Count, renderBin.Indices.ToArray(), 0, renderBin.Indices.Count / 3);
+                }
             }
         }
     }

@@ -101,9 +101,6 @@ namespace TranSimCS
 
             // Draw the asphalt texture for the road
             DrawRoadSegments(world.RoadSegments, (connection) => {
-                
-                
-
                 //Calculate lane balances
                 int startingLanes = connection.RightStartIndex - connection.LeftStartIndex; // How many lanes are open at the start node
                 int endingLanes = connection.RightEndIndex - connection.LeftEndIndex; // How many lanes are open at the start node
