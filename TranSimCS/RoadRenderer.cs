@@ -1,30 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using System.Xml.Linq;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Input;
-using TranSimCS;
-using TranSimCS;
 
 namespace TranSimCS {
     public static class RoadRenderer {
         /// <summary>
         /// Generates the mesh for a road segment.
         /// </summary>
-        /// <param name="node"></param>
-        /// <param name="renderHelper"></param>
-        public static void RenderRoadSegment(LaneConnection node, RenderHelper renderHelper) {
-            RenderRoadSegment(node, renderHelper.GetOrCreateRenderBin(Game1.roadTexture));
+        /// <param name="connection">road segment</param>
+        /// <param name="renderHelper">render helper</param>
+        public static void RenderRoadSegment(LaneConnection connection, RenderHelper renderHelper) {
+            RenderRoadSegment(connection, renderHelper.GetOrCreateRenderBin(Game1.roadTexture));
         }
+        /// <summary>
+        /// Generates the mesh for a road segment.
+        /// </summary>
+        /// <param name="connection">road segment</param>
+        /// <param name="renderHelper">render bin with the lane texture</param>
         public static void RenderRoadSegment(LaneConnection connection, IRenderBin renderHelper) {
             // Example rendering logic for a road node
             // This is a placeholder and should be replaced with actual rendering code
@@ -62,7 +53,6 @@ namespace TranSimCS {
                 int endLaneIndex = unchangingLanesEndLeft + i; // Calculate the lane index at the end node
                 RoadRenderer.DrawLane(startLaneIndex, endLaneIndex, connection, renderHelper);
             }
-
         }
 
         public static void DrawLane(int laneIndexStart, int laneIndexEnd, LaneConnection connection, IRenderBin renderer) {

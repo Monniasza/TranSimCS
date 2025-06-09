@@ -62,6 +62,7 @@ namespace TranSimCS {
         private Mesh? _endMesh; // Mesh for the lane connection at the end node
         public Mesh? StartMesh { get { 
             if (_endMesh != null) return _endMesh; // If the end mesh is set, return it
+            _endMesh = new Mesh();
             RoadRenderer.RenderRoadSegment(this, _endMesh); // Otherwise, render the road segment
             return _endMesh; // Return the rendered mesh
         } private set => _endMesh = value; } // Mesh for the lane connection at the start node

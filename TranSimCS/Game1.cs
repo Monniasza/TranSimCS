@@ -106,7 +106,7 @@ namespace TranSimCS
             IRenderBin renderBin = renderHelper.GetOrCreateRenderBin(roadTexture);
 
             // Draw the asphalt texture for the road
-            DrawRoadSegments(world.RoadSegments, (connection) => RoadRenderer.RenderRoadSegment(connection, renderBin));
+            DrawRoadSegments(world.RoadSegments, (connection) => renderBin.DrawModel(connection.StartMesh));
 
             //Draw the lane lines
 
