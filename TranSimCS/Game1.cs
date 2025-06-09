@@ -107,16 +107,12 @@ namespace TranSimCS
                 int mouseX = mouseState.X;
                 int mouseY = mouseState.Y;
                 Viewport viewport = GraphicsDevice.Viewport;
-                Vector3 nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0),
-                                                       effect.World, // world matrix
-                                                       effect.View, // view matrix
-                                                       effect.Projection); // projection matrix
-                Vector3 farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1),
-                                                      effect.World, // world matrix
-                                                       effect.View, // view matrix
-                                                       effect.Projection); // projection matrix
+                Vector3 nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), effect.Projection, effect.View, effect.World );
+                Vector3 farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), effect.Projection, effect.View, effect.World);
                 Ray ray = new(nearPoint, Vector3.Normalize(farPoint - nearPoint));
                 mouseRay = ray; // Store the ray for later use
+
+
                 SelectedLaneTag = null; // Reset the selected lane tag
                 SelectedLanePosition = null; // Reset the selected lane position
                 IntersectionDistance = float.MaxValue; // Reset the intersection distance
