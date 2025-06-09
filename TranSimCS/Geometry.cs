@@ -74,27 +74,40 @@ namespace TranSimCS
         public static Vector3 calcLineEnd(RoadNode node, int laneIndex)  => calcLineEnd(node.Position, node.PositionOffsets[laneIndex], node.Azimuth);
     
         public struct Bezier3 {
-            Vector3 a;
-            Vector3 b;
-            Vector3 c;
-            Vector3 d;
+            public Vector3 a;
+            public Vector3 b;
+            public Vector3 c;
+            public Vector3 d;
+            public Vector3 this[float t] {
+                get {
+                    float u = 1 - t;
+                    return u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d;
+                }
+            }
         }
-        /*public static Bezier3 GenerateJoinSpline((Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent){
-
-        }*/
+        public static Bezier3 GenerateJoinSpline(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent){
+            float tangentLength = Vector3.Distance(startPos, endPos) * 0.5f;
+            Vector3 a = startPos;
+            Vector3 b = startPos + startTangent * tangentLength; // Start tangent point
+            Vector3 c = endPos - endTangent * tangentLength; // End tangent point
+            Vector3 d = endPos; // End position
+            return new Bezier3 { a = a, b = b, c = c, d = d };
+        }
 
         public static Vector3[] GenerateSplinePoints(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent, int numPoints = 32)
         {
             if (numPoints < 2) throw new ArgumentException("numPoints must be at least 2.");
             Vector3[] points = new Vector3[numPoints];
             float step = 1f / (numPoints - 1);
-            float tangentLength = Vector3.Distance(startPos, endPos);
+            float tangentLength = Vector3.Distance(startPos, endPos) * 2;
+            Bezier3 bezier = GenerateJoinSpline(startPos, endPos, startTangent, endTangent);
             for (int i = 0; i < numPoints; i++)
             {
                 float t = i * step;
                 // Simple linear interpolation for now, can be replaced with a more complex spline algorithm
-                points[i] = Vector3.Hermite(startPos, startTangent*tangentLength, endPos, -endTangent * tangentLength, t); //the result seems to be a straight line, so we can use a simple lerp for now
+                //points[i] = Vector3.Hermite(startPos, startTangent*tangentLength, endPos, -endTangent * tangentLength, t); //the result seems to be a straight line, so we can use a simple lerp for now
                 //points[i] = Vector3.Lerp(startPos, endPos, t);
+                points[i] = bezier[t]; // Use the Bezier curve to calculate the point at t
             }
             return points;
         }
