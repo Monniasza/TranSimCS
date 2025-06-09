@@ -80,9 +80,22 @@ namespace TranSimCS {
         /// Gets the list of indices in this render bin.
         /// </summary>
         List<int> Indices { get; }
+        /// <summary>
+        /// Tags the triangles in this render bin with an integer key corresponding to the triangle's number and an object value.
+        /// </summary>
+        IDictionary<int, object> Tags { get; }
 
         public int AddVertex(VertexPositionColorTexture vertex);
         public void AddIndex(int index);
+        public void AddTagsToLastTriangles(int count, object value) {
+            if (value == null) return;
+            ArgumentOutOfRangeException.ThrowIfNegative(count, nameof(count));
+            if (count == 0) return;
+            int startIndex = (Indices.Count / 3) - count; // Each triangle has 3 indices
+            for (int i = 0; i < count; i++) {
+                Tags[startIndex + i] = value;
+            }
+        }
 
         //Rendering methods for different shapes and primitives
         /// <summary>
@@ -202,6 +215,8 @@ namespace TranSimCS {
         public RenderHelper? RenderHelper { get; private init; }
         public List<VertexPositionColorTexture> Vertices { get; private init; } = [];
         public List<int> Indices { get; private init; } = [];
+        public IDictionary<int, object> Tags { get; } = new Dictionary<int, object>();
+
         internal RenderBin(RenderHelper renderHelper) {
             RenderHelper = renderHelper;
         }

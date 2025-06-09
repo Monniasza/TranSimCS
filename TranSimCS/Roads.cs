@@ -108,6 +108,23 @@ namespace TranSimCS {
         public static LaneSpec All => new(Color.White, VehicleTypes.All); // All vehicle types allowed
     }
 
+    public struct LaneTag {
+        public LaneConnection road; // The road connection this tag is associated with
+        public int startLaneIndexL; // The starting lane index for the tag
+        public int startLaneIndexR;
+        public int endLaneIndexL;
+        public int endLaneIndexR;
+        public LaneSpec laneSpec; // The lane specification for the tag
+        public LaneTag(LaneConnection road, int startLaneIndexL, int startLaneIndexR, int endLaneIndexL, int endLaneIndexR, LaneSpec laneSpec) {
+            this.road = road;
+            this.startLaneIndexL = startLaneIndexL;
+            this.startLaneIndexR = startLaneIndexR;
+            this.endLaneIndexL = endLaneIndexL;
+            this.endLaneIndexR = endLaneIndexR;
+            this.laneSpec = laneSpec;
+        }
+    }
+
     [Flags]
     public enum VehicleTypes {
         None = 0,

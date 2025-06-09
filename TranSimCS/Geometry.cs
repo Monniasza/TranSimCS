@@ -132,5 +132,35 @@ namespace TranSimCS
             }
             return results.ToArray();
         }
+
+        public static bool RayIntersectsTriangle(Ray ray, Vector3 v0, Vector3 v1, Vector3 v2, out float intersectionDistance) {
+            Vector3 edge1 = v1 - v0;
+            Vector3 edge2 = v2 - v0;
+            Vector3 h = Vector3.Cross(ray.Direction, edge2);
+            float a = Vector3.Dot(edge1, h);
+            intersectionDistance = float.MaxValue; // Default value in case of no intersection
+            if (MathF.Abs(a) < 1e-6f) // Check if the ray is parallel to the triangle
+                return false; // No intersection
+            float f = 1.0f / a;
+            Vector3 s = ray.Position - v0;
+            float u = f * Vector3.Dot(s, h);
+            if (u < 0.0f || u > 1.0f) // Check if the intersection is outside the triangle
+                return false; // No intersection
+            Vector3 q = Vector3.Cross(s, edge1);
+            float v = f * Vector3.Dot(ray.Direction, q);
+            if (v < 0.0f || u + v > 1.0f) // Check if the intersection is outside the triangle
+            {
+                return false; // No intersection
+            }
+            // Calculate the intersection point
+            float t = f * Vector3.Dot(edge2, q);
+            if (t > 1e-6f) // Check if the intersection is in front of the ray
+            {
+                intersectionDistance = t; // Calculate the intersection point
+                return true; // Intersection found
+            }
+            return false; // No intersection, the triangle is behind the ray
+
+        }
     }
 }
