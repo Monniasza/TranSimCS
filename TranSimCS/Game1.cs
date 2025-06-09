@@ -93,6 +93,8 @@ namespace TranSimCS
         private LaneTag? SelectedLaneTag = null;
         private Vector3? SelectedLanePosition = null; // Position of the selected lane tag, if any
         private float IntersectionDistance = 0.1f; // Distance to check for intersection with the road segments
+        private Ray mouseRay;
+
         protected override void Update(GameTime gameTime) {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
@@ -106,19 +108,21 @@ namespace TranSimCS
                 int mouseY = mouseState.Y;
                 Viewport viewport = GraphicsDevice.Viewport;
                 Vector3 nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0),
-                                                       Matrix.Identity, // world matrix
-                                                       Matrix.Identity, // view matrix
-                                                       Matrix.Identity); // projection matrix
+                                                       effect.World, // world matrix
+                                                       effect.View, // view matrix
+                                                       effect.Projection); // projection matrix
                 Vector3 farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1),
-                                                      Matrix.Identity,
-                                                      Matrix.Identity,
-                                                      Matrix.Identity);
+                                                      effect.World, // world matrix
+                                                       effect.View, // view matrix
+                                                       effect.Projection); // projection matrix
+                Ray ray = new(nearPoint, Vector3.Normalize(farPoint - nearPoint));
+                mouseRay = ray; // Store the ray for later use
                 SelectedLaneTag = null; // Reset the selected lane tag
                 SelectedLanePosition = null; // Reset the selected lane position
                 IntersectionDistance = float.MaxValue; // Reset the intersection distance
                 foreach (var segment in world.RoadSegments) {
                     // Check if the ray intersects with the road segment
-                    Ray ray = new(nearPoint, Vector3.Normalize(farPoint - nearPoint));
+                    
                     object tag = MeshUtil.RayIntersectMesh(segment.StartMesh, ray, out float intersectionDistance);
                     if (tag is LaneTag laneTag && laneTag.road == segment) {
                         // If the ray intersects, mark the road segment as selected
@@ -136,7 +140,7 @@ namespace TranSimCS
 
             LaneConnection road0 = world.RoadSegments[0]; // Example road segment to test the selection logic
             //Artificially select a lane tag for testing
-            SelectedLaneTag = new LaneTag(road0, 0, 1, 0, 1, road0.LaneSpec); // Example lane tag
+            //SelectedLaneTag = new LaneTag(road0, 0, 1, 0, 1, road0.LaneSpec); // Example lane tag
 
             // TODO: Add your update logic here
             base.Update(gameTime);
@@ -152,6 +156,10 @@ namespace TranSimCS
 
             // Draw the asphalt texture for the road
             DrawRoadSegments(world.RoadSegments, (connection) => renderBin.DrawModel(connection.StartMesh));
+
+            //Debug the mouse ray
+            Mark(mouseRay.Position + 10*mouseRay.Direction, Color.Red, 0.5f); // Draw the mouse ray position
+            Mark(mouseRay.Position + 20 * mouseRay.Direction, Color.Green, 1.5f); // Draw the mouse ray position
 
             //If a road segment is selected, draw the selection
             if (SelectedLaneTag != null) {

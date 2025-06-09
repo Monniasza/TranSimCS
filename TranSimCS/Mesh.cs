@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -52,10 +53,15 @@ namespace TranSimCS {
                     // Return the tag associated with the triangle
                     // Assuming the tag is stored in the mesh.Tags dictionary with the triangle index as the key
                     object potentialTag = mesh.Tags.ContainsKey(i / 3) ? mesh.Tags[i / 3] : null;
-                    if (potentialTag == null) continue;
+                    if (potentialTag == null) {
+                        Debug.WriteLine($"No tag found for triangle at index {i / 3} in mesh.");
+                        continue;
+                    }
                     if (thisIntersectionDistance < intersectionDistance0) {
                         intersectionDistance0 = thisIntersectionDistance; // Update the intersection point
                         tag = potentialTag; // Update the tag
+                    } else {
+                        Debug.WriteLine($"The triangle is further {i / 3} in mesh.");
                     }
                 }
             }
