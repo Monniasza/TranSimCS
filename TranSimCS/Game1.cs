@@ -112,7 +112,6 @@ namespace TranSimCS
                 Ray ray = new(nearPoint, Vector3.Normalize(farPoint - nearPoint));
                 mouseRay = ray; // Store the ray for later use
 
-
                 SelectedLaneTag = null; // Reset the selected lane tag
                 SelectedLanePosition = null; // Reset the selected lane position
                 IntersectionDistance = float.MaxValue; // Reset the intersection distance
@@ -153,9 +152,6 @@ namespace TranSimCS
             // Draw the asphalt texture for the road
             DrawRoadSegments(world.RoadSegments, (connection) => renderBin.DrawModel(connection.StartMesh));
 
-            //Debug the mouse ray
-            Mark(mouseRay.Position + 10*mouseRay.Direction, Color.Red, 0.5f); // Draw the mouse ray position
-            Mark(mouseRay.Position + 20 * mouseRay.Direction, Color.Green, 1.5f); // Draw the mouse ray position
 
             //If a road segment is selected, draw the selection
             if (SelectedLaneTag != null) {
