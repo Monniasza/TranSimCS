@@ -27,6 +27,7 @@ namespace TranSimCS
         public Vector3 Position { get; set; }
         public World World { get; init; }
         public int Azimuth { get; set; } // Azimuth angle in the 2^32 field
+        public float Curvature { get; set; } = 0f; // Curvature of the road node in rad/meter clockwise, default is 0 (straight)
 
         public List<float> PositionOffsets { get; } = new List<float>();
         public List<LaneSpec> LaneSpecs { get; } = new List<LaneSpec>();

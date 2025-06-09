@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace TranSimCS
 {
@@ -36,6 +37,82 @@ namespace TranSimCS
             float z = nodePos.Z - offset * MathF.Sin(radians);
             return new Vector3(x, nodePos.Y, z); // Return the end position as a Vector3
         }
+
+        public readonly struct LineEnd{
+            public Vector3 Position { get; }
+            public Vector3 Tangential { get; }
+            public Vector3 Normal { get; }
+            public Vector3 Lateral { get; }
+            public float Radius { get; }
+            public LineEnd(Vector3 position, Vector3 tangential, Vector3 normal, Vector3 lateral, float radius) {
+                Position = position;
+                Tangential = tangential;
+                Normal = normal;
+                Lateral = lateral;
+                Radius = radius;
+            }
+        }
+        public static LineEnd calcLineEnd2(RoadNode node, int laneIndex) {
+            float offset = node.PositionOffsets[laneIndex];
+            Vector3 nodePos = node.Position;
+            int angle = node.Azimuth; // Azimuth angle in the 2^32 field
+            float radians = (angle / (float)(1L << 32)) * MathF.PI * 2; // Convert angle to radians
+            float sine = MathF.Sin(radians);
+            float cosine = MathF.Cos(radians);
+            float x = nodePos.X + offset * cosine;
+            float z = nodePos.Z - offset * sine;
+
+            Vector3 tangential = new Vector3(sine, 0, cosine); // Tangential vector (along the road)
+            Vector3 normal = new Vector3(0, 1, 0); // Normal vector (upwards)
+            Vector3 lateral = new Vector3(cosine, 0, -sine); // Lateral vector (to the right)
+            float radius = (1f / node.Curvature) - offset; // Assuming offset is the radius of curvature
+            Vector3 position = new Vector3(x, nodePos.Y, z); // Position of the end point
+
+            return new LineEnd(position, tangential, normal, lateral, radius); // Return the end position as a Vector3
+        }
+
         public static Vector3 calcLineEnd(RoadNode node, int laneIndex)  => calcLineEnd(node.Position, node.PositionOffsets[laneIndex], node.Azimuth);
+    
+        public static Vector3[] GenerateSplinePoints(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent, int numPoints = 32)
+        {
+            if (numPoints < 2) throw new ArgumentException("numPoints must be at least 2.");
+            Vector3[] points = new Vector3[numPoints];
+            float step = 1f / (numPoints - 1);
+            for (int i = 0; i < numPoints; i++)
+            {
+                float t = i * step;
+                // Simple linear interpolation for now, can be replaced with a more complex spline algorithm
+                points[i] = Vector3.Hermite(startPos, startTangent, -endTangent, endPos, t);
+            }
+            return points;
+        }
+
+        public static VertexPositionColorTexture[] GeneratePositionsFromVectors(float xPos, Color color, params Vector3[] vectors)
+        {
+            var positions = new VertexPositionColorTexture[vectors.Length];
+            var step = 1f / (vectors.Length - 1);
+            for (int i = 0; i < vectors.Length; i++)
+            {
+                positions[i] = new VertexPositionColorTexture(vectors[i], color, new Vector2(xPos, step*i));
+            }
+            return positions;
+        }
+
+        public static T[] WeaveStrip<T>(IEnumerable<T> l, IEnumerable<T> r) {
+            var iterL = l.GetEnumerator();
+            var iterR = r.GetEnumerator();
+            var results = new List<T>();
+            while (true) {
+                if (!iterL.MoveNext()) break;
+                results.Add(iterL.Current);
+                if (!iterR.MoveNext()) break;
+                results.Add(iterR.Current);
+                if (!iterR.MoveNext()) break;
+                results.Add(iterR.Current);
+                if (!iterL.MoveNext()) break;
+                results.Add(iterL.Current);
+            }
+            return results.ToArray();
+        }
     }
 }

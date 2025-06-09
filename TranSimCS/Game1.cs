@@ -165,13 +165,27 @@ namespace TranSimCS
         }
 
         private void DrawTangentialLane(int laneIndexStartL, int laneIndexStartR, int laneIndexEndL, int laneIndexEndR, LaneConnection connection) {
+            var color = connection.LaneSpec.Color; // Get the color from the lane specification
+
             // Calculate the position of the lane based on the node's position and the lane index
-            Vector3 pos1L = Geometry.calcLineEnd(connection.StartNode, laneIndexStartL);
-            Vector3 pos1R = Geometry.calcLineEnd(connection.StartNode, laneIndexStartR);
-            Vector3 pos2L = Geometry.calcLineEnd(connection.EndNode, laneIndexEndL);
-            Vector3 pos2R = Geometry.calcLineEnd(connection.EndNode, laneIndexEndR);
+            var pos1L = Geometry.calcLineEnd2(connection.StartNode, laneIndexStartL);
+            var pos1R = Geometry.calcLineEnd2(connection.StartNode, laneIndexStartR);
+            var pos2L = Geometry.calcLineEnd2(connection.EndNode, laneIndexEndL);
+            var pos2R = Geometry.calcLineEnd2(connection.EndNode, laneIndexEndR);
+
+            //Generate border curves
+            Vector3[] leftBorder = Geometry.GenerateSplinePoints(pos1L.Position, pos1L.Tangential, pos2L.Position, pos2L.Tangential, 10);
+            Vector3[] rightBorder = Geometry.GenerateSplinePoints(pos1R.Position, pos1R.Tangential, pos2R.Position, pos2R.Tangential, 10);
+            var leftBorder2 = Geometry.GeneratePositionsFromVectors(0, color, leftBorder);
+            var rightBorder2 = Geometry.GeneratePositionsFromVectors(1, color, rightBorder);
+
+            var strip = Geometry.WeaveStrip(leftBorder2, rightBorder2);
+
+            //Draw strip representing the lane
+            renderHelper.GetOrCreateRenderBin(roadTexture).DrawStrip(strip); //The strip looks jagged, but it resembles a curve better than a straight line
+
             // Draw a quadrilateral representing the lane
-            DrawQuadrilateral(pos2L, pos2R, pos1R, pos1L, connection.LaneSpec.Color, roadTexture);
+            //DrawQuadrilateral(pos2L, pos2R, pos1R, pos1L, connection.LaneSpec.Color, roadTexture);
         }
 
         private void DrawRoadSegments(ICollection<RoadSegment> segments, Action<LaneConnection> action){
