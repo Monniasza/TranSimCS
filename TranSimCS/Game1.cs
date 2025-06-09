@@ -43,16 +43,46 @@ namespace TranSimCS
             var node1 = new RoadNode(world, "Node 1", new Vector3(0, 0.1f, 0), RoadNode.AZIMUTH_NORTH);
             var node2 = new RoadNode(world, "Node 2", new Vector3(0, 0.1f, 100), RoadNode.AZIMUTH_NORTH);
             var node3 = new RoadNode(world, "Node 3", new Vector3(0, 0.1f, 200), RoadNode.AZIMUTH_NORTH);
+            var node4a = new RoadNode(world, "Node 4a", new Vector3(100, 0.1f, 300), RoadNode.AZIMUTH_EAST);
+            var node4b = new RoadNode(world, "Node 4b", new Vector3(0, 0.1f, 300), RoadNode.AZIMUTH_NORTH);
             // Generate lanes for each node
             Generator.GenerateLanes(2, node1, 3.5f, 0);
             Generator.GenerateLanes(2, node2, 3.5f, 0);
             Generator.GenerateLanes(3, node3, 3.5f, 0);
+            Generator.GenerateLanes(1, node4a, 3.5f, 0);
+            Generator.GenerateLanes(2, node4b, 3.5f, 0);
             world.RoadNodes.Add(node1);
             world.RoadNodes.Add(node2);
             world.RoadNodes.Add(node3);
+            world.RoadNodes.Add(node4a);
+            world.RoadNodes.Add(node4b);
+
+            //1-2
+            var lc12 = new LaneConnection(node1, node2, 0, node1.LaneSpecs.Count, 0, node2.LaneSpecs.Count);
+            var segment12 = new RoadSegment(world, node1, node2);
+            segment12.LaneConnections.Add(lc12);
+            world.RoadSegments.Add(segment12);
+
+            //2-3
+            var lc23 = new LaneConnection(node2, node3, 0, node2.LaneSpecs.Count, 0, node3.LaneSpecs.Count);
+            var segment23 = new RoadSegment(world, node2, node3);
+            segment23.LaneConnections.Add(lc23);
+            world.RoadSegments.Add(segment23);
+
+            //3-4a
+            var lc34a = new LaneConnection(node3, node4a, 2, 3, 0, node4a.LaneSpecs.Count);
+            var segment34a = new RoadSegment(world, node3, node4a);
+            segment34a.LaneConnections.Add(lc34a);
+            world.RoadSegments.Add(segment34a);
+
+            //3-4b
+            var lc34b = new LaneConnection(node3, node4b, 0, 2, 0, node4b.LaneSpecs.Count);
+            var segment34b = new RoadSegment(world, node3, node4b);
+            segment34b.LaneConnections.Add(lc34b);
+            world.RoadSegments.Add(segment34b);
 
             // Create a lane connection between the first two nodes
-            var segment1 = new RoadSegment(world, node1, node2);
+            /*var segment1 = new RoadSegment(world, node1, node2);
             var segment2 = new RoadSegment(world, node2, node3);
             LaneSpec[] laneSpecs = [LaneSpec.Default, LaneSpec.Truck];
             int i = 0;
@@ -66,14 +96,14 @@ namespace TranSimCS
                 segment.LaneConnections.Add(laneConnection1);
                 world.RoadSegments.Add(segment);
                 i++;
-            }
+            }*/
 
             //Generate graphics stuff
             effect = new BasicEffect(GraphicsDevice){
                 VertexColorEnabled = true,
                 TextureEnabled = true,
                 //View = Matrix.CreateLookAt(new Vector3(0, 100, 0), new Vector3(0, 0, -1), Vector3.Backward),
-                View = Matrix.CreateScale(-1, -1, 1) * Matrix.CreateLookAt(new Vector3(0, 16, -64), Vector3.Zero, Vector3.Up),
+                View = Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(new Vector3(0, 256, -256), Vector3.Zero, Vector3.Up),
                 World = Matrix.Identity,
                 Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1f, 1000f),
             };
@@ -88,7 +118,6 @@ namespace TranSimCS
                 Exit();
 
             // TODO: Add your update logic here
-
             base.Update(gameTime);
         }
 
@@ -169,43 +198,17 @@ namespace TranSimCS
                     action(connection);
         }
 
-        private readonly Vector3 v1 = new(-1, -1, 0);
-        private readonly Vector3 v2 = new( 1, -1, 0);
-        private readonly Vector3 v3 = new( 1,  1, 0);
-        private readonly Vector3 v4 = new(-1,  1, 0);
+        private readonly Vector3 v1 = new(-1,  1, 0);
+        private readonly Vector3 v2 = new( 1,  1, 0);
+        private readonly Vector3 v3 = new( 1, -1, 0);
+        private readonly Vector3 v4 = new(-1, -1, 0);
         private void Mark(Vector3 position, Color color) {
             Texture2D testTexture = Content.Load<Texture2D>("test");
             DrawQuadrilateral(v1+position, v2+position, v3+position, v4+position, color, testTexture);
         }
 
-
-        private static readonly int[] indexData = [0, 1, 2, 0, 2, 3];
         private void DrawQuadrilateral(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, Texture2D tex){
             renderHelper.GetOrCreateRenderBin(tex).DrawQuad(a, b, c, d, color);
-
-            /*effect.Texture = tex;
-
-            // Draw a quadrilateral using the provided positions and color
-            var vertices = new VertexPositionColorTexture[4] {
-                new(a, color, new(0, 0)),
-                new(b, color, new(1, 0)),
-                new(c, color, new(1, 1)),
-                new(d, color, new(0, 1)),
-            };
-
-            var passes = effect.CurrentTechnique.Passes;
-            foreach (EffectPass pass in passes) {//passes are applied, but do not show up in the game window
-                pass.Apply();
-                GraphicsDevice.DrawUserIndexedPrimitives( //The actual drawing of the quad
-                    PrimitiveType.TriangleList, // Specify tri-based quad assembly
-                    vertices,                   // Your input vertices
-                    0,                          // Offset in vertex array (0 for no offset)
-                    4,                          // Length of the input vertices array
-                    indexData, // Indicies (a tri with index (0, 1, 2), and (1, 2, 3))
-                    0,                          // Offset in index array (0 for none)
-                    2                           // Number of tris to draw (2 for a square)
-                );
-            }*/
         }
     }
 }
