@@ -81,23 +81,6 @@ namespace TranSimCS
             segment34b.LaneConnections.Add(lc34b);
             world.RoadSegments.Add(segment34b);
 
-            // Create a lane connection between the first two nodes
-            /*var segment1 = new RoadSegment(world, node1, node2);
-            var segment2 = new RoadSegment(world, node2, node3);
-            LaneSpec[] laneSpecs = [LaneSpec.Default, LaneSpec.Truck];
-            int i = 0;
-            foreach (var segment in new[] { segment1, segment2 }) {
-                //Generate connections for the segments
-                var laneSpec = laneSpecs[i % laneSpecs.Length];
-                var nnode1 = segment.Nodes[0];
-                var nnode2 = segment.Nodes[1];
-                var laneConnection1 = new LaneConnection(nnode1, nnode2, 0, nnode1.LaneSpecs.Count, 0, nnode2.LaneSpecs.Count);
-                laneConnection1.LaneSpec = laneSpec; // Assign the lane specification to the connection
-                segment.LaneConnections.Add(laneConnection1);
-                world.RoadSegments.Add(segment);
-                i++;
-            }*/
-
             //Generate graphics stuff
             effect = new BasicEffect(GraphicsDevice){
                 VertexColorEnabled = true,
@@ -148,19 +131,15 @@ namespace TranSimCS
                 int unchangingLanesEndRight = connection.RightEndIndex - openingRightLanes;
                 int unchangingLanesCount = unchangingLanesStartRight - unchangingLanesStartLeft; // How many lanes remain unchanged
 
-                //Calculate the positions of the lanes
+                //Draw changing lanes
+                DrawTangentialLane(connection.LeftStartIndex, unchangingLanesStartLeft, connection.LeftEndIndex, unchangingLanesEndLeft, connection);
+                DrawTangentialLane(unchangingLanesStartRight, connection.RightStartIndex, unchangingLanesEndRight, connection.RightEndIndex, connection);
+
+                //Draw markers
                 Vector3 pos1L = Geometry.calcLineEnd(connection.StartNode, connection.LeftStartIndex);
                 Vector3 pos1R = Geometry.calcLineEnd(connection.StartNode, connection.RightStartIndex);
                 Vector3 pos2L = Geometry.calcLineEnd(connection.EndNode, connection.LeftEndIndex);
                 Vector3 pos2R = Geometry.calcLineEnd(connection.EndNode, connection.RightEndIndex);
-                Vector3 pos1IL = Geometry.calcLineEnd(connection.StartNode, unchangingLanesStartLeft);
-                Vector3 pos1IR = Geometry.calcLineEnd(connection.StartNode, unchangingLanesStartRight);
-                Vector3 pos2IL = Geometry.calcLineEnd(connection.EndNode, unchangingLanesEndLeft);
-                Vector3 pos2IR = Geometry.calcLineEnd(connection.EndNode, unchangingLanesEndRight);
-                DrawQuadrilateral(pos2L, pos2IL, pos1IL, pos1L, connection.LaneSpec.Color, roadTexture);
-                DrawQuadrilateral(pos2IR, pos2R, pos1R, pos1IR, connection.LaneSpec.Color, roadTexture);
-
-                //Draw markers
                 Mark(pos1L, Color.White);
                 Mark(pos1R, Color.Red);
                 Mark(pos2L, Color.Gray);
@@ -182,11 +161,15 @@ namespace TranSimCS
         }
 
         private void DrawLane(int laneIndexStart, int laneIndexEnd, LaneConnection connection) {
+            DrawTangentialLane(laneIndexStart, laneIndexStart + 1, laneIndexEnd, laneIndexEnd + 1, connection);
+        }
+
+        private void DrawTangentialLane(int laneIndexStartL, int laneIndexStartR, int laneIndexEndL, int laneIndexEndR, LaneConnection connection) {
             // Calculate the position of the lane based on the node's position and the lane index
-            Vector3 pos1L = Geometry.calcLineEnd(connection.StartNode, laneIndexStart);
-            Vector3 pos1R = Geometry.calcLineEnd(connection.StartNode, laneIndexStart + 1);
-            Vector3 pos2L = Geometry.calcLineEnd(connection.EndNode, laneIndexEnd);
-            Vector3 pos2R = Geometry.calcLineEnd(connection.EndNode, laneIndexEnd + 1);
+            Vector3 pos1L = Geometry.calcLineEnd(connection.StartNode, laneIndexStartL);
+            Vector3 pos1R = Geometry.calcLineEnd(connection.StartNode, laneIndexStartR);
+            Vector3 pos2L = Geometry.calcLineEnd(connection.EndNode, laneIndexEndL);
+            Vector3 pos2R = Geometry.calcLineEnd(connection.EndNode, laneIndexEndR);
             // Draw a quadrilateral representing the lane
             DrawQuadrilateral(pos2L, pos2R, pos1R, pos1L, connection.LaneSpec.Color, roadTexture);
         }
