@@ -99,36 +99,33 @@ namespace TranSimCS
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            // Unproject screen coordinates to near and far points in 3D space
+            MouseState mouseState = Mouse.GetState();
+            int mouseX = mouseState.X;
+            int mouseY = mouseState.Y;
+            Viewport viewport = GraphicsDevice.Viewport;
+            Vector3 nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), effect.Projection, effect.View, effect.World);
+            Vector3 farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), effect.Projection, effect.View, effect.World);
+            Ray ray = new(nearPoint, Vector3.Normalize(farPoint - nearPoint));
+            mouseRay = ray; // Store the ray for later use
+
+            //Reset the selected lane tag and position
+            SelectedLaneTag = null; // Reset the selected lane tag
+            SelectedLanePosition = null; // Reset the selected lane position
+            IntersectionDistance = float.MaxValue; // Reset the intersection distance
+
             //Road selector logic can be added here
             foreach (var road in world.RoadSegments) {
                 //Select the road segment if the mouse is over it
-                // Unproject screen coordinates to near and far points in 3D space
-                MouseState mouseState = Mouse.GetState();
-                int mouseX = mouseState.X;
-                int mouseY = mouseState.Y;
-                Viewport viewport = GraphicsDevice.Viewport;
-                Vector3 nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), effect.Projection, effect.View, effect.World );
-                Vector3 farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), effect.Projection, effect.View, effect.World);
-                Ray ray = new(nearPoint, Vector3.Normalize(farPoint - nearPoint));
-                mouseRay = ray; // Store the ray for later use
-
-                SelectedLaneTag = null; // Reset the selected lane tag
-                SelectedLanePosition = null; // Reset the selected lane position
-                IntersectionDistance = float.MaxValue; // Reset the intersection distance
                 foreach (var segment in world.RoadSegments) {
                     // Check if the ray intersects with the road segment
-                    
                     object tag = MeshUtil.RayIntersectMesh(segment.StartMesh, ray, out float intersectionDistance);
                     if (tag is LaneTag laneTag && laneTag.road == segment) {
                         // If the ray intersects, mark the road segment as selected
-                        //Mark(intersectionPoint, Color.Red, 0.5f);
                         Debug.WriteLine($"Selected road segment: {segment.StartNode.Name} to {segment.EndNode.Name}");
                         SelectedLaneTag = laneTag; // Set the selected lane tag
                         IntersectionDistance = intersectionDistance; // Update the intersection distance
                         SelectedLanePosition = ray.Position + ray.Direction * intersectionDistance; // Store the position of the selected lane tag
-                    } else {
-                        // If the ray does not intersect, you can mark it differently or do nothing
-                        //Mark(intersectionPoint, Color.White, 0.5f);
                     }
                 }                
             }

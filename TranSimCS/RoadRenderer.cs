@@ -73,7 +73,7 @@ namespace TranSimCS {
             var rightBorder2 = Geometry.GeneratePositionsFromVectors(1, color, rightBorder);
             var strip = Geometry.WeaveStrip(leftBorder2, rightBorder2);
             var triangleCount = strip.Length - 2; // Each triangle is formed by 3 vertices, so the number of triangles is the number of vertices minus 2
-            var tag = new LaneTag(connection, laneIndexStartL, laneIndexEndL, laneIndexStartR, laneIndexEndR, connection.LaneSpec); // Create a tag for the lane
+            var tag = new LaneTag(connection, laneIndexStartL, laneIndexStartR, laneIndexEndL, laneIndexEndR, connection.LaneSpec); // Create a tag for the lane
 
             //Draw strip representing the lane
             renderer.DrawStrip(strip);
