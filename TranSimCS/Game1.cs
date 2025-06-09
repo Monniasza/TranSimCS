@@ -138,6 +138,9 @@ namespace TranSimCS
             base.Update(gameTime);
         }
 
+        private Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
+        private Color roadSegmentHighlightColor = new Color(0, 128, 255, 100);
+
         protected override void Draw(GameTime gameTime) {
             //Clear the screen to a solid color and clear the render helper
             GraphicsDevice.Clear(Color.ForestGreen);
@@ -149,15 +152,11 @@ namespace TranSimCS
             // Draw the asphalt texture for the road
             DrawRoadSegments(world.RoadSegments, (connection) => renderBin.DrawModel(connection.StartMesh));
 
-
             //If a road segment is selected, draw the selection
             if (SelectedLaneTag != null) {
                 // Draw the selected lane tag with a different color
-                RoadRenderer.DrawLaneTag(SelectedLaneTag.Value, renderBin, Color.Yellow, 0.005f);
-            }
-            if(SelectedLanePosition != null) {
-                // Draw a marker at the position of the selected lane tag
-                Mark(SelectedLanePosition.Value, Color.Yellow, 1f);
+                RoadRenderer.DrawLaneTag(SelectedLaneTag.Value, renderBin, laneHighlightColor, 0.005f);
+                RoadRenderer.DrawLaneTag(SelectedLaneTag.Value.road.FullSizeTag(), renderBin, roadSegmentHighlightColor, 0.002f);
             }
 
             //Red the render helper

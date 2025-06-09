@@ -58,6 +58,10 @@ namespace TranSimCS {
         public int RightEndIndex { get; init; } // Lane index at the end node for the second road segment      
         public int EndShift { get; init; } // How many lanes are to the left of the lane connection from the end node
 
+        public LaneTag FullSizeTag() {
+            return new LaneTag(this, LeftStartIndex, RightStartIndex, LeftEndIndex, RightEndIndex, LaneSpec); // Create a LaneTag with the full size of the connection
+        }
+
         //Meshes for the lane connection (can be used for rendering and cached)
         private Mesh? _endMesh; // Mesh for the lane connection at the end node
         public Mesh? StartMesh { get { 
