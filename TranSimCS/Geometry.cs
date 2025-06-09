@@ -73,16 +73,28 @@ namespace TranSimCS
 
         public static Vector3 calcLineEnd(RoadNode node, int laneIndex)  => calcLineEnd(node.Position, node.PositionOffsets[laneIndex], node.Azimuth);
     
+        public struct Bezier3 {
+            Vector3 a;
+            Vector3 b;
+            Vector3 c;
+            Vector3 d;
+        }
+        /*public static Bezier3 GenerateJoinSpline((Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent){
+
+        }*/
+
         public static Vector3[] GenerateSplinePoints(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent, int numPoints = 32)
         {
             if (numPoints < 2) throw new ArgumentException("numPoints must be at least 2.");
             Vector3[] points = new Vector3[numPoints];
             float step = 1f / (numPoints - 1);
+            float tangentLength = Vector3.Distance(startPos, endPos);
             for (int i = 0; i < numPoints; i++)
             {
                 float t = i * step;
                 // Simple linear interpolation for now, can be replaced with a more complex spline algorithm
-                points[i] = Vector3.Hermite(startPos, startTangent, -endTangent, endPos, t);
+                points[i] = Vector3.Hermite(startPos, startTangent*tangentLength, endPos, -endTangent * tangentLength, t); //the result seems to be a straight line, so we can use a simple lerp for now
+                //points[i] = Vector3.Lerp(startPos, endPos, t);
             }
             return points;
         }
@@ -107,10 +119,6 @@ namespace TranSimCS
                 results.Add(iterL.Current);
                 if (!iterR.MoveNext()) break;
                 results.Add(iterR.Current);
-                if (!iterR.MoveNext()) break;
-                results.Add(iterR.Current);
-                if (!iterL.MoveNext()) break;
-                results.Add(iterL.Current);
             }
             return results.ToArray();
         }

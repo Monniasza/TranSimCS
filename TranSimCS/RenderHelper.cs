@@ -165,7 +165,7 @@ namespace TranSimCS {
 
         /// <summary>
         /// Draws a strip of vertices, where each vertex is connected to the next one in a triangle strip fashion.
-        /// The vertices should start at the bottom left and go in a zigzag pattern to the top right.
+        /// The vertices should start at the bottom left and even positions are the left vertices, odd positions are the right vertices.
         /// </summary>
         /// <param name="vertices"></param>
         /// <exception cref="ArgumentException"></exception>
@@ -177,8 +177,14 @@ namespace TranSimCS {
                 newVertexIds[i] = AddVertex(vertices[i]);
             for (int i = 0; i < newVertexIds.Length - 2; i++) {
                 AddIndex(newVertexIds[i]);
-                AddIndex(newVertexIds[i + 2]);
-                AddIndex(newVertexIds[i + 1]);
+                if((i & 1) == 0) {
+                    AddIndex(newVertexIds[i + 2]);
+                    AddIndex(newVertexIds[i + 1]);
+                } else {
+                    AddIndex(newVertexIds[i + 1]);
+                    AddIndex(newVertexIds[i + 2]);
+                }
+                
             }
         }
     }

@@ -86,7 +86,8 @@ namespace TranSimCS
                 VertexColorEnabled = true,
                 TextureEnabled = true,
                 //View = Matrix.CreateLookAt(new Vector3(0, 100, 0), new Vector3(0, 0, -1), Vector3.Backward),
-                View = Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(new Vector3(0, 256, -256), Vector3.Zero, Vector3.Up),
+                //View = Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(new Vector3(0, 256, -256), Vector3.Zero, Vector3.Up),
+                View = Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(new Vector3(0, 32, -64), Vector3.Zero, Vector3.Up),
                 World = Matrix.Identity,
                 Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1f, 1000f),
             };
@@ -174,15 +175,21 @@ namespace TranSimCS
             var pos2R = Geometry.calcLineEnd2(connection.EndNode, laneIndexEndR);
 
             //Generate border curves
-            Vector3[] leftBorder = Geometry.GenerateSplinePoints(pos1L.Position, pos1L.Tangential, pos2L.Position, pos2L.Tangential, 10);
-            Vector3[] rightBorder = Geometry.GenerateSplinePoints(pos1R.Position, pos1R.Tangential, pos2R.Position, pos2R.Tangential, 10);
+            Vector3[] leftBorder = Geometry.GenerateSplinePoints(pos1L.Position, pos2L.Position, pos1L.Tangential, pos2L.Tangential, 10);
+            Vector3[] rightBorder = Geometry.GenerateSplinePoints(pos1R.Position, pos2R.Position, pos1R.Tangential, pos2R.Tangential, 10);
+
             var leftBorder2 = Geometry.GeneratePositionsFromVectors(0, color, leftBorder);
             var rightBorder2 = Geometry.GeneratePositionsFromVectors(1, color, rightBorder);
-
             var strip = Geometry.WeaveStrip(leftBorder2, rightBorder2);
 
             //Draw strip representing the lane
             renderHelper.GetOrCreateRenderBin(roadTexture).DrawStrip(strip); //The strip looks jagged, but it resembles a curve better than a straight line
+
+            //Draw markers at the right locations to debug
+            foreach (var pos in leftBorder) 
+                Mark(pos, Color.White, 0.2f);
+            foreach (var pos in rightBorder) 
+                Mark(pos, Color.Red, 0.2f);
 
             // Draw a quadrilateral representing the lane
             //DrawQuadrilateral(pos2L, pos2R, pos1R, pos1L, connection.LaneSpec.Color, roadTexture);
@@ -199,9 +206,11 @@ namespace TranSimCS
         private readonly Vector3 v2 = new( 1,  1, 0);
         private readonly Vector3 v3 = new( 1, -1, 0);
         private readonly Vector3 v4 = new(-1, -1, 0);
-        private void Mark(Vector3 position, Color color) {
+        private void Mark(Vector3 position, Color color, float Size=1) {
             Texture2D testTexture = Content.Load<Texture2D>("test");
-            DrawQuadrilateral(v1+position, v2+position, v3+position, v4+position, color, testTexture);
+            DrawQuadrilateral(
+                (v1 * Size) +position, (v2 * Size) +position,
+                (v3 * Size) +position, (v4 * Size) +position, color, testTexture);
         }
 
         private void DrawQuadrilateral(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, Texture2D tex){
