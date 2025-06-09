@@ -104,9 +104,6 @@ namespace TranSimCS
             for (int i = 0; i < numPoints; i++)
             {
                 float t = i * step;
-                // Simple linear interpolation for now, can be replaced with a more complex spline algorithm
-                //points[i] = Vector3.Hermite(startPos, startTangent*tangentLength, endPos, -endTangent * tangentLength, t); //the result seems to be a straight line, so we can use a simple lerp for now
-                //points[i] = Vector3.Lerp(startPos, endPos, t);
                 points[i] = bezier[t]; // Use the Bezier curve to calculate the point at t
             }
             return points;

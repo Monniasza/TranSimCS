@@ -86,8 +86,8 @@ namespace TranSimCS
                 VertexColorEnabled = true,
                 TextureEnabled = true,
                 //View = Matrix.CreateLookAt(new Vector3(0, 100, 0), new Vector3(0, 0, -1), Vector3.Backward),
-                View = Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(new Vector3(0, 256, -256), Vector3.Zero, Vector3.Up),
-                //View = Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(new Vector3(0, 32, -64), Vector3.Zero, Vector3.Up),
+                //View = Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(new Vector3(0, 256, -256), Vector3.Zero, Vector3.Up),
+                View = Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(new Vector3(0, 32, -64), Vector3.Zero, Vector3.Up),
                 World = Matrix.Identity,
                 Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1f, 1000f),
             };
@@ -141,10 +141,6 @@ namespace TranSimCS
                 Vector3 pos1R = Geometry.calcLineEnd(connection.StartNode, connection.RightStartIndex);
                 Vector3 pos2L = Geometry.calcLineEnd(connection.EndNode, connection.LeftEndIndex);
                 Vector3 pos2R = Geometry.calcLineEnd(connection.EndNode, connection.RightEndIndex);
-                Mark(pos1L, Color.White);
-                Mark(pos1R, Color.Red);
-                Mark(pos2L, Color.Gray);
-                Mark(pos2R, Color.Maroon);
 
                 //Draw the unchanged lanes
                 for (int i = 0; i < unchangingLanesCount; i++) {
@@ -183,16 +179,7 @@ namespace TranSimCS
             var strip = Geometry.WeaveStrip(leftBorder2, rightBorder2);
 
             //Draw strip representing the lane
-            renderHelper.GetOrCreateRenderBin(roadTexture).DrawStrip(strip); //The strip looks jagged, but it resembles a curve better than a straight line
-
-            //Draw markers at the right locations to debug
-            foreach (var pos in leftBorder) 
-                Mark(pos, Color.White, 0.2f);
-            foreach (var pos in rightBorder) 
-                Mark(pos, Color.Red, 0.2f);
-
-            // Draw a quadrilateral representing the lane
-            //DrawQuadrilateral(pos2L, pos2R, pos1R, pos1L, connection.LaneSpec.Color, roadTexture);
+            renderHelper.GetOrCreateRenderBin(roadTexture).DrawStrip(strip);
         }
 
         private void DrawRoadSegments(ICollection<RoadSegment> segments, Action<LaneConnection> action){

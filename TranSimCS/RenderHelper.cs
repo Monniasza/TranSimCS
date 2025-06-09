@@ -12,7 +12,7 @@ namespace TranSimCS {
         public BasicEffect Effect { get; private init; }
 
         //List of data to render
-        private Dictionary<Texture2D, RenderBin> _renderBins = new();
+        private Dictionary<Texture2D, RenderBin> _renderBins = [];
 
         public RenderHelper(GraphicsDevice graphicsDevice) {
             GraphicsDevice = graphicsDevice;
