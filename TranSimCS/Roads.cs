@@ -62,8 +62,9 @@ namespace TranSimCS {
         private Mesh? _endMesh; // Mesh for the lane connection at the end node
         public Mesh? StartMesh { get { 
             if (_endMesh != null) return _endMesh; // If the end mesh is set, return it
-
-            } private set => _endMesh = value; } // Mesh for the lane connection at the start node
+            RoadRenderer.RenderRoadSegment(this, _endMesh); // Otherwise, render the road segment
+            return _endMesh; // Return the rendered mesh
+        } private set => _endMesh = value; } // Mesh for the lane connection at the start node
 
         //Properties for the lane connection
         private LaneSpec LaneSpec0 = LaneSpec.Default ; // Backing field for the lane specification
@@ -122,20 +123,5 @@ namespace TranSimCS {
         Vehicles = MotorVehicles | Bicycle, // All vehicles except parking
         Transport = Vehicles | Pedestrian, // All traffic
         All = -1 // All vehicle and parking types
-    }
-
-    public class RoadSegment {
-        public List<RoadNode> Nodes { get; } = new List<RoadNode>();
-        public World World { get; init; }
-        public List<LaneConnection> LaneConnections { get; } = [];
-        // Constructor to initialize the RoadSegment with start and end nodes and the world
-        public RoadSegment(World world, List<RoadNode> nodes) {
-            World = world;
-            Nodes.AddRange(nodes);
-        }
-        public RoadSegment(World world, params RoadNode[] nodes) {
-            World = world;
-            Nodes.AddRange(nodes);
-        }
     }
 }

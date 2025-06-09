@@ -14,7 +14,7 @@ namespace TranSimCS
         private SpriteBatch _spriteBatch;
         private World world;
         private BasicEffect effect;
-        private Texture2D roadTexture; // Assuming you have a texture for the road
+        public static Texture2D roadTexture { get; private set; } // Assuming you have a texture for the road
         private RenderHelper renderHelper; // Assuming you have a RenderHelper class for rendering
 
         //private Camera camera; // Assuming you have a Camera class for handling camera logic
@@ -59,33 +59,25 @@ namespace TranSimCS
 
             //1-2
             var lc12 = new LaneConnection(node1, node2, 0, node1.LaneSpecs.Count, 0, node2.LaneSpecs.Count);
-            var segment12 = new RoadSegment(world, node1, node2);
-            segment12.LaneConnections.Add(lc12);
-            world.RoadSegments.Add(segment12);
+            world.RoadSegments.Add(lc12);
 
             //2-3
             var lc23 = new LaneConnection(node2, node3, 0, node2.LaneSpecs.Count, 0, node3.LaneSpecs.Count);
-            var segment23 = new RoadSegment(world, node2, node3);
-            segment23.LaneConnections.Add(lc23);
-            world.RoadSegments.Add(segment23);
+            world.RoadSegments.Add(lc23);
 
             //3-4a
             var lc34a = new LaneConnection(node3, node4a, 2, 3, 0, node4a.LaneSpecs.Count);
-            var segment34a = new RoadSegment(world, node3, node4a);
-            segment34a.LaneConnections.Add(lc34a);
-            world.RoadSegments.Add(segment34a);
+            world.RoadSegments.Add(lc34a);
 
             //3-4b
             var lc34b = new LaneConnection(node3, node4b, 0, 2, 0, node4b.LaneSpecs.Count);
-            var segment34b = new RoadSegment(world, node3, node4b);
-            segment34b.LaneConnections.Add(lc34b);
-            world.RoadSegments.Add(segment34b);
+            world.RoadSegments.Add(lc34b);
 
             //Generate graphics stuff
             effect = new BasicEffect(GraphicsDevice){
                 VertexColorEnabled = true,
                 TextureEnabled = true,
-                //View = Matrix.CreateLookAt(new Vector3(0, 100, 0), new Vector3(0, 0, -1), Vector3.Backward),
+                //View = Matrix.CreateLookAt(new Vector3(0, 1000, 0), new Vector3(0, 0, -1), Vector3.Backward),
                 //View = Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(new Vector3(0, 256, -256), Vector3.Zero, Vector3.Up),
                 View = Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(new Vector3(0, 32, -64), Vector3.Zero, Vector3.Up),
                 World = Matrix.Identity,
@@ -111,44 +103,10 @@ namespace TranSimCS
             renderHelper.Clear();
 
             Texture2D testTexture = Content.Load<Texture2D>("test");
+            IRenderBin renderBin = renderHelper.GetOrCreateRenderBin(roadTexture);
 
             // Draw the asphalt texture for the road
-            DrawRoadSegments(world.RoadSegments, (connection) => {
-                //Calculate lane balances
-                int startingLanes = connection.RightStartIndex - connection.LeftStartIndex; // How many lanes are open at the start node
-                int endingLanes = connection.RightEndIndex - connection.LeftEndIndex; // How many lanes are open at the start node
-                int leftShift = connection.EndShift - connection.StartShift; // How many lanes open to the left (negative means that the left lanes close)
-                int rightShift = endingLanes - startingLanes - leftShift; // How many lanes open to the right (negative means that the right lanes close)
-                int totalLanes = startingLanes + Math.Abs(leftShift) + Math.Abs(rightShift); // Total lanes after the connection
-                int closingLeftLanes = Math.Max(0, -leftShift); // How many lanes close to the left
-                int openingLeftLanes = Math.Max(0, leftShift); // How many lanes open to the left
-                int closingRightLanes = Math.Max(0, -rightShift); // How many lanes close to the right
-                int openingRightLanes = Math.Max(0, rightShift); // How many lanes open to the right
-
-                //Calculate unchanging lanes
-                int unchangingLanesStartLeft = connection.LeftStartIndex + closingLeftLanes;
-                int unchangingLanesStartRight = connection.RightStartIndex - closingRightLanes;
-                int unchangingLanesEndLeft = connection.LeftEndIndex + openingLeftLanes;
-                int unchangingLanesEndRight = connection.RightEndIndex - openingRightLanes;
-                int unchangingLanesCount = unchangingLanesStartRight - unchangingLanesStartLeft; // How many lanes remain unchanged
-
-                //Draw changing lanes
-                DrawTangentialLane(connection.LeftStartIndex, unchangingLanesStartLeft, connection.LeftEndIndex, unchangingLanesEndLeft, connection);
-                DrawTangentialLane(unchangingLanesStartRight, connection.RightStartIndex, unchangingLanesEndRight, connection.RightEndIndex, connection);
-
-                //Draw markers
-                Vector3 pos1L = Geometry.calcLineEnd(connection.StartNode, connection.LeftStartIndex);
-                Vector3 pos1R = Geometry.calcLineEnd(connection.StartNode, connection.RightStartIndex);
-                Vector3 pos2L = Geometry.calcLineEnd(connection.EndNode, connection.LeftEndIndex);
-                Vector3 pos2R = Geometry.calcLineEnd(connection.EndNode, connection.RightEndIndex);
-
-                //Draw the unchanged lanes
-                for (int i = 0; i < unchangingLanesCount; i++) {
-                    int startLaneIndex = unchangingLanesStartLeft + i; // Calculate the lane index at the start node
-                    int endLaneIndex = unchangingLanesEndLeft + i; // Calculate the lane index at the end node
-                    DrawLane(startLaneIndex, endLaneIndex, connection);
-                }
-            });
+            DrawRoadSegments(world.RoadSegments, (connection) => RoadRenderer.RenderRoadSegment(connection, renderBin));
 
             //Draw the lane lines
 
@@ -157,36 +115,8 @@ namespace TranSimCS
             base.Draw(gameTime);
         }
 
-        private void DrawLane(int laneIndexStart, int laneIndexEnd, LaneConnection connection) {
-            DrawTangentialLane(laneIndexStart, laneIndexStart + 1, laneIndexEnd, laneIndexEnd + 1, connection);
-        }
-
-        private void DrawTangentialLane(int laneIndexStartL, int laneIndexStartR, int laneIndexEndL, int laneIndexEndR, LaneConnection connection) {
-            var color = connection.LaneSpec.Color; // Get the color from the lane specification
-
-            // Calculate the position of the lane based on the node's position and the lane index
-            var pos1L = Geometry.calcLineEnd2(connection.StartNode, laneIndexStartL);
-            var pos1R = Geometry.calcLineEnd2(connection.StartNode, laneIndexStartR);
-            var pos2L = Geometry.calcLineEnd2(connection.EndNode, laneIndexEndL);
-            var pos2R = Geometry.calcLineEnd2(connection.EndNode, laneIndexEndR);
-
-            //Generate border curves
-            Vector3[] leftBorder = Geometry.GenerateSplinePoints(pos1L.Position, pos2L.Position, pos1L.Tangential, pos2L.Tangential, 10);
-            Vector3[] rightBorder = Geometry.GenerateSplinePoints(pos1R.Position, pos2R.Position, pos1R.Tangential, pos2R.Tangential, 10);
-
-            var leftBorder2 = Geometry.GeneratePositionsFromVectors(0, color, leftBorder);
-            var rightBorder2 = Geometry.GeneratePositionsFromVectors(1, color, rightBorder);
-            var strip = Geometry.WeaveStrip(leftBorder2, rightBorder2);
-
-            //Draw strip representing the lane
-            renderHelper.GetOrCreateRenderBin(roadTexture).DrawStrip(strip);
-        }
-
-        private void DrawRoadSegments(ICollection<RoadSegment> segments, Action<LaneConnection> action){
-            foreach (var segment in segments)
-                foreach (var connection in segment.LaneConnections)              
-                    // Perform the action on each lane connection
-                    action(connection);
+        private void DrawRoadSegments(ICollection<LaneConnection> segments, Action<LaneConnection> action){
+            foreach (var segment in segments) action(segment);
         }
 
         private readonly Vector3 v1 = new(-1,  1, 0);
@@ -201,7 +131,8 @@ namespace TranSimCS
         }
 
         private void DrawQuadrilateral(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, Texture2D tex){
-            renderHelper.GetOrCreateRenderBin(tex).DrawQuad(a, b, c, d, color);
+            IRenderBin renderBin = renderHelper.GetOrCreateRenderBin(tex);
+            renderBin.DrawQuad(a, b, c, d, color);
         }
     }
 }

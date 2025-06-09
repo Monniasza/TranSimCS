@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace TranSimCS {
-    internal class RenderHelper {
+    public class RenderHelper {
         public GraphicsDevice GraphicsDevice { get; private init; }
         public BasicEffect Effect { get; private init; }
 
@@ -61,27 +61,28 @@ namespace TranSimCS {
     }
 
     /// <summary>
-    /// A render bin is a collection of vertices and indices that can be rendered together.
-    /// Each render bin is associated with a specific texture and uses a RenderHelper for rendering.
+    /// Defines an interface for a render bin, which serves as a container for managing vertices and indices used in
+    /// rendering operations.
     /// </summary>
-    internal class RenderBin {
-        public RenderHelper RenderHelper { get; private init; }
-        public List<VertexPositionColorTexture> Vertices { get; private init; } = [];
-        public List<int> Indices { get; private init; } = [];
-        public RenderBin(RenderHelper renderHelper) {
-            RenderHelper = renderHelper;
-        }
-        public void Clear() {
-            Vertices.Clear();
-            Indices.Clear();
-        }
-        public int AddVertex(VertexPositionColorTexture vertex) {
-            Vertices.Add(vertex);
-            return Vertices.Count - 1;
-        }
-        public void AddIndex(int index) {
-            Indices.Add(index);
-        }
+    /// <remarks>A render bin provides methods for adding vertices and indices, as well as drawing various
+    /// shapes and models. It is designed to facilitate rendering operations by organizing vertex and index data
+    /// efficiently.</remarks>
+    public interface IRenderBin {
+        /// <summary>
+        /// Gets the RenderHelper associated with this render bin.
+        /// </summary>
+        RenderHelper? RenderHelper { get; }   
+        /// <summary>
+        /// Gets the list of vertices in this render bin.
+        /// </summary>
+        List<VertexPositionColorTexture> Vertices { get; }
+        /// <summary>
+        /// Gets the list of indices in this render bin.
+        /// </summary>
+        List<int> Indices { get; }
+
+        public int AddVertex(VertexPositionColorTexture vertex);
+        public void AddIndex(int index);
 
         //Rendering methods for different shapes and primitives
         /// <summary>
@@ -125,14 +126,18 @@ namespace TranSimCS {
         /// </summary>
         /// <param name="vertices">List of vertices</param>
         /// <param name="indices">List of indices</param>
-        public void DrawModel(VertexPositionColorTexture[] vertices, int[] indices) {
+        public void DrawModel(IList<VertexPositionColorTexture> vertices, IList<int> indices) {
             ArgumentNullException.ThrowIfNull(vertices);
             ArgumentNullException.ThrowIfNull(indices);
-            int[] newVertexIds = new int[indices.Length];
-            for (int i = 0; i < vertices.Length; i++)
+            int[] newVertexIds = new int[indices.Count];
+            for (int i = 0; i < vertices.Count; i++)
                 newVertexIds[i] = AddVertex(vertices[i]);
             foreach (var index in indices)
                 AddIndex(newVertexIds[index]);
+        }
+        public void DrawModel(Mesh mesh) {
+            ArgumentNullException.ThrowIfNull(mesh);
+            DrawModel(mesh.Vertices, mesh.Indices);
         }
 
         /// <summary>
@@ -177,15 +182,42 @@ namespace TranSimCS {
                 newVertexIds[i] = AddVertex(vertices[i]);
             for (int i = 0; i < newVertexIds.Length - 2; i++) {
                 AddIndex(newVertexIds[i]);
-                if((i & 1) == 0) {
+                if ((i & 1) == 0) {
                     AddIndex(newVertexIds[i + 2]);
                     AddIndex(newVertexIds[i + 1]);
                 } else {
                     AddIndex(newVertexIds[i + 1]);
                     AddIndex(newVertexIds[i + 2]);
                 }
-                
+
             }
         }
+    }
+
+    /// <summary>
+    /// A render bin is a collection of vertices and indices that can be rendered together.
+    /// Each render bin is associated with a specific texture and uses a RenderHelper for rendering.
+    /// </summary>
+    public class RenderBin: IRenderBin{
+        public RenderHelper? RenderHelper { get; private init; }
+        public List<VertexPositionColorTexture> Vertices { get; private init; } = [];
+        public List<int> Indices { get; private init; } = [];
+        internal RenderBin(RenderHelper renderHelper) {
+            RenderHelper = renderHelper;
+        }
+        public RenderBin() { } //Public constructor for use without RenderHelper
+        public void Clear() {
+            Vertices.Clear();
+            Indices.Clear();
+        }
+        public int AddVertex(VertexPositionColorTexture vertex) {
+            Vertices.Add(vertex);
+            return Vertices.Count - 1;
+        }
+        public void AddIndex(int index) {
+            Indices.Add(index);
+        }
+
+        
     }
 }

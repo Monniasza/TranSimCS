@@ -9,7 +9,7 @@ namespace TranSimCS
 {
     public class World
     {
-        public List<RoadSegment> RoadSegments { get; } = new List<RoadSegment>();
+        public List<LaneConnection> RoadSegments { get; } = new List<LaneConnection>();
         public List<RoadNode> RoadNodes { get; } = new List<RoadNode>();
     }
 }
