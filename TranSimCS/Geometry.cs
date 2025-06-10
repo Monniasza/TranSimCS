@@ -83,14 +83,14 @@ namespace TranSimCS
             return new Bezier3 { a = a, b = b, c = c, d = d };
         }
 
-        public static Vector3[] GenerateSplinePoints(Bezier3 spline, int numPoints = 32) {
+        public static Vector3[] GenerateSplinePoints(Bezier3 spline, int numPoints = 32, float minT = 0, float maxT = 1) {
             if (numPoints < 2) throw new ArgumentException("numPoints must be at least 2.");
             Vector3[] points = new Vector3[numPoints];
             float step = 1f / (numPoints - 1);
             Bezier3 bezier = spline; // Use the provided Bezier curve
             for (int i = 0; i < numPoints; i++) {
                 float t = i * step;
-                points[i] = bezier[t]; // Use the Bezier curve to calculate the point at t
+                points[i] = bezier[MathHelper.Lerp(minT, maxT, t)]; // Use the Bezier curve to calculate the point at t
             }
             return points;
         }
@@ -306,7 +306,7 @@ namespace TranSimCS
         /// <param name="accuracy">number of loop iterations</param>
         /// <returns></returns>
         public static float FindT(Bezier3 spline, Vector3 pos, int accuracy = 40) {
-            float lowerBound = 0f;
+            /**float lowerBound = 0f;
             float upperBound = 1f;
             for(int i = 0; i < accuracy; i++) { // Iterate to find the closest point on the spline
                 float t = (lowerBound + upperBound) / 2f;
@@ -322,56 +322,31 @@ namespace TranSimCS
                     lowerBound = t; // Move to the upper half of the spline
                 }
             }
-            return (lowerBound + upperBound) / 2f; // Return the average of the bounds as the closest t value
+            return (lowerBound + upperBound) / 2f; // Return the average of the bounds as the closest t value*/
+            return FindT2(spline, pos, accuracy, 10, 0f, 1f); // Use the recursive method to find the closest t value
         }
 
-        public static float FindTRecursive(Bezier3 spline, Vector3 pos, int accuracy = 40) {
-            if (accuracy <= 0) return 0.5f;
-
-            Bezier3.SplitInHalf(spline, out var a, out var b);
-            float distance1 = Vector3.Distance(spline.a, pos);
-            float distance2 = Vector3.Distance(spline.d, pos);
-
-            if (distance1 < distance2)
-                return FindTRecursive(a, pos, accuracy - 1) / 2;
-            else
-                return FindTRecursive(a, pos, accuracy - 1) / 2 + 0.5f;
-        }
-
-        public static float FindT2(Bezier3 spline, Vector3 pos, int fsaccuracy = 40, int ssaccuracy = 10) {
-            //First stage: Among the first fsaccuracy points, find the closest point to pos
-            var points = Geometry.GenerateSplinePoints(spline, fsaccuracy);
-            float minDistance = float.MaxValue;
-            int closestIdx = 0;
+        public static float FindT2(Bezier3 spline, Vector3 pos, int pointsPerCycle = 40, int depth = 10, float lowerLimit = 0, float upperLimit = 1) {
+            if(depth <= 0) {
+                return (lowerLimit + upperLimit) / 2f; // Return the average of the bounds if depth is exhausted
+            }
+            var points = Geometry.GenerateSplinePoints(spline, pointsPerCycle, lowerLimit, upperLimit);
+            int closestIndex = 0;
+            float closestDistance = float.MaxValue;
             for (int i = 0; i < points.Length; i++) {
-                float t = (float)i / (fsaccuracy - 1);
                 float distance = Vector3.Distance(points[i], pos);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestIdx = i;
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestIndex = i;
                 }
             }
-
-            //Stage 2: Refine the closest point using a smaller step size
-            var lowerBound = Math.Max(0, closestIdx-1) / (fsaccuracy - 1f);
-            var upperBound = Math.Min(1, closestIdx+1) / (fsaccuracy - 1f);
-            for(int i = 0; i < ssaccuracy; i++) {
-                float t = (lowerBound + upperBound) / 2f;
-                Vector3 pointOnSpline = spline[t];
-                float distance = Vector3.Distance(pointOnSpline, pos);
-                float distance1 = Vector3.Distance(spline[lowerBound], pos);
-                float distance2 = Vector3.Distance(spline[upperBound], pos);
-                
-                if (distance < distance1 && distance < distance2) {
-                    lowerBound = (lowerBound + t) / 2f; // Move to the lower half of the spline
-                    upperBound = (upperBound + t) / 2f; // Move to the upper half of the spline
-                } else if (distance1 < distance2) {
-                    upperBound = t; // Move to the lower half of the spline
-                } else {
-                    lowerBound = t; // Move to the upper half of the spline
-                }
-            }
-            return (lowerBound + upperBound) / 2f; // Return the average of the bounds as the closest t value
+            int minIndex = Math.Max(0, closestIndex - 2);
+            int maxIndex = Math.Min(points.Length - 1, closestIndex + 2);
+            float minT = minIndex / (float)(points.Length - 1);
+            float maxT = maxIndex / (float)(points.Length - 1);
+            minT = MathHelper.Lerp(lowerLimit, upperLimit, minT); // Scale minT to the original range
+            maxT = MathHelper.Lerp(lowerLimit, upperLimit, maxT); // Scale maxT to the original range
+            return FindT2(spline, pos, pointsPerCycle, depth - 1, minT, maxT); // Recursively find the closest t value in the range
         }
     }
 }
