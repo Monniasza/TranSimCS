@@ -304,29 +304,12 @@ namespace TranSimCS
         /// <param name="spline">source spline</param>
         /// <param name="pos">target point to find the nearest T to</param>
         /// <param name="accuracy">number of loop iterations</param>
+        /// <param name="depth">number of iterations to find the closest point</param>
+        /// <param name="lowerLimit">lower limit of the t value</param>
+        /// <param name="upperLimit">upper limit of the t value</param>
+        /// <param name="pointsPerCycle">number of points to generate per cycle</param>
         /// <returns></returns>
-        public static float FindT(Bezier3 spline, Vector3 pos, int accuracy = 40) {
-            /**float lowerBound = 0f;
-            float upperBound = 1f;
-            for(int i = 0; i < accuracy; i++) { // Iterate to find the closest point on the spline
-                float t = (lowerBound + upperBound) / 2f;
-                float distance = Vector3.Distance(spline[t], pos);
-                float distance1 = Vector3.Distance(spline[lowerBound], pos);
-                float distance2 = Vector3.Distance(spline[upperBound], pos);
-                if(distance < distance1 && distance < distance2) {
-                    lowerBound = (lowerBound + t) / 2f; // Move to the lower half of the spline
-                    upperBound = (upperBound + t) / 2f; // Move to the upper half of the spline
-                } else if (distance1 < distance2) {
-                    upperBound = t; // Move to the lower half of the spline
-                } else {
-                    lowerBound = t; // Move to the upper half of the spline
-                }
-            }
-            return (lowerBound + upperBound) / 2f; // Return the average of the bounds as the closest t value*/
-            return FindT2(spline, pos, accuracy, 10, 0f, 1f); // Use the recursive method to find the closest t value
-        }
-
-        public static float FindT2(Bezier3 spline, Vector3 pos, int pointsPerCycle = 40, int depth = 10, float lowerLimit = 0, float upperLimit = 1) {
+        public static float FindT(Bezier3 spline, Vector3 pos, int pointsPerCycle = 20, int depth = 5, float lowerLimit = 0, float upperLimit = 1) {
             if(depth <= 0) {
                 return (lowerLimit + upperLimit) / 2f; // Return the average of the bounds if depth is exhausted
             }
@@ -346,7 +329,7 @@ namespace TranSimCS
             float maxT = maxIndex / (float)(points.Length - 1);
             minT = MathHelper.Lerp(lowerLimit, upperLimit, minT); // Scale minT to the original range
             maxT = MathHelper.Lerp(lowerLimit, upperLimit, maxT); // Scale maxT to the original range
-            return FindT2(spline, pos, pointsPerCycle, depth - 1, minT, maxT); // Recursively find the closest t value in the range
+            return FindT(spline, pos, pointsPerCycle, depth - 1, minT, maxT); // Recursively find the closest t value in the range
         }
     }
 }
