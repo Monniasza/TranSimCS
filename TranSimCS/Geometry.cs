@@ -159,6 +159,21 @@ namespace TranSimCS
         public Vector3 b;
         public Vector3 c;
         public Vector3 d;
+
+        public Bezier3(Vector3 a, Vector3 b, Vector3 c, Vector3 d) {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.d = d;
+        }
+        public Bezier3(Vector3 a) {
+            this.a = a;
+            this.b = a;
+            this.c = a;
+            this.d = a;
+        }
+
+
         public Vector3 this[float t] {
             get {
                 float u = 1 - t;
@@ -227,6 +242,21 @@ namespace TranSimCS
         }
         public static void TriSection(Bezier3 bezier, float startT, float endT, out Bezier3 startSection, out Bezier3 midSection, out Bezier3 endSection) {
             if (startT < 0 || endT > 1 || startT >= endT) throw new ArgumentOutOfRangeException("startT and endT must be in the range [0, 1] and startT < endT.");
+            if(startT == 0 && endT == 1) {
+                startSection = new Bezier3(bezier.a);
+                midSection = bezier;
+                endSection = new Bezier3(bezier.d);
+                return;
+            }else if(startT == 0) {
+                startSection = new Bezier3(bezier.a);
+                Split(bezier, endT, out midSection, out endSection);
+                return;
+            } else if(endT == 1) {
+                Split(bezier, startT, out startSection, out midSection);
+                endSection = new Bezier3(bezier.d);
+                return;
+            }
+
             Split(bezier, startT, out startSection, out midSection);
             Split(midSection, (endT - startT) / (1 - startT), out var finalStart, out endSection);
         }
