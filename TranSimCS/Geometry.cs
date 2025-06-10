@@ -73,18 +73,7 @@ namespace TranSimCS
 
         public static Vector3 calcLineEnd(RoadNode node, int laneIndex)  => calcLineEnd(node.Position, node.PositionOffsets[laneIndex], node.Azimuth);
     
-        public struct Bezier3 {
-            public Vector3 a;
-            public Vector3 b;
-            public Vector3 c;
-            public Vector3 d;
-            public Vector3 this[float t] {
-                get {
-                    float u = 1 - t;
-                    return u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d;
-                }
-            }
-        }
+        
         public static Bezier3 GenerateJoinSpline(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent){
             float tangentLength = Vector3.Distance(startPos, endPos) * 0.5f;
             Vector3 a = startPos;
@@ -94,9 +83,22 @@ namespace TranSimCS
             return new Bezier3 { a = a, b = b, c = c, d = d };
         }
 
+        public static Vector3[] GenerateSplinePoints(Bezier3 spline, int numPoints = 32) {
+            if (numPoints < 2) throw new ArgumentException("numPoints must be at least 2.");
+            Vector3[] points = new Vector3[numPoints];
+            float step = 1f / (numPoints - 1);
+            Bezier3 bezier = spline; // Use the provided Bezier curve
+            for (int i = 0; i < numPoints; i++) {
+                float t = i * step;
+                points[i] = bezier[t]; // Use the Bezier curve to calculate the point at t
+            }
+            return points;
+        }
+
         public static Vector3[] GenerateSplinePoints(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent, int numPoints = 32)
         {
-            if (numPoints < 2) throw new ArgumentException("numPoints must be at least 2.");
+            return GenerateSplinePoints(GenerateJoinSpline(startPos, endPos, startTangent, endTangent), numPoints);
+            /*if (numPoints < 2) throw new ArgumentException("numPoints must be at least 2.");
             Vector3[] points = new Vector3[numPoints];
             float step = 1f / (numPoints - 1);
             Bezier3 bezier = GenerateJoinSpline(startPos, endPos, startTangent, endTangent);
@@ -105,7 +107,7 @@ namespace TranSimCS
                 float t = i * step;
                 points[i] = bezier[t]; // Use the Bezier curve to calculate the point at t
             }
-            return points;
+            return points;*/
         }
 
         public static VertexPositionColorTexture[] GeneratePositionsFromVectors(float xPos, Color color, params Vector3[] vectors)
@@ -160,6 +162,77 @@ namespace TranSimCS
             }
             return false; // No intersection, the triangle is behind the ray
 
+        }
+    }
+    public struct Bezier3 {
+        public Vector3 a;
+        public Vector3 b;
+        public Vector3 c;
+        public Vector3 d;
+        public Vector3 this[float t] {
+            get {
+                float u = 1 - t;
+                return u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d;
+            }
+        }
+
+        public static Bezier3 operator +(Bezier3 first, Bezier3 other) {
+            return new Bezier3 {
+                a = first.a + other.a,
+                b = first.b + other.b,
+                c = first.c + other.c,
+                d = first.d + other.d
+            };
+        }
+        public static Bezier3 operator -(Bezier3 first, Bezier3 other) {
+            return new Bezier3 {
+                a = first.a - other.a,
+                b = first.b - other.b,
+                c = first.c - other.c,
+                d = first.d - other.d
+            };
+        }
+        public static Bezier3 operator *(Bezier3 bezier, float scalar) {
+            return new Bezier3 {
+                a = bezier.a * scalar,
+                b = bezier.b * scalar,
+                c = bezier.c * scalar,
+                d = bezier.d * scalar
+            };
+        }
+        public static Bezier3 operator /(Bezier3 bezier, float scalar) {
+            if (scalar == 0) throw new DivideByZeroException("Cannot divide by zero.");
+            return new Bezier3 {
+                a = bezier.a / scalar,
+                b = bezier.b / scalar,
+                c = bezier.c / scalar,
+                d = bezier.d / scalar
+            };
+        }
+
+        public static Bezier3 SubSection(Bezier3 bezier, float startT, float endT) {
+            if (startT < 0 || endT > 1 || startT >= endT) throw new ArgumentOutOfRangeException("startT and endT must be in the range [0, 1] and startT < endT.");
+            Vector3 a = bezier[startT];
+            Vector3 b = bezier[startT + (endT - startT) / 3]; // Approximate tangent point
+            Vector3 c = bezier[endT - (endT - startT) / 3]; // Approximate tangent point
+            Vector3 d = bezier[endT];
+            return new Bezier3 { a = a, b = b, c = c, d = d };
+        }
+
+        public static float FindT(Bezier3 spline, Vector3 pos) {
+            float dist1 = Vector3.Distance(spline.a, pos);
+            float dist2 = Vector3.Distance(spline.d, pos);
+            if(dist1+dist2 < 0.0001f) {
+                // If the start and end points are very close to the position, return 0.5f
+                return 0.5f;
+            }
+            if (dist1 < dist2) {
+                // If the start point is closer, search towards the end
+                return FindT(SubSection(spline, 0, 0.5f), pos) / 2;
+            } else {
+                // If the end point is closer, search towards the start
+                return FindT(SubSection(spline, 0.5f, 1), pos) / 2 + 0.5f;
+            }
         }
     }
 }

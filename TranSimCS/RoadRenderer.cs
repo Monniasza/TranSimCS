@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
+using static TranSimCS.Geometry;
 
 namespace TranSimCS {
     public static class RoadRenderer {
@@ -51,6 +52,25 @@ namespace TranSimCS {
 
         public static void DrawLane(int laneIndexStart, int laneIndexEnd, LaneConnection connection, IRenderBin renderer, Color? replaceColor = null, float voffset = 0) {
             DrawLaneRange(laneIndexStart, laneIndexStart + 1, laneIndexEnd, laneIndexEnd + 1, connection, renderer, replaceColor, voffset);
+        }
+
+        public static (Bezier3, Bezier3) GenerateSplines(LaneTag laneTag, float voffset = 0) {
+            return GenerateSplines(laneTag.startLaneIndexL, laneTag.startLaneIndexR, laneTag.endLaneIndexL, laneTag.endLaneIndexR, laneTag.road, voffset);
+        }
+
+        public static (Bezier3, Bezier3) GenerateSplines(int laneIndexStart, int laneIndexEnd, LaneConnection connection, float voffset = 0) {
+            return GenerateSplines(laneIndexStart, laneIndexStart + 1, laneIndexEnd, laneIndexEnd + 1, connection, voffset);
+        }
+
+        public static (Bezier3, Bezier3) GenerateSplines(int laneIndexStartL, int laneIndexStartR, int laneIndexEndL, int laneIndexEndR, LaneConnection connection, float voffset = 0) {
+            var offset = new Vector3(0, voffset, 0); // Offset for the lane position
+            var pos1L = Geometry.calcLineEnd2(connection.StartNode, laneIndexStartL);
+            var pos1R = Geometry.calcLineEnd2(connection.StartNode, laneIndexStartR);
+            var pos2L = Geometry.calcLineEnd2(connection.EndNode, laneIndexEndL);
+            var pos2R = Geometry.calcLineEnd2(connection.EndNode, laneIndexEndR);
+            return (
+                Geometry.GenerateJoinSpline(pos1L.Position + offset, pos2L.Position + offset, pos1L.Tangential, pos2L.Tangential),
+                Geometry.GenerateJoinSpline(pos1R.Position + offset, pos2R.Position + offset, pos1R.Tangential, pos2R.Tangential));
         }
 
         public static void DrawLaneRange(int laneIndexStartL, int laneIndexStartR, int laneIndexEndL, int laneIndexEndR, LaneConnection connection, IRenderBin renderer, Color? replaceColor = null, float voffset = 0) {

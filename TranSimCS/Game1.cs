@@ -93,7 +93,9 @@ namespace TranSimCS
         private LaneTag? SelectedLaneTag = null;
         private Vector3? SelectedLanePosition = null; // Position of the selected lane tag, if any
         private float IntersectionDistance = 0.1f; // Distance to check for intersection with the road segments
+        private float SelectedLaneT = 0.5f; // T value for the selected lane tag, if any
         private Ray mouseRay;
+        private Bezier3? selectedLaneBezier; // Bezier curve for the selected lane tag
 
         protected override void Update(GameTime gameTime) {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
@@ -126,6 +128,10 @@ namespace TranSimCS
                         SelectedLaneTag = laneTag; // Set the selected lane tag
                         IntersectionDistance = intersectionDistance; // Update the intersection distance
                         SelectedLanePosition = ray.Position + ray.Direction * intersectionDistance; // Store the position of the selected lane tag
+                        var splines = RoadRenderer.GenerateSplines(laneTag);
+                        Bezier3 averageBezier = (splines.Item1 + splines.Item2) / 2; // Average the two splines
+                        selectedLaneBezier = averageBezier; // Store the selected lane bezier curve
+                        SelectedLaneT = Bezier3.FindT(averageBezier, SelectedLanePosition.Value); // Get the T value for the selected lane position
                     }
                 }                
             }
@@ -157,6 +163,19 @@ namespace TranSimCS
                 // Draw the selected lane tag with a different color
                 RoadRenderer.DrawLaneTag(SelectedLaneTag.Value, renderBin, laneHighlightColor, 0.005f);
                 RoadRenderer.DrawLaneTag(SelectedLaneTag.Value.road.FullSizeTag(), renderBin, roadSegmentHighlightColor, 0.002f);
+            }
+
+            if( SelectedLanePosition.HasValue) {
+                // Draw a marker at the selected lane position
+                Mark(SelectedLanePosition.Value, Color.Red, 0.1f);
+                
+            }
+
+            if (selectedLaneBezier.HasValue) {
+                // Draw the selected lane bezier curve
+                //Draw the position marker for the T value
+                Vector3 positionAtT = selectedLaneBezier.Value[SelectedLaneT];
+                Mark(positionAtT, Color.Blue, 0.1f);
             }
 
             //Red the render helper
