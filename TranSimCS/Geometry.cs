@@ -298,7 +298,6 @@ namespace TranSimCS
         }
 
         /// <summary>
-        /// BROKEN. This method is not working correctly and should be removed.
         /// Finds the t value on the spline that is closest to the given position.
         /// </summary>
         /// <param name="spline">source spline</param>
