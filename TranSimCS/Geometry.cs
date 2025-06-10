@@ -337,5 +337,41 @@ namespace TranSimCS
             else
                 return FindTRecursive(a, pos, accuracy - 1) / 2 + 0.5f;
         }
+
+        public static float FindT2(Bezier3 spline, Vector3 pos, int fsaccuracy = 40, int ssaccuracy = 10) {
+            //First stage: Among the first fsaccuracy points, find the closest point to pos
+            var points = Geometry.GenerateSplinePoints(spline, fsaccuracy);
+            float minDistance = float.MaxValue;
+            int closestIdx = 0;
+            for (int i = 0; i < points.Length; i++) {
+                float t = (float)i / (fsaccuracy - 1);
+                float distance = Vector3.Distance(points[i], pos);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestIdx = i;
+                }
+            }
+
+            //Stage 2: Refine the closest point using a smaller step size
+            var lowerBound = Math.Max(0, closestIdx-1) / (fsaccuracy - 1f);
+            var upperBound = Math.Min(1, closestIdx+1) / (fsaccuracy - 1f);
+            for(int i = 0; i < ssaccuracy; i++) {
+                float t = (lowerBound + upperBound) / 2f;
+                Vector3 pointOnSpline = spline[t];
+                float distance = Vector3.Distance(pointOnSpline, pos);
+                float distance1 = Vector3.Distance(spline[lowerBound], pos);
+                float distance2 = Vector3.Distance(spline[upperBound], pos);
+                
+                if (distance < distance1 && distance < distance2) {
+                    lowerBound = (lowerBound + t) / 2f; // Move to the lower half of the spline
+                    upperBound = (upperBound + t) / 2f; // Move to the upper half of the spline
+                } else if (distance1 < distance2) {
+                    upperBound = t; // Move to the lower half of the spline
+                } else {
+                    lowerBound = t; // Move to the upper half of the spline
+                }
+            }
+            return (lowerBound + upperBound) / 2f; // Return the average of the bounds as the closest t value
+        }
     }
 }
