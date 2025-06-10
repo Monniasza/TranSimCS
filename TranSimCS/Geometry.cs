@@ -174,12 +174,31 @@ namespace TranSimCS
                 d = first.d + other.d
             };
         }
+
+        public static Bezier3 operator +(Bezier3 first, Vector3 other) {
+            return new Bezier3 {
+                a = first.a + other,
+                b = first.b + other,
+                c = first.c + other,
+                d = first.d + other
+            };
+        }
+
         public static Bezier3 operator -(Bezier3 first, Bezier3 other) {
             return new Bezier3 {
                 a = first.a - other.a,
                 b = first.b - other.b,
                 c = first.c - other.c,
                 d = first.d - other.d
+            };
+        }
+
+        public static Bezier3 operator -(Bezier3 first, Vector3 other) {
+            return new Bezier3 {
+                a = first.a - other,
+                b = first.b - other,
+                c = first.c - other,
+                d = first.d - other
             };
         }
         public static Bezier3 operator *(Bezier3 bezier, float scalar) {

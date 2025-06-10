@@ -145,8 +145,8 @@ namespace TranSimCS
         }
 
         private Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
+        private Color laneHighlightColor2 = new Color(0, 192, 255, 100);
         private Color roadSegmentHighlightColor = new Color(0, 128, 255, 100);
-
         protected override void Draw(GameTime gameTime) {
             //Clear the screen to a solid color and clear the render helper
             GraphicsDevice.Clear(Color.ForestGreen);
@@ -163,9 +163,16 @@ namespace TranSimCS
                 // Draw the selected lane tag with a different color
                 RoadRenderer.DrawLaneTag(SelectedLaneTag.Value, renderBin, laneHighlightColor, 0.005f);
                 RoadRenderer.DrawLaneTag(SelectedLaneTag.Value.road.FullSizeTag(), renderBin, roadSegmentHighlightColor, 0.002f);
+
+                var splines = RoadRenderer.GenerateSplines(SelectedLaneTag.Value, 0.007f);
+                var offset = Vector3.Up * 0.007f; // Offset for the lane position
+                Bezier3 leftSubBezier = Bezier3.SubSection(splines.Item1, SelectedLaneT, 1);
+                Bezier3 rightSubBezier = Bezier3.SubSection(splines.Item2, SelectedLaneT, 1);
+                // Draw the left and right bezier curves of the selected lane tag
+                RoadRenderer.DrawBezierStrip(leftSubBezier, rightSubBezier, renderBin, laneHighlightColor2);
             }
 
-            if( SelectedLanePosition.HasValue) {
+            if ( SelectedLanePosition.HasValue) {
                 // Draw a marker at the selected lane position
                 Mark(SelectedLanePosition.Value, Color.Red, 0.5f);
                 
