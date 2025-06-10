@@ -19,15 +19,20 @@ namespace TranSimCS {
             Azimuth = azimuth;
             Elevation = elevation;
         }
-        public Matrix GetViewMatrix() {
-            // Calculate the camera's target position based on its azimuth and elevation
-            Vector3 targetPosition = new Vector3(
+        public Vector3 GetOffsetVector() {
+            // Calculate the offset vector based on the camera's azimuth and elevation
+            return new Vector3(
                 Distance * (float)Math.Sin(Azimuth) * (float)Math.Cos(Elevation),
                 -Distance * (float)Math.Sin(Elevation),
                 Distance * (float)Math.Cos(Azimuth) * (float)Math.Cos(Elevation)
             );
+        }
+        public Matrix GetViewMatrix() {
+            // Calculate the camera's target position based on its azimuth and elevation
+            Vector3 targetPosition = new Vector3(-Position.X, Position.Y, Position.Z);
+            Vector3 eyePosition = targetPosition - GetOffsetVector();
             // Create the view matrix using the camera's position and target position
-            return Matrix.CreateLookAt(Position - targetPosition, Position, Vector3.Up);
+            return Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(eyePosition, targetPosition, Vector3.Up);
         }
     }
 }

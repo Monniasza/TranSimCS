@@ -95,6 +95,7 @@ namespace TranSimCS
         private Ray mouseRay;
         private Bezier3? selectedLaneBezier; // Bezier curve for the selected lane tag
         public Camera camera = new Camera(new Vector3(0, 0, 0), 64, 0, 0.2f); // Initialize the camera
+        public float MotionSpeed = 0.3f; // Speed of camera movement
 
 
         static int scrollWheelValue = 0; // Store the scroll wheel value
@@ -145,7 +146,26 @@ namespace TranSimCS
                 var zoomDelta = MathF.Pow(2f, mouseScrollDelta / -120f); // Adjust zoom factor based on scroll wheel delta
                 camera.Distance *= zoomDelta; // Update camera distance based on zoom factor
             }
-            effect.View = Matrix.CreateScale(-1, 1, 1) * camera.GetViewMatrix(); // Update the view matrix of the effect with the camera's view matrix
+            effect.View = camera.GetViewMatrix(); // Update the view matrix of the effect with the camera's view matrix
+
+            //Hanle camera movement with WASD keys
+            KeyboardState keyboardState = Keyboard.GetState();
+            float sideMotion = 0.0f; // Side motion for camera movement
+            float forwardMotion = 0.0f; // Forward motion for camera movement
+            if (keyboardState.IsKeyDown(Keys.W)) forwardMotion += 1.0f; // Move forward
+            if (keyboardState.IsKeyDown(Keys.S)) forwardMotion -= 1.0f; // Move backward
+            if (keyboardState.IsKeyDown(Keys.A)) sideMotion -= 1.0f; // Move left
+            if (keyboardState.IsKeyDown(Keys.D)) sideMotion += 1.0f; // Move right
+
+            var cameraDirection = camera.GetOffsetVector(); // Get the forward vector of the camera
+            var movement = new Vector3(
+                cameraDirection.X * forwardMotion + cameraDirection.Z * sideMotion,
+                0,
+                cameraDirection.Z * forwardMotion - cameraDirection.X * sideMotion
+                ) * (float)gameTime.ElapsedGameTime.TotalSeconds * MotionSpeed; // Move forward
+            camera.Position += movement; // Update camera position
+
+            Debug.Print($"Camera position: {camera.Position}"); // Print the camera position for debugging
 
             base.Update(gameTime);
         }
