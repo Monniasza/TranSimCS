@@ -44,6 +44,12 @@ namespace TranSimCS {
         Intersection
     }
 
+    /// <summary>
+    /// Represents a connection between two road nodes, including lane indices and specifications.
+    /// </summary>
+    /// <remarks>A <see cref="LaneConnection"/> defines the relationship between two road nodes, specifying
+    /// the lanes involved at each node and their respective indices. It also includes properties for lane
+    /// specifications and rendering-related data, such as meshes for visualization.</remarks>
     public class LaneConnection {
         // Properties to hold the start and end nodes and their respective lane indices
         //Properties for the first node

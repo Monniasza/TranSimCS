@@ -78,11 +78,9 @@ namespace TranSimCS
             effect = new BasicEffect(GraphicsDevice){
                 VertexColorEnabled = true,
                 TextureEnabled = true,
-                //View = Matrix.CreateLookAt(new Vector3(0, 1000, 0), new Vector3(0, 0, -1), Vector3.Backward),
-                //View = Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(new Vector3(0, 256, -256), Vector3.Zero, Vector3.Up),
                 View = Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(new Vector3(0, 32, -64), Vector3.Zero, Vector3.Up),
                 World = Matrix.Identity,
-                Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1f, 1000f),
+                Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1f, 1000000f),
             };
             renderHelper = new RenderHelper(GraphicsDevice, effect);
 
@@ -96,7 +94,10 @@ namespace TranSimCS
         private float SelectedLaneT = 0.5f; // T value for the selected lane tag, if any
         private Ray mouseRay;
         private Bezier3? selectedLaneBezier; // Bezier curve for the selected lane tag
+        public Camera camera = new Camera(new Vector3(0, 0, 0), 64, 0, 0.2f); // Initialize the camera
 
+
+        static int scrollWheelValue = 0; // Store the scroll wheel value
         protected override void Update(GameTime gameTime) {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
@@ -124,7 +125,6 @@ namespace TranSimCS
                     object tag = MeshUtil.RayIntersectMesh(segment.StartMesh, ray, out float intersectionDistance);
                     if (tag is LaneTag laneTag && laneTag.road == segment) {
                         // If the ray intersects, mark the road segment as selected
-                        Debug.WriteLine($"Selected road segment: {segment.StartNode.Name} to {segment.EndNode.Name}");
                         SelectedLaneTag = laneTag; // Set the selected lane tag
                         IntersectionDistance = intersectionDistance; // Update the intersection distance
                         SelectedLanePosition = ray.Position + ray.Direction * intersectionDistance; // Store the position of the selected lane tag
@@ -136,11 +136,17 @@ namespace TranSimCS
                 }                
             }
 
-            LaneConnection road0 = world.RoadSegments[0]; // Example road segment to test the selection logic
-            //Artificially select a lane tag for testing
-            //SelectedLaneTag = new LaneTag(road0, 0, 1, 0, 1, road0.LaneSpec); // Example lane tag
+            //Handle scroll wheel input for zooming in and out
+            if (mouseState.ScrollWheelValue != scrollWheelValue) {
+                // Zoom in or out based on the scroll wheel value
+                int mouseScrollDelta = mouseState.ScrollWheelValue - scrollWheelValue;
+                scrollWheelValue = mouseState.ScrollWheelValue; // Update the scroll wheel value
+                Debug.Print($"Mouse scroll delta: {mouseScrollDelta}");
+                var zoomDelta = MathF.Pow(2f, mouseScrollDelta / -120f); // Adjust zoom factor based on scroll wheel delta
+                camera.Distance *= zoomDelta; // Update camera distance based on zoom factor
+            }
+            effect.View = Matrix.CreateScale(-1, 1, 1) * camera.GetViewMatrix(); // Update the view matrix of the effect with the camera's view matrix
 
-            // TODO: Add your update logic here
             base.Update(gameTime);
         }
 
@@ -166,8 +172,6 @@ namespace TranSimCS
 
                 var splines = RoadRenderer.GenerateSplines(SelectedLaneTag.Value, 0.007f);
                 var offset = Vector3.Up * 0.007f; // Offset for the lane position
-                //Bezier3 leftSubBezier = Bezier3.SubSection(splines.Item1, SelectedLaneT, 1);
-                //Bezier3 rightSubBezier = Bezier3.SubSection(splines.Item2, SelectedLaneT, 1);
                 Bezier3.Split(splines.Item1, SelectedLaneT, out Bezier3 leftSubBezier1, out Bezier3 leftSubBezier2);
                 Bezier3.Split(splines.Item2, SelectedLaneT, out Bezier3 rightSubBezier1, out Bezier3 rightSubBezier2);
                 // Draw the left and right bezier curves of the selected lane tag
