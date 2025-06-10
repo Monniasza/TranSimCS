@@ -98,16 +98,6 @@ namespace TranSimCS
         public static Vector3[] GenerateSplinePoints(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent, int numPoints = 32)
         {
             return GenerateSplinePoints(GenerateJoinSpline(startPos, endPos, startTangent, endTangent), numPoints);
-            /*if (numPoints < 2) throw new ArgumentException("numPoints must be at least 2.");
-            Vector3[] points = new Vector3[numPoints];
-            float step = 1f / (numPoints - 1);
-            Bezier3 bezier = GenerateJoinSpline(startPos, endPos, startTangent, endTangent);
-            for (int i = 0; i < numPoints; i++)
-            {
-                float t = i * step;
-                points[i] = bezier[t]; // Use the Bezier curve to calculate the point at t
-            }
-            return points;*/
         }
 
         public static VertexPositionColorTexture[] GeneratePositionsFromVectors(float xPos, Color color, params Vector3[] vectors)
@@ -210,11 +200,19 @@ namespace TranSimCS
             };
         }
 
-        public static Bezier3 SubSection(Bezier3 bezier, float startT, float endT) {
+        /*public static Bezier3 SubSection(Bezier3 bezier, float startT, float endT) {
             if (startT < 0 || endT > 1 || startT >= endT) throw new ArgumentOutOfRangeException("startT and endT must be in the range [0, 1] and startT < endT.");
             Vector3 a = bezier[startT];
             Vector3 b = bezier[startT + (endT - startT) / 3]; // Approximate tangent point
             Vector3 c = bezier[endT - (endT - startT) / 3]; // Approximate tangent point
+            Vector3 d = bezier[endT];
+            return new Bezier3 { a = a, b = b, c = c, d = d };
+        }*/
+        public static Bezier3 SubSection(Bezier3 bezier, float startT, float endT) {
+            if (startT < 0 || endT > 1 || startT >= endT) throw new ArgumentOutOfRangeException("startT and endT must be in the range [0, 1] and startT < endT.");
+            Vector3 a = bezier[startT];
+            Vector3 b = Vector3.Lerp(bezier[startT], bezier[endT], (startT + endT) / 2);
+            Vector3 c = Vector3.Lerp(bezier[startT], bezier[endT], (startT + endT) / 2);
             Vector3 d = bezier[endT];
             return new Bezier3 { a = a, b = b, c = c, d = d };
         }
@@ -224,9 +222,13 @@ namespace TranSimCS
             float upperBound = 1f;
             for(int i = 0; i < accuracy; i++) { // Iterate to find the closest point on the spline
                 float t = (lowerBound + upperBound) / 2f;
+                float distance = Vector3.Distance(spline[t], pos);
                 float distance1 = Vector3.Distance(spline[lowerBound], pos);
                 float distance2 = Vector3.Distance(spline[upperBound], pos);
-                if (distance1 < distance2) {
+                if(distance < distance1 && distance < distance2) {
+                    lowerBound = (lowerBound + t) / 2f; // Move to the lower half of the spline
+                    upperBound = (upperBound + t) / 2f; // Move to the upper half of the spline
+                } else if (distance1 < distance2) {
                     upperBound = t; // Move to the lower half of the spline
                 } else {
                     lowerBound = t; // Move to the upper half of the spline
