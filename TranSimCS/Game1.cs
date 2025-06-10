@@ -167,7 +167,7 @@ namespace TranSimCS
 
             if( SelectedLanePosition.HasValue) {
                 // Draw a marker at the selected lane position
-                Mark(SelectedLanePosition.Value, Color.Red, 0.1f);
+                Mark(SelectedLanePosition.Value, Color.Red, 0.5f);
                 
             }
 
@@ -175,7 +175,7 @@ namespace TranSimCS
                 // Draw the selected lane bezier curve
                 //Draw the position marker for the T value
                 Vector3 positionAtT = selectedLaneBezier.Value[SelectedLaneT];
-                Mark(positionAtT, Color.Blue, 0.1f);
+                Mark(positionAtT, Color.Blue, 0.5f);
             }
 
             //Red the render helper

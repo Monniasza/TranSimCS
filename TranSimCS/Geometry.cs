@@ -219,20 +219,20 @@ namespace TranSimCS
             return new Bezier3 { a = a, b = b, c = c, d = d };
         }
 
-        public static float FindT(Bezier3 spline, Vector3 pos) {
-            float dist1 = Vector3.Distance(spline.a, pos);
-            float dist2 = Vector3.Distance(spline.d, pos);
-            if(dist1+dist2 < 0.0001f) {
-                // If the start and end points are very close to the position, return 0.5f
-                return 0.5f;
+        public static float FindT(Bezier3 spline, Vector3 pos, int accuracy = 40) {
+            float lowerBound = 0f;
+            float upperBound = 1f;
+            for(int i = 0; i < accuracy; i++) { // Iterate to find the closest point on the spline
+                float t = (lowerBound + upperBound) / 2f;
+                float distance1 = Vector3.Distance(spline[lowerBound], pos);
+                float distance2 = Vector3.Distance(spline[upperBound], pos);
+                if (distance1 < distance2) {
+                    upperBound = t; // Move to the lower half of the spline
+                } else {
+                    lowerBound = t; // Move to the upper half of the spline
+                }
             }
-            if (dist1 < dist2) {
-                // If the start point is closer, search towards the end
-                return FindT(SubSection(spline, 0, 0.5f), pos) / 2;
-            } else {
-                // If the end point is closer, search towards the start
-                return FindT(SubSection(spline, 0.5f, 1), pos) / 2 + 0.5f;
-            }
+            return (lowerBound + upperBound) / 2f; // Return the average of the bounds as the closest t value
         }
     }
 }
