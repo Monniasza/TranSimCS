@@ -99,7 +99,6 @@ namespace TranSimCS
             if (numPoints < 2) throw new ArgumentException("numPoints must be at least 2.");
             Vector3[] points = new Vector3[numPoints];
             float step = 1f / (numPoints - 1);
-            float tangentLength = Vector3.Distance(startPos, endPos) * 2;
             Bezier3 bezier = GenerateJoinSpline(startPos, endPos, startTangent, endTangent);
             for (int i = 0; i < numPoints; i++)
             {

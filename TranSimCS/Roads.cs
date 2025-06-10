@@ -94,6 +94,7 @@ namespace TranSimCS {
     public struct LaneSpec {
         public Color Color { get; set; } // Color of the lane
         public VehicleTypes VehicleTypes { get; set; } // Types of vehicles allowed in the lane
+        public LaneFlags Flags { get; set; } // Flags for additional lane properties
         // Constructor to initialize the LaneSpec with lane index, width, and offset
         public LaneSpec(Color color, VehicleTypes vehicleTypes) {
             Color = color;
@@ -104,7 +105,6 @@ namespace TranSimCS {
         public static LaneSpec Default => new(Color.Gray, VehicleTypes.Vehicles);
         public static LaneSpec Bicycle => new(Color.Green, VehicleTypes.Bicycle);
         public static LaneSpec Pedestrian => new(Color.Blue, VehicleTypes.Pedestrian);
-        public static LaneSpec Parking => new(Color.Yellow, VehicleTypes.Parking);
         public static LaneSpec Bus => new(Color.Orange, VehicleTypes.Bus);
         public static LaneSpec Truck => new(Color.Brown, VehicleTypes.Truck);
         public static LaneSpec Car => new(Color.Red, VehicleTypes.Car);
@@ -137,7 +137,6 @@ namespace TranSimCS {
         Bus = 4,
         Bicycle = 8,
         Pedestrian = 16,
-        Parking = 32, // Parking spaces
 
         // Composite types for convenience  
         Path = Bicycle | Pedestrian,
@@ -145,5 +144,21 @@ namespace TranSimCS {
         Vehicles = MotorVehicles | Bicycle, // All vehicles except parking
         Transport = Vehicles | Pedestrian, // All traffic
         All = -1 // All vehicle and parking types
+    }
+
+    [Flags]
+    public enum LaneFlags {
+        None = 0,
+        Forward = 1, // Lane is for forward traffic
+        Backward = 2, // Lane is for backward traffic
+        LeftTurn = 4, // Lane is for left turns
+        RightTurn = 8, // Lane is for right turns
+        Straight = 16, // Lane is for straight traffic
+        SwitchLeft = 32, // Lane is for switching to the left
+        SwitchRight = 64,
+        Parking = 128, // Lane is for parking
+        Median = 256, // Lane is a median
+        Planting = 512, // Lane is for planting
+        Platform = 1024, // Lane is a platform (e.g., for buses or trams)
     }
 }
