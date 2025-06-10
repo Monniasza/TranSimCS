@@ -87,13 +87,9 @@ namespace TranSimCS
             //Load the road texture
             roadTexture = Content.Load<Texture2D>("laneTex");
         }
+        public RoadSelection? SelectedRoadSelection { get; private set; } = null; // Store the selected road selection
+        public Ray mouseRay {get; private set; } // Ray from the mouse position in the world
 
-        private LaneTag? SelectedLaneTag = null;
-        private Vector3? SelectedLanePosition = null; // Position of the selected lane tag, if any
-        private float IntersectionDistance = 0.1f; // Distance to check for intersection with the road segments
-        private float SelectedLaneT = 0.5f; // T value for the selected lane tag, if any
-        private Ray mouseRay;
-        private Bezier3? selectedLaneBezier; // Bezier curve for the selected lane tag
         public Camera camera = new Camera(new Vector3(0, 0, 0), 64, 0, 0.2f); // Initialize the camera
         public float MotionSpeed = 0.3f; // Speed of camera movement
         public float RotationSpeed = 1f; // Speed of camera rotation
@@ -112,32 +108,22 @@ namespace TranSimCS
             float secondsElapsed = (float)gameTime.ElapsedGameTime.TotalSeconds; // Get the elapsed time in seconds
 
             // Unproject screen coordinates to near and far points in 3D space
-
             Vector3 nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), effect.Projection, effect.View, effect.World);
             Vector3 farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), effect.Projection, effect.View, effect.World);
             Ray ray = new(nearPoint, Vector3.Normalize(farPoint - nearPoint));
             mouseRay = ray; // Store the ray for later use
 
             //Reset the selected lane tag and position
-            SelectedLaneTag = null; // Reset the selected lane tag
-            SelectedLanePosition = null; // Reset the selected lane position
-            IntersectionDistance = float.MaxValue; // Reset the intersection distance
+            SelectedRoadSelection = null; // Reset the selected road selection
 
-            //Road selector logic can be added here
+            //Road selection logic
             foreach (var road in world.RoadSegments) {
                 //Select the road segment if the mouse is over it
                 foreach (var segment in world.RoadSegments) {
                     // Check if the ray intersects with the road segment
                     object tag = MeshUtil.RayIntersectMesh(segment.StartMesh, ray, out float intersectionDistance);
                     if (tag is LaneTag laneTag && laneTag.road == segment) {
-                        // If the ray intersects, mark the road segment as selected
-                        SelectedLaneTag = laneTag; // Set the selected lane tag
-                        IntersectionDistance = intersectionDistance; // Update the intersection distance
-                        SelectedLanePosition = ray.Position + ray.Direction * intersectionDistance; // Store the position of the selected lane tag
-                        var splines = RoadRenderer.GenerateSplines(laneTag);
-                        Bezier3 averageBezier = (splines.Item1 + splines.Item2) / 2; // Average the two splines
-                        selectedLaneBezier = averageBezier; // Store the selected lane bezier curve
-                        SelectedLaneT = Bezier3.FindT(averageBezier, SelectedLanePosition.Value); // Get the T value for the selected lane position
+                        SelectedRoadSelection = new RoadSelection(laneTag, intersectionDistance, ray); // Create a new road selection with the lane tag and intersection distance
                     }
                 }                
             }
@@ -163,7 +149,6 @@ namespace TranSimCS
             if (keyboardState.IsKeyDown(Keys.S)) forwardMotion -= 1.0f; // Move backward
             if (keyboardState.IsKeyDown(Keys.A)) sideMotion -= 1.0f; // Move left
             if (keyboardState.IsKeyDown(Keys.D)) sideMotion += 1.0f; // Move right
-
             var motionElementX = camera.Distance * MathF.Sin(camera.Azimuth);
             var motionElementZ = camera.Distance * MathF.Cos(camera.Azimuth); // Calculate the motion elements based on the camera's azimuth
             var motionElementY = camera.Distance; // Calculate the vertical motion element based on the camera's elevation
@@ -209,29 +194,21 @@ namespace TranSimCS
             DrawRoadSegments(world.RoadSegments, (connection) => renderBin.DrawModel(connection.StartMesh));
 
             //If a road segment is selected, draw the selection
-            if (SelectedLaneTag != null) {
+            var roadSelection = SelectedRoadSelection;
+            if(roadSelection != null) {
                 // Draw the selected lane tag with a different color
-                RoadRenderer.DrawLaneTag(SelectedLaneTag.Value, renderBin, laneHighlightColor, 0.005f);
-                RoadRenderer.DrawLaneTag(SelectedLaneTag.Value.road.FullSizeTag(), renderBin, roadSegmentHighlightColor, 0.002f);
-
-                var splines = RoadRenderer.GenerateSplines(SelectedLaneTag.Value, 0.007f);
+                RoadRenderer.DrawLaneTag(roadSelection.SelectedLaneTag, renderBin, laneHighlightColor, 0.005f);
+                RoadRenderer.DrawLaneTag(roadSelection.SelectedLaneTag.road.FullSizeTag(), renderBin, roadSegmentHighlightColor, 0.002f);
+                var splines = RoadRenderer.GenerateSplines(roadSelection.SelectedLaneTag, 0.007f);
                 var offset = Vector3.Up * 0.007f; // Offset for the lane position
-                Bezier3.Split(splines.Item1, SelectedLaneT, out Bezier3 leftSubBezier1, out Bezier3 leftSubBezier2);
-                Bezier3.Split(splines.Item2, SelectedLaneT, out Bezier3 rightSubBezier1, out Bezier3 rightSubBezier2);
+                Bezier3.Split(splines.Item1, roadSelection.SelectedLaneT, out Bezier3 leftSubBezier1, out Bezier3 leftSubBezier2);
+                Bezier3.Split(splines.Item2, roadSelection.SelectedLaneT, out Bezier3 rightSubBezier1, out Bezier3 rightSubBezier2);
                 // Draw the left and right bezier curves of the selected lane tag
                 RoadRenderer.DrawBezierStrip(leftSubBezier2, rightSubBezier2, renderBin, laneHighlightColor2);
-            }
-
-            if ( SelectedLanePosition.HasValue) {
-                // Draw a marker at the selected lane position
-                Mark(SelectedLanePosition.Value, Color.Red, 0.5f);
-                
-            }
-
-            if (selectedLaneBezier.HasValue) {
-                // Draw the selected lane bezier curve
-                //Draw the position marker for the T value
-                Vector3 positionAtT = selectedLaneBezier.Value[SelectedLaneT];
+                // Draw the position marker for the T value
+                Vector3 positionAtT = roadSelection.selectedLaneBezier.Value[roadSelection.SelectedLaneT];
+                var SelectedLanePosition = roadSelection.SelectedLanePosition;
+                Mark(SelectedLanePosition, Color.Red, 0.5f);
                 Mark(positionAtT, Color.Blue, 0.5f);
             }
 
