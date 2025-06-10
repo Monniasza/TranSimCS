@@ -99,5 +99,16 @@ namespace TranSimCS {
             renderer.DrawStrip(strip);
             renderer.AddTagsToLastTriangles(triangleCount, tag); // Add tags to the last triangles in the strip
         }
+
+        public static void DrawBezierStrip(Bezier3 lbound, Bezier3 rbound, IRenderBin renderer, Color color) {
+            Vector3[] leftBorder = Geometry.GenerateSplinePoints(lbound, 10);
+            Vector3[] rightBorder = Geometry.GenerateSplinePoints(rbound, 10);
+
+            var leftBorder2 = Geometry.GeneratePositionsFromVectors(0, color, leftBorder);
+            var rightBorder2 = Geometry.GeneratePositionsFromVectors(1, color, rightBorder);
+            var strip = Geometry.WeaveStrip(leftBorder2, rightBorder2);
+            var triangleCount = strip.Length - 2; // Each triangle is formed by 3 vertices, so the number of triangles is the number of vertices minus 2
+            renderer.DrawStrip(strip);
+        }
     }
 }

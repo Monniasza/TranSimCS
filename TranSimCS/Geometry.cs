@@ -217,6 +217,32 @@ namespace TranSimCS
             return new Bezier3 { a = a, b = b, c = c, d = d };
         }
 
+        public static void SplitInHalf(Bezier3 source, out Bezier3 start, out Bezier3 end) {
+            var ab = (source.a + source.b) / 2;
+            var bc = (source.b + source.c) / 2;
+            var cd = (source.c + source.d) / 2;
+            var abc = (ab + bc) / 2;
+            var bcd = (bc + cd) / 2;
+            var abcd = (abc + bcd) / 2;
+
+            start.a = source.a;
+            start.b = ab;
+            start.c = abc;
+            start.d = abcd;
+            end.a = abcd;
+            end.b = bcd;
+            end.c = cd;
+            end.d = source.d;
+        }
+
+        /// <summary>
+        /// BROKEN. This method is not working correctly and should be removed.
+        /// Finds the t value on the spline that is closest to the given position.
+        /// </summary>
+        /// <param name="spline">source spline</param>
+        /// <param name="pos">target point to find the nearest T to</param>
+        /// <param name="accuracy">number of loop iterations</param>
+        /// <returns></returns>
         public static float FindT(Bezier3 spline, Vector3 pos, int accuracy = 40) {
             float lowerBound = 0f;
             float upperBound = 1f;
@@ -235,6 +261,19 @@ namespace TranSimCS
                 }
             }
             return (lowerBound + upperBound) / 2f; // Return the average of the bounds as the closest t value
+        }
+
+        public static float FindTRecursive(Bezier3 spline, Vector3 pos, int accuracy = 40) {
+            if (accuracy <= 0) return 0.5f;
+
+            Bezier3.SplitInHalf(spline, out var a, out var b);
+            float distance1 = Vector3.Distance(spline.a, pos);
+            float distance2 = Vector3.Distance(spline.d, pos);
+
+            if (distance1 < distance2)
+                return FindTRecursive(a, pos, accuracy - 1) / 2;
+            else
+                return FindTRecursive(a, pos, accuracy - 1) / 2 + 0.5f;
         }
     }
 }
