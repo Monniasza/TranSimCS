@@ -166,10 +166,12 @@ namespace TranSimCS
 
                 var splines = RoadRenderer.GenerateSplines(SelectedLaneTag.Value, 0.007f);
                 var offset = Vector3.Up * 0.007f; // Offset for the lane position
-                Bezier3 leftSubBezier = Bezier3.SubSection(splines.Item1, SelectedLaneT, 1);
-                Bezier3 rightSubBezier = Bezier3.SubSection(splines.Item2, SelectedLaneT, 1);
+                //Bezier3 leftSubBezier = Bezier3.SubSection(splines.Item1, SelectedLaneT, 1);
+                //Bezier3 rightSubBezier = Bezier3.SubSection(splines.Item2, SelectedLaneT, 1);
+                Bezier3.Split(splines.Item1, SelectedLaneT, out Bezier3 leftSubBezier1, out Bezier3 leftSubBezier2);
+                Bezier3.Split(splines.Item2, SelectedLaneT, out Bezier3 rightSubBezier1, out Bezier3 rightSubBezier2);
                 // Draw the left and right bezier curves of the selected lane tag
-                RoadRenderer.DrawBezierStrip(leftSubBezier, rightSubBezier, renderBin, laneHighlightColor2);
+                RoadRenderer.DrawBezierStrip(leftSubBezier2, rightSubBezier2, renderBin, laneHighlightColor2);
             }
 
             if ( SelectedLanePosition.HasValue) {

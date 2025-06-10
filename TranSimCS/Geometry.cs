@@ -219,21 +219,34 @@ namespace TranSimCS
             };
         }
 
-        /*public static Bezier3 SubSection(Bezier3 bezier, float startT, float endT) {
-            if (startT < 0 || endT > 1 || startT >= endT) throw new ArgumentOutOfRangeException("startT and endT must be in the range [0, 1] and startT < endT.");
-            Vector3 a = bezier[startT];
-            Vector3 b = bezier[startT + (endT - startT) / 3]; // Approximate tangent point
-            Vector3 c = bezier[endT - (endT - startT) / 3]; // Approximate tangent point
-            Vector3 d = bezier[endT];
-            return new Bezier3 { a = a, b = b, c = c, d = d };
-        }*/
         public static Bezier3 SubSection(Bezier3 bezier, float startT, float endT) {
             if (startT < 0 || endT > 1 || startT >= endT) throw new ArgumentOutOfRangeException("startT and endT must be in the range [0, 1] and startT < endT.");
-            Vector3 a = bezier[startT];
-            Vector3 b = Vector3.Lerp(bezier[startT], bezier[endT], (startT + endT) / 2);
-            Vector3 c = Vector3.Lerp(bezier[startT], bezier[endT], (startT + endT) / 2);
-            Vector3 d = bezier[endT];
-            return new Bezier3 { a = a, b = b, c = c, d = d };
+            Split(bezier, startT, out var beginningSection, out var endSection);
+            Split(endSection, (endT - startT) / (1 - startT), out var finalStart, out var finalEnd);
+            return finalStart;
+        }
+        public static void TriSection(Bezier3 bezier, float startT, float endT, out Bezier3 startSection, out Bezier3 midSection, out Bezier3 endSection) {
+            if (startT < 0 || endT > 1 || startT >= endT) throw new ArgumentOutOfRangeException("startT and endT must be in the range [0, 1] and startT < endT.");
+            Split(bezier, startT, out startSection, out midSection);
+            Split(midSection, (endT - startT) / (1 - startT), out var finalStart, out endSection);
+        }
+
+        public static void Split(Bezier3 source, float t, out Bezier3 start, out Bezier3 end) {
+            var ab = Vector3.Lerp(source.a, source.b, t);
+            var bc = Vector3.Lerp(source.b, source.c, t);
+            var cd = Vector3.Lerp(source.c, source.d, t);
+            var abc = Vector3.Lerp(ab, bc, t);
+            var bcd = Vector3.Lerp(bc, cd, t);
+            var abcd = Vector3.Lerp(abc, bcd, t);
+
+            start.a = source.a;
+            start.b = ab;
+            start.c = abc;
+            start.d = abcd;
+            end.a = abcd;
+            end.b = bcd;
+            end.c = cd;
+            end.d = source.d;
         }
 
         public static void SplitInHalf(Bezier3 source, out Bezier3 start, out Bezier3 end) {
