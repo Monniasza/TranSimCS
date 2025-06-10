@@ -96,18 +96,23 @@ namespace TranSimCS
         private Bezier3? selectedLaneBezier; // Bezier curve for the selected lane tag
         public Camera camera = new Camera(new Vector3(0, 0, 0), 64, 0, 0.2f); // Initialize the camera
         public float MotionSpeed = 0.3f; // Speed of camera movement
-
+        public float RotationSpeed = 1f; // Speed of camera rotation
 
         static int scrollWheelValue = 0; // Store the scroll wheel value
         protected override void Update(GameTime gameTime) {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // Unproject screen coordinates to near and far points in 3D space
+            //Pre-get the necessary values for the mouse ray and camera
             MouseState mouseState = Mouse.GetState();
             int mouseX = mouseState.X;
             int mouseY = mouseState.Y;
             Viewport viewport = GraphicsDevice.Viewport;
+            KeyboardState keyboardState = Keyboard.GetState();
+            float secondsElapsed = (float)gameTime.ElapsedGameTime.TotalSeconds; // Get the elapsed time in seconds
+
+            // Unproject screen coordinates to near and far points in 3D space
+
             Vector3 nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), effect.Projection, effect.View, effect.World);
             Vector3 farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), effect.Projection, effect.View, effect.World);
             Ray ray = new(nearPoint, Vector3.Normalize(farPoint - nearPoint));
@@ -148,22 +153,41 @@ namespace TranSimCS
             }
             effect.View = camera.GetViewMatrix(); // Update the view matrix of the effect with the camera's view matrix
 
-            //Hanle camera movement with WASD keys
-            KeyboardState keyboardState = Keyboard.GetState();
+            //Handle camera movement with WASD keys
             float sideMotion = 0.0f; // Side motion for camera movement
             float forwardMotion = 0.0f; // Forward motion for camera movement
+            float upMotion = 0.0f; // Up motion for camera movement
+            if (keyboardState.IsKeyDown(Keys.Space)) upMotion += 1.0f; // Move up
+            if (keyboardState.IsKeyDown(Keys.LeftShift)) upMotion -= 1.0f; // Move down
             if (keyboardState.IsKeyDown(Keys.W)) forwardMotion += 1.0f; // Move forward
             if (keyboardState.IsKeyDown(Keys.S)) forwardMotion -= 1.0f; // Move backward
             if (keyboardState.IsKeyDown(Keys.A)) sideMotion -= 1.0f; // Move left
             if (keyboardState.IsKeyDown(Keys.D)) sideMotion += 1.0f; // Move right
 
+            var motionElementX = camera.Distance * MathF.Sin(camera.Azimuth);
+            var motionElementZ = camera.Distance * MathF.Cos(camera.Azimuth); // Calculate the motion elements based on the camera's azimuth
+            var motionElementY = camera.Distance; // Calculate the vertical motion element based on the camera's elevation
             var cameraDirection = camera.GetOffsetVector(); // Get the forward vector of the camera
             var movement = new Vector3(
-                cameraDirection.X * forwardMotion + cameraDirection.Z * sideMotion,
-                0,
-                cameraDirection.Z * forwardMotion - cameraDirection.X * sideMotion
-                ) * (float)gameTime.ElapsedGameTime.TotalSeconds * MotionSpeed; // Move forward
+                motionElementX * forwardMotion + motionElementZ * sideMotion,
+                upMotion * motionElementY,
+                motionElementZ * forwardMotion - motionElementX * sideMotion
+                ) * secondsElapsed * MotionSpeed; // Move forward
             camera.Position += movement; // Update camera position
+
+            //Handle camera rotation with arrow keys
+            float azimuthMovement = 0.0f; // Movement for camera rotation
+            float elevationMovement = 0.0f; // Movement for camera elevation
+            if (keyboardState.IsKeyDown(Keys.Left)) azimuthMovement -= 1.0f; // Rotate left
+            if (keyboardState.IsKeyDown(Keys.Right)) azimuthMovement += 1.0f; // Rotate right
+            if (keyboardState.IsKeyDown(Keys.Up)) elevationMovement += 1f; // Rotate up
+            if (keyboardState.IsKeyDown(Keys.Down)) elevationMovement -= 1f; // Rotate down
+            float newAzimuth = camera.Azimuth + (azimuthMovement * RotationSpeed * secondsElapsed); // New azimuth for camera rotation
+            float newElevation = camera.Elevation + (elevationMovement * RotationSpeed * secondsElapsed); // New elevation for camera rotation
+            // Clamp the elevation to prevent flipping the camera upside down
+            newElevation = MathHelper.Clamp(newElevation, -MathF.PI / 2 + 0.01f, MathF.PI / 2 - 0.01f);
+            camera.Azimuth = newAzimuth; // Update camera azimuth
+            camera.Elevation = newElevation; // Update camera elevation
 
             Debug.Print($"Camera position: {camera.Position}"); // Print the camera position for debugging
 

@@ -27,10 +27,18 @@ namespace TranSimCS {
                 Distance * (float)Math.Cos(Azimuth) * (float)Math.Cos(Elevation)
             );
         }
+        public static void FlipX(ref Vector3 position) {
+            // Flip the X coordinate of the position vector
+            position.X = -position.X;
+        }
+
         public Matrix GetViewMatrix() {
             // Calculate the camera's target position based on its azimuth and elevation
-            Vector3 targetPosition = new Vector3(-Position.X, Position.Y, Position.Z);
+            Vector3 targetPosition = Position;
             Vector3 eyePosition = targetPosition - GetOffsetVector();
+            // Flip the X coordinate of the eye position to match the camera's orientation
+            FlipX(ref eyePosition);
+            FlipX(ref targetPosition);
             // Create the view matrix using the camera's position and target position
             return Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(eyePosition, targetPosition, Vector3.Up);
         }
