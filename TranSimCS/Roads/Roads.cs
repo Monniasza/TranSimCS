@@ -34,6 +34,13 @@ namespace TranSimCS.Roads {
                 // Move the right lanes to the left by one spot
                 if (halfSpec.LeftIndex > laneIdx) halfSpec.LeftIndex -= 1;
                 if (halfSpec.RightIndex > laneIdx) halfSpec.RightIndex -= 1;
+
+                //If the connection is to be narrowed to 0 lanes, we need to remove it
+                if (halfSpec.LeftIndex == halfSpec.RightIndex) {
+                    world.RoadSegments.Remove(segment); // Remove the segment from the world
+                    continue; // Skip further processing for this segment
+                }
+
                 spec = spec.SetHalf(half, halfSpec); // Update the segment specification with the modified connection specification
                 segment.Spec = spec; // Update the segment specification
                 segment.InvalidateMesh(); // Invalidate the mesh of the segment to force a redraw

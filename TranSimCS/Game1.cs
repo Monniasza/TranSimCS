@@ -183,9 +183,9 @@ namespace TranSimCS
                 // If a road segment is selected, remove it from the world
                 if (MouseOverRoad != null) {
                     Debug.Print($"Demolishing road segment: {MouseOverRoad.SelectedLaneTag.road}");
+                    var tbremove = MouseOverRoad.SelectedLaneTag.road; // Get the road segment to remove
                     MouseOverRoad = null; // Reset the mouse over road selection
-                    world.RoadSegments.Remove(MouseOverRoad.SelectedLaneTag.road); // Remove the selected road segment from the world
-                    
+                    world.RoadSegments.Remove(tbremove); // Remove the selected road segment from the world
                 }
             }
             //Demolish the lane on a selected node if the right mouse button is clicked
@@ -200,7 +200,6 @@ namespace TranSimCS
                     Debug.Print($"Demolishing lane: {laneNum} of segment {selectedRoad.StartNode.Id} to {selectedRoad.EndNode.Id}");
                     MouseOverRoad = null; // Reset the mouse over road selection
                     Roads.Roads.RemoveLane(laneNum, selectedNode, 0); // Remove the lane from the selected node
-                    
                 }
             }
 

@@ -23,10 +23,21 @@ namespace TranSimCS
             // Handle changes to the road segments collection if needed
             // For example, you could log changes or update UI elements
             foreach (var segment in e.NewItems?.OfType<LaneConnection>() ?? Enumerable.Empty<LaneConnection>())
-                segment.SpecChanged += RoadSegmentChanged; // Subscribe to changes in the road segment
+                HandleAddRoadSegment(segment); // Handle the addition of a new road segment
             foreach (var segment in e.OldItems?.OfType<LaneConnection>() ?? Enumerable.Empty<LaneConnection>())
-                segment.SpecChanged -= RoadSegmentChanged; // Unsubscribe from changes in the road segment
+                HandleRemoveRoadSegment(segment); // Handle the removal of a road segment
         }
+        private void HandleAddRoadSegment(LaneConnection segment) {
+            // Handle the addition of a new road segment
+            segment.SpecChanged += RoadSegmentChanged; // Subscribe to changes in the road segment
+        }
+        private void HandleRemoveRoadSegment(LaneConnection segment) {
+            // Handle the removal of a road segment
+            segment.SpecChanged -= RoadSegmentChanged; // Unsubscribe from changes in the road segment                                        //Remove node connections that are no longer valid
+            segment.StartNode = null; // Clear the start node reference
+            segment.EndNode = null; // Clear the end node reference
+        }
+
         private void RoadNodes_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) {
             // Handle changes to the road nodes collection if needed
             // For example, you could log changes or update UI elements
@@ -38,7 +49,6 @@ namespace TranSimCS
         private void RoadSegmentChanged(object sender, LaneConnectionChangedEventArgs e) {
             // Handle changes to a specific road segment
             // For example, you could log changes or update UI elements
-            
             
         }
         private void RoadNodePositionChanged(object sender, NodePositionChangedEventArgs e) {

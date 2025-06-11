@@ -197,7 +197,7 @@ namespace TranSimCS.Roads {
 
             //Validate the new specification before changing it
             ArgumentNullException.ThrowIfNull(value, nameof(value)); // Ensure the new specification is not null
-            if(value.StartNode == value.EndNode) // Ensure the start and end nodes are not the same
+            if(value.StartNode != null && value.EndNode != null && value.StartNode == value.EndNode) // Ensure the start and end nodes are not the same
             throw new ArgumentException("Start and end nodes cannot be the same.", nameof(value));
 
             //Rebuild the indexes for the lane connection
