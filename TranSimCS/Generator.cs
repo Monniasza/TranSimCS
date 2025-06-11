@@ -12,10 +12,7 @@ namespace TranSimCS
     {
         public static void GenerateLanes(int count, RoadNode node, float laneWidth = 3.5f, float offset = 0)
         {
-            if (count < 1)
-            {
-                throw new ArgumentException("Count must be at least 1.", nameof(count));
-            }
+            if (count < 1)  throw new ArgumentException("Count must be at least 1.", nameof(count));
             // Clear existing position offsets
             node.PositionOffsets.Clear();
             // Generate lane positions based on the count and lane width

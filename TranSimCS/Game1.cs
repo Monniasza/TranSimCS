@@ -91,7 +91,6 @@ namespace TranSimCS
         public RoadSelection? MouseOverRoad { get; private set; } = null; // Store the selected road selection
         public RoadSelection? SelectedRoadSelection { get; set; } = null; // Store the selected road selection
 
-
         public Ray MouseRay {get; private set; } // Ray from the mouse position in the world
 
         public Camera camera = new Camera(new Vector3(0, 0, 0), 64, 0, 0.2f); // Initialize the camera
