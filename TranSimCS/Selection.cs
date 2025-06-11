@@ -15,6 +15,7 @@ namespace TranSimCS {
         public float SelectedLaneT = 0.5f; // T value for the selected lane tag, if any
         public Ray mouseRay; // Ray from the mouse position in the world, used for intersection calculations
         public Bezier3? selectedLaneBezier; // Bezier curve for the selected lane tag
+        public SegmentHalf SelectedRoadHalf; // The road half that the selected lane tag belongs to
 
         public RoadSelection(LaneTag laneTag, float intersectionDistance, Ray mouseRay) {
             MouseRay = mouseRay;
@@ -25,6 +26,7 @@ namespace TranSimCS {
             Bezier3 averageBezier = (splines.Item1 + splines.Item2) / 2; // Average the two splines
             selectedLaneBezier = averageBezier; // Store the selected lane bezier curve
             SelectedLaneT = Bezier3.FindT(averageBezier, SelectedLanePosition); // Get the T value for the selected lane position
+            SelectedRoadHalf = SelectedLaneT < 0.5f ? SegmentHalf.Start : SegmentHalf.End; // Determine which half of the road the selected lane tag belongs to
         }
     }
 }

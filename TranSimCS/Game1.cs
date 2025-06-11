@@ -98,6 +98,7 @@ namespace TranSimCS
         public float RotationSpeed = 1f; // Speed of camera rotation
 
         static int scrollWheelValue = 0; // Store the scroll wheel value
+        public MouseState LastMouseState { get; private set; } // Store the last mouse state for comparison
         protected override void Update(GameTime gameTime) {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
@@ -177,9 +178,30 @@ namespace TranSimCS
             camera.Azimuth = newAzimuth; // Update camera azimuth
             camera.Elevation = newElevation; // Update camera elevation
 
-            Debug.Print($"Camera position: {camera.Position}"); // Print the camera position for debugging
+            //Demolish the selected road segment if the left mouse button is clicked
+            if (mouseState.LeftButton == ButtonState.Pressed && LastMouseState.LeftButton == ButtonState.Released) {
+                // If a road segment is selected, remove it from the world
+                if (MouseOverRoad != null) {
+                    Debug.Print($"Demolishing road segment: {MouseOverRoad.SelectedLaneTag.road}");
+                    world.RoadSegments.Remove(MouseOverRoad.SelectedLaneTag.road); // Remove the selected road segment from the world
+                    MouseOverRoad = null; // Reset the mouse over road selection
+                }
+            }
+            //Demolish the lane on a selected node if the right mouse button is clicked
+            if (mouseState.RightButton == ButtonState.Pressed && LastMouseState.RightButton == ButtonState.Released) {
+                // If a lane tag is selected, remove it from the road segment
+                if (MouseOverRoad != null) {
+                    var selectedRoad = MouseOverRoad.SelectedLaneTag.road; // Get the selected road half
+                    var selectedRoadSpec = selectedRoad.Spec; // Get the selected lane tag
+                    var selectedRoadHalf = selectedRoadSpec.GetHalf(MouseOverRoad.SelectedRoadHalf);
+                    var selectedNode = selectedRoadHalf.Node;// Get the node of the selected road half
+                    Roads.Roads.RemoveLane(MouseOverRoad.SelectedLaneTag.startLaneIndexL, selectedNode, 0); // Remove the lane from the selected node
+                }
+            }
 
+            //Refresh the mouse state for the next frame
             base.Update(gameTime);
+            LastMouseState = mouseState; // Update the last mouse state for the next frame
         }
 
         private Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
@@ -204,15 +226,19 @@ namespace TranSimCS
                 RoadRenderer.DrawLaneTag(roadSelection.SelectedLaneTag.road.FullSizeTag(), renderBin, roadSegmentHighlightColor, 0.002f);
                 var splines = RoadRenderer.GenerateSplines(roadSelection.SelectedLaneTag, 0.007f);
                 var offset = Vector3.Up * 0.007f; // Offset for the lane position
-                Bezier3.Split(splines.Item1, roadSelection.SelectedLaneT, out Bezier3 leftSubBezier1, out Bezier3 leftSubBezier2);
-                Bezier3.Split(splines.Item2, roadSelection.SelectedLaneT, out Bezier3 rightSubBezier1, out Bezier3 rightSubBezier2);
+                Bezier3.Split(splines.Item1, 0.5f, out Bezier3 leftSubBezier1, out Bezier3 leftSubBezier2);
+                Bezier3.Split(splines.Item2, 0.5f, out Bezier3 rightSubBezier1, out Bezier3 rightSubBezier2);
+
                 // Draw the left and right bezier curves of the selected lane tag
-                RoadRenderer.DrawBezierStrip(leftSubBezier2, rightSubBezier2, renderBin, laneHighlightColor2);
+                if(roadSelection.SelectedLaneT < 0.5f) {
+                    RoadRenderer.DrawBezierStrip(leftSubBezier1, rightSubBezier1, renderBin, laneHighlightColor2);
+                } else {
+                    RoadRenderer.DrawBezierStrip(leftSubBezier2, rightSubBezier2, renderBin, laneHighlightColor2);
+                }
+
                 // Draw the position marker for the T value
                 Vector3 positionAtT = roadSelection.selectedLaneBezier.Value[roadSelection.SelectedLaneT];
                 var SelectedLanePosition = roadSelection.SelectedLanePosition;
-                Mark(SelectedLanePosition, Color.Red, 0.5f);
-                Mark(positionAtT, Color.Blue, 0.5f);
             }
 
             //Red the render helper

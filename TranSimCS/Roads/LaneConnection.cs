@@ -74,6 +74,13 @@ namespace TranSimCS.Roads {
                 throw new ArgumentException("Node does not belong to this lane connection.", nameof(node)); // Throw an exception if the node does not belong to this lane connection
             }
         }
+        public HalfLaneConnectionSpec GetHalf(SegmentHalf half) {
+            return half switch {
+                SegmentHalf.Start => StartHalf, // Return the start half if the half is SegmentHalf.Start
+                SegmentHalf.End => EndHalf, // Return the end half if the half is SegmentHalf.End
+                _ => throw new ArgumentOutOfRangeException(nameof(half), "Invalid segment half specified.") // Throw an exception for invalid segment half
+            };
+        }
 
         public HalfLaneConnectionSpec this[SegmentHalf half] {
             get {
