@@ -9,6 +9,48 @@ namespace TranSimCS {
     internal static class Roads {
 
     }
+
+    public class NodePositionChangedEventArgs : EventArgs {
+        public NodePosition OldPosition { get; }
+        public NodePosition NewPosition { get; }
+        public NodePositionChangedEventArgs(NodePosition oldPosition, NodePosition newPosition) {
+            OldPosition = oldPosition;
+            NewPosition = newPosition;
+        }
+    }
+
+    public struct NodePosition {
+        //Position
+        public Vector3 Position { get; set; } // World position of the node
+
+        //Angle
+        public int Azimuth { get; set; } // Azimuth angle in the 2^32 field
+        public float Inclination { get; set; } // Inclination angle in radians
+        public float Tilt { get; set; } // Tilt angle in radians
+
+        //Curvatures
+        public float HCurvature { get; set; } // Curvature of the road node in rad/meter clockwise
+        public float VCurvature { get; set; } // Vertical curvature of the road node in rad/meter upwards
+        public float TiltCurvature { get; set; } // Tilt curvature of the road node in rad/meter
+
+        public NodePosition(Vector3 position, int azimuth, float inclination = 0f, float tilt = 0f, float hCurvature = 0, float vCurvature = 0, float tiltCurvature = 0) {
+            Position = position;
+            Azimuth = azimuth;
+            Inclination = inclination;
+            Tilt = tilt;
+            HCurvature = hCurvature; // Horizontal curvature in rad/meter clockwise
+            VCurvature = vCurvature;
+            TiltCurvature = tiltCurvature; // Tilt curvature in rad/meter
+        }
+
+        public static bool operator ==(NodePosition left, NodePosition right) {
+            return left.Equals(right);
+        }
+        public static bool operator !=(NodePosition left, NodePosition right) {
+            return !(left == right);
+        }
+    }
+
     public class RoadNode {
         //Example azimuth values
         public const int AZIMUTH_NORTH = 0; // 0 degrees
@@ -16,24 +58,83 @@ namespace TranSimCS {
         public const int AZIMUTH_SOUTH = 2 << 30; // 180 degrees
         public const int AZIMUTH_WEST = 3 << 30; // 270 degrees
 
+        //Identifiers
         private static int _nextId = 1; // Static field to keep track of the next ID
         public int Id { get; init; }
         public string Name { get; set; }
-        public Vector3 Position { get; set; }
         public World World { get; init; }
-        public int Azimuth { get; set; } // Azimuth angle in the 2^32 field
-        public float Curvature { get; set; } = 0f; // Curvature of the road node in rad/meter clockwise, default is 0 (straight)
+
+
+        //World position of the road node
+        public event EventHandler<NodePositionChangedEventArgs> PositionChanged; // Event to notify when the position changes
+        private NodePosition _position; // Backing field for the position
+        public NodePosition PositionData {
+            get => _position;
+            set {
+                if (_position != value) {
+                    var oldPosition = _position;
+                    _position = value;
+                    PositionChanged?.Invoke(this, new NodePositionChangedEventArgs(oldPosition, value)); // Raise the event with old and new position
+                }
+            }
+        }
+        public Vector3 Position { get => PositionData.Position; set {
+            var positionData = PositionData; // Create a copy of the current position data
+            positionData.Position = value;
+            PositionData = positionData;
+        } }
+        public int Azimuth { get => PositionData.Azimuth; set {
+            var positionData = PositionData; // Create a copy of the current position data
+            positionData.Azimuth = value; // Set the azimuth angle
+            PositionData = positionData; // Update the position data
+        } } // Azimuth angle in the 2^32 field
+        public float Inclination { get => PositionData.Inclination; set {
+            var positionData = PositionData; // Create a copy of the current position data
+            positionData.Inclination = value;
+            PositionData = positionData; // Update the position data
+        } } // Inclination angle in radians, default is 0 (flat)
+        public float Tilt { get => PositionData.Tilt; set {
+            var positionData = PositionData; // Create a copy of the current position data
+            positionData.Tilt = value;
+            PositionData = positionData; // Update the position data
+        } } // Tilt angle in radians, default is 0 (no tilt)
+        public float HCurvature { get => PositionData.HCurvature; set {
+            var positionData = PositionData; // Create a copy of the current position data
+            positionData.HCurvature = value;
+            PositionData = positionData; // Update the position data
+        } } // Curvature of the road node in rad/meter clockwise, default is 0 (straight)
+        public float VCurvature { get => PositionData.VCurvature; set {
+            var positionData = PositionData; // Create a copy of the current position data
+            positionData.VCurvature = value;
+            PositionData = positionData; // Update the position data
+        } } // Vertical curvature of the road node in rad/meter upwards, default is 0 (flat)
+        public float TiltCurvature { get => PositionData.TiltCurvature; set {
+            var positionData = PositionData; // Create a copy of the current position data
+            positionData.TiltCurvature = value;
+            PositionData = positionData; // Update the position data
+        } } // Tilt curvature of the road node in rad/meter, default is 0 (no tilt curvature)
 
         public List<float> PositionOffsets { get; } = new List<float>();
         public List<LaneSpec> LaneSpecs { get; } = new List<LaneSpec>();
 
         // Constructor to initialize the RoadNode with a unique ID, name, position, and world
-        public RoadNode(World world, string name, Vector3 position, int azimuth) {
+        public RoadNode(World world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0, float hCurvature = 0, float vCurvature = 0, float tiltCurvature = 0) {
             Id = _nextId++;
             Name = name;
             Position = position;
             World = world;
             Azimuth = azimuth;
+            Inclination = inclination; // Inclination angle in radians, default is 0 (flat)
+            Tilt = tilt; // Tilt angle in radians, default is 0 (no tilt)
+            HCurvature = hCurvature; // Curvature of the road node in rad/meter clockwise, default is 0 (straight)
+            VCurvature = vCurvature;
+            TiltCurvature = tiltCurvature; // Tilt curvature of the road node in rad/meter, default is 0 (no tilt curvature)
+        }
+        public RoadNode(World world, string name, NodePosition positionData) {
+            Id = _nextId++;
+            Name = name;
+            PositionData = positionData; // Set the position data
+            World = world;
         }
     }
 

@@ -65,7 +65,7 @@ namespace TranSimCS
             Vector3 tangential = new Vector3(sine, 0, cosine); // Tangential vector (along the road)
             Vector3 normal = new Vector3(0, 1, 0); // Normal vector (upwards)
             Vector3 lateral = new Vector3(cosine, 0, -sine); // Lateral vector (to the right)
-            float radius = (1f / node.Curvature) - offset; // Assuming offset is the radius of curvature
+            float radius = (1f / node.HCurvature) - offset; // Assuming offset is the radius of curvature
             Vector3 position = new Vector3(x, nodePos.Y, z); // Position of the end point
 
             return new LineEnd(position, tangential, normal, lateral, radius); // Return the end position as a Vector3

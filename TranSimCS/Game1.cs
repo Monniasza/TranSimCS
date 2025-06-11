@@ -87,8 +87,11 @@ namespace TranSimCS
             //Load the road texture
             roadTexture = Content.Load<Texture2D>("laneTex");
         }
-        public RoadSelection? SelectedRoadSelection { get; private set; } = null; // Store the selected road selection
-        public Ray mouseRay {get; private set; } // Ray from the mouse position in the world
+        public RoadSelection? MouseOverRoad { get; private set; } = null; // Store the selected road selection
+        public RoadSelection? SelectedRoadSelection { get; set; } = null; // Store the selected road selection
+
+
+        public Ray MouseRay {get; private set; } // Ray from the mouse position in the world
 
         public Camera camera = new Camera(new Vector3(0, 0, 0), 64, 0, 0.2f); // Initialize the camera
         public float MotionSpeed = 0.3f; // Speed of camera movement
@@ -111,10 +114,10 @@ namespace TranSimCS
             Vector3 nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), effect.Projection, effect.View, effect.World);
             Vector3 farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), effect.Projection, effect.View, effect.World);
             Ray ray = new(nearPoint, Vector3.Normalize(farPoint - nearPoint));
-            mouseRay = ray; // Store the ray for later use
+            MouseRay = ray; // Store the ray for later use
 
             //Reset the selected lane tag and position
-            SelectedRoadSelection = null; // Reset the selected road selection
+            MouseOverRoad = null; // Reset the selected road selection
 
             //Road selection logic
             foreach (var road in world.RoadSegments) {
@@ -123,7 +126,7 @@ namespace TranSimCS
                     // Check if the ray intersects with the road segment
                     object tag = MeshUtil.RayIntersectMesh(segment.StartMesh, ray, out float intersectionDistance);
                     if (tag is LaneTag laneTag && laneTag.road == segment) {
-                        SelectedRoadSelection = new RoadSelection(laneTag, intersectionDistance, ray); // Create a new road selection with the lane tag and intersection distance
+                        MouseOverRoad = new RoadSelection(laneTag, intersectionDistance, ray); // Create a new road selection with the lane tag and intersection distance
                     }
                 }                
             }
@@ -194,7 +197,7 @@ namespace TranSimCS
             DrawRoadSegments(world.RoadSegments, (connection) => renderBin.DrawModel(connection.StartMesh));
 
             //If a road segment is selected, draw the selection
-            var roadSelection = SelectedRoadSelection;
+            var roadSelection = MouseOverRoad;
             if(roadSelection != null) {
                 // Draw the selected lane tag with a different color
                 RoadRenderer.DrawLaneTag(roadSelection.SelectedLaneTag, renderBin, laneHighlightColor, 0.005f);
