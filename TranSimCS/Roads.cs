@@ -43,6 +43,29 @@ namespace TranSimCS {
             TiltCurvature = tiltCurvature; // Tilt curvature in rad/meter
         }
 
+        public override bool Equals(object? obj) {
+            if (obj is NodePosition other) {
+                return Position.Equals(other.Position) &&
+                       Azimuth == other.Azimuth &&
+                       Inclination.Equals(other.Inclination) &&
+                       Tilt.Equals(other.Tilt) &&
+                       HCurvature.Equals(other.HCurvature) &&
+                       VCurvature.Equals(other.VCurvature) &&
+                       TiltCurvature.Equals(other.TiltCurvature);
+            }
+            return false;
+        }
+        public override int GetHashCode() {
+            HashCode hash = new HashCode();
+            hash.Add(Position);
+            hash.Add(Azimuth);
+            hash.Add(Inclination);
+            hash.Add(Tilt);
+            hash.Add(HCurvature);
+            hash.Add(VCurvature);
+            hash.Add(TiltCurvature);
+            return hash.ToHashCode(); // Generate a hash code based on the properties of the node position
+        }
         public static bool operator ==(NodePosition left, NodePosition right) {
             return left.Equals(right);
         }
@@ -63,7 +86,6 @@ namespace TranSimCS {
         public int Id { get; init; }
         public string Name { get; set; }
         public World World { get; init; }
-
 
         //World position of the road node
         public event EventHandler<NodePositionChangedEventArgs> PositionChanged; // Event to notify when the position changes
@@ -191,6 +213,13 @@ namespace TranSimCS {
             hash.Add(LaneSpec);
             return hash.ToHashCode(); // Generate a hash code based on the properties of the lane connection specification
         }
+        public static bool operator ==(LaneConnectionSpec left, LaneConnectionSpec right) {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(LaneConnectionSpec left, LaneConnectionSpec right) {
+            return !(left == right);
+        }
     }
 
 
@@ -280,8 +309,10 @@ namespace TranSimCS {
             RoadRenderer.RenderRoadSegment(this, _endMesh); // Otherwise, render the road segment
             return _endMesh; // Return the rendered mesh
         } private set => _endMesh = value; } // Mesh for the lane connection at the start node
+        internal void InvalidateMesh() {
+            _endMesh = null; // Invalidate the mesh, forcing it to be re-rendered
+        }
 
-        
 
         // Constructor to initialize the LaneConnection with start and end nodes and their lane indices
         public LaneConnection(RoadNode node1, RoadNode node2, int lsi, int rsi, int lei, int rei, int ssh = 0, int esh = 0) {
