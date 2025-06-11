@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,32 +19,32 @@ namespace TranSimCS.Roads {
                 throw new ArgumentOutOfRangeException(nameof(laneIdx), "Lane index is out of range.");
             var world = node.World; // Get the world instance from the node
             var affectedSegments = node.Connections;
+
             //Split the connections into two lists: those that are before the lane to be removed, those that are after and those that are on the lane to be removed
             var beforeSegs = new List<LaneConnection>();
             var afterSegs = new List<LaneConnection>();
             var onSegs = new List<LaneConnection>();
             foreach (var segment in affectedSegments) {
-                if (segment.StartNode == node && segment.EndNode == node) {
-                    var segmentSpec = segment.Spec; // Get the segment specification
-                    HalfLaneConnectionSpec connSpec;
-                    SegmentHalf segmentHalf = SegmentHalf.Start; // Assume the start half is the one we are interested in
-                    if (segmentSpec.StartNode == node) {
-                        connSpec = segmentSpec.StartHalf; // Get the connection specification for the start node
-                        segmentHalf = SegmentHalf.Start; // Start half is the one we are interested in
-                    } else if (segmentSpec.EndNode == node) {
-                        connSpec = segmentSpec.EndHalf; // Get the connection specification for the end node
-                        segmentHalf = SegmentHalf.End; // End half is the one we are interested in
-                    } else {
-                        node.connections.Remove(segment); // Remove the segment if it does not connect to the node
-                        throw new InvalidOperationException("Segment does not connect to the specified node.");
-                    }
-
-                    //Categorize the lane based on its index
-                    int category = CategorizeLane(laneIdx, connSpec); // Categorize the lane based on its index
-                    if (category == 0) beforeSegs.Add(segment); // Lane is before the specified lane
-                    else if (category == 1) onSegs.Add(segment); // Lane is on the specified lane
-                    else if (category == 2) afterSegs.Add(segment); // Lane is after the specified lane
+                var segmentSpec = segment.Spec; // Get the segment specification
+                HalfLaneConnectionSpec connSpec;
+                SegmentHalf segmentHalf = SegmentHalf.Start; // Assume the start half is the one we are interested in
+                if (segmentSpec.StartNode == node) {
+                    connSpec = segmentSpec.StartHalf; // Get the connection specification for the start node
+                    segmentHalf = SegmentHalf.Start; // Start half is the one we are interested in
+                } else if (segmentSpec.EndNode == node) {
+                    connSpec = segmentSpec.EndHalf; // Get the connection specification for the end node
+                    segmentHalf = SegmentHalf.End; // End half is the one we are interested in
+                } else {
+                    node.connections.Remove(segment); // Remove the segment if it does not connect to the node
+                    throw new InvalidOperationException("Segment does not connect to the specified node.");
                 }
+
+                //Categorize the lane based on its index
+                int category = CategorizeLane(laneIdx, connSpec); // Categorize the lane based on its index
+                Debug.Print($"Categorized lane {laneIdx} as {category} for segment {segment.StartNode.Id} to {segment.EndNode.Id} on node {node.Id}");
+                if (category == 0) beforeSegs.Add(segment); // Lane is before the specified lane
+                else if (category == 1) onSegs.Add(segment); // Lane is on the specified lane
+                else if (category == 2) afterSegs.Add(segment); // Lane is after the specified lane
             }
 
             float removalWidth = node.PositionOffsets[laneIdx+1] - node.PositionOffsets[laneIdx]; // Get the width of the lane to be removed
@@ -61,6 +62,7 @@ namespace TranSimCS.Roads {
                 connSpec.RightIndex -= 1;
                 spec[half] = connSpec; // Update the segment specification with the modified connection specification
                 segment.Spec = spec; // Update the segment specification
+                segment.InvalidateMesh(); // Invalidate the mesh of the segment to force a redraw
             }
 
             //Connections that are in the removed lane should only have their higher index lanes moved left by one spot
@@ -70,13 +72,15 @@ namespace TranSimCS.Roads {
                 var connSpec = connSpecs.Item2; // Get the connection specification for the specified segment half
                 var half = connSpecs.Item1;
                 // Move the right lanes to the left by one spot
-                if (connSpec.RightIndex > laneIdx) {
+                if (connSpec.RightIndex > connSpec.LeftIndex) {
                     connSpec.RightIndex -= 1;
                 } else {
                     connSpec.LeftIndex -= 1; // If the right index is not greater than the lane index, move the left index
                 }
                 spec[half] = connSpec; // Update the segment specification with the modified connection specification
                 segment.Spec = spec; // Update the segment specification
+
+                segment.InvalidateMesh(); // Invalidate the mesh of the segment to force a redraw
             }
 
             //Connections that are before the removed lane should not have their indices changed, but we can still update their connection specifications
@@ -86,17 +90,14 @@ namespace TranSimCS.Roads {
             node.PositionOffsets.RemoveAt(laneIdx + 1); // Remove the position offset for the specified lane index + 1 (because we are removing the lane, we need to remove the next position offset as well)
             var subrangeBefore = node.PositionOffsets.Take(laneIdx + 1).ToList(); // Get the positions before the lane to be removed
             var subrangeAfter = node.PositionOffsets.Skip(laneIdx + 1).ToList(); // Get the positions after the lane to be removed
+            
             // Update the positions of the lanes after the removed lane
-            int i;
-            for (i = 0; i < subrangeBefore.Count; i++) {
-                subrangeBefore[i] += moveRight; // Move the right lanes to the left by the calculated amount
+            for(int i = 0; i < subrangeBefore.Count; i++) {
+                node.PositionOffsets[i] += moveRight; // Move the left lanes to the right by the calculated amount
             }
-            for(int j = 0; j < subrangeAfter.Count; j++) {
-                subrangeBefore[j] -= moveLeft; // Move the left lanes to the right by the calculated amount
+            for(int i = laneIdx + 1; i < node.PositionOffsets.Count; i++) {
+                node.PositionOffsets[i] -= moveLeft; // Move the right lanes to the left by the calculated amount
             }
-            node.PositionOffsets.Clear(); // Clear the lane specifications
-            node.PositionOffsets.AddRange(subrangeBefore);
-            node.PositionOffsets.AddRange(subrangeAfter); // Add the updated lane specifications back to the node
 
         }
         // 0 for before, 1 for on lane, 2 for after
@@ -104,15 +105,10 @@ namespace TranSimCS.Roads {
             bool isReversed = spec.IsReversed; // Check if the lane is reversed
             int llimit = spec.LeftIndex; // Get the left lane limit
             int rlimit = spec.RightIndex; // Get the right lane limit
-            if (isReversed) {
-                // If the lane is reversed, we need to swap the limits
-                int temp = llimit;
-                llimit = rlimit;
-                rlimit = temp;
-            }
-            if(rlimit < laneIdx) {
+
+            if(rlimit < laneIdx && rlimit < laneIdx) {
                 return 0; // Lane is before the specified lane
-            } else if (llimit > laneIdx) {
+            } else if (llimit > laneIdx && rlimit > laneIdx) {
                 return 2; // Lane is after the specified lane
             } else {
                 return 1; // Lane is on the specified lane

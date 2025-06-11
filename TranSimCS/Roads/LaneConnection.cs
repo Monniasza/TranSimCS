@@ -27,7 +27,7 @@ namespace TranSimCS.Roads {
         /// <summary>
         /// Indicates if the half-lane connection is reversed (goes in from the rear of the node).
         /// </summary>
-        public bool IsReversed => RightIndex > LeftIndex; // Indicates if the half-lane connection is reversed (shift is negative)
+        public bool IsReversed => RightIndex < LeftIndex; // Indicates if the half-lane connection is reversed (shift is negative)
     }
 
     /// <summary>
