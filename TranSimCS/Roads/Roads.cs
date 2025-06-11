@@ -18,12 +18,9 @@ namespace TranSimCS.Roads {
             if (node.PositionOffsets.Count <= laneIdx || laneIdx < 0) 
                 throw new ArgumentOutOfRangeException(nameof(laneIdx), "Lane index is out of range.");
             var world = node.World; // Get the world instance from the node
-            var affectedSegments = node.Connections;
+            var affectedSegments = node.Connections.ToArray(); //defesive copy of the connections to avoid modifying the collection while iterating
 
             //Split the connections into two lists: those that are before the lane to be removed, those that are after and those that are on the lane to be removed
-            var beforeSegs = new List<LaneConnection>();
-            var afterSegs = new List<LaneConnection>();
-            var onSegs = new List<LaneConnection>();
             foreach (var segment in affectedSegments) {
                 var spec = segment.Spec; // Get the segment specification
                 var halfSpecs = spec.GetHalf(node); // Get the connection specification for the segment half
@@ -33,46 +30,18 @@ namespace TranSimCS.Roads {
                 //Categorize the lane based on its index
                 int category = CategorizeLane(laneIdx, halfSpec); // Categorize the lane based on its index
                 Debug.Print($"Categorized lane {laneIdx} as {category} for segment {segment.StartNode.Id} to {segment.EndNode.Id} on node {node.Id}");
-                if (category == 0) beforeSegs.Add(segment); // Lane is before the specified lane
-                else if (category == 1) onSegs.Add(segment); // Lane is on the specified lane
-                else if (category == 2) afterSegs.Add(segment); // Lane is after the specified lane
-            }
 
-            float removalWidth = node.PositionOffsets[laneIdx+1] - node.PositionOffsets[laneIdx]; // Get the width of the lane to be removed
-            float moveLeft = removalWidth * resizeWeight; // Calculate how much to move left lanes to the right
-            float moveRight = removalWidth * (1 - resizeWeight); // Calculate how much to move right lanes to the left
-
-            //Connections that are after the removed lane should be moved left by one spot
-            foreach (var segment in afterSegs) {
-                var spec = segment.Spec; // Get the segment specification
-                var halfSpecs = spec.GetHalf(node); // Get the connection specification for the segment half
-                var halfSpec = halfSpecs.Item2; // Get the connection specification for the specified segment half
-                var half = halfSpecs.Item1;
                 // Move the right lanes to the left by one spot
-                halfSpec.LeftIndex -= 1;
-                halfSpec.RightIndex -= 1;
+                if (halfSpec.LeftIndex > laneIdx) halfSpec.LeftIndex -= 1;
+                if (halfSpec.RightIndex > laneIdx) halfSpec.RightIndex -= 1;
                 spec = spec.SetHalf(half, halfSpec); // Update the segment specification with the modified connection specification
                 segment.Spec = spec; // Update the segment specification
                 segment.InvalidateMesh(); // Invalidate the mesh of the segment to force a redraw
             }
 
-            //Connections that are in the removed lane should only have their higher index lanes moved left by one spot
-            foreach (var segment in onSegs) {
-                var spec = segment.Spec; // Get the segment specification
-                var connSpecs = spec.GetHalf(node); // Get the connection specification for the segment half
-                var connSpec = connSpecs.Item2; // Get the connection specification for the specified segment half
-                var half = connSpecs.Item1;
-                // Move the right lanes to the left by one spot
-                if (connSpec.RightIndex > connSpec.LeftIndex) {
-                    connSpec.RightIndex -= 1;
-                } else {
-                    connSpec.LeftIndex -= 1; // If the right index is not greater than the lane index, move the left index
-                }
-                spec = spec.SetHalf(half, connSpec); // Update the segment specification with the modified connection specification
-                segment.Spec = spec; // Update the segment specification
-
-                segment.InvalidateMesh(); // Invalidate the mesh of the segment to force a redraw
-            }
+            float removalWidth = node.PositionOffsets[laneIdx+1] - node.PositionOffsets[laneIdx]; // Get the width of the lane to be removed
+            float moveLeft = removalWidth * resizeWeight; // Calculate how much to move left lanes to the right
+            float moveRight = removalWidth * (1 - resizeWeight); // Calculate how much to move right lanes to the left
 
             //Connections that are before the removed lane should not have their indices changed, but we can still update their connection specifications
 

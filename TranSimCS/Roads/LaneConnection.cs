@@ -197,10 +197,18 @@ namespace TranSimCS.Roads {
 
             //Validate the new specification before changing it
             ArgumentNullException.ThrowIfNull(value, nameof(value)); // Ensure the new specification is not null
-            ArgumentNullException.ThrowIfNull(value.StartHalf, nameof(value.StartHalf)); // Ensure the new specification is not null
-            ArgumentNullException.ThrowIfNull(value.EndHalf, nameof(value.EndHalf)); // Ensure the new specification is not null
             if(value.StartNode == value.EndNode) // Ensure the start and end nodes are not the same
-                throw new ArgumentException("Start and end nodes cannot be the same.", nameof(value));
+            throw new ArgumentException("Start and end nodes cannot be the same.", nameof(value));
+
+            //Rebuild the indexes for the lane connection
+            var node1 = oldSpec.StartNode;
+            var node2 = oldSpec.EndNode;
+            var newNode1 = value.StartNode;
+            var newNode2 = value.EndNode;
+            node1?.connections.Remove(this); // Remove the old segment from the first node's connections
+            node2?.connections.Remove(this); // Remove the old segment from the second node's connections
+            newNode1?.connections.Add(this); // Add the new segment to the first node's connections
+            newNode2?.connections.Add(this); // Add the new segment to the second node's connections
 
             //Fire the event before changing the specification
             InvalidateMesh(); // Invalidate the mesh when the specification changes

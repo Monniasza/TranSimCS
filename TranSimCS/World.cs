@@ -38,16 +38,7 @@ namespace TranSimCS
         private void RoadSegmentChanged(object sender, LaneConnectionChangedEventArgs e) {
             // Handle changes to a specific road segment
             // For example, you could log changes or update UI elements
-            if(sender is LaneConnection segment) {
-                var node1 = e.OldPosition.StartNode;
-                var node2 = e.OldPosition.EndNode;
-                var newNode1 = e.NewPosition.StartNode;
-                var newNode2 = e.NewPosition.EndNode;
-                node1.connections.Remove(segment); // Remove the old segment from the first node's connections
-                node2.connections.Remove(segment); // Remove the old segment from the second node's connections
-                newNode1.connections.Add(segment); // Add the new segment to the first node's connections
-                newNode2.connections.Add(segment); // Add the new segment to the second node's connections
-            }
+            
             
         }
         private void RoadNodePositionChanged(object sender, NodePositionChangedEventArgs e) {
