@@ -42,10 +42,23 @@ namespace TranSimCS
             // Handle changes to the road nodes collection if needed
             // For example, you could log changes or update UI elements
             foreach (var node in e.NewItems?.OfType<RoadNode>() ?? Enumerable.Empty<RoadNode>())
-                node.PositionChanged += RoadNodePositionChanged; // Subscribe to changes in the road node position
+                HandleAddRoadNode(node); // Handle the addition of a new road node
             foreach (var node in e.OldItems?.OfType<RoadNode>() ?? Enumerable.Empty<RoadNode>())
-                node.PositionChanged -= RoadNodePositionChanged; // Unsubscribe from changes in the road node position
+                HandleRemoveRoadNode(node); // Handle the removal of a road node
         }
+        private void HandleAddRoadNode(RoadNode node) {
+            // Handle the addition of a new road node
+            node.PositionChanged += RoadNodePositionChanged; // Subscribe to changes in the road node position
+        }
+        private void HandleRemoveRoadNode(RoadNode node) {
+            // Handle the removal of a road node
+            node.PositionChanged -= RoadNodePositionChanged; // Unsubscribe from changes in the road node position
+            foreach (var segment in node.connections) {
+                segment.InvalidateMesh(); // Invalidate the mesh of the segment if the node is removed
+                RoadSegments.Remove(segment); // Remove the segment from the road segments collection
+            }
+        }
+
         private void RoadSegmentChanged(object sender, LaneConnectionChangedEventArgs e) {
             // Handle changes to a specific road segment
             // For example, you could log changes or update UI elements

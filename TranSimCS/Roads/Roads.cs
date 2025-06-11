@@ -50,8 +50,6 @@ namespace TranSimCS.Roads {
             float moveLeft = removalWidth * resizeWeight; // Calculate how much to move left lanes to the right
             float moveRight = removalWidth * (1 - resizeWeight); // Calculate how much to move right lanes to the left
 
-            //Connections that are before the removed lane should not have their indices changed, but we can still update their connection specifications
-
             //Finally, we need to remove the lane from the node's position offsets and lane specifications
             node.LaneSpecs.RemoveAt(laneIdx); // Remove the lane specification for the specified lane index
             node.PositionOffsets.RemoveAt(laneIdx + 1); // Remove the position offset for the specified lane index + 1 (because we are removing the lane, we need to remove the next position offset as well)
@@ -66,6 +64,13 @@ namespace TranSimCS.Roads {
                 node.PositionOffsets[i] -= moveLeft; // Move the right lanes to the left by the calculated amount
             }
 
+            //If the node now empty (no lanes left), we need to remove it from the world
+            if (node.PositionOffsets.Count < 1) { // If there are no lanes left in the node
+                world.RoadNodes.Remove(node); // Remove the node from the world
+                Debug.Print($"Removed node {node.Id} as it has no lanes left.");
+            } else {
+                Debug.Print($"Removed lane {laneIdx} from node {node.Id}. Remaining lanes: {node.PositionOffsets.Count - 1}");
+            }
         }
         // 0 for before, 1 for on lane, 2 for after
         private static int CategorizeLane(int laneIdx, HalfLaneConnectionSpec spec) {
