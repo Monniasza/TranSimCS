@@ -1,8 +1,42 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
+using static TranSimCS.Roads.Roads;
 
 namespace TranSimCS.Roads {
+    public enum SegmentHalf {
+        Start, // Represents the left half of a road segment
+        End // Represents the right half of a road segment
+    }
 
+    /// <summary>
+    /// Like its name suggests, this struct is used to specify a half of a lane connection at a one road node.
+    /// </summary>
+    public struct HalfLaneConnectionSpec {
+        public RoadNode Node; // The road node this half-lane connection is associated with
+        public int LeftIndex; // Lane index at the node for the left side of the connection
+        public int RightIndex; // Lane index at the node for the right side of the connection
+        public int Shift; // How many lanes are to the left of the half-lane connection from the node
+        public LaneSpec LaneSpec = LaneSpec.Default; // Lane specification for the half-lane connection
+        public HalfLaneConnectionSpec(RoadNode node, int leftIndex, int rightIndex, int shift = 0, LaneSpec laneSpec = default) {
+            Node = node;
+            LeftIndex = leftIndex;
+            RightIndex = rightIndex;
+            Shift = shift; // How many lanes are to the left of the half-lane connection from the node
+            LaneSpec = laneSpec; // Lane specification for the half-lane connection
+        }
+        /// <summary>
+        /// Indicates if the half-lane connection is reversed (goes in from the rear of the node).
+        /// </summary>
+        public bool IsReversed => RightIndex > LeftIndex; // Indicates if the half-lane connection is reversed (shift is negative)
+    }
+
+    /// <summary>
+    /// Represents the specification for a lane connection between two road nodes, including lane indices, shifts, and
+    /// lane properties.
+    /// </summary>
+    /// <remarks>This struct defines the configuration of a lane connection between a start node and an end
+    /// node, including the indices of lanes at both nodes,  the lateral shifts of the connection, and the lane
+    /// specification details. It is used to model connections between road segments in a road network.</remarks>
     public struct LaneConnectionSpec {
         public RoadNode StartNode; // Start node of the lane connection
         public RoadNode EndNode; // End node of the lane connection
@@ -13,6 +47,9 @@ namespace TranSimCS.Roads {
         public int StartShift; // How many lanes are to the left of the lane connection from the start node
         public int EndShift; // How many lanes are to the left of the lane connection from the end node
         public LaneSpec LaneSpec = LaneSpec.Default; // Lane specification for the connection
+
+        public HalfLaneConnectionSpec StartHalf => new(StartNode, LeftStartIndex, RightStartIndex, StartShift, LaneSpec); // Half-lane connection specification for the start node
+        public HalfLaneConnectionSpec EndHalf => new(EndNode, LeftEndIndex, RightEndIndex, EndShift, LaneSpec); // Half-lane connection specification for the end node
 
         public LaneConnectionSpec() { }
 
@@ -26,6 +63,43 @@ namespace TranSimCS.Roads {
             StartShift = startShift; // How many lanes are to the left of the lane connection from the start node
             EndShift = endShift; // How many lanes are to the left of the lane connection from the end node
             LaneSpec = laneSpec; // Lane specification for the connection
+        }
+
+        public (SegmentHalf, HalfLaneConnectionSpec) GetHalf(RoadNode node) {
+            if (node == StartNode) {
+                return (SegmentHalf.Start, StartHalf); // Return the start half if the node is the start node
+            } else if (node == EndNode) {
+                return (SegmentHalf.End, EndHalf); // Return the end half if the node is the end node
+            } else {
+                throw new ArgumentException("Node does not belong to this lane connection.", nameof(node)); // Throw an exception if the node does not belong to this lane connection
+            }
+        }
+
+        public HalfLaneConnectionSpec this[SegmentHalf half] {
+            get {
+                return half switch {
+                    SegmentHalf.Start => StartHalf, // Return the start half if the half is SegmentHalf.Start
+                    SegmentHalf.End => EndHalf, // Return the end half if the half is SegmentHalf.End
+                    _ => throw new ArgumentOutOfRangeException(nameof(half), "Invalid segment half specified.") // Throw an exception for invalid segment half
+                };
+            }
+            set {
+                if(half == SegmentHalf.Start) {
+                    StartNode = value.Node; // Set the start node
+                    LeftStartIndex = value.LeftIndex; // Set the left index for the start node
+                    RightStartIndex = value.RightIndex; // Set the right index for the start node
+                    StartShift = value.Shift; // Set the shift for the start node
+                    LaneSpec = value.LaneSpec; // Set the lane specification for the start node
+                } else if (half == SegmentHalf.End) {
+                    EndNode = value.Node; // Set the end node
+                    LeftEndIndex = value.LeftIndex; // Set the left index for the end node
+                    RightEndIndex = value.RightIndex; // Set the right index for the end node
+                    EndShift = value.Shift; // Set the shift for the end node
+                    LaneSpec = value.LaneSpec; // Set the lane specification for the end node
+                } else {
+                    throw new ArgumentOutOfRangeException(nameof(half), "Invalid segment half specified."); // Throw an exception for invalid segment half
+                }
+            }
         }
 
         public override bool Equals(object obj) {
@@ -122,6 +196,15 @@ namespace TranSimCS.Roads {
         public LaneConnectionSpec Spec { get => _spec; set {
             var oldSpec = _spec; // Create a copy of the current specification
             if (oldSpec.Equals(value)) return; // If the new specification is the same as the old one, do nothing
+
+            //Validate the new specification before changing it
+            ArgumentNullException.ThrowIfNull(value, nameof(value)); // Ensure the new specification is not null
+            ArgumentNullException.ThrowIfNull(value.StartHalf, nameof(value.StartHalf)); // Ensure the new specification is not null
+            ArgumentNullException.ThrowIfNull(value.EndHalf, nameof(value.EndHalf)); // Ensure the new specification is not null
+            if(value.StartNode == value.EndNode) // Ensure the start and end nodes are not the same
+                throw new ArgumentException("Start and end nodes cannot be the same.", nameof(value));
+
+            //Fire the event before changing the specification
             Mesh = null; // Invalidate the mesh when the specification changes
             SpecChanged?.Invoke(this, new LaneConnectionChangedEventArgs(oldSpec, value)); // Raise the event with old and new specification
             _spec = value; // Set the new specification

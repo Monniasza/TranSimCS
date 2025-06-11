@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Iesi.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 namespace TranSimCS.Roads {
@@ -145,6 +146,10 @@ namespace TranSimCS.Roads {
 
         public List<float> PositionOffsets { get; } = new List<float>();
         public List<LaneSpec> LaneSpecs { get; } = new List<LaneSpec>();
+
+        //Indexing component for the road node, maintained by the World class
+        internal ISet<LaneConnection> connections = new HashSet<LaneConnection>(); // Connections to other road segments
+        public ISet<LaneConnection> Connections => new ReadOnlySet<LaneConnection>(connections); // Expose the connections set
 
         // Constructor to initialize the RoadNode with a unique ID, name, position, and world
         public RoadNode(World world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0, float hCurvature = 0, float vCurvature = 0, float tiltCurvature = 0) {
