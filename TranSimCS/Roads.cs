@@ -138,13 +138,66 @@ namespace TranSimCS {
         }
     }
 
-    public enum RoadNodeType {
-        Normal,
-        Start,
-        End,
-        Intersection
+    public struct LaneConnectionSpec {
+        public RoadNode StartNode; // Start node of the lane connection
+        public RoadNode EndNode; // End node of the lane connection
+        public int LeftStartIndex; // Lane index at the start node for the first road segment
+        public int RightStartIndex; // Lane index at the end node for the first road segment
+        public int LeftEndIndex; // Lane index at the start node for the second road segment
+        public int RightEndIndex; // Lane index at the end node for the second road segment
+        public int StartShift; // How many lanes are to the left of the lane connection from the start node
+        public int EndShift; // How many lanes are to the left of the lane connection from the end node
+        public LaneSpec LaneSpec = LaneSpec.Default; // Lane specification for the connection
+
+        public LaneConnectionSpec() {}
+
+        public LaneConnectionSpec(RoadNode startNode, RoadNode endNode, int leftStartIndex, int rightStartIndex, int leftEndIndex, int rightEndIndex, int startShift = 0, int endShift = 0, LaneSpec laneSpec = default) {
+            StartNode = startNode;
+            EndNode = endNode;
+            LeftStartIndex = leftStartIndex;
+            RightStartIndex = rightStartIndex;
+            LeftEndIndex = leftEndIndex;
+            RightEndIndex = rightEndIndex;
+            StartShift = startShift; // How many lanes are to the left of the lane connection from the start node
+            EndShift = endShift; // How many lanes are to the left of the lane connection from the end node
+            LaneSpec = laneSpec; // Lane specification for the connection
+        }
+
+        public override bool Equals(object? obj) {
+            if (obj is LaneConnectionSpec other) {
+                return StartNode == other.StartNode &&
+                       EndNode == other.EndNode &&
+                       LeftStartIndex == other.LeftStartIndex &&
+                       RightStartIndex == other.RightStartIndex &&
+                       LeftEndIndex == other.LeftEndIndex &&
+                       RightEndIndex == other.RightEndIndex &&
+                       StartShift == other.StartShift &&
+                       EndShift == other.EndShift &&
+                       LaneSpec.Equals(other.LaneSpec);
+            }
+            return false;
+        }
+
+        public override int GetHashCode() {
+            HashCode hash = new HashCode();
+            hash.Add(StartNode);
+            hash.Add(EndNode);
+            hash.Add(LeftStartIndex);
+            hash.Add(RightStartIndex);
+            hash.Add(LeftEndIndex);
+            hash.Add(RightEndIndex);
+            hash.Add(StartShift);
+            hash.Add(EndShift);
+            hash.Add(LaneSpec);
+            return hash.ToHashCode(); // Generate a hash code based on the properties of the lane connection specification
+        }
     }
 
+
+    public class LaneConnectionChangedEventArgs(LaneConnectionSpec oldPosition, LaneConnectionSpec newPosition) : EventArgs {
+        public LaneConnectionSpec OldPosition { get; } = oldPosition;
+        public LaneConnectionSpec NewPosition { get; } = newPosition;
+    }
     /// <summary>
     /// Represents a connection between two road nodes, including lane indices and specifications.
     /// </summary>
@@ -153,17 +206,67 @@ namespace TranSimCS {
     /// specifications and rendering-related data, such as meshes for visualization.</remarks>
     public class LaneConnection {
         // Properties to hold the start and end nodes and their respective lane indices
+        private LaneConnectionSpec _spec; // Backing field for the lane connection specification
+        public event EventHandler<LaneConnectionChangedEventArgs> SpecChanged; // Event to notify when the specification changes
+        public LaneConnectionSpec Spec { get => _spec; set {
+            var oldSpec = _spec; // Create a copy of the current specification
+            if (oldSpec.Equals(value)) return; // If the new specification is the same as the old one, do nothing
+            Mesh = null; // Invalidate the mesh when the specification changes
+            SpecChanged?.Invoke(this, new LaneConnectionChangedEventArgs(oldSpec, value)); // Raise the event with old and new specification
+            _spec = value; // Set the new specification
+        } } // Specification for the lane connection
+
+
         //Properties for the first node
-        public RoadNode StartNode { get; init; }
-        public int LeftStartIndex { get; init; } // Lane index at the start node for the first road segment
-        public int RightStartIndex { get; init; } // Lane index at the end node for the first road segment
-        public int StartShift { get; init; } // How many lanes are to the left of the lane connection from the start node
+        public RoadNode StartNode { get => Spec.StartNode; set { 
+            var spec = Spec; // Create a copy of the current specification
+            spec.StartNode = value; // Set the start node
+            Spec = spec; // Update the specification
+        } }
+        public int LeftStartIndex { get => Spec.LeftStartIndex; set {
+            var spec = Spec; // Create a copy of the current specification
+            spec.LeftStartIndex = value; // Set the start node
+            Spec = spec; // Update the specification
+        } } // Lane index at the start node for the first road segment
+        public int RightStartIndex { get => Spec.RightStartIndex; set {
+            var spec = Spec; // Create a copy of the current specification
+            spec.RightStartIndex = value; // Set the start node
+            Spec = spec; // Update the specification
+        } } // Lane index at the end node for the first road segment
+        public int StartShift { get => Spec.StartShift; set {
+            var spec = Spec; // Create a copy of the current specification
+            spec.StartShift = value; // Set the start node
+            Spec = spec; // Update the specification
+        } } // How many lanes are to the left of the lane connection from the start node
 
         //Properties for the second node
-        public RoadNode EndNode { get; init; }
-        public int LeftEndIndex { get; init; } // Lane index at the start node for the second road segment
-        public int RightEndIndex { get; init; } // Lane index at the end node for the second road segment      
-        public int EndShift { get; init; } // How many lanes are to the left of the lane connection from the end node
+        public RoadNode EndNode { get => Spec.EndNode; set {
+            var spec = Spec; // Create a copy of the current specification
+            spec.EndNode = value; // Set the start node
+            Spec = spec; // Update the specification
+        } }
+        public int LeftEndIndex { get => Spec.LeftEndIndex; set {
+            var spec = Spec; // Create a copy of the current specification
+            spec.LeftEndIndex = value; // Set the start node
+            Spec = spec; // Update the specification
+        } } // Lane index at the start node for the second road segment
+        public int RightEndIndex { get => Spec.RightEndIndex; set {
+            var spec = Spec; // Create a copy of the current specification
+            spec.RightEndIndex = value; // Set the start node
+            Spec = spec; // Update the specification
+        } } // Lane index at the end node for the second road segment      
+        public int EndShift { get => Spec.EndShift; set {
+            var spec = Spec; // Create a copy of the current specification
+            spec.EndShift = value; // Set the start node
+            Spec = spec; // Update the specification
+        } } // How many lanes are to the left of the lane connection from the end node
+
+        //Lane specification for the connection
+        public LaneSpec LaneSpec { get => Spec.LaneSpec; set {
+            var spec = Spec; // Create a copy of the current specification
+            spec.LaneSpec = value; // Set the lane specification
+            Spec = spec;
+        } } // Lane specification for the connection
 
         public LaneTag FullSizeTag() {
             return new LaneTag(this, LeftStartIndex, RightStartIndex, LeftEndIndex, RightEndIndex, LaneSpec); // Create a LaneTag with the full size of the connection
@@ -171,19 +274,14 @@ namespace TranSimCS {
 
         //Meshes for the lane connection (can be used for rendering and cached)
         private Mesh? _endMesh; // Mesh for the lane connection at the end node
-        public Mesh? StartMesh { get { 
+        public Mesh? Mesh { get { 
             if (_endMesh != null) return _endMesh; // If the end mesh is set, return it
             _endMesh = new Mesh();
             RoadRenderer.RenderRoadSegment(this, _endMesh); // Otherwise, render the road segment
             return _endMesh; // Return the rendered mesh
         } private set => _endMesh = value; } // Mesh for the lane connection at the start node
 
-        //Properties for the lane connection
-        private LaneSpec LaneSpec0 = LaneSpec.Default ; // Backing field for the lane specification
-        public LaneSpec LaneSpec { get => LaneSpec0; set { 
-            StartMesh = null; // Reset the mesh when the lane specification changes
-            LaneSpec0 = value;
-        } } // Lane specification for the connection
+        
 
         // Constructor to initialize the LaneConnection with start and end nodes and their lane indices
         public LaneConnection(RoadNode node1, RoadNode node2, int lsi, int rsi, int lei, int rei, int ssh = 0, int esh = 0) {
