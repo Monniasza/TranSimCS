@@ -82,33 +82,25 @@ namespace TranSimCS.Roads {
             };
         }
 
-        public HalfLaneConnectionSpec this[SegmentHalf half] {
-            get {
-                return half switch {
-                    SegmentHalf.Start => StartHalf, // Return the start half if the half is SegmentHalf.Start
-                    SegmentHalf.End => EndHalf, // Return the end half if the half is SegmentHalf.End
-                    _ => throw new ArgumentOutOfRangeException(nameof(half), "Invalid segment half specified.") // Throw an exception for invalid segment half
-                };
+        public LaneConnectionSpec SetHalf(SegmentHalf half, HalfLaneConnectionSpec value) {
+            var newSpec = this; // Create a copy of the current lane connection specification
+            if (half == SegmentHalf.Start) {
+                newSpec.StartNode = value.Node; // Set the start node
+                newSpec.LeftStartIndex = value.LeftIndex; // Set the left index for the start node
+                newSpec.RightStartIndex = value.RightIndex; // Set the right index for the start node
+                newSpec.StartShift = value.Shift; // Set the shift for the start node
+            } else if (half == SegmentHalf.End) {
+                newSpec.EndNode = value.Node; // Set the end node
+                newSpec.LeftEndIndex = value.LeftIndex; // Set the left index for the end node
+                newSpec.RightEndIndex = value.RightIndex; // Set the right index for the end node
+                newSpec.EndShift = value.Shift; // Set the shift for the end node
+            } else {
+                throw new ArgumentOutOfRangeException(nameof(half), "Invalid segment half specified."); // Throw an exception for invalid segment half
             }
-            set {
-                if(half == SegmentHalf.Start) {
-                    StartNode = value.Node; // Set the start node
-                    LeftStartIndex = value.LeftIndex; // Set the left index for the start node
-                    RightStartIndex = value.RightIndex; // Set the right index for the start node
-                    StartShift = value.Shift; // Set the shift for the start node
-                    LaneSpec = value.LaneSpec; // Set the lane specification for the start node
-                } else if (half == SegmentHalf.End) {
-                    EndNode = value.Node; // Set the end node
-                    LeftEndIndex = value.LeftIndex; // Set the left index for the end node
-                    RightEndIndex = value.RightIndex; // Set the right index for the end node
-                    EndShift = value.Shift; // Set the shift for the end node
-                    LaneSpec = value.LaneSpec; // Set the lane specification for the end node
-                } else {
-                    throw new ArgumentOutOfRangeException(nameof(half), "Invalid segment half specified."); // Throw an exception for invalid segment half
-                }
-            }
+            return newSpec; // Return the updated lane connection specification
         }
 
+        //Equality methods for LaneConnectionSpec
         public override bool Equals(object obj) {
             if (obj is LaneConnectionSpec other) {
                 return StartNode == other.StartNode &&
@@ -123,7 +115,6 @@ namespace TranSimCS.Roads {
             }
             return false;
         }
-
         public override int GetHashCode() {
             HashCode hash = new HashCode();
             hash.Add(StartNode);
@@ -212,7 +203,7 @@ namespace TranSimCS.Roads {
                 throw new ArgumentException("Start and end nodes cannot be the same.", nameof(value));
 
             //Fire the event before changing the specification
-            Mesh = null; // Invalidate the mesh when the specification changes
+            InvalidateMesh(); // Invalidate the mesh when the specification changes
             SpecChanged?.Invoke(this, new LaneConnectionChangedEventArgs(oldSpec, value)); // Raise the event with old and new specification
             _spec = value; // Set the new specification
         } } // Specification for the lane connection

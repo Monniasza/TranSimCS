@@ -24,20 +24,7 @@ namespace TranSimCS
             return MathF.Sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
         }
 
-        /// <summary>
-        /// Calculates the end position of a line segment given a starting position, an offset, and an angle.
-        /// </summary>
-        /// <param name="nodePos">road node position</param>
-        /// <param name="offset">Offset from the centerline</param>
-        /// <param name="angle">Angle in the 2^32 field</param>
-        /// <returns></returns>
-        public static Vector3 calcLineEnd(Vector3 nodePos, float offset, int angle)
-        {
-            float radians = (angle / (float)(1L << 32)) * MathF.PI * 2; // Convert angle to radians
-            float x = nodePos.X + offset * MathF.Cos(radians);
-            float z = nodePos.Z - offset * MathF.Sin(radians);
-            return new Vector3(x, nodePos.Y, z); // Return the end position as a Vector3
-        }
+        
 
         public readonly struct LineEnd{
             public Vector3 Position { get; }
@@ -53,6 +40,14 @@ namespace TranSimCS
                 Radius = radius;
             }
         }
+
+        /// <summary>
+        /// Calculates the end position of a line segment given a starting position, an offset, and an angle.
+        /// </summary>
+        /// <param name="nodePos">road node position</param>
+        /// <param name="offset">Offset from the centerline</param>
+        /// <param name="angle">Angle in the 2^32 field</param>
+        /// <returns></returns>
         public static LineEnd calcLineEnd2(RoadNode node, int laneIndex) {
             float offset = node.PositionOffsets[laneIndex];
             Vector3 nodePos = node.Position;
@@ -71,9 +66,6 @@ namespace TranSimCS
 
             return new LineEnd(position, tangential, normal, lateral, radius); // Return the end position as a Vector3
         }
-
-        public static Vector3 calcLineEnd(RoadNode node, int laneIndex)  => calcLineEnd(node.Position, node.PositionOffsets[laneIndex], node.Azimuth);
-    
         
         public static Bezier3 GenerateJoinSpline(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent){
             float tangentLength = Vector3.Distance(startPos, endPos) * 0.5f;

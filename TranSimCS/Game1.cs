@@ -89,7 +89,7 @@ namespace TranSimCS
             roadTexture = Content.Load<Texture2D>("laneTex");
         }
         public RoadSelection? MouseOverRoad { get; private set; } = null; // Store the selected road selection
-        public RoadSelection? SelectedRoadSelection { get; set; } = null; // Store the selected road selection
+        //public RoadSelection? SelectedRoadSelection { get; set; } = null; // Store the selected road selection
 
         public Ray MouseRay {get; private set; } // Ray from the mouse position in the world
 
@@ -183,8 +183,9 @@ namespace TranSimCS
                 // If a road segment is selected, remove it from the world
                 if (MouseOverRoad != null) {
                     Debug.Print($"Demolishing road segment: {MouseOverRoad.SelectedLaneTag.road}");
-                    world.RoadSegments.Remove(MouseOverRoad.SelectedLaneTag.road); // Remove the selected road segment from the world
                     MouseOverRoad = null; // Reset the mouse over road selection
+                    world.RoadSegments.Remove(MouseOverRoad.SelectedLaneTag.road); // Remove the selected road segment from the world
+                    
                 }
             }
             //Demolish the lane on a selected node if the right mouse button is clicked
@@ -197,8 +198,9 @@ namespace TranSimCS
                     var selectedRoadHalf = selectedRoadSpec.GetHalf(MouseOverRoad.SelectedRoadHalf);
                     var selectedNode = selectedRoadHalf.Node;// Get the node of the selected road half
                     Debug.Print($"Demolishing lane: {laneNum} of segment {selectedRoad.StartNode.Id} to {selectedRoad.EndNode.Id}");
-                    Roads.Roads.RemoveLane(laneNum, selectedNode, 0); // Remove the lane from the selected node
                     MouseOverRoad = null; // Reset the mouse over road selection
+                    Roads.Roads.RemoveLane(laneNum, selectedNode, 0); // Remove the lane from the selected node
+                    
                 }
             }
 

@@ -25,22 +25,13 @@ namespace TranSimCS.Roads {
             var afterSegs = new List<LaneConnection>();
             var onSegs = new List<LaneConnection>();
             foreach (var segment in affectedSegments) {
-                var segmentSpec = segment.Spec; // Get the segment specification
-                HalfLaneConnectionSpec connSpec;
-                SegmentHalf segmentHalf = SegmentHalf.Start; // Assume the start half is the one we are interested in
-                if (segmentSpec.StartNode == node) {
-                    connSpec = segmentSpec.StartHalf; // Get the connection specification for the start node
-                    segmentHalf = SegmentHalf.Start; // Start half is the one we are interested in
-                } else if (segmentSpec.EndNode == node) {
-                    connSpec = segmentSpec.EndHalf; // Get the connection specification for the end node
-                    segmentHalf = SegmentHalf.End; // End half is the one we are interested in
-                } else {
-                    node.connections.Remove(segment); // Remove the segment if it does not connect to the node
-                    throw new InvalidOperationException("Segment does not connect to the specified node.");
-                }
+                var spec = segment.Spec; // Get the segment specification
+                var halfSpecs = spec.GetHalf(node); // Get the connection specification for the segment half
+                var halfSpec = halfSpecs.Item2; // Get the connection specification for the specified segment half
+                var half = halfSpecs.Item1;
 
                 //Categorize the lane based on its index
-                int category = CategorizeLane(laneIdx, connSpec); // Categorize the lane based on its index
+                int category = CategorizeLane(laneIdx, halfSpec); // Categorize the lane based on its index
                 Debug.Print($"Categorized lane {laneIdx} as {category} for segment {segment.StartNode.Id} to {segment.EndNode.Id} on node {node.Id}");
                 if (category == 0) beforeSegs.Add(segment); // Lane is before the specified lane
                 else if (category == 1) onSegs.Add(segment); // Lane is on the specified lane
@@ -54,13 +45,13 @@ namespace TranSimCS.Roads {
             //Connections that are after the removed lane should be moved left by one spot
             foreach (var segment in afterSegs) {
                 var spec = segment.Spec; // Get the segment specification
-                var connSpecs = spec.GetHalf(node); // Get the connection specification for the segment half
-                var connSpec = connSpecs.Item2; // Get the connection specification for the specified segment half
-                var half = connSpecs.Item1;
+                var halfSpecs = spec.GetHalf(node); // Get the connection specification for the segment half
+                var halfSpec = halfSpecs.Item2; // Get the connection specification for the specified segment half
+                var half = halfSpecs.Item1;
                 // Move the right lanes to the left by one spot
-                connSpec.LeftIndex -= 1;
-                connSpec.RightIndex -= 1;
-                spec[half] = connSpec; // Update the segment specification with the modified connection specification
+                halfSpec.LeftIndex -= 1;
+                halfSpec.RightIndex -= 1;
+                spec = spec.SetHalf(half, halfSpec); // Update the segment specification with the modified connection specification
                 segment.Spec = spec; // Update the segment specification
                 segment.InvalidateMesh(); // Invalidate the mesh of the segment to force a redraw
             }
@@ -77,7 +68,7 @@ namespace TranSimCS.Roads {
                 } else {
                     connSpec.LeftIndex -= 1; // If the right index is not greater than the lane index, move the left index
                 }
-                spec[half] = connSpec; // Update the segment specification with the modified connection specification
+                spec = spec.SetHalf(half, connSpec); // Update the segment specification with the modified connection specification
                 segment.Spec = spec; // Update the segment specification
 
                 segment.InvalidateMesh(); // Invalidate the mesh of the segment to force a redraw
@@ -102,7 +93,6 @@ namespace TranSimCS.Roads {
         }
         // 0 for before, 1 for on lane, 2 for after
         private static int CategorizeLane(int laneIdx, HalfLaneConnectionSpec spec) {
-            bool isReversed = spec.IsReversed; // Check if the lane is reversed
             int llimit = spec.LeftIndex; // Get the left lane limit
             int rlimit = spec.RightIndex; // Get the right lane limit
 
