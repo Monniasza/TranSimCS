@@ -55,7 +55,6 @@ namespace TranSimCS
             int endingLanes = rendIdx - lendIdx; // How many lanes are open at the start node
             int leftShift = shle - shls; // How many lanes open to the left (negative means that the left lanes close)
             int rightShift = endingLanes - startingLanes - leftShift; // How many lanes open to the right (negative means that the right lanes close)
-            int totalLanes = startingLanes + Math.Abs(leftShift) + Math.Abs(rightShift); // Total lanes after the connection
             int closingLeftLanes = Math.Max(0, -leftShift); // How many lanes close to the left
             int openingLeftLanes = Math.Max(0, leftShift); // How many lanes open to the left
             int closingRightLanes = Math.Max(0, -rightShift); // How many lanes close to the right
@@ -77,9 +76,9 @@ namespace TranSimCS
 
             RoadStrip strip = new RoadStrip(start, end); // Create a new road strip to hold the connections
 
-            // Generate lane connections based on the calculated indices and shifts
-            GenerateOneToOneConnections(strip, lstartIdx, unchangingLanesStartLeft, lendIdx, unchangingLanesEndLeft); // Connect left lanes
-            GenerateOneToOneConnections(strip, unchangingLanesStartRight, rstartIdx, unchangingLanesEndRight, rendIdx); // Connect right lanes
+            // Generate lane connections based on the calculated indices and shifts (BROKEN, exit lanes do not generate)
+            GenerateOneToOneConnections(strip, lstartIdx, unchangingLanesStartLeft+1, lendIdx, unchangingLanesEndLeft+1); // Connect left lanes
+            GenerateOneToOneConnections(strip, unchangingLanesStartRight-1, rstartIdx, unchangingLanesEndRight-1, rendIdx); // Connect right lanes
             for(int i = 0; i < unchangingLanesCount; i++) {
                 int startIdx = unchangingLanesStartLeft + i; // Calculate the starting index for the lane
                 int endIdx = unchangingLanesEndLeft + i; // Calculate the ending index for the lane
