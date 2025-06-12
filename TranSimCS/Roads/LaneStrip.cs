@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace TranSimCS.Roads {
-    public class LaneStrip {
+    public class LaneStrip : IEquatable<LaneStrip> {
         private Lane startLane;
         private Lane endLane;
         public readonly RoadStrip road;
@@ -68,6 +68,30 @@ namespace TranSimCS.Roads {
             StartLane = null;
             EndLane = null;
             road.RemoveLaneStrip(this);
+        }
+
+        public override bool Equals(object obj) {
+            return Equals(obj as LaneStrip);
+        }
+
+        public bool Equals(LaneStrip other) {
+            return other is not null &&
+                   EqualityComparer<Lane>.Default.Equals(startLane, other.startLane) &&
+                   EqualityComparer<Lane>.Default.Equals(endLane, other.endLane) &&
+                   EqualityComparer<RoadStrip>.Default.Equals(road, other.road) &&
+                   EqualityComparer<LaneSpec>.Default.Equals(spec, other.spec);
+        }
+
+        public override int GetHashCode() {
+            return HashCode.Combine(startLane, endLane, road, spec);
+        }
+
+        public static bool operator ==(LaneStrip left, LaneStrip right) {
+            return EqualityComparer<LaneStrip>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(LaneStrip left, LaneStrip right) {
+            return !(left == right);
         }
     }
 }

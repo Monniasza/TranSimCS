@@ -75,9 +75,13 @@ namespace TranSimCS
 
             RoadStrip strip = new RoadStrip(start, end); // Create a new road strip to hold the connections
 
-            // Generate lane connections based on the calculated indices and shifts (BROKEN, exit lanes do not generate)
-            GenerateOneToOneConnections(strip, lstartIdx, unchangingLanesStartLeft+1, lendIdx, unchangingLanesEndLeft+1); // Connect left lanes
-            GenerateOneToOneConnections(strip, unchangingLanesStartRight-1, rstartIdx, unchangingLanesEndRight-1, rendIdx); // Connect right lanes
+            //Generate the left changing section of the road
+            for(int i = 0; i < closingLeftLanes; i++) 
+                JoinLanesByIndices(strip, lstartIdx+i, lendIdx);
+            for(int i = 0; i < openingLeftLanes; i++)
+                JoinLanesByIndices(strip, lstartIdx, lendIdx+i);
+
+            // Generate lane connections based on the calculated indices and shifts
             for(int i = 0; i < unchangingLanesCount; i++) {
                 int startIdx = unchangingLanesStartLeft + i; // Calculate the starting index for the lane
                 int endIdx = unchangingLanesEndLeft + i; // Calculate the ending index for the lane
@@ -87,6 +91,11 @@ namespace TranSimCS
                 strip.AddLaneStrip(laneStrip); // Add the lane strip to the road strip
             }
 
+            //Generate the right changing section of the road
+            for(int i = 0; i < closingRightLanes; i++)
+                JoinLanesByIndices(strip, unchangingLanesStartRight + i, unchangingLanesEndRight-1);
+            for(int i = 0; i < openingRightLanes; i++)
+                JoinLanesByIndices(strip, unchangingLanesStartRight-1, unchangingLanesEndRight+i);
             return strip; // Return the created road strip
         }
         public static void GenerateOneToOneConnections(RoadStrip strip, int lstartIdx, int rstartIdx, int lendIdx, int rendIdx) {
@@ -98,6 +107,13 @@ namespace TranSimCS
                     strip.AddLaneStrip(laneStrip); // Add the lane strip to the road strip
                 }
             }
+        }
+
+        public static void JoinLanesByIndices(RoadStrip strip, int startIdx, int endIdx) {
+            Lane startLane = strip.StartNode.Lanes[startIdx];
+            Lane endLane = strip.EndNode.Lanes[endIdx];
+            LaneStrip laneStrip = new LaneStrip(strip, startLane, endLane); // Create a new lane strip connecting the start and end lanes
+            strip.AddLaneStrip(laneStrip); // Add the lane strip to the road strip
         }
     }
 }
