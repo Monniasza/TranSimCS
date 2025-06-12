@@ -1,0 +1,19 @@
+Here's a new idea for managing road segments:
+
+A lane is a part of one road node, allowing one vehicle in parallel
+A lane strip is a connection between two lanes of two same (U-turn) or different road nodes
+A road strip is an ordered collection of lane strips, from the left to the right
+
+Each lane strip belongs to one road strip
+Road strips can't be duplicated in the same direction like this:
+-OK: Strips A-B and A-C
+-OK: Strips A-B and B-A
+-OK: Strips A-A and A-B
+-Not allowed: Strips A-B and A-B
+-Not allowed: Strips A-A and A-A
+
+Drawbacks of this technique:
+-Lanes are only one way
+
+Variant: Lane strips can't be duplicated disregarding their direction
+This allows two-way lanes, but slightly complicates vehicle AI
