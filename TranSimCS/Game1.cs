@@ -121,16 +121,13 @@ namespace TranSimCS
             MouseOverRoad = null; // Reset the selected road selection
 
             //Road selection logic
-            foreach (var road in world.RoadSegments) {
-                //Select the road segment if the mouse is over it
-                foreach (var segment in world.RoadSegments) {
-                    // Check if the ray intersects with the road segment
-                    object tag = MeshUtil.RayIntersectMesh(segment.WholeNodeMesh, ray, out float intersectionDistance);
-                    if (tag is LaneStrip laneStrip && laneStrip.road == segment) {
-                        MouseOverRoad = new RoadSelection(laneStrip, intersectionDistance, ray); // Create a new road selection with the lane tag and intersection distance
-                    }
-                }                
-            }
+            ForeachLane(world.RoadSegments, (lane) => {
+                // Check if the ray intersects with the road segment
+                object tag = MeshUtil.RayIntersectMesh(lane.GetMesh(), ray, out float intersectionDistance);
+                if (tag is LaneStrip laneStrip && laneStrip == lane) {
+                    MouseOverRoad = new RoadSelection(laneStrip, intersectionDistance, ray); // Create a new road selection with the lane tag and intersection distance
+                }
+            });
 
             //Handle scroll wheel input for zooming in and out
             if (mouseState.ScrollWheelValue != scrollWheelValue) {
@@ -220,7 +217,9 @@ namespace TranSimCS
             IRenderBin renderBin = renderHelper.GetOrCreateRenderBin(roadTexture);
 
             // Draw the asphalt texture for the road
-            DrawRoadSegments(world.RoadSegments, (connection) => renderBin.DrawModel(connection.WholeNodeMesh));
+            foreach(var roadSegment in world.RoadSegments) {
+                RoadRenderer.RenderRoadSegment(roadSegment, renderBin, 0.001f); // Render each road segment with a slight vertical offset
+            }
 
             //If a road segment is selected, draw the selection
             var roadSelection = MouseOverRoad;
@@ -250,8 +249,11 @@ namespace TranSimCS
             base.Draw(gameTime);
         }
 
-        private void DrawRoadSegments(ICollection<RoadStrip> segments, Action<RoadStrip> action){
-            foreach (var segment in segments) action(segment);
+        private void ForeachLane(ICollection<RoadStrip> segments, Action<LaneStrip> action){
+            foreach (var segment in segments)
+                foreach(var lane in segment.Lanes) 
+                    action(lane);
+                
         }
 
         private readonly Vector3 v1 = new(-1,  1, 0);

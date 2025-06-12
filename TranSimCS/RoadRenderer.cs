@@ -10,8 +10,13 @@ namespace TranSimCS {
         /// </summary>
         /// <param name="connection">road segment</param>
         /// <param name="renderHelper">render helper</param>
-        public static void RenderRoadSegment(RoadStrip connection, IRenderBin renderHelper, float voffset = 0) {
+        public static void GenerateRoadSegmentBoundingMesh(RoadStrip connection, IRenderBin renderHelper, float voffset = 0) {
             
+        }
+        public static void RenderRoadSegment(RoadStrip connection, IRenderBin renderHelper, float voffset = 0) {
+            foreach(var lane in connection.Lanes) { // Iterate through each lane in the road segment
+                renderHelper.DrawModel(lane.GetMesh()); // Draw the mesh of the lane with the specified vertical offset
+            }
         }
         public static void GenerateLaneStripMesh(LaneStrip laneStrip, IRenderBin renderer, float voffset = 0) {
             var startLane = laneStrip.StartLane; // Starting lane of the lane strip
