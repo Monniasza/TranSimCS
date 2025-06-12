@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Iesi.Collections.Generic;
 using Microsoft.Xna.Framework;
 
@@ -144,12 +145,34 @@ namespace TranSimCS.Roads {
             }
         } // Tilt curvature of the road node in rad/meter, default is 0 (no tilt curvature)
 
-        public List<float> PositionOffsets { get; } = new List<float>();
-        public List<LaneSpec> LaneSpecs { get; } = new List<LaneSpec>();
+        //Lane structure
+        private readonly List<Lane> _lanes = new List<Lane>(); // List to hold lanes associated with this road node
+        public void AddLane(Lane lane) {
+            if(lane == null) throw new ArgumentNullException(nameof(lane), "Lane cannot be null.");
+            if(lane.RoadNode != this) throw new ArgumentException("Lane does not belong to this road node.", nameof(lane));
+            var middlePosition = (lane.LeftPosition + lane.RightPosition) / 2; // Calculate the middle position of the lane
+            int index = _lanes.FindIndex(lane1 => lane1.MiddlePosition > middlePosition); // Find the index where the lane should be inserted
+            //Shift existing lanes to the right if necessary
+            var lanesToShift = _lanes.Skip(index).ToList(); // Get the lanes that will be shifted
+            foreach (var l in lanesToShift) 
+                l.Index++; // Increment the index of each lane that will be shifted
+            lane.Index = index; // Set the index of the new lane
+            _lanes.Add(lane); // Add the lane to the list
+        }
+        public void RemoveLane(Lane lane) {
+            if(lane == null) throw new ArgumentNullException(nameof(lane), "Lane cannot be null.");
+            if(!_lanes.Remove(lane)) throw new ArgumentException("Lane does not belong to this road node.", nameof(lane));
+            //Shift existing lanes to the left if necessary
+            var lanesToShift = _lanes.Skip(lane.Index).ToList(); // Get the lanes that will be shifted
+            foreach (var l in lanesToShift) 
+                l.Index--; // Decrement the index of each lane that will be shifted
+            //Remove connected lanes from the connections
+        }
+        public IReadOnlyList<Lane> Lanes => _lanes.AsReadOnly(); // Expose the lanes as a read-only list
 
         //Indexing component for the road node, maintained by the World class
-        internal ISet<LaneConnection> connections = new HashSet<LaneConnection>(); // Connections to other road segments
-        public ISet<LaneConnection> Connections => new ReadOnlySet<LaneConnection>(connections); // Expose the connections set
+        internal ISet<RoadStrip> connections = new HashSet<RoadStrip>(); // Connections to other road segments
+        public ISet<RoadStrip> Connections => new ReadOnlySet<RoadStrip>(connections); // Expose the connections set
 
         // Constructor to initialize the RoadNode with a unique ID, name, position, and world
         public RoadNode(World world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0, float hCurvature = 0, float vCurvature = 0, float tiltCurvature = 0) {

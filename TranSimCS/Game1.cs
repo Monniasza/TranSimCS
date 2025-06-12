@@ -125,7 +125,7 @@ namespace TranSimCS
                 //Select the road segment if the mouse is over it
                 foreach (var segment in world.RoadSegments) {
                     // Check if the ray intersects with the road segment
-                    object tag = MeshUtil.RayIntersectMesh(segment.Mesh, ray, out float intersectionDistance);
+                    object tag = MeshUtil.RayIntersectMesh(segment.WholeNodeMesh, ray, out float intersectionDistance);
                     if (tag is LaneTag laneTag && laneTag.road == segment) {
                         MouseOverRoad = new RoadSelection(laneTag, intersectionDistance, ray); // Create a new road selection with the lane tag and intersection distance
                     }
@@ -220,7 +220,7 @@ namespace TranSimCS
             IRenderBin renderBin = renderHelper.GetOrCreateRenderBin(roadTexture);
 
             // Draw the asphalt texture for the road
-            DrawRoadSegments(world.RoadSegments, (connection) => renderBin.DrawModel(connection.Mesh));
+            DrawRoadSegments(world.RoadSegments, (connection) => renderBin.DrawModel(connection.WholeNodeMesh));
 
             //If a road segment is selected, draw the selection
             var roadSelection = MouseOverRoad;
@@ -250,7 +250,7 @@ namespace TranSimCS
             base.Draw(gameTime);
         }
 
-        private void DrawRoadSegments(ICollection<LaneConnection> segments, Action<LaneConnection> action){
+        private void DrawRoadSegments(ICollection<RoadStrip> segments, Action<RoadStrip> action){
             foreach (var segment in segments) action(segment);
         }
 

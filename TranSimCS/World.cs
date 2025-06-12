@@ -11,7 +11,7 @@ namespace TranSimCS
 {
     public class World
     {
-        public ObservableCollection<LaneConnection> RoadSegments { get; } = new();
+        public ObservableCollection<RoadStrip> RoadSegments { get; } = new();
         public ObservableCollection<RoadNode> RoadNodes { get; } = new();
 
         public World() {
@@ -22,20 +22,28 @@ namespace TranSimCS
         private void RoadSegments_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) {
             // Handle changes to the road segments collection if needed
             // For example, you could log changes or update UI elements
-            foreach (var segment in e.NewItems?.OfType<LaneConnection>() ?? Enumerable.Empty<LaneConnection>())
+            foreach (var segment in e.NewItems?.OfType<RoadStrip>() ?? Enumerable.Empty<RoadStrip>())
                 HandleAddRoadSegment(segment); // Handle the addition of a new road segment
-            foreach (var segment in e.OldItems?.OfType<LaneConnection>() ?? Enumerable.Empty<LaneConnection>())
+            foreach (var segment in e.OldItems?.OfType<RoadStrip>() ?? Enumerable.Empty<RoadStrip>())
                 HandleRemoveRoadSegment(segment); // Handle the removal of a road segment
         }
-        private void HandleAddRoadSegment(LaneConnection segment) {
+        private void HandleAddRoadSegment(RoadStrip segment) {
             // Handle the addition of a new road segment
-            segment.SpecChanged += RoadSegmentChanged; // Subscribe to changes in the road segment
+            segment.OnLaneRemoved += LaneRemovedFromRoad; // Subscribe to lane removal events in the road segment
+            segment.OnLaneAdded += LaneAddedToRoad; // Subscribe to lane addition events in the road segment
         }
-        private void HandleRemoveRoadSegment(LaneConnection segment) {
+        private void HandleRemoveRoadSegment(RoadStrip segment) {
             // Handle the removal of a road segment
-            segment.SpecChanged -= RoadSegmentChanged; // Unsubscribe from changes in the road segment                                        //Remove node connections that are no longer valid
-            segment.StartNode = null; // Clear the start node reference
-            segment.EndNode = null; // Clear the end node reference
+            segment.OnLaneAdded -= LaneAddedToRoad; // Unsubscribe from lane addition events in the road segment
+            segment.OnLaneRemoved -= LaneRemovedFromRoad; // Unsubscribe from lane removal events in the road segment
+
+            //Remove node connections that are no longer valid
+        }
+        private void LaneAddedToRoad(object sender, RoadStripEventArgs e) {
+            //Handle the addition of a new lane to a road segment
+        }
+        private void LaneRemovedFromRoad(object sender, RoadStripEventArgs e) {
+            //Handle the removal of a lane from a road segment
         }
 
         private void RoadNodes_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) {
@@ -59,11 +67,6 @@ namespace TranSimCS
             }
         }
 
-        private void RoadSegmentChanged(object sender, LaneConnectionChangedEventArgs e) {
-            // Handle changes to a specific road segment
-            // For example, you could log changes or update UI elements
-            
-        }
         private void RoadNodePositionChanged(object sender, NodePositionChangedEventArgs e) {
             if(sender is RoadNode node) {
                 foreach(var segment in node.connections) {

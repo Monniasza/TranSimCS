@@ -1,8 +1,11 @@
 Here's a new idea for managing road segments:
 
+A road node is a point through which lanes can pass, enabling vehicle traffic
 A lane is a part of one road node, allowing one vehicle in parallel
 A lane strip is a connection between two lanes of two same (U-turn) or different road nodes
 A road strip is an ordered collection of lane strips, from the left to the right
+
+Using lanes instead of combination of lane positions and lane specs improves consistency of road modifications and allows gaps between lanes
 
 Each lane strip belongs to one road strip
 Road strips can't be duplicated in the same direction like this:

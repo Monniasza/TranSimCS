@@ -41,15 +41,7 @@ namespace TranSimCS
             }
         }
 
-        /// <summary>
-        /// Calculates the end position of a line segment given a starting position, an offset, and an angle.
-        /// </summary>
-        /// <param name="nodePos">road node position</param>
-        /// <param name="offset">Offset from the centerline</param>
-        /// <param name="angle">Angle in the 2^32 field</param>
-        /// <returns></returns>
-        public static LineEnd calcLineEnd2(RoadNode node, int laneIndex) {
-            float offset = node.PositionOffsets[laneIndex];
+        public static LineEnd calcLineEnd(RoadNode node, float offset) {
             Vector3 nodePos = node.Position;
             int angle = node.Azimuth; // Azimuth angle in the 2^32 field
             float radians = (angle / (float)(1L << 32)) * MathF.PI * 2; // Convert angle to radians
@@ -66,7 +58,7 @@ namespace TranSimCS
 
             return new LineEnd(position, tangential, normal, lateral, radius); // Return the end position as a Vector3
         }
-        
+
         public static Bezier3 GenerateJoinSpline(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent){
             float tangentLength = Vector3.Distance(startPos, endPos) * 0.5f;
             Vector3 a = startPos;
