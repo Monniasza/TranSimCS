@@ -16,14 +16,14 @@ namespace TranSimCS {
         public static void GenerateLaneStripMesh(LaneStrip laneStrip, IRenderBin renderer, float voffset = 0) {
             var startLane = laneStrip.StartLane; // Starting lane of the lane strip
             var endLane = laneStrip.EndLane; // Ending lane of the lane strip
-            var tag = new LaneTag(laneStrip.road, startLane, startLane, endLane, endLane); // Create a tag for the lane
-            GenerateLaneTagMesh(tag, renderer, laneStrip.spec.Color, voffset); // Generate the lane tag mesh
+            var tag = new LaneRange(laneStrip.road, startLane, startLane, endLane, endLane); // Create a tag for the lane
+            GenerateLaneRangeMesh(tag, renderer, laneStrip.spec.Color, voffset, laneStrip); // Generate the lane tag mesh
         }
 
-        public static void GenerateLaneTagMesh(LaneTag tag, IRenderBin renderer, Color color, float voffset = 0) {
+        public static void GenerateLaneRangeMesh(LaneRange range, IRenderBin renderer, Color color, float voffset = 0, object tag = null) {
             var offset = new Vector3(0, voffset, 0); // Offset for the lane position
 
-            var strips = GenerateSplines(tag, voffset); // Generate the splines for the left and right lanes
+            var strips = GenerateSplines(range, voffset); // Generate the splines for the left and right lanes
 
             //Generate border curves
             Vector3[] leftBorder = Geometry.GenerateSplinePoints(strips.Item1, 10);
@@ -36,10 +36,13 @@ namespace TranSimCS {
 
             //Draw strip representing the lane
             renderer.DrawStrip(strip);
-            renderer.AddTagsToLastTriangles(triangleCount, tag); // Add tags to the last triangles in the strip
+
+            //Apply the tag to the last triangles in the strip
+            object tagToUse = tag ?? range; // Use the provided tag or the lane range as the default tag
+            renderer.AddTagsToLastTriangles(triangleCount, tagToUse); // Add tags to the last triangles in the strip
         }
 
-        public static (Bezier3, Bezier3) GenerateSplines(LaneTag laneTag, float voffset = 0) {
+        public static (Bezier3, Bezier3) GenerateSplines(LaneRange laneTag, float voffset = 0) {
             return GenerateSplines(laneTag.startLaneIndexL, laneTag.startLaneIndexR, laneTag.endLaneIndexL, laneTag.endLaneIndexR, voffset);
         }
 

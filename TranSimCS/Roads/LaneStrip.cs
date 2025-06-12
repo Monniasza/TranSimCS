@@ -32,7 +32,7 @@ namespace TranSimCS.Roads {
             }
         }
 
-        public LaneTag Tag => new LaneTag(road, StartLane, StartLane, EndLane, EndLane); // Create a LaneTag for the lane strip, which includes the road and the start and end lanes
+        public LaneRange Tag => new LaneRange(road, StartLane, StartLane, EndLane, EndLane); // Create a LaneTag for the lane strip, which includes the road and the start and end lanes
 
         public LaneStrip(RoadStrip road, Lane startLane, Lane endLane) {
             this.road = road; // Reference to the road this lane strip belongs to
@@ -51,6 +51,16 @@ namespace TranSimCS.Roads {
         }
         public void InvalidateMesh() {
             mesh = null; // Invalidate the cached mesh, forcing it to be regenerated next time
+        }
+
+        public Lane GetHalf(SegmentHalf selectedRoadHalf) {
+            if(selectedRoadHalf == SegmentHalf.Start) {
+                return StartLane; // Return the starting lane if the selected half is Start
+            } else if (selectedRoadHalf == SegmentHalf.End) {
+                return EndLane; // Return the ending lane if the selected half is End
+            } else {
+                throw new ArgumentException("Invalid segment half specified."); // Throw an exception for invalid segment half
+            }
         }
     }
 }

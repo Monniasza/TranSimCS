@@ -9,13 +9,13 @@ namespace TranSimCS.Roads {
         End // Represents the right half of a road segment
     }
 
-    public struct LaneTag {
+    public struct LaneRange {
         public RoadStrip road; // The road connection this tag is associated with
         public Lane startLaneIndexL; // The starting lane index for the tag
         public Lane startLaneIndexR;
         public Lane endLaneIndexL;
         public Lane endLaneIndexR;
-        public LaneTag(RoadStrip road, Lane startLaneIndexL, Lane startLaneIndexR, Lane endLaneIndexL, Lane endLaneIndexR) {
+        public LaneRange(RoadStrip road, Lane startLaneIndexL, Lane startLaneIndexR, Lane endLaneIndexL, Lane endLaneIndexR) {
             this.road = road;
             this.startLaneIndexL = startLaneIndexL;
             this.startLaneIndexR = startLaneIndexR;
@@ -37,8 +37,20 @@ namespace TranSimCS.Roads {
     /// <remarks>A <see cref="RoadStrip"/> defines the relationship between two road nodes, specifying
     /// the lanes involved at each node and their respective indices. It also includes properties for lane
     /// specifications and rendering-related data, such as meshes for visualization.</remarks>
-    public class RoadStrip {
+    public class RoadStrip(RoadNode startNode, RoadNode endNode) {
         // Properties to hold the start and end nodes and their respective lane indices
+        public readonly RoadNode StartNode = startNode; // The starting road node of the connection
+        public readonly RoadNode EndNode = endNode;
+        public RoadNode GetHalf(SegmentHalf selectedRoadHalf) {
+            if (selectedRoadHalf == SegmentHalf.Start) {
+                return StartNode; // Return the start node if the selected half is Start
+            } else if (selectedRoadHalf == SegmentHalf.End) {
+                return EndNode; // Return the end node if the selected half is End
+            } else {
+                throw new ArgumentException("Invalid segment half specified."); // Throw an exception for invalid segment half
+            }
+        }
+
         private List<LaneStrip> lanes = new(); // List of lane strips associated with this road connection
         public void AddLaneStrip(LaneStrip laneStrip) {
             lanes.Add(laneStrip); // Add a new lane strip to the connection
@@ -54,9 +66,9 @@ namespace TranSimCS.Roads {
         public event EventHandler<RoadStripEventArgs>? OnLaneAdded; // Event triggered when lanes are added or removed
         public event EventHandler<RoadStripEventArgs>? OnLaneRemoved; // Event triggered when lanes are removed
 
-        public LaneTag FullSizeTag() {
+        public LaneRange FullSizeTag() {
             int maxIdx = lanes.Count - 1; // Get the maximum index of the lanes
-            return new LaneTag(this, lanes[0].StartLane, lanes[maxIdx].StartLane, lanes[0].EndLane, lanes[maxIdx].EndLane); // Create a LaneTag with the full size of the connection
+            return new LaneRange(this, lanes[0].StartLane, lanes[maxIdx].StartLane, lanes[0].EndLane, lanes[maxIdx].EndLane); // Create a LaneTag with the full size of the connection
         }
 
         //Meshes for the lane connection (can be used for rendering and cached)

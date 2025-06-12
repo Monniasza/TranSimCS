@@ -10,17 +10,10 @@ namespace TranSimCS
 {
     internal static class Generator
     {
-        public static void GenerateLanes(int count, RoadNode node, float laneWidth = 3.5f, float offset = 0)
-        {
+        public static void GenerateLanes(int count, RoadNode node, float laneWidth = 3.5f, float offset = 0){
             if (count < 1)  throw new ArgumentException("Count must be at least 1.", nameof(count));
             // Clear existing position offsets
-            node.PositionOffsets.Clear();
-            // Generate lane positions based on the count and lane width
-            for (int i = 0; i <= count; i++)
-            {
-                float pos = i * laneWidth + offset;
-                node.PositionOffsets.Add(pos);
-            }
+            node.ClearLanes();
             //Generate lane specifications for each lane
             for (int i = 0; i < count; i++)
             {
@@ -29,7 +22,83 @@ namespace TranSimCS
                     Color = Color.Gray, // Default color, can be customized
                     VehicleTypes = VehicleTypes.All // Default to all vehicle types, can be customized
                 };
-                node.LaneSpecs.Add(laneSpec);
+                var lposition = offset + i * laneWidth; // Calculate the left position for the lane
+                var rposition = lposition + laneWidth; // Calculate the right position for the lane
+                Lane lane = new Lane
+                {
+                    RoadNode = node, // Set the road node for the lane
+                    Spec = laneSpec, // Set the lane specification
+                    LeftPosition = lposition, // Set the left position
+                    RightPosition = rposition, // Set the right position
+                    Index = i // Set the index of the lane
+                };
+                node.AddLane(lane); // Add the lane to the road node
+            }
+        }
+
+        /// <summary>
+        /// Generates a road strip connecting two road nodes with specified lane indices and shifts.
+        /// </summary>
+        /// <param name="start">starting road node</param>
+        /// <param name="lstartIdx">left start index, inclusive</param>
+        /// <param name="rstartIdx">right start index, exclusive</param>
+        /// <param name="end">ending road node</param>
+        /// <param name="lendIdx">left end index, inclusive</param>
+        /// <param name="rendIdx">right end index, exclusive</param>
+        /// <param name="shls">how many lanes close from the left on the beginning</param>
+        /// <param name="shle">how many lanes open from the left to the end</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static RoadStrip GenerateLaneConnections(RoadNode start, int lstartIdx, int rstartIdx, RoadNode end, int lendIdx, int rendIdx, int shls = 0, int shle = 0){
+            //Calculate lane balances
+            int startingLanes = rstartIdx - lstartIdx; // How many lanes are open at the start node
+            int endingLanes = rendIdx - lendIdx; // How many lanes are open at the start node
+            int leftShift = shle - shls; // How many lanes open to the left (negative means that the left lanes close)
+            int rightShift = endingLanes - startingLanes - leftShift; // How many lanes open to the right (negative means that the right lanes close)
+            int totalLanes = startingLanes + Math.Abs(leftShift) + Math.Abs(rightShift); // Total lanes after the connection
+            int closingLeftLanes = Math.Max(0, -leftShift); // How many lanes close to the left
+            int openingLeftLanes = Math.Max(0, leftShift); // How many lanes open to the left
+            int closingRightLanes = Math.Max(0, -rightShift); // How many lanes close to the right
+            int openingRightLanes = Math.Max(0, rightShift); // How many lanes open to the right
+
+            //Calculate unchanging lanes
+            int unchangingLanesStartLeft = lstartIdx + closingLeftLanes;
+            int unchangingLanesStartRight = rstartIdx - closingRightLanes;
+            int unchangingLanesEndLeft = lendIdx + openingLeftLanes;
+            int unchangingLanesEndRight = rendIdx - openingRightLanes;
+            int unchangingLanesCount = unchangingLanesStartRight - unchangingLanesStartLeft; // How many lanes remain unchanged
+
+            int minCount = Math.Min(startingLanes, endingLanes); // Determine the minimum number of lanes between left and right
+
+            if (startingLanes < 1) throw new ArgumentException("Lane count must be at least 1.", nameof(startingLanes));
+            if (endingLanes < 1) throw new ArgumentException("Lane count must be at least 1.", nameof(endingLanes));
+            if (Math.Abs(leftShift) >= minCount) throw new ArgumentException("Shift left absolute must be less than the smaller number of lanes", nameof(leftShift));
+            if (Math.Abs(rightShift) >= minCount) throw new ArgumentException("Shift right absolute must be less than the smaller number of lanes", nameof(rightShift));
+
+            RoadStrip strip = new RoadStrip(start, end); // Create a new road strip to hold the connections
+
+            // Generate lane connections based on the calculated indices and shifts
+            GenerateOneToOneConnections(strip, lstartIdx, unchangingLanesStartLeft, lendIdx, unchangingLanesEndLeft); // Connect left lanes
+            GenerateOneToOneConnections(strip, unchangingLanesStartRight, rstartIdx, unchangingLanesEndRight, rendIdx); // Connect right lanes
+            for(int i = 0; i < unchangingLanesCount; i++) {
+                int startIdx = unchangingLanesStartLeft + i; // Calculate the starting index for the lane
+                int endIdx = unchangingLanesEndLeft + i; // Calculate the ending index for the lane
+                Lane startLane = strip.StartNode.Lanes[startIdx];
+                Lane endLane = strip.EndNode.Lanes[endIdx];
+                LaneStrip laneStrip = new LaneStrip(strip, startLane, endLane); // Create a new lane strip connecting the start and end lanes
+                strip.AddLaneStrip(laneStrip); // Add the lane strip to the road strip
+            }
+
+            return strip; // Return the created road strip
+        }
+        public static void GenerateOneToOneConnections(RoadStrip strip, int lstartIdx, int rstartIdx, int lendIdx, int rendIdx) {
+            for (int i = lstartIdx; i < rstartIdx; i++) {
+                for (int j = lendIdx; j < rendIdx; j++) {
+                    Lane startLane = strip.StartNode.Lanes[i];
+                    Lane endLane = strip.EndNode.Lanes[j];
+                    LaneStrip laneStrip = new LaneStrip(strip, startLane, endLane); // Create a new lane strip connecting the start and end lanes
+                    strip.AddLaneStrip(laneStrip); // Add the lane strip to the road strip
+                }
             }
         }
     }

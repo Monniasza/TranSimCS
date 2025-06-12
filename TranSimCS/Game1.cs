@@ -60,19 +60,19 @@ namespace TranSimCS
             world.RoadNodes.Add(node4b);
 
             //1-2
-            var lc12 = new LaneConnection(node1, node2, 0, node1.LaneSpecs.Count, 0, node2.LaneSpecs.Count);
+            var lc12 = Generator.GenerateLaneConnections(node1, 0, node1.Lanes.Count, node2, 0, node2.Lanes.Count);
             world.RoadSegments.Add(lc12);
 
             //2-3
-            var lc23 = new LaneConnection(node2, node3, 0, node2.LaneSpecs.Count, 0, node3.LaneSpecs.Count);
+            var lc23 = Generator.GenerateLaneConnections(node2, 0, node2.Lanes.Count, node3, 0, node3.Lanes.Count);
             world.RoadSegments.Add(lc23);
 
             //3-4a
-            var lc34a = new LaneConnection(node3, node4a, 2, 3, 0, node4a.LaneSpecs.Count);
+            var lc34a = Generator.GenerateLaneConnections(node3, 2, 3, node4a, 0, node4a.Lanes.Count);
             world.RoadSegments.Add(lc34a);
 
             //3-4b
-            var lc34b = new LaneConnection(node3, node4b, 0, 2, 0, node4b.LaneSpecs.Count);
+            var lc34b = Generator.GenerateLaneConnections(node3, 0, 2, node4b, 0, node4b.Lanes.Count);
             world.RoadSegments.Add(lc34b);
 
             //Generate graphics stuff
@@ -126,8 +126,8 @@ namespace TranSimCS
                 foreach (var segment in world.RoadSegments) {
                     // Check if the ray intersects with the road segment
                     object tag = MeshUtil.RayIntersectMesh(segment.WholeNodeMesh, ray, out float intersectionDistance);
-                    if (tag is LaneTag laneTag && laneTag.road == segment) {
-                        MouseOverRoad = new RoadSelection(laneTag, intersectionDistance, ray); // Create a new road selection with the lane tag and intersection distance
+                    if (tag is LaneStrip laneStrip && laneStrip.road == segment) {
+                        MouseOverRoad = new RoadSelection(laneStrip, intersectionDistance, ray); // Create a new road selection with the lane tag and intersection distance
                     }
                 }                
             }
@@ -193,13 +193,13 @@ namespace TranSimCS
                 // If a lane tag is selected, remove it from the road segment
                 if (MouseOverRoad != null) {
                     var selectedRoad = MouseOverRoad.SelectedLaneTag.road; // Get the selected road half
-                    var selectedRoadSpec = selectedRoad.Spec; // Get the selected lane tag
-                    var selectedRoadHalf = selectedRoadSpec.GetHalf(MouseOverRoad.SelectedRoadHalf);
-                    var selectedNode = selectedRoadHalf.Node;// Get the node of the selected road half
-                    var laneNum = selectedRoadHalf.LeftIndex; // Get the lane number from the selected lane tag 
-                    Debug.Print($"Demolishing lane: {laneNum} of segment {selectedRoad.StartNode.Id} to {selectedRoad.EndNode.Id}");
+                    var selectedLaneStrip = MouseOverRoad.SelectedLaneStrip; // Get the selected lane tag
+                    var selectedRoadHalf = selectedRoad.GetHalf(MouseOverRoad.SelectedRoadHalf);
+                    var selectedNode = selectedRoadHalf;// Get the node of the selected road half
+                    var selectedLane = selectedLaneStrip.GetHalf(MouseOverRoad.SelectedRoadHalf); // Get the lane number from the selected lane tag 
+                    Debug.Print($"Demolishing lane: {selectedLaneStrip} of segment {selectedRoad.StartNode.Id} to {selectedRoad.EndNode.Id}");
                     MouseOverRoad = null; // Reset the mouse over road selection
-                    Roads.Roads.RemoveLane(laneNum, selectedNode, 0); // Remove the lane from the selected node
+                    selectedNode.RemoveLane(selectedLane); // Remove the selected lane from the road node
                 }
             }
 
@@ -226,8 +226,8 @@ namespace TranSimCS
             var roadSelection = MouseOverRoad;
             if(roadSelection != null) {
                 // Draw the selected lane tag with a different color
-                RoadRenderer.DrawLaneTag(roadSelection.SelectedLaneTag, renderBin, laneHighlightColor, 0.005f);
-                RoadRenderer.DrawLaneTag(roadSelection.SelectedLaneTag.road.FullSizeTag(), renderBin, roadSegmentHighlightColor, 0.002f);
+                RoadRenderer.GenerateLaneRangeMesh(roadSelection.SelectedLaneTag, renderBin, laneHighlightColor, 0.005f);
+                RoadRenderer.GenerateLaneRangeMesh(roadSelection.SelectedLaneTag.road.FullSizeTag(), renderBin, roadSegmentHighlightColor, 0.002f);
                 var splines = RoadRenderer.GenerateSplines(roadSelection.SelectedLaneTag, 0.007f);
                 var offset = Vector3.Up * 0.007f; // Offset for the lane position
                 Bezier3.Split(splines.Item1, 0.5f, out Bezier3 leftSubBezier1, out Bezier3 leftSubBezier2);

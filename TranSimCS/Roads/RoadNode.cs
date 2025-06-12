@@ -167,7 +167,17 @@ namespace TranSimCS.Roads {
             foreach (var l in lanesToShift) 
                 l.Index--; // Decrement the index of each lane that will be shifted
             //Remove connected lanes from the connections
+            lane.connections.Clear(); // Clear the connections of the lane being removed
         }
+
+        internal void ClearLanes() {
+            foreach (var lane in _lanes) {
+                lane.connections.Clear(); // Clear the connections of the lane being removed
+                lane.Index = -1; // Reset the index of the lane
+            }
+            _lanes.Clear(); // Clear the list of lanes
+        }
+
         public IReadOnlyList<Lane> Lanes => _lanes.AsReadOnly(); // Expose the lanes as a read-only list
 
         //Indexing component for the road node, maintained by the World class
