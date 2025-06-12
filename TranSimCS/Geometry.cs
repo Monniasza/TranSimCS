@@ -240,8 +240,8 @@ namespace TranSimCS
                 return;
             }
 
-            Split(bezier, startT, out startSection, out midSection);
-            Split(midSection, (endT - startT) / (1 - startT), out var finalStart, out endSection);
+            Split(bezier, startT, out startSection, out var finalStart);
+            Split(finalStart, (endT - startT) / (1 - startT), out midSection, out endSection);
         }
 
         public static void Split(Bezier3 source, float t, out Bezier3 start, out Bezier3 end) {

@@ -63,7 +63,7 @@ namespace TranSimCS {
                     GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderBin.Vertices.ToArray(), 0, renderBin.Vertices.Count, renderBin.Indices.ToArray(), 0, renderBin.Indices.Count / 3);
                 }
             }
-            Debug.Print($"Rendering {TriCount} triangles and {VertCount} vertices");
+            //Debug.Print($"Rendering {TriCount} triangles and {VertCount} vertices");
         }
     }
 
