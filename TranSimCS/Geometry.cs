@@ -24,8 +24,6 @@ namespace TranSimCS
             return MathF.Sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
         }
 
-        
-
         public readonly struct LineEnd{
             public Vector3 Position { get; }
             public Vector3 Tangential { get; }
@@ -125,7 +123,7 @@ namespace TranSimCS
             Vector3 q = Vector3.Cross(s, edge1);
             float v = f * Vector3.Dot(ray.Direction, q);
             if (v < 0.0f || u + v > 1.0f) // Check if the intersection is outside the triangle
-            {
+            {w
                 return false; // No intersection
             }
             // Calculate the intersection point
