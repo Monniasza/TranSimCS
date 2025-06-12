@@ -17,6 +17,7 @@ namespace TranSimCS.Roads {
                 var old = startLane;
                 old?.connections.Remove(this); // Remove the current lane strip from the old starting lane's connections
                 value?.connections.Add(this); // Add the lane strip to the new starting lane's connections
+                InvalidateMesh();
                 startLane = value;
             }
         }
@@ -26,6 +27,7 @@ namespace TranSimCS.Roads {
                 var old = endLane;
                 old?.connections.Remove(this); // Remove the current lane strip from the old starting lane's connections
                 value?.connections.Add(this); // Add the lane strip to the new starting lane's connections
+                InvalidateMesh();
                 endLane = value;
             }
         }
@@ -65,7 +67,6 @@ namespace TranSimCS.Roads {
         public void Destroy() {
             StartLane = null;
             EndLane = null;
-            InvalidateMesh();
             road.RemoveLaneStrip(this);
         }
     }

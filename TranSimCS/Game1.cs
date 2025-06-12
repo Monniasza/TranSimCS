@@ -247,10 +247,6 @@ namespace TranSimCS
                 } else {
                     RoadRenderer.DrawBezierStrip(leftSubBezier3, rightSubBezier3, renderBin, laneHighlightColor2);
                 }
-
-                    // Draw the position marker for the T value
-                    Vector3 positionAtT = roadSelection.selectedLaneBezier.Value[roadSelection.SelectedLaneT];
-                var SelectedLanePosition = roadSelection.SelectedLanePosition;
             }
 
             //Red the render helper
