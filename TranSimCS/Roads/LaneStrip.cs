@@ -18,7 +18,6 @@ namespace TranSimCS.Roads {
                 old?.connections.Remove(this); // Remove the current lane strip from the old starting lane's connections
                 value?.connections.Add(this); // Add the lane strip to the new starting lane's connections
                 startLane = value;
-                spec = value.Spec; // Update the specification to match the new starting lane
             }
         }
         public Lane EndLane {
@@ -28,7 +27,6 @@ namespace TranSimCS.Roads {
                 old?.connections.Remove(this); // Remove the current lane strip from the old starting lane's connections
                 value?.connections.Add(this); // Add the lane strip to the new starting lane's connections
                 endLane = value;
-                spec = value.Spec; // Update the specification to match the new ending lane
             }
         }
 
@@ -36,8 +34,8 @@ namespace TranSimCS.Roads {
 
         public LaneStrip(RoadStrip road, Lane startLane, Lane endLane) {
             this.road = road; // Reference to the road this lane strip belongs to
-            this.startLane = startLane; // Starting lane of the lane strip
-            this.endLane = endLane; // Ending lane of the lane strip
+            this.StartLane = startLane; // Starting lane of the lane strip
+            this.EndLane = endLane; // Ending lane of the lane strip
             this.spec = LaneSpec.Default; // Default specification for the lane strip
         }
 
@@ -61,6 +59,13 @@ namespace TranSimCS.Roads {
             } else {
                 throw new ArgumentException("Invalid segment half specified."); // Throw an exception for invalid segment half
             }
+        }
+
+        public void Destroy() {
+            StartLane = null;
+            EndLane = null;
+            InvalidateMesh();
+            road.RemoveLaneStrip(this);
         }
     }
 }

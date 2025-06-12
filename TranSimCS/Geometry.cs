@@ -123,7 +123,7 @@ namespace TranSimCS
             Vector3 q = Vector3.Cross(s, edge1);
             float v = f * Vector3.Dot(ray.Direction, q);
             if (v < 0.0f || u + v > 1.0f) // Check if the intersection is outside the triangle
-            {w
+            {
                 return false; // No intersection
             }
             // Calculate the intersection point

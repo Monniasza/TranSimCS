@@ -166,10 +166,11 @@ namespace TranSimCS.Roads {
             var lanesToShift = _lanes.Skip(lane.Index).ToList(); // Get the lanes that will be shifted
             foreach (var l in lanesToShift) 
                 l.Index--; // Decrement the index of each lane that will be shifted
+
             //Remove connected lanes from the connections
-            foreach(var connection in lane.connections) {
-                var roadStrip = connection.road; // Get the road strip associated with the lane
-                roadStrip.RemoveLaneStrip(connection); // Remove the lane from the road strip
+            var connections = lane.connections.ToArray();
+            foreach(var connection in connections) {
+                connection.Destroy();
             }
             lane.connections.Clear(); // Clear the connections of the lane being removed
         }
