@@ -42,9 +42,10 @@ namespace TranSimCS.Roads {
         //Mesh cache
         private Mesh? mesh; // Cached mesh for the lane strip
         public Mesh GetMesh() {
-            if (mesh == null)
+            if (mesh == null) {
                 mesh = new Mesh(); // Create a new mesh if it doesn't exist
-            RoadRenderer.GenerateLaneStripMesh(this, mesh); // Generate the mesh for the lane strip if it doesn't exist
+                RoadRenderer.GenerateLaneStripMesh(this, mesh); // Generate the mesh for the lane strip if it doesn't exist
+            }
             return mesh; // Return the cached mesh
         }
         public void InvalidateMesh() {

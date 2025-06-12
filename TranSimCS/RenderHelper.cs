@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -45,18 +46,24 @@ namespace TranSimCS {
         }
 
         public void Render() {
+            int TriCount = 0;
+            int VertCount = 0;
             foreach (var row in _renderBins) {
                 var renderBin = row.Value;
                 var texture = row.Key;
                 Effect.Texture = texture;
+                TriCount += (renderBin.Indices.Count) / 3;
+                VertCount += renderBin.Vertices.Count;
                 if (renderBin.Vertices.Count == 0 || renderBin.Indices.Count == 0) continue;
                 foreach (var pass in Effect.CurrentTechnique.Passes) {
                     pass.Apply();
+                    
                     GraphicsDevice.SetVertexBuffer(new VertexBuffer(GraphicsDevice, typeof(VertexPositionColorTexture), renderBin.Vertices.Count, BufferUsage.WriteOnly));
                     GraphicsDevice.Indices = new IndexBuffer(GraphicsDevice, IndexElementSize.SixteenBits, renderBin.Indices.Count, BufferUsage.WriteOnly);
                     GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderBin.Vertices.ToArray(), 0, renderBin.Vertices.Count, renderBin.Indices.ToArray(), 0, renderBin.Indices.Count / 3);
                 }
             }
+            Debug.Print($"Rendering {TriCount} triangles and {VertCount} vertices");
         }
     }
 

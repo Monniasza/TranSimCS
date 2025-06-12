@@ -8,8 +8,7 @@ using TranSimCS.Roads;
 
 namespace TranSimCS
 {
-    internal static class Generator
-    {
+    internal static class Generator {
         public static void GenerateLanes(int count, RoadNode node, float laneWidth = 3.5f, float offset = 0){
             if (count < 1)  throw new ArgumentException("Count must be at least 1.", nameof(count));
             // Clear existing position offsets
