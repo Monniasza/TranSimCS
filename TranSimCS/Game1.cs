@@ -191,10 +191,9 @@ namespace TranSimCS
                 if (MouseOverRoad != null) {
                     var selectedRoad = MouseOverRoad.SelectedLaneTag.road; // Get the selected road half
                     var selectedLaneStrip = MouseOverRoad.SelectedLaneStrip; // Get the selected lane tag
-                    var selectedRoadHalf = selectedRoad.GetHalf(MouseOverRoad.SelectedRoadHalf);
-                    var selectedNode = selectedRoadHalf;// Get the node of the selected road half
+                    var selectedNode = selectedRoad.GetHalf(MouseOverRoad.SelectedRoadHalf);// Get the node of the selected road half
                     var selectedLane = selectedLaneStrip.GetHalf(MouseOverRoad.SelectedRoadHalf); // Get the lane number from the selected lane tag 
-                    Debug.Print($"Demolishing lane: {selectedLaneStrip} of segment {selectedRoad.StartNode.Id} to {selectedRoad.EndNode.Id}");
+                    Debug.Print($"Demolishing lane: {selectedLane} of segment {selectedRoad.StartNode.Id} to {selectedRoad.EndNode.Id}");
                     MouseOverRoad = null; // Reset the mouse over road selection
                     selectedNode.RemoveLane(selectedLane); // Remove the selected lane from the road node
                 }

@@ -23,7 +23,7 @@ namespace TranSimCS.Roads {
         public Lane EndLane {
             get => endLane;
             set {
-                var old = startLane;
+                var old = endLane;
                 old?.connections.Remove(this); // Remove the current lane strip from the old starting lane's connections
                 value?.connections.Add(this); // Add the lane strip to the new starting lane's connections
                 endLane = value;

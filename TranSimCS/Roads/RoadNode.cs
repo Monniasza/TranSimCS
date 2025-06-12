@@ -147,6 +147,7 @@ namespace TranSimCS.Roads {
 
         //Lane structure
         private readonly List<Lane> _lanes = new List<Lane>(); // List to hold lanes associated with this road node
+        public IReadOnlyList<Lane> Lanes => _lanes.AsReadOnly(); // Expose the lanes as a read-only list
         public void AddLane(Lane lane) {
             if(lane == null) throw new ArgumentNullException(nameof(lane), "Lane cannot be null.");
             if(lane.RoadNode != this) throw new ArgumentException("Lane does not belong to this road node.", nameof(lane));
@@ -168,22 +169,18 @@ namespace TranSimCS.Roads {
                 l.Index--; // Decrement the index of each lane that will be shifted
 
             //Remove connected lanes from the connections
-            var connections = lane.connections.ToArray();
+            var connections = lane.Connections.ToArray();
             foreach(var connection in connections) {
                 connection.Destroy();
             }
             lane.connections.Clear(); // Clear the connections of the lane being removed
         }
-
-        internal void ClearLanes() {
-            foreach (var lane in _lanes) {
-                lane.connections.Clear(); // Clear the connections of the lane being removed
-                lane.Index = -1; // Reset the index of the lane
-            }
-            _lanes.Clear(); // Clear the list of lanes
+        public void ClearLanes() {
+            var lanes = _lanes.ToArray();
+            foreach(var lane in lanes) RemoveLane(lane);
         }
 
-        public IReadOnlyList<Lane> Lanes => _lanes.AsReadOnly(); // Expose the lanes as a read-only list
+        
 
         //Indexing component for the road node, maintained by the World class
         internal ISet<RoadStrip> connections = new HashSet<RoadStrip>(); // Connections to other road segments

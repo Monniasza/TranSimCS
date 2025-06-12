@@ -38,6 +38,10 @@ namespace TranSimCS
             segment.OnLaneRemoved -= LaneRemovedFromRoad; // Unsubscribe from lane removal events in the road segment
 
             //Remove node connections that are no longer valid
+            var lanes = segment.Lanes.ToArray();
+            foreach(var lane in lanes){
+                lane.Destroy();
+            };
         }
         private void LaneAddedToRoad(object sender, RoadStripEventArgs e) {
             //Handle the addition of a new lane to a road segment
