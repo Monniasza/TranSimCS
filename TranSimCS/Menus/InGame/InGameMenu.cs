@@ -18,7 +18,7 @@ namespace TranSimCS.Menus.InGame {
 
         //Graphics
         private BasicEffect effect;
-        private RenderHelper renderHelper; // Assuming you have a RenderHelper class for rendering
+        public RenderHelper renderHelper { get; private set; } // Assuming you have a RenderHelper class for rendering
 
         //Textures
         public static Texture2D roadTexture { get; private set; } // Assuming you have a texture for the road
@@ -27,7 +27,7 @@ namespace TranSimCS.Menus.InGame {
 
         //Inputs      
         public RoadSelection? MouseOverRoad { get; set; } = null; // Store the selected road selection
-        public RoadSelection? SelectedRoadSelection { get; set; } = null; // Store the selected road selection
+        //public RoadSelection? SelectedRoadSelection { get; set; } = null; // Store the selected road selection
 
         public Ray MouseRay { get; private set; } // Ray from the mouse position in the world
         public Camera camera = new Camera(new Vector3(0, 0, 0), 64, 0, 0.2f); // Initialize the camera
@@ -79,10 +79,7 @@ namespace TranSimCS.Menus.InGame {
 
             SetUpToolPictureButton("noTool", null);
             SetUpToolPictureButton("removeRoadTool", new RoadDemolitionTool(this));
-
-            var RemoveRoadButton = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(64, 64), CreateTextureCallback(Game.Content.Load<Texture2D>("removeRoadTool")));
-            rootPanel.AddChild(RemoveRoadButton);
-
+            SetUpToolPictureButton("addRoadTool", new RoadCreationTool(this));
         }
         private Image.TextureCallback CreateTextureCallback(Texture2D texture2D) {
             return (_) => new MLEM.Textures.TextureRegion(texture2D);
@@ -243,6 +240,9 @@ namespace TranSimCS.Menus.InGame {
                 new VertexPositionColorTexture(new(-r, 0, -r), Color.White, new(-s,  s))
             );
 
+            //Render road tool
+            Tool?.Draw(time);
+
             //Red the render helper
             renderHelper.Render();
         }
@@ -260,6 +260,7 @@ namespace TranSimCS.Menus.InGame {
             Game.SpriteBatch.DrawString(Game.Font, toolName, new(25, 25), Color.Gray);
             if (toolDesc != null) Game.SpriteBatch.DrawString(Game.Font, toolDesc, new(25, 50), Color.Gray);
             Game.SpriteBatch.End();
+            Tool?.Draw2D(time);
 
             UiSystem.Draw(time, Game.SpriteBatch);
         }

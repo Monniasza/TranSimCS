@@ -35,6 +35,7 @@ namespace TranSimCS.Roads {
         public float RightPosition { get; set; } // Right position of the lane relative to the road node
         public int Index { get; internal set; } // Index of the lane in the road node's lane list
         public float MiddlePosition => (LeftPosition + RightPosition) / 2; // Middle position of the lane, calculated as the average of left and right positions
+        public float Width => RightPosition - LeftPosition;
 
         //Indexing
         internal ISet<LaneStrip> connections = new HashSet<LaneStrip>(); // Set of lane strips that this lane is connected to

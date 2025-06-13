@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
+using TranSimCS.Roads;
 
 namespace TranSimCS.Menus.InGame {
     public interface ITool {
@@ -16,12 +17,27 @@ namespace TranSimCS.Menus.InGame {
         public void OnRelease(MouseButton button);
         public void OnKeyDown(Keys key);
         public void OnKeyUp(Keys key);
+        public void Update(GameTime gameTime);
+        public void Draw(GameTime gameTime);
+        public void Draw2D(GameTime gameTime);
     }
 
     public class RoadDemolitionTool(InGameMenu game) : ITool {
         string ITool.Name => "Road Demolition Tool";
 
         string ITool.Description => "LMB to demolish the selected road segment, RMB to demolish only the selected lane";
+
+        public void Draw(GameTime gameTime) {
+            //unused
+        }
+
+        public void Draw2D(GameTime gameTime) {
+            //unused
+        }
+
+        public void Update(GameTime gameTime) {
+            //unused
+        }
 
         void ITool.OnClick(MouseButton button) {
             RoadSelection MouseOverRoad = game.MouseOverRoad;
@@ -71,6 +87,84 @@ namespace TranSimCS.Menus.InGame {
         }
 
         void ITool.OnRelease(MouseButton button) {
+            //unused
+        }
+    }
+
+    public class RoadCreationTool(InGameMenu menu): ITool {
+        string ITool.Name => "Road creation tool";
+
+        string ITool.Description => (node == null) ? "Select a road node end to create a lane strip"
+            : "LMB on a segment end or road node end to build a segment, or RMB to cancel";
+
+        Lane node;
+
+        void ITool.OnClick(MouseButton button) {
+            if(button == MouseButton.Left) {
+                var newNode = menu.MouseOverRoad?.SelectedLane;
+                if (node == null) {
+                    node = newNode;
+                    Debug.Print($"Selected node: {newNode}");
+                } else if(newNode != null){
+                    var segment = menu.world.GetOrMakeRoadStrip(node.RoadNode, newNode.RoadNode);
+                    var strip = new LaneStrip(segment, node, newNode);
+                    segment.AddLaneStrip(strip);
+                }
+            }else if(button == MouseButton.Right) {
+                node = null;
+            }
+        }
+
+        void ITool.OnKeyDown(Keys key) {
+            //unused
+        }
+
+        void ITool.OnKeyUp(Keys key) {
+            //unused
+        }
+
+        void ITool.OnRelease(MouseButton button) {
+            //unused
+        }
+
+        public void Update(GameTime gameTime) {
+            //unused
+        }
+
+        public void Draw(GameTime gameTime) {
+            //Draw the preview of the road segment
+            if(node != null) {
+                //Initial placeholders for new values
+                var endLeftPos = Vector3.Zero;
+                var endRightPos = Vector3.Zero;
+                var endingTangent = Vector3.Zero;
+
+                var startingPosition0 = Geometry.calcLineEnd(node.RoadNode, node.LeftPosition);
+                var startingTangent = startingPosition0.Tangential;
+                var startLeftPos = startingPosition0.Position;
+                var startRightPos = startLeftPos + (startingPosition0.Lateral * node.Width);
+
+                //Calculate the new values
+                var groundPlane = new Plane(0, 1, 0, 0);
+                endLeftPos = Geometry.IntersectRayPlane(menu.MouseRay, groundPlane);
+                var reflectionVector = endLeftPos - startLeftPos;
+                reflectionVector = new(reflectionVector.Z, reflectionVector.Y, -reflectionVector.X);
+                reflectionVector.Normalize();
+                endingTangent = Geometry.ReflectVectorByNormal(startingTangent, reflectionVector);
+                Vector3 endingLateral = new(-endingTangent.Z, endingTangent.Y, endingTangent.X);
+                endRightPos = endLeftPos + (endingLateral * node.Width);
+
+                //Draw the preview
+                Color previewColor = node.Spec.Color;
+                previewColor.A = 100;
+                Bezier3 lbound = Geometry.GenerateJoinSpline(startLeftPos, endLeftPos, startingTangent, endingTangent);
+                Bezier3 rbound = Geometry.GenerateJoinSpline(startRightPos, endRightPos, startingTangent, endingTangent);
+                IRenderBin renderBin = menu.renderHelper.GetOrCreateRenderBin(InGameMenu.roadTexture);
+                RoadRenderer.DrawBezierStrip(lbound, rbound, renderBin, previewColor);
+            }
+        }
+
+        public void Draw2D(GameTime gameTime) {
             //unused
         }
     }

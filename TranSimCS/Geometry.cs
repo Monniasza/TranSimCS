@@ -136,6 +136,16 @@ namespace TranSimCS
             return false; // No intersection, the triangle is behind the ray
 
         }
+
+        public static float IntersectRayPlaneT(Ray ray, Plane plane) =>
+            -(Vector3.Dot(ray.Position, plane.Normal) + plane.D) / (Vector3.Dot(ray.Direction, plane.Normal));
+        
+        public static Vector3 IntersectRayPlane(Ray ray, Plane plane) {
+            var t = IntersectRayPlaneT(ray, plane);
+            return ray.Position + (t * plane.Normal);
+        }
+        public static Vector3 ReflectVectorByNormal(Vector3 src, Vector3 normal) => src - 2 * Vector3.Dot(src, normal) * normal;
+
     }
     public struct Bezier3 {
         public Vector3 a;

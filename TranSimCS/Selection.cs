@@ -17,6 +17,8 @@ namespace TranSimCS {
         public Bezier3? selectedLaneBezier; // Bezier curve for the selected lane tag
         public SegmentHalf SelectedRoadHalf; // The road half that the selected lane tag belongs to
         public LaneStrip SelectedLaneStrip; // The lane strip that the selected lane tag belongs to
+        public Lane SelectedLane;
+        public RoadNode SelectedRoadNode;
 
         public RoadSelection(LaneStrip laneStrip, float intersectionDistance, Ray mouseRay) {
             MouseRay = mouseRay;
@@ -29,6 +31,7 @@ namespace TranSimCS {
             selectedLaneBezier = averageBezier; // Store the selected lane bezier curve
             SelectedLaneT = Bezier3.FindT(averageBezier, SelectedLanePosition); // Get the T value for the selected lane position
             SelectedRoadHalf = SelectedLaneT < 0.5f ? SegmentHalf.Start : SegmentHalf.End; // Determine which half of the road the selected lane tag belongs to
+            SelectedLane = SelectedLaneStrip.GetHalf(SelectedRoadHalf);
         }
     }
 }
