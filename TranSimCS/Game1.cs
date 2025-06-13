@@ -33,9 +33,10 @@ namespace TranSimCS
 
         //Inputs
         public Point MousePos { get; private set; } = new();
-        public ISet<Keys> keysOld = new HashSet<Keys>();
         public MouseState MouseState { get; private set; }
         public MouseState MouseStateOld { get; private set; }
+        public KeyboardState KeyboardState { get; private set; }
+        public KeyboardState KeyboardStateOld { get; private set; }
 
         public Menu Menu { get => menu; set {
             ArgumentNullException.ThrowIfNull(value, nameof(value));
@@ -95,11 +96,14 @@ namespace TranSimCS
 
             MouseStateOld = MouseState;
             MouseState = Mouse.GetState();
+            KeyboardStateOld = KeyboardState;
+            KeyboardState = Keyboard.GetState();
 
+            ih.Update();
             Menu?.Update(gameTime);
+            
             //Refresh the mouse state for the next frame
             base.Update(gameTime);
-            
         }
 
         

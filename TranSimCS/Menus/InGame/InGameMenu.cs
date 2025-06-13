@@ -13,7 +13,7 @@ using TranSimCS.Roads;
 
 namespace TranSimCS.Menus.InGame {
     public class InGameMenu : Menu {
-        private World world;
+        public World world { get; private set; }
         public ITool Tool {  get; set; }
 
         //Graphics
@@ -26,7 +26,7 @@ namespace TranSimCS.Menus.InGame {
         public static Texture2D grassTexture {  get; private set; }
 
         //Inputs      
-        public RoadSelection? MouseOverRoad { get; private set; } = null; // Store the selected road selection
+        public RoadSelection? MouseOverRoad { get; set; } = null; // Store the selected road selection
         public RoadSelection? SelectedRoadSelection { get; set; } = null; // Store the selected road selection
 
         public Ray MouseRay { get; private set; } // Ray from the mouse position in the world
@@ -77,10 +77,8 @@ namespace TranSimCS.Menus.InGame {
             rootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 100), false, true);
             UiSystem.Add("lower", rootPanel);
 
-            SetUpPictureButton("noTool", () => Tool = null);
-
-            var AddRoadButton = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(64, 64), CreateTextureCallback(Game.Content.Load<Texture2D>("addRoadTool")));
-            rootPanel.AddChild(AddRoadButton);
+            SetUpToolPictureButton("noTool", null);
+            SetUpToolPictureButton("removeRoadTool", new RoadDemolitionTool(this));
 
             var RemoveRoadButton = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(64, 64), CreateTextureCallback(Game.Content.Load<Texture2D>("removeRoadTool")));
             rootPanel.AddChild(RemoveRoadButton);
@@ -90,11 +88,14 @@ namespace TranSimCS.Menus.InGame {
             return (_) => new MLEM.Textures.TextureRegion(texture2D);
         }
         private PictureButton SetUpPictureButton(String texture, Action? callback = null) {
-            var button = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(64, 64), CreateTextureCallback(Game.Content.Load<Texture2D>("removeRoadTool")));
+            var button = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(64, 64), CreateTextureCallback(Game.Content.Load<Texture2D>(texture)));
             if(callback != null) 
                 button.OnPressed = (e) => callback.Invoke();
             rootPanel.AddChild(button);
             return button;
+        }
+        private PictureButton SetUpToolPictureButton(String texture, ITool tool) {
+            return SetUpPictureButton(texture, () => Tool = tool);
         }
 
         public override void Update(GameTime time) {
@@ -179,36 +180,23 @@ namespace TranSimCS.Menus.InGame {
             camera.Azimuth = newAzimuth; // Update camera azimuth
             camera.Elevation = newElevation; // Update camera elevation
 
-            //Demolish the selected road segment if the left mouse button is clicked
-            if (Game.MouseState.LeftButton == ButtonState.Pressed && LastMouseState.LeftButton == ButtonState.Released) {
-                // If a road segment is selected, remove it from the world
-                if (MouseOverRoad != null) {
-                    Debug.Print($"Demolishing road segment: {MouseOverRoad.SelectedLaneTag.road}");
-                    var tbremove = MouseOverRoad.SelectedLaneTag.road; // Get the road segment to remove
-                    MouseOverRoad = null; // Reset the mouse over road selection
-                    world.RoadSegments.Remove(tbremove); // Remove the selected road segment from the world
-                }
-            }
-            //Demolish the lane on a selected node if the right mouse button is clicked
-            if (Game.MouseState.RightButton == ButtonState.Pressed && LastMouseState.RightButton == ButtonState.Released) {
-                // If a lane tag is selected, remove it from the road segment
-                if (MouseOverRoad != null) {
-                    var selectedRoad = MouseOverRoad.SelectedLaneTag.road; // Get the selected road half
-                    var selectedLaneStrip = MouseOverRoad.SelectedLaneStrip; // Get the selected lane tag
-                    var selectedNode = selectedRoad.GetHalf(MouseOverRoad.SelectedRoadHalf);// Get the node of the selected road half
-                    var selectedLane = selectedLaneStrip.GetHalf(MouseOverRoad.SelectedRoadHalf); // Get the lane number from the selected lane tag 
-                    if (MouseOverRoad.SelectedLaneT > 0.3f && MouseOverRoad.SelectedLaneT < 0.7f) {
-                        //Demolish just the lane strip
-                        Debug.Print($"Demolishing lane strip: {selectedLaneStrip} of segment {selectedRoad.StartNode.Id} to {selectedRoad.EndNode.Id}");
-                        MouseOverRoad = null;
-                        selectedLaneStrip.Destroy();
-                    } else {
-                        //Demolish the node lane
-                        Debug.Print($"Demolishing lane: {selectedLane} of segment {selectedRoad.StartNode.Id} to {selectedRoad.EndNode.Id}");
-                        MouseOverRoad = null; // Reset the mouse over road selection
-                        selectedNode.RemoveLane(selectedLane); // Remove the selected lane from the road node
-                    }
-                }
+            UiSystem.Update(time);
+
+            //Run the world tool
+            if (Game.MouseState.LeftButton == ButtonState.Pressed && Game.MouseStateOld.LeftButton == ButtonState.Released) Tool?.OnClick(MLEM.Input.MouseButton.Left);
+            if (Game.MouseState.MiddleButton == ButtonState.Pressed && Game.MouseStateOld.MiddleButton == ButtonState.Released) Tool?.OnClick(MLEM.Input.MouseButton.Middle);
+            if (Game.MouseState.RightButton == ButtonState.Pressed && Game.MouseStateOld.RightButton == ButtonState.Released) Tool?.OnClick(MLEM.Input.MouseButton.Right);
+            if (Game.MouseState.XButton1 == ButtonState.Pressed && Game.MouseStateOld.XButton1 == ButtonState.Released) Tool?.OnClick(MLEM.Input.MouseButton.Extra1);
+            if (Game.MouseState.XButton2 == ButtonState.Pressed && Game.MouseStateOld.XButton2 == ButtonState.Released) Tool?.OnClick(MLEM.Input.MouseButton.Extra2);
+            if (Game.MouseState.LeftButton == ButtonState.Released && Game.MouseStateOld.LeftButton == ButtonState.Pressed) Tool?.OnRelease(MLEM.Input.MouseButton.Left);
+            if (Game.MouseState.MiddleButton == ButtonState.Released && Game.MouseStateOld.MiddleButton == ButtonState.Pressed) Tool?.OnRelease(MLEM.Input.MouseButton.Left);
+            if (Game.MouseState.RightButton == ButtonState.Released && Game.MouseStateOld.RightButton == ButtonState.Pressed) Tool?.OnRelease(MLEM.Input.MouseButton.Left);
+            if (Game.MouseState.XButton1 == ButtonState.Released && Game.MouseStateOld.XButton1 == ButtonState.Pressed) Tool?.OnRelease(MLEM.Input.MouseButton.Left);
+            if (Game.MouseState.XButton2 == ButtonState.Released && Game.MouseStateOld.XButton2 == ButtonState.Pressed) Tool?.OnRelease(MLEM.Input.MouseButton.Left);
+            foreach(var key in Game.KeyboardState.GetPressedKeys()) 
+                if(Game.KeyboardStateOld.IsKeyUp(key)) Tool?.OnKeyDown(key);
+            foreach(var key in Game.KeyboardStateOld.GetPressedKeys()) {
+                if(Game.KeyboardState.IsKeyUp(key)) Tool?.OnKeyUp(key);
             }
         }
         public override void Draw(GameTime time) {
@@ -267,8 +255,10 @@ namespace TranSimCS.Menus.InGame {
 
         public override void Draw2D(GameTime time) {
             string toolName = (Tool?.Name) ?? "no tool";
+            string toolDesc = Tool?.Description;
             Game.SpriteBatch.Begin();
             Game.SpriteBatch.DrawString(Game.Font, toolName, new(25, 25), Color.Gray);
+            if (toolDesc != null) Game.SpriteBatch.DrawString(Game.Font, toolDesc, new(25, 50), Color.Gray);
             Game.SpriteBatch.End();
 
             UiSystem.Draw(time, Game.SpriteBatch);

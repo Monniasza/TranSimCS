@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 
@@ -16,25 +18,60 @@ namespace TranSimCS.Menus.InGame {
         public void OnKeyUp(Keys key);
     }
 
-    public class RoadDemolitionTool(Game1 game) : ITool {
+    public class RoadDemolitionTool(InGameMenu game) : ITool {
         string ITool.Name => "Road Demolition Tool";
 
         string ITool.Description => "LMB to demolish the selected road segment, RMB to demolish only the selected lane";
 
         void ITool.OnClick(MouseButton button) {
-            throw new NotImplementedException();
+            RoadSelection MouseOverRoad = game.MouseOverRoad;
+            World world = game.world;
+
+            //Demolish the selected road segment if the left mouse button is clicked
+            if (button == MouseButton.Left) {
+                // If a road segment is selected, remove it from the world
+                if (MouseOverRoad != null) {
+                    Debug.Print($"Demolishing road segment: {MouseOverRoad.SelectedLaneTag.road}");
+                    var tbremove = MouseOverRoad.SelectedLaneTag.road; // Get the road segment to remove
+                    MouseOverRoad = null; // Reset the mouse over road selection
+                    world.RoadSegments.Remove(tbremove); // Remove the selected road segment from the world
+                }
+            }
+            //Demolish the lane on a selected node if the right mouse button is clicked
+            if (button == MouseButton.Right) {
+                // If a lane tag is selected, remove it from the road segment
+                if (MouseOverRoad != null) {
+                    var selectedRoad = MouseOverRoad.SelectedLaneTag.road; // Get the selected road half
+                    var selectedLaneStrip = MouseOverRoad.SelectedLaneStrip; // Get the selected lane tag
+                    var selectedNode = selectedRoad.GetHalf(MouseOverRoad.SelectedRoadHalf);// Get the node of the selected road half
+                    var selectedLane = selectedLaneStrip.GetHalf(MouseOverRoad.SelectedRoadHalf); // Get the lane number from the selected lane tag 
+                    if (MouseOverRoad.SelectedLaneT > 0.3f && MouseOverRoad.SelectedLaneT < 0.7f) {
+                        //Demolish just the lane strip
+                        Debug.Print($"Demolishing lane strip: {selectedLaneStrip} of segment {selectedRoad.StartNode.Id} to {selectedRoad.EndNode.Id}");
+                        MouseOverRoad = null;
+                        selectedLaneStrip.Destroy();
+                    } else {
+                        //Demolish the node lane
+                        Debug.Print($"Demolishing lane: {selectedLane} of segment {selectedRoad.StartNode.Id} to {selectedRoad.EndNode.Id}");
+                        MouseOverRoad = null; // Reset the mouse over road selection
+                        selectedNode.RemoveLane(selectedLane); // Remove the selected lane from the road node
+                    }
+                }
+            }
+
+            game.MouseOverRoad = MouseOverRoad;
         }
 
         void ITool.OnKeyDown(Keys key) {
-            throw new NotImplementedException();
+            //unused
         }
 
         void ITool.OnKeyUp(Keys key) {
-            throw new NotImplementedException();
+            //unused
         }
 
         void ITool.OnRelease(MouseButton button) {
-            throw new NotImplementedException();
+            //unused
         }
     }
 }
