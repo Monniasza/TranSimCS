@@ -12,28 +12,35 @@ using MLEM.Ui.Elements;
 using TranSimCS.Roads;
 
 namespace TranSimCS.Menus.InGame {
-    internal class InGameMenu : Menu {
+    public class InGameMenu : Menu {
         private World world;
+        public ITool Tool {  get; set; }
+
+        //Graphics
         private BasicEffect effect;
+        private RenderHelper renderHelper; // Assuming you have a RenderHelper class for rendering
+
+        //Textures
         public static Texture2D roadTexture { get; private set; } // Assuming you have a texture for the road
         public static Texture2D testTexture { get; private set; }
         public static Texture2D grassTexture {  get; private set; }
 
-        private RenderHelper renderHelper; // Assuming you have a RenderHelper class for rendering
+        //Inputs      
         public RoadSelection? MouseOverRoad { get; private set; } = null; // Store the selected road selection
-        //public RoadSelection? SelectedRoadSelection { get; set; } = null; // Store the selected road selection
+        public RoadSelection? SelectedRoadSelection { get; set; } = null; // Store the selected road selection
 
         public Ray MouseRay { get; private set; } // Ray from the mouse position in the world
-
         public Camera camera = new Camera(new Vector3(0, 0, 0), 64, 0, 0.2f); // Initialize the camera
         public float MotionSpeed = 0.3f; // Speed of camera movement
         public float RotationSpeed = 1f; // Speed of camera rotation
-
         static int scrollWheelValue = 0; // Store the scroll wheel value
+        public MouseState LastMouseState => Game.MouseStateOld; // Store the last mouse state for comparison
+
+        //UI
         public Panel rootPanel {  get; private set; }
         public bool IsMouseOverUI { get; private set; }
 
-        public MouseState LastMouseState => Game.MouseStateOld; // Store the last mouse state for comparison
+        
         private Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
         private Color laneHighlightColor2 = new Color(0, 192, 255, 100);
         private Color roadSegmentHighlightColor = new Color(0, 128, 255, 100);
@@ -49,46 +56,7 @@ namespace TranSimCS.Menus.InGame {
 
         public override void LoadContent() {
             world = new World();
-
-            //Add some example road nodes and segments
-            var node1 = new RoadNode(world, "Node 1", new Vector3(0, 0.1f, 0), RoadNode.AZIMUTH_NORTH);
-            var node2 = new RoadNode(world, "Node 2", new Vector3(0, 0.1f, 100), RoadNode.AZIMUTH_NORTH);
-            var node3 = new RoadNode(world, "Node 3", new Vector3(0, 0.1f, 200), RoadNode.AZIMUTH_NORTH);
-            var node4a = new RoadNode(world, "Node 4a", new Vector3(100, 0.1f, 300), RoadNode.AZIMUTH_EAST);
-            var node4b = new RoadNode(world, "Node 4b", new Vector3(0, 0.1f, 300), RoadNode.AZIMUTH_NORTH);
-            var node4c = new RoadNode(world, "Node 4c", new Vector3(-100, 0.1f, 300), RoadNode.AZIMUTH_WEST);
-            // Generate lanes for each node
-            Generator.GenerateLanes(2, node1, 3.5f, 0);
-            Generator.GenerateLanes(2, node2, 3.5f, 0);
-            Generator.GenerateLanes(4, node3, 3.5f, -3.5f);
-            Generator.GenerateLanes(1, node4a, 3.5f, 0);
-            Generator.GenerateLanes(2, node4b, 3.5f, 0);
-            Generator.GenerateLanes(1, node4c, 3.5f, 0);
-            world.RoadNodes.Add(node1);
-            world.RoadNodes.Add(node2);
-            world.RoadNodes.Add(node3);
-            world.RoadNodes.Add(node4a);
-            world.RoadNodes.Add(node4b);
-
-            //1-2
-            var lc12 = Generator.GenerateLaneConnections(node1, 0, node1.Lanes.Count, node2, 0, node2.Lanes.Count);
-            world.RoadSegments.Add(lc12);
-
-            //2-3
-            var lc23 = Generator.GenerateLaneConnections(node2, 0, node2.Lanes.Count, node3, 0, node3.Lanes.Count, 0, 1);
-            world.RoadSegments.Add(lc23);
-
-            //3-4a
-            var lc34a = Generator.GenerateLaneConnections(node3, 3, 4, node4a, 0, node4a.Lanes.Count);
-            world.RoadSegments.Add(lc34a);
-
-            //3-4b
-            var lc34b = Generator.GenerateLaneConnections(node3, 1, 3, node4b, 0, node4b.Lanes.Count);
-            world.RoadSegments.Add(lc34b);
-
-            //3-4c
-            var lc34c = Generator.GenerateLaneConnections(node3, 0, 1, node4c, 0, node4c.Lanes.Count);
-            world.RoadSegments.Add(lc34c);
+            World.SetUpExampleWorld(world);
 
             //Generate graphics stuff
             effect = new BasicEffect(Game.GraphicsDevice) {
@@ -98,7 +66,6 @@ namespace TranSimCS.Menus.InGame {
                 World = Matrix.Identity,
                 Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, Game.GraphicsDevice.Viewport.AspectRatio, 1f, 1000000f),
             };
-            var techniques = effect.Techniques;
             renderHelper = new RenderHelper(Game.GraphicsDevice, effect);
 
             //Load the road texture
@@ -110,6 +77,8 @@ namespace TranSimCS.Menus.InGame {
             rootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 100), false, true);
             UiSystem.Add("lower", rootPanel);
 
+            SetUpPictureButton("noTool", () => Tool = null);
+
             var AddRoadButton = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(64, 64), CreateTextureCallback(Game.Content.Load<Texture2D>("addRoadTool")));
             rootPanel.AddChild(AddRoadButton);
 
@@ -119,6 +88,13 @@ namespace TranSimCS.Menus.InGame {
         }
         private Image.TextureCallback CreateTextureCallback(Texture2D texture2D) {
             return (_) => new MLEM.Textures.TextureRegion(texture2D);
+        }
+        private PictureButton SetUpPictureButton(String texture, Action? callback = null) {
+            var button = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(64, 64), CreateTextureCallback(Game.Content.Load<Texture2D>("removeRoadTool")));
+            if(callback != null) 
+                button.OnPressed = (e) => callback.Invoke();
+            rootPanel.AddChild(button);
+            return button;
         }
 
         public override void Update(GameTime time) {
@@ -290,6 +266,11 @@ namespace TranSimCS.Menus.InGame {
         }
 
         public override void Draw2D(GameTime time) {
+            string toolName = (Tool?.Name) ?? "no tool";
+            Game.SpriteBatch.Begin();
+            Game.SpriteBatch.DrawString(Game.Font, toolName, new(25, 25), Color.Gray);
+            Game.SpriteBatch.End();
+
             UiSystem.Draw(time, Game.SpriteBatch);
         }
     }

@@ -95,7 +95,6 @@ namespace TranSimCS
             }
         }
 
-
         public void Update(float deltaTime)
         {
 
@@ -105,6 +104,48 @@ namespace TranSimCS
                 // Example: Update each road node's position or state
                 
             }
+        }
+
+        public static void SetUpExampleWorld(World world) {
+            //Add some example road nodes and segments
+            var node1 = new RoadNode(world, "Node 1", new Vector3(0, 0.1f, 0), RoadNode.AZIMUTH_NORTH);
+            var node2 = new RoadNode(world, "Node 2", new Vector3(0, 0.1f, 100), RoadNode.AZIMUTH_NORTH);
+            var node3 = new RoadNode(world, "Node 3", new Vector3(0, 0.1f, 200), RoadNode.AZIMUTH_NORTH);
+            var node4a = new RoadNode(world, "Node 4a", new Vector3(100, 0.1f, 300), RoadNode.AZIMUTH_EAST);
+            var node4b = new RoadNode(world, "Node 4b", new Vector3(0, 0.1f, 300), RoadNode.AZIMUTH_NORTH);
+            var node4c = new RoadNode(world, "Node 4c", new Vector3(-100, 0.1f, 300), RoadNode.AZIMUTH_WEST);
+            // Generate lanes for each node
+            Generator.GenerateLanes(2, node1, 3.5f, 0);
+            Generator.GenerateLanes(2, node2, 3.5f, 0);
+            Generator.GenerateLanes(4, node3, 3.5f, -3.5f);
+            Generator.GenerateLanes(1, node4a, 3.5f, 0);
+            Generator.GenerateLanes(2, node4b, 3.5f, 0);
+            Generator.GenerateLanes(1, node4c, 3.5f, 0);
+            world.RoadNodes.Add(node1);
+            world.RoadNodes.Add(node2);
+            world.RoadNodes.Add(node3);
+            world.RoadNodes.Add(node4a);
+            world.RoadNodes.Add(node4b);
+
+            //1-2
+            var lc12 = Generator.GenerateLaneConnections(node1, 0, node1.Lanes.Count, node2, 0, node2.Lanes.Count);
+            world.RoadSegments.Add(lc12);
+
+            //2-3
+            var lc23 = Generator.GenerateLaneConnections(node2, 0, node2.Lanes.Count, node3, 0, node3.Lanes.Count, 0, 1);
+            world.RoadSegments.Add(lc23);
+
+            //3-4a
+            var lc34a = Generator.GenerateLaneConnections(node3, 3, 4, node4a, 0, node4a.Lanes.Count);
+            world.RoadSegments.Add(lc34a);
+
+            //3-4b
+            var lc34b = Generator.GenerateLaneConnections(node3, 1, 3, node4b, 0, node4b.Lanes.Count);
+            world.RoadSegments.Add(lc34b);
+
+            //3-4c
+            var lc34c = Generator.GenerateLaneConnections(node3, 0, 1, node4c, 0, node4c.Lanes.Count);
+            world.RoadSegments.Add(lc34c);
         }
     }
 }
