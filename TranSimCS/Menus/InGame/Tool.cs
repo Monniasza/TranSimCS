@@ -145,14 +145,25 @@ namespace TranSimCS.Menus.InGame {
                 var startRightPos = startLeftPos + (startingPosition0.Lateral * node.Width);
 
                 //Calculate the new values
-                var groundPlane = new Plane(0, 1, 0, 0);
-                endLeftPos = Geometry.IntersectRayPlane(menu.MouseRay, groundPlane);
-                var reflectionVector = endLeftPos - startLeftPos;
-                reflectionVector = new(reflectionVector.Z, reflectionVector.Y, -reflectionVector.X);
-                reflectionVector.Normalize();
-                endingTangent = Geometry.ReflectVectorByNormal(startingTangent, reflectionVector);
-                Vector3 endingLateral = new(-endingTangent.Z, endingTangent.Y, endingTangent.X);
-                endRightPos = endLeftPos + (endingLateral * node.Width);
+                var mouseOverLane = menu.MouseOverRoad?.SelectedLane;
+                if (mouseOverLane == null) {
+                    //Create a synthetic end
+                    var groundPlane = new Plane(0, 1, 0, 0);
+                    endLeftPos = Geometry.IntersectRayPlane(menu.MouseRay, groundPlane);
+                    var reflectionVector = endLeftPos - startLeftPos;
+                    reflectionVector = new(reflectionVector.Z, reflectionVector.Y, -reflectionVector.X);
+                    reflectionVector.Normalize();
+                    endingTangent = Geometry.ReflectVectorByNormal(startingTangent, reflectionVector);
+                    Vector3 endingLateral = new(endingTangent.Z, endingTangent.Y, -endingTangent.X);
+                    endRightPos = endLeftPos + (endingLateral * node.Width);
+                } else {
+                    var mouseOverNode = mouseOverLane.RoadNode;
+                    var lend = Geometry.calcLineEnd(mouseOverNode, mouseOverLane.LeftPosition);
+                    var rend = Geometry.calcLineEnd(mouseOverNode, mouseOverLane.RightPosition);
+                    endingTangent = lend.Tangential;
+                    endLeftPos = lend.Position;
+                    endRightPos = rend.Position;
+                }
 
                 //Draw the preview
                 Color previewColor = node.Spec.Color;

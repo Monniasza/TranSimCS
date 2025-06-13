@@ -142,7 +142,7 @@ namespace TranSimCS
         
         public static Vector3 IntersectRayPlane(Ray ray, Plane plane) {
             var t = IntersectRayPlaneT(ray, plane);
-            return ray.Position + (t * plane.Normal);
+            return ray.Position + (t * ray.Direction);
         }
         public static Vector3 ReflectVectorByNormal(Vector3 src, Vector3 normal) => src - 2 * Vector3.Dot(src, normal) * normal;
 
