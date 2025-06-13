@@ -12,11 +12,12 @@ using TranSimCS.Roads;
 
 namespace TranSimCS.Menus.InGame {
     internal class InGameMenu : Menu {
-        private Game1 Game;
         private World world;
         private BasicEffect effect;
         public static Texture2D roadTexture { get; private set; } // Assuming you have a texture for the road
         public static Texture2D testTexture { get; private set; }
+        public static Texture2D grassTexture {  get; private set; }
+
         private RenderHelper renderHelper; // Assuming you have a RenderHelper class for rendering
         public RoadSelection? MouseOverRoad { get; private set; } = null; // Store the selected road selection
         //public RoadSelection? SelectedRoadSelection { get; set; } = null; // Store the selected road selection
@@ -28,13 +29,13 @@ namespace TranSimCS.Menus.InGame {
         public float RotationSpeed = 1f; // Speed of camera rotation
 
         static int scrollWheelValue = 0; // Store the scroll wheel value
-        public MouseState LastMouseState { get; private set; } // Store the last mouse state for comparison
+        public MouseState LastMouseState => Game.MouseStateOld; // Store the last mouse state for comparison
         private Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
         private Color laneHighlightColor2 = new Color(0, 192, 255, 100);
         private Color roadSegmentHighlightColor = new Color(0, 128, 255, 100);
 
-        public override void SetGame(Game1 game) {
-            Game = game;
+        internal InGameMenu(Game1 game): base(game) {
+
         }
 
         public override void Destroy() {
@@ -97,6 +98,7 @@ namespace TranSimCS.Menus.InGame {
             //Load the road texture
             roadTexture = Game.Content.Load<Texture2D>("laneTex");
             testTexture = Game.Content.Load<Texture2D>("test");
+            grassTexture = Game.Content.Load<Texture2D>("seamlessTextures2/grass1");
         }
 
         public override void Update(GameTime time) {
@@ -203,7 +205,6 @@ namespace TranSimCS.Menus.InGame {
                     }
                 }
             }
-            LastMouseState = mouseState; // Update the last mouse state for the next frame
         }
         public override void Draw(GameTime time) {
             //Clear the screen to a solid color and clear the render helper
@@ -238,6 +239,17 @@ namespace TranSimCS.Menus.InGame {
                     RoadRenderer.DrawBezierStrip(leftSubBezier3, rightSubBezier3, renderBin, laneHighlightColor2);
                 }
             }
+
+            //Render the ground (now just a flat plane)
+            float r = 100000;
+            float s = 10000;
+            IRenderBin grassBin = renderHelper.GetOrCreateRenderBin(grassTexture);
+            grassBin.DrawQuad(
+                new VertexPositionColorTexture(new(-r, 0,  r), Color.White, new(-s, -s)),
+                new VertexPositionColorTexture(new( r, 0,  r), Color.White, new( s, -s)),
+                new VertexPositionColorTexture(new( r, 0, -r), Color.White, new( s,  s)),
+                new VertexPositionColorTexture(new(-r, 0, -r), Color.White, new(-s,  s))
+            );
 
             //Red the render helper
             renderHelper.Render();

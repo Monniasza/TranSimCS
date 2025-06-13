@@ -6,33 +6,52 @@ using System.Xml.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using TranSimCS.Roads;
+using MLEM.Font;
+using MLEM.Input;
+using MLEM.Ui.Style;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
+using TranSimCS.Roads;
+using SpriteFontPlus;
+using System.IO;
 
 namespace TranSimCS
 {
     public class Game1 : Game
     {
-        private GraphicsDeviceManager _graphics;
-        private SpriteBatch _spriteBatch;
+        public GraphicsDeviceManager GraphicsDeviceManager { get; private set; }
+        public SpriteBatch SpriteBatch { get; private set; }
         private Menu menu;
+        public readonly InputHandler ih;
+        public readonly UiStyle defaultUiStyle;
+
+        //Fonts
+        public SpriteFont Font { get; private set; }
+        public GenericSpriteFont Gsf { get; private set; }
+        public SpriteFont FontSmall { get; private set; }
+        public GenericSpriteFont GsfSmall { get; private set; }
+
+        //Inputs
+        public Point MousePos { get; private set; } = new();
+        public ISet<Keys> keysOld = new HashSet<Keys>();
+        public MouseState MouseState { get; private set; }
+        public MouseState MouseStateOld { get; private set; }
 
         public Menu Menu { get => menu; set {
             ArgumentNullException.ThrowIfNull(value, nameof(value));
             var oldMenu = menu;
             menu?.Destroy();
-            menu?.SetGame(null);
             menu = value;
-            menu.SetGame(this);
             menu.LoadContent();
             
         } }
 
         public Game1() {
-            _graphics = new GraphicsDeviceManager(this);
+            GraphicsDeviceManager = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+            ih = new InputHandler(this);
+            defaultUiStyle = new UiStyle();
         }
 
         protected override void Initialize() {
@@ -40,15 +59,40 @@ namespace TranSimCS
             base.Initialize();
         }
 
-        protected override void LoadContent()
-        {
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
-            Menu = new InGameMenu();
+        protected override void LoadContent() {
+            SpriteBatch = new SpriteBatch(base.GraphicsDevice);
+            //Font
+            var fontBakeResult = TtfFontBaker.Bake(File.ReadAllBytes(@"C:\\Windows\\Fonts\arial.ttf"),
+                25, 1024, 1024, [
+                    CharacterRange.BasicLatin,
+                    CharacterRange.Latin1Supplement,
+                    CharacterRange.LatinExtendedA,
+                    CharacterRange.Cyrillic
+                ]
+            );
+            Font = fontBakeResult.CreateSpriteFont(base.GraphicsDevice);
+            Gsf = new GenericSpriteFont(Font);
+            var fontBakeResultSmall = TtfFontBaker.Bake(File.ReadAllBytes(@"C:\\Windows\\Fonts\arial.ttf"),
+                12, 512, 512, [
+                    CharacterRange.BasicLatin,
+                    CharacterRange.Latin1Supplement,
+                    CharacterRange.LatinExtendedA,
+                    CharacterRange.Cyrillic
+                ]
+            );
+            FontSmall = fontBakeResultSmall.CreateSpriteFont(base.GraphicsDevice);
+            GsfSmall = new GenericSpriteFont(FontSmall);
+
+            defaultUiStyle.Font = GsfSmall;
+            Menu = new InGameMenu(this);
         }
         
         protected override void Update(GameTime gameTime) {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+
+            MouseStateOld = MouseState;
+            MouseState = Mouse.GetState();
 
             Menu?.Update(gameTime);
             //Refresh the mouse state for the next frame
