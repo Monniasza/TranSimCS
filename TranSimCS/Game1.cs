@@ -102,6 +102,7 @@ namespace TranSimCS
 
         
         protected override void Draw(GameTime gameTime) {
+            GraphicsDevice.Clear(Color.CornflowerBlue);
             Menu?.Draw(gameTime);
             base.Draw(gameTime);
         }

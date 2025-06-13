@@ -208,7 +208,6 @@ namespace TranSimCS.Menus.InGame {
         }
         public override void Draw(GameTime time) {
             //Clear the screen to a solid color and clear the render helper
-            Game.GraphicsDevice.Clear(Color.ForestGreen);
             renderHelper.Clear();
 
             Texture2D testTexture = Game.Content.Load<Texture2D>("test");
