@@ -109,6 +109,16 @@ namespace TranSimCS.Menus.InGame {
             //Set up the UI from below
             rootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 100), false, true);
             UiSystem.Add("lower", rootPanel);
+
+            var AddRoadButton = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(64, 64), CreateTextureCallback(Game.Content.Load<Texture2D>("addRoadTool")));
+            rootPanel.AddChild(AddRoadButton);
+
+            var RemoveRoadButton = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(64, 64), CreateTextureCallback(Game.Content.Load<Texture2D>("removeRoadTool")));
+            rootPanel.AddChild(RemoveRoadButton);
+
+        }
+        private Image.TextureCallback CreateTextureCallback(Texture2D texture2D) {
+            return (_) => new MLEM.Textures.TextureRegion(texture2D);
         }
 
         public override void Update(GameTime time) {
@@ -277,21 +287,6 @@ namespace TranSimCS.Menus.InGame {
                 foreach (var lane in segment.Lanes)
                     action(lane);
 
-        }
-
-        private readonly Vector3 v1 = new(-1, 1, 0);
-        private readonly Vector3 v2 = new(1, 1, 0);
-        private readonly Vector3 v3 = new(1, -1, 0);
-        private readonly Vector3 v4 = new(-1, -1, 0);
-        private void Mark(Vector3 position, Color color, float Size = 1) {
-            DrawQuadrilateral(
-                (v1 * Size) + position, (v2 * Size) + position,
-                (v3 * Size) + position, (v4 * Size) + position, color, testTexture);
-        }
-
-        private void DrawQuadrilateral(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, Texture2D tex) {
-            IRenderBin renderBin = renderHelper.GetOrCreateRenderBin(tex);
-            renderBin.DrawQuad(a, b, c, d, color);
         }
 
         public override void Draw2D(GameTime time) {

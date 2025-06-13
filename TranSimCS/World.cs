@@ -9,10 +9,26 @@ using System.Collections.ObjectModel;
 
 namespace TranSimCS
 {
-    public class World
-    {
+    public class World{
         public ObservableCollection<RoadStrip> RoadSegments { get; } = new();
         public ObservableCollection<RoadNode> RoadNodes { get; } = new();
+
+        public RoadStrip? FindRoadStrip(RoadNode start, RoadNode end) {
+            foreach (var strip in RoadSegments) {
+                if (strip.StartNode == start && strip.EndNode == end) {
+                    return strip;
+                }
+            }
+            return null;
+        }
+        public RoadStrip GetOrMakeRoadStrip(RoadNode start, RoadNode end) {
+            RoadStrip result = FindRoadStrip(start, end);
+            if (result == null) {
+                result = new RoadStrip(start, end);
+                RoadSegments.Add(result);
+            }
+            return result;
+        }
 
         public World() {
             RoadSegments.CollectionChanged += RoadSegments_CollectionChanged; // Subscribe to changes in the road segments collection

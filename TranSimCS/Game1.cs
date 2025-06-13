@@ -85,7 +85,7 @@ namespace TranSimCS
 
             defaultUiStyle = new UntexturedStyle(SpriteBatch);
             defaultUiStyle.Font = GsfSmall;
-            defaultUiStyle.PanelColor = Color.DarkGoldenrod;
+            defaultUiStyle.PanelColor = Color.DarkGray;
             Menu = new InGameMenu(this);
         }
         
