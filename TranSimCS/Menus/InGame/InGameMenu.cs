@@ -30,10 +30,14 @@ namespace TranSimCS.Menus.InGame {
         public float RotationSpeed = 1f; // Speed of camera rotation
 
         static int scrollWheelValue = 0; // Store the scroll wheel value
+        public Panel rootPanel {  get; private set; }
+        public bool IsMouseOverUI { get; private set; }
+
         public MouseState LastMouseState => Game.MouseStateOld; // Store the last mouse state for comparison
         private Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
         private Color laneHighlightColor2 = new Color(0, 192, 255, 100);
         private Color roadSegmentHighlightColor = new Color(0, 128, 255, 100);
+        
 
         internal InGameMenu(Game1 game): base(game) {
 
@@ -103,18 +107,27 @@ namespace TranSimCS.Menus.InGame {
             grassTexture = Game.Content.Load<Texture2D>("seamlessTextures2/grass1");
 
             //Set up the UI from below
-            Panel rootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 100), false, true);
+            rootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 100), false, true);
             UiSystem.Add("lower", rootPanel);
         }
 
         public override void Update(GameTime time) {
             //Pre-get the necessary values for the mouse ray and camera
-            MouseState mouseState = Mouse.GetState();
-            int mouseX = mouseState.X;
-            int mouseY = mouseState.Y;
+            int mouseX = Game.MouseState.X;
+            int mouseY = Game.MouseState.Y;
             Viewport viewport = Game.GraphicsDevice.Viewport;
             KeyboardState keyboardState = Keyboard.GetState();
             float secondsElapsed = (float)time.ElapsedGameTime.TotalSeconds; // Get the elapsed time in seconds
+
+            //Check if mouse is over UI
+            IsMouseOverUI = false;
+            foreach(var root in UiSystem.GetRootElements()) {
+                var rect = root.Element.Area;
+                if(rect.Contains(mouseX, mouseY)) {
+                    IsMouseOverUI = true;
+                    break;
+                }
+            }
 
             // Unproject screen coordinates to near and far points in 3D space
             Vector3 nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), effect.Projection, effect.View, effect.World);
@@ -126,7 +139,7 @@ namespace TranSimCS.Menus.InGame {
             MouseOverRoad = null; // Reset the selected road selection
 
             //Road selection logic
-            ForeachLane(world.RoadSegments, (lane) => {
+            if(!IsMouseOverUI) ForeachLane(world.RoadSegments, (lane) => {
                 // Check if the ray intersects with the road segment
                 object tag = MeshUtil.RayIntersectMesh(lane.GetMesh(), ray, out float intersectionDistance);
                 if (tag is LaneStrip laneStrip && laneStrip == lane) {
@@ -135,10 +148,10 @@ namespace TranSimCS.Menus.InGame {
             });
 
             //Handle scroll wheel input for zooming in and out
-            if (mouseState.ScrollWheelValue != scrollWheelValue) {
+            if (Game.MouseState.ScrollWheelValue != scrollWheelValue) {
                 // Zoom in or out based on the scroll wheel value
-                int mouseScrollDelta = mouseState.ScrollWheelValue - scrollWheelValue;
-                scrollWheelValue = mouseState.ScrollWheelValue; // Update the scroll wheel value
+                int mouseScrollDelta = Game.MouseState.ScrollWheelValue - scrollWheelValue;
+                scrollWheelValue = Game.MouseState.ScrollWheelValue; // Update the scroll wheel value
                 Debug.Print($"Mouse scroll delta: {mouseScrollDelta}");
                 var zoomDelta = MathF.Pow(2f, mouseScrollDelta / -120f); // Adjust zoom factor based on scroll wheel delta
                 camera.Distance *= zoomDelta; // Update camera distance based on zoom factor
@@ -181,7 +194,7 @@ namespace TranSimCS.Menus.InGame {
             camera.Elevation = newElevation; // Update camera elevation
 
             //Demolish the selected road segment if the left mouse button is clicked
-            if (mouseState.LeftButton == ButtonState.Pressed && LastMouseState.LeftButton == ButtonState.Released) {
+            if (Game.MouseState.LeftButton == ButtonState.Pressed && LastMouseState.LeftButton == ButtonState.Released) {
                 // If a road segment is selected, remove it from the world
                 if (MouseOverRoad != null) {
                     Debug.Print($"Demolishing road segment: {MouseOverRoad.SelectedLaneTag.road}");
@@ -191,7 +204,7 @@ namespace TranSimCS.Menus.InGame {
                 }
             }
             //Demolish the lane on a selected node if the right mouse button is clicked
-            if (mouseState.RightButton == ButtonState.Pressed && LastMouseState.RightButton == ButtonState.Released) {
+            if (Game.MouseState.RightButton == ButtonState.Pressed && LastMouseState.RightButton == ButtonState.Released) {
                 // If a lane tag is selected, remove it from the road segment
                 if (MouseOverRoad != null) {
                     var selectedRoad = MouseOverRoad.SelectedLaneTag.road; // Get the selected road half
