@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MLEM.Ui.Elements;
 using TranSimCS.Roads;
 
 namespace TranSimCS.Menus.InGame {
@@ -93,12 +94,17 @@ namespace TranSimCS.Menus.InGame {
                 World = Matrix.Identity,
                 Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, Game.GraphicsDevice.Viewport.AspectRatio, 1f, 1000000f),
             };
+            var techniques = effect.Techniques;
             renderHelper = new RenderHelper(Game.GraphicsDevice, effect);
 
             //Load the road texture
             roadTexture = Game.Content.Load<Texture2D>("laneTex");
             testTexture = Game.Content.Load<Texture2D>("test");
             grassTexture = Game.Content.Load<Texture2D>("seamlessTextures2/grass1");
+
+            //Set up the UI from below
+            Panel rootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 100), false, true);
+            UiSystem.Add("lower", rootPanel);
         }
 
         public override void Update(GameTime time) {
@@ -273,6 +279,10 @@ namespace TranSimCS.Menus.InGame {
         private void DrawQuadrilateral(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, Texture2D tex) {
             IRenderBin renderBin = renderHelper.GetOrCreateRenderBin(tex);
             renderBin.DrawQuad(a, b, c, d, color);
+        }
+
+        public override void Draw2D(GameTime time) {
+            UiSystem.Draw(time, Game.SpriteBatch);
         }
     }
 }

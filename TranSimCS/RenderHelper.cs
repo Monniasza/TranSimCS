@@ -48,6 +48,8 @@ namespace TranSimCS {
         public void Render() {
             int TriCount = 0;
             int VertCount = 0;
+            GraphicsDevice.SamplerStates[0] = SamplerState.PointWrap;
+            //GraphicsDevice.SamplerStates[1] = SamplerState.PointWrap;
             foreach (var row in _renderBins) {
                 var renderBin = row.Value;
                 var texture = row.Key;
@@ -57,9 +59,8 @@ namespace TranSimCS {
                 if (renderBin.Vertices.Count == 0 || renderBin.Indices.Count == 0) continue;
                 foreach (var pass in Effect.CurrentTechnique.Passes) {
                     pass.Apply();
-                    
                     GraphicsDevice.SetVertexBuffer(new VertexBuffer(GraphicsDevice, typeof(VertexPositionColorTexture), renderBin.Vertices.Count, BufferUsage.WriteOnly));
-                    GraphicsDevice.Indices = new IndexBuffer(GraphicsDevice, IndexElementSize.SixteenBits, renderBin.Indices.Count, BufferUsage.WriteOnly);
+                    GraphicsDevice.Indices = new IndexBuffer(GraphicsDevice, IndexElementSize.ThirtyTwoBits, renderBin.Indices.Count, BufferUsage.WriteOnly);
                     GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderBin.Vertices.ToArray(), 0, renderBin.Vertices.Count, renderBin.Indices.ToArray(), 0, renderBin.Indices.Count / 3);
                 }
             }

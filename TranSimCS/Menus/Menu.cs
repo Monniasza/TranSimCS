@@ -15,6 +15,7 @@ namespace TranSimCS.Menus {
         public abstract void Update(GameTime time);
         public abstract void Destroy();
         public abstract void Draw(GameTime time);
+        public abstract void Draw2D(GameTime time);
         public abstract void LoadContent();
 
         //UI system

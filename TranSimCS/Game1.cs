@@ -23,7 +23,7 @@ namespace TranSimCS
         public SpriteBatch SpriteBatch { get; private set; }
         private Menu menu;
         public readonly InputHandler ih;
-        public readonly UiStyle defaultUiStyle;
+        public UiStyle defaultUiStyle { get; private set; }
 
         //Fonts
         public SpriteFont Font { get; private set; }
@@ -51,7 +51,6 @@ namespace TranSimCS
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             ih = new InputHandler(this);
-            defaultUiStyle = new UiStyle();
         }
 
         protected override void Initialize() {
@@ -83,7 +82,10 @@ namespace TranSimCS
             FontSmall = fontBakeResultSmall.CreateSpriteFont(base.GraphicsDevice);
             GsfSmall = new GenericSpriteFont(FontSmall);
 
+
+            defaultUiStyle = new UntexturedStyle(SpriteBatch);
             defaultUiStyle.Font = GsfSmall;
+            defaultUiStyle.PanelColor = Color.DarkGoldenrod;
             Menu = new InGameMenu(this);
         }
         
@@ -103,7 +105,9 @@ namespace TranSimCS
         
         protected override void Draw(GameTime gameTime) {
             GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             Menu?.Draw(gameTime);
+            Menu?.Draw2D(gameTime);
             base.Draw(gameTime);
         }
 
