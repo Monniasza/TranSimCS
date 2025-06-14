@@ -185,4 +185,40 @@ namespace TranSimCS.Menus.InGame {
             //unused
         }
     }
+
+    public class MoveTool(InGameMenu game) : ITool {
+        string ITool.Name => "Move nodes and objects";
+
+        string ITool.Description => throw new NotImplementedException();
+
+        RoadNode RoadNode { get; set; }
+
+        void ITool.Draw(GameTime gameTime) {
+            throw new NotImplementedException();
+        }
+
+        void ITool.Draw2D(GameTime gameTime) {
+            throw new NotImplementedException();
+        }
+
+        void ITool.OnClick(MouseButton button) {
+            throw new NotImplementedException();
+        }
+
+        void ITool.OnKeyDown(Keys key) {
+            throw new NotImplementedException();
+        }
+
+        void ITool.OnKeyUp(Keys key) {
+            throw new NotImplementedException();
+        }
+
+        void ITool.OnRelease(MouseButton button) {
+            throw new NotImplementedException();
+        }
+
+        void ITool.Update(GameTime gameTime) {
+            throw new NotImplementedException();
+        }
+    }
 }
