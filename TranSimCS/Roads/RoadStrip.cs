@@ -54,16 +54,20 @@ namespace TranSimCS.Roads {
 
         private List<LaneStrip> lanes = new(); // List of lane strips associated with this road connection
         public void AddLaneStrip(LaneStrip laneStrip) {
-            if (lanes.Contains(laneStrip)) throw new ArgumentException("Lanes must not be duplicated");
-            lanes.Add(laneStrip); // Add a new lane strip to the connection
-            OnLaneAdded?.Invoke(this, new RoadStripEventArgs(laneStrip)); // Trigger the OnLaneAdded event
-            InvalidateMesh(); // Invalidate the mesh for the lane strip to ensure it is regenerated
+            if(!MaybeAddLaneStrip(laneStrip)) throw new ArgumentException("Lanes must not be duplicated");
         }
         public void RemoveLaneStrip(LaneStrip laneStrip) {
             var removal = lanes.Remove(laneStrip); // Remove a lane strip from the connection
             Debug.Print($"Has the lane been removed? {removal}");
             OnLaneRemoved?.Invoke(this, new RoadStripEventArgs(laneStrip)); // Trigger the OnLaneRemoved event
             InvalidateMesh(); // Invalidate the mesh for the lane strip to ensure it is regenerated
+        }
+        public bool MaybeAddLaneStrip(LaneStrip laneStrip) {
+            if (lanes.Contains(laneStrip)) return false;
+            lanes.Add(laneStrip); // Add a new lane strip to the connection
+            OnLaneAdded?.Invoke(this, new RoadStripEventArgs(laneStrip)); // Trigger the OnLaneAdded event
+            InvalidateMesh(); // Invalidate the mesh for the lane strip to ensure it is regenerated
+            return true;
         }
         public IReadOnlyCollection<LaneStrip> Lanes => lanes.AsReadOnly(); // Get the list of lane strips associated with this road connection
         public event EventHandler<RoadStripEventArgs>? OnLaneAdded; // Event triggered when lanes are added or removed
@@ -87,5 +91,7 @@ namespace TranSimCS.Roads {
             foreach(var lane in lanes) 
                 lane.InvalidateMesh(); // Invalidate the mesh for each lane strip
         }
+
+        
     }
 }

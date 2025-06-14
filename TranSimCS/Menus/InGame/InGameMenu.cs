@@ -37,7 +37,7 @@ namespace TranSimCS.Menus.InGame {
         public MouseState LastMouseState => Game.MouseStateOld; // Store the last mouse state for comparison
 
         //UI
-        public Panel rootPanel {  get; private set; }
+        public Panel RootPanel {  get; private set; }
         public bool IsMouseOverUI { get; private set; }
 
         
@@ -74,8 +74,8 @@ namespace TranSimCS.Menus.InGame {
             grassTexture = Game.Content.Load<Texture2D>("seamlessTextures2/grass1");
 
             //Set up the UI from below
-            rootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 100), false, true);
-            UiSystem.Add("lower", rootPanel);
+            RootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 100), false, true);
+            UiSystem.Add("lower", RootPanel);
 
             SetUpToolPictureButton("noTool", null);
             SetUpToolPictureButton("removeRoadTool", new RoadDemolitionTool(this));
@@ -88,7 +88,7 @@ namespace TranSimCS.Menus.InGame {
             var button = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(64, 64), CreateTextureCallback(Game.Content.Load<Texture2D>(texture)));
             if(callback != null) 
                 button.OnPressed = (e) => callback.Invoke();
-            rootPanel.AddChild(button);
+            RootPanel.AddChild(button);
             return button;
         }
         private PictureButton SetUpToolPictureButton(String texture, ITool tool) {
@@ -195,6 +195,7 @@ namespace TranSimCS.Menus.InGame {
             foreach(var key in Game.KeyboardStateOld.GetPressedKeys()) {
                 if(Game.KeyboardState.IsKeyUp(key)) Tool?.OnKeyUp(key);
             }
+            Tool?.Update(time);
         }
         public override void Draw(GameTime time) {
             //Clear the screen to a solid color and clear the render helper

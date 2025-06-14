@@ -30,6 +30,14 @@ namespace TranSimCS
             return result;
         }
 
+        public LaneStrip FindLaneStrip(Lane start, Lane end) {
+            var roadStrip = FindRoadStrip(start.RoadNode, end.RoadNode);
+            if (roadStrip == null) return null;
+            foreach (var lane in roadStrip.Lanes) 
+                if(lane.IsBetween(start, end)) return lane;
+            return null;
+        }
+
         public World() {
             RoadSegments.CollectionChanged += RoadSegments_CollectionChanged; // Subscribe to changes in the road segments collection
             RoadNodes.CollectionChanged += RoadNodes_CollectionChanged; // Subscribe to changes in the road nodes collection
@@ -147,5 +155,7 @@ namespace TranSimCS
             var lc34c = Generator.GenerateLaneConnections(node3, 0, 1, node4c, 0, node4c.Lanes.Count);
             world.RoadSegments.Add(lc34c);
         }
+
+        
     }
 }

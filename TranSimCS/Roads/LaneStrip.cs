@@ -86,6 +86,10 @@ namespace TranSimCS.Roads {
             return HashCode.Combine(startLane, endLane, road, spec);
         }
 
+        public bool IsBetween(Lane start, Lane end) {
+            return (start == StartLane && end == EndLane) || (start == EndLane && end == StartLane);
+        }
+
         public static bool operator ==(LaneStrip left, LaneStrip right) {
             return EqualityComparer<LaneStrip>.Default.Equals(left, right);
         }

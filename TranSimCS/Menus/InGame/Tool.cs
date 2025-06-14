@@ -92,12 +92,15 @@ namespace TranSimCS.Menus.InGame {
     }
 
     public class RoadCreationTool(InGameMenu menu): ITool {
+        static readonly Vector3 offset = new Vector3(0, 0.01f, 0);
+
         string ITool.Name => "Road creation tool";
 
         string ITool.Description => (node == null) ? "Select a road node end to create a lane strip"
             : "LMB on a segment end or road node end to build a segment, or RMB to cancel";
 
         Lane node;
+        public LaneStrip? SegmentAlreadyExists { get; private set; } = null;
 
         void ITool.OnClick(MouseButton button) {
             if(button == MouseButton.Left) {
@@ -108,7 +111,7 @@ namespace TranSimCS.Menus.InGame {
                 } else if(newNode != null){
                     var segment = menu.world.GetOrMakeRoadStrip(node.RoadNode, newNode.RoadNode);
                     var strip = new LaneStrip(segment, node, newNode);
-                    segment.AddLaneStrip(strip);
+                    segment.MaybeAddLaneStrip(strip);
                 }
             }else if(button == MouseButton.Right) {
                 node = null;
@@ -148,6 +151,7 @@ namespace TranSimCS.Menus.InGame {
                 var mouseOverLane = menu.MouseOverRoad?.SelectedLane;
                 if (mouseOverLane == null) {
                     //Create a synthetic end
+                    SegmentAlreadyExists = null;
                     var groundPlane = new Plane(0, 1, 0, 0);
                     endLeftPos = Geometry.IntersectRayPlane(menu.MouseRay, groundPlane);
                     var reflectionVector = endLeftPos - startLeftPos;
@@ -163,13 +167,15 @@ namespace TranSimCS.Menus.InGame {
                     endingTangent = lend.Tangential;
                     endLeftPos = lend.Position;
                     endRightPos = rend.Position;
+                    SegmentAlreadyExists = menu.world.FindLaneStrip(node, mouseOverLane);
                 }
 
                 //Draw the preview
                 Color previewColor = node.Spec.Color;
                 previewColor.A = 100;
-                Bezier3 lbound = Geometry.GenerateJoinSpline(startLeftPos, endLeftPos, startingTangent, endingTangent);
-                Bezier3 rbound = Geometry.GenerateJoinSpline(startRightPos, endRightPos, startingTangent, endingTangent);
+                if (SegmentAlreadyExists != null) previewColor = Color.Red;
+                Bezier3 lbound = Geometry.GenerateJoinSpline(startLeftPos, endLeftPos, startingTangent, endingTangent) + offset;
+                Bezier3 rbound = Geometry.GenerateJoinSpline(startRightPos, endRightPos, startingTangent, endingTangent) + offset;
                 IRenderBin renderBin = menu.renderHelper.GetOrCreateRenderBin(InGameMenu.roadTexture);
                 RoadRenderer.DrawBezierStrip(lbound, rbound, renderBin, previewColor);
             }
