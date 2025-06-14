@@ -197,6 +197,9 @@ namespace TranSimCS.Menus.InGame {
             }
             Tool?.Update(time);
         }
+
+        public const float minT = 0.3f;
+        public const float maxT = 0.7f;
         public override void Draw(GameTime time) {
             //Clear the screen to a solid color and clear the render helper
             renderHelper.Clear();
@@ -211,19 +214,20 @@ namespace TranSimCS.Menus.InGame {
 
             //If a road segment is selected, draw the selection
             var roadSelection = MouseOverRoad;
-            if (roadSelection != null) {
+            if (roadSelection?.SelectedLaneTag != null) {
                 // Draw the selected lane tag with a different color
-                RoadRenderer.GenerateLaneRangeMesh(roadSelection.SelectedLaneTag, renderBin, laneHighlightColor, 0.005f);
-                RoadRenderer.GenerateLaneRangeMesh(roadSelection.SelectedLaneTag.road.FullSizeTag(), renderBin, roadSegmentHighlightColor, 0.002f);
-                var splines = RoadRenderer.GenerateSplines(roadSelection.SelectedLaneTag, 0.007f);
+                var laneRange = roadSelection.SelectedLaneTag.Value;
+                RoadRenderer.GenerateLaneRangeMesh(laneRange, renderBin, laneHighlightColor, 0.005f);
+                RoadRenderer.GenerateLaneRangeMesh(laneRange.road.FullSizeTag(), renderBin, roadSegmentHighlightColor, 0.002f);
+                var splines = RoadRenderer.GenerateSplines(laneRange, 0.007f);
                 var offset = Vector3.Up * 0.007f; // Offset for the lane position
-                Bezier3.TriSection(splines.Item1, 0.3f, 0.7f, out Bezier3 leftSubBezier1, out Bezier3 leftSubBezier2, out Bezier3 leftSubBezier3);
-                Bezier3.TriSection(splines.Item2, 0.3f, 0.7f, out Bezier3 rightSubBezier1, out Bezier3 rightSubBezier2, out Bezier3 rightSubBezier3);
+                Bezier3.TriSection(splines.Item1, minT, maxT, out Bezier3 leftSubBezier1, out Bezier3 leftSubBezier2, out Bezier3 leftSubBezier3);
+                Bezier3.TriSection(splines.Item2, minT, maxT, out Bezier3 rightSubBezier1, out Bezier3 rightSubBezier2, out Bezier3 rightSubBezier3);
 
                 // Draw the left and right bezier curves of the selected lane tag
-                if (roadSelection.SelectedLaneT < 0.3f) {
+                if (roadSelection.SelectedLaneT < minT) {
                     RoadRenderer.DrawBezierStrip(leftSubBezier1, rightSubBezier1, renderBin, laneHighlightColor2);
-                } else if (roadSelection.SelectedLaneT < 0.7f) {
+                } else if (roadSelection.SelectedLaneT < maxT) {
                     RoadRenderer.DrawBezierStrip(leftSubBezier2, rightSubBezier2, renderBin, laneHighlightColor2);
                 } else {
                     RoadRenderer.DrawBezierStrip(leftSubBezier3, rightSubBezier3, renderBin, laneHighlightColor2);
