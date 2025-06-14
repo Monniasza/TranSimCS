@@ -123,13 +123,19 @@ namespace TranSimCS.Menus.InGame {
             MouseOverRoad = null; // Reset the selected road selection
 
             //Road selection logic
-            if(!IsMouseOverUI) ForeachLane(world.RoadSegments, (lane) => {
-                // Check if the ray intersects with the road segment
-                object tag = MeshUtil.RayIntersectMesh(lane.GetMesh(), ray, out float intersectionDistance);
-                if (tag is LaneStrip laneStrip && laneStrip == lane) {
-                    MouseOverRoad = new RoadSelection(laneStrip, intersectionDistance, ray); // Create a new road selection with the lane tag and intersection distance
-                }
+            var meshes = new List<IRenderBin>();
+
+
+            ForeachLane(world.RoadSegments, (lane) => {
+                meshes.Add(lane.GetMesh());
             });
+
+            float distance = float.MaxValue;
+            object selection = null;
+            if (!IsMouseOverUI) selection = MeshUtil.RayIntersectMeshes(meshes, ray, out distance);
+            if (selection is LaneStrip laneStrip) {
+                MouseOverRoad = new RoadSelection(laneStrip, distance, ray); // Create a new road selection with the lane tag and intersection distance
+            }
 
             //Handle scroll wheel input for zooming in and out
             if (Game.MouseState.ScrollWheelValue != scrollWheelValue) {

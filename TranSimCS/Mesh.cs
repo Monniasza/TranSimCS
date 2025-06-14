@@ -53,20 +53,28 @@ namespace TranSimCS {
                     // Return the tag associated with the triangle
                     // Assuming the tag is stored in the mesh.Tags dictionary with the triangle index as the key
                     object potentialTag = mesh.Tags.ContainsKey(i / 3) ? mesh.Tags[i / 3] : null;
-                    if (potentialTag == null) {
-                        //Debug.WriteLine($"No tag found for triangle at index {i / 3} in mesh.");
-                        continue;
-                    }
                     if (thisIntersectionDistance < intersectionDistance0) {
                         intersectionDistance0 = thisIntersectionDistance; // Update the intersection point
                         tag = potentialTag; // Update the tag
-                    } else {
-                        //Debug.WriteLine($"The triangle is further {i / 3} in mesh.");
                     }
                 }
             }
             intersectionDistance = intersectionDistance0;
             return tag; // No intersection found
+        }
+
+        public static object RayIntersectMeshes(IEnumerable<IRenderBin> meshes, Ray ray, out float intersectionDistance) {
+            object tag = null;
+            float intersectionDistance0 = float.MaxValue; // Initialize max distance to a large value
+            foreach (IRenderBin mesh in meshes) {
+                object tag1 = RayIntersectMesh(mesh, ray, out var intersectionDistance1);
+                if (intersectionDistance1 < intersectionDistance0) {
+                    intersectionDistance0 = intersectionDistance1;
+                    tag = tag1;
+                }
+            }
+            intersectionDistance = intersectionDistance0;
+            return tag;
         }
     }
 }
