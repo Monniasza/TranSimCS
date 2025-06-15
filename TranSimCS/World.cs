@@ -134,6 +134,7 @@ namespace TranSimCS
             world.RoadNodes.Add(node3);
             world.RoadNodes.Add(node4a);
             world.RoadNodes.Add(node4b);
+            world.RoadNodes.Add(node4c);
 
             //1-2
             var lc12 = Generator.GenerateLaneConnections(node1.front, 0, node1.Lanes.Count, node2.front, 0, node2.Lanes.Count);
