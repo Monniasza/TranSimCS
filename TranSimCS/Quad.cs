@@ -22,6 +22,13 @@ namespace TranSimCS {
             this.d = new VertexPositionColorTexture(d, Color.White, new(0, 1));
         }
 
+        public Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color) : this(a, b, c, d) {
+            this.a = new VertexPositionColorTexture(a, color, new(0, 0));
+            this.b = new VertexPositionColorTexture(b, color, new(1, 0));
+            this.c = new VertexPositionColorTexture(c, color, new(1, 1));
+            this.d = new VertexPositionColorTexture(d, color, new(0, 1));
+        }
+
         public static Quad operator +(Quad quad, Vector3 offset) {
             return new Quad(
                 Geometry.OffsetVert(quad.a, offset),

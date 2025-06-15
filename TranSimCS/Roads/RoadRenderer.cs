@@ -4,6 +4,9 @@ using static TranSimCS.Geometry;
 
 namespace TranSimCS.Roads {
     public static class RoadRenderer {
+        public static Quad GenerateRoadNodeSelQuad(RoadNode node, Color color, float voffset = 0) {
+            return GenerateLaneQuad(node, node.Lanes[0].LeftPosition, node.Lanes[node.Lanes.Count - 1].RightPosition, color, voffset);
+        }
         public static void GenerateRoadNodeMesh(RoadNode node, IRenderBin renderBin, float voffset = 0) {
             foreach(var lane in node.Lanes) GenerateLaneMesh(lane, renderBin, voffset);
         }
@@ -12,14 +15,21 @@ namespace TranSimCS.Roads {
             renderBin.DrawQuad(quad);
             renderBin.AddTagsToLastTriangles(2, lane);
         }
-        public static Quad GenerateLaneQuad(Lane lane, float voffset = 0) {
+        public static Quad GenerateLaneQuad(Lane lane, float voffset = 0, Color? color = null) {
+            var altColor = lane.Spec.Color;
+            altColor.A /= 2;
+            return GenerateLaneQuad(lane.RoadNode, lane.LeftPosition, lane.RightPosition, color ?? altColor, voffset);
+        }
+        public static Quad GenerateLaneQuad(RoadNode node, float lb, float rb, Color color, float voffset = 0) {
             Vector3 offset = new Vector3(0, voffset, 0);
-            Transform3 transform = lane.RoadNode.PositionData.CalcReferenceFrame();
-            var vd = transform.O + lane.LeftPosition * transform.X;
-            var vc = transform.O + lane.RightPosition * transform.X;
-            var va = vd + transform.Z;
-            var vb = vc + transform.Z;
-            return new Quad(va, vb, vc, vd) + offset;
+            Transform3 transform = node.PositionData.CalcReferenceFrame();
+            var vl = transform.O + lb * transform.X;
+            var vr = transform.O + rb * transform.X;
+            var vd = vl - transform.Z;
+            var vc = vr - transform.Z;
+            var va = vl + transform.Z;
+            var vb = vr + transform.Z;
+            return new Quad(va, vb, vc, vd, color) + offset;
         }
 
         /// <summary>

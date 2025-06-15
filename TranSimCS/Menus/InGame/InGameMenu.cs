@@ -38,7 +38,11 @@ namespace TranSimCS.Menus.InGame {
 
         //UI
         public Panel RootPanel {  get; private set; }
+        public Panel ToolPanel {  get; private set; }
+        public Panel SettingsPanel { get; private set; }
         public bool IsMouseOverUI { get; private set; }
+        public Checkbox CheckNodes { get; private set; }
+        public Checkbox CheckSegments { get; private set; }
 
         //Colors
         private Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
@@ -74,8 +78,19 @@ namespace TranSimCS.Menus.InGame {
             grassTexture = Game.Content.Load<Texture2D>("seamlessTextures2/grass1");
 
             //Set up the UI from below
-            RootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 100), false, true);
+            RootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 120));
             UiSystem.Add("lower", RootPanel);
+
+            ToolPanel = new Panel(MLEM.Ui.Anchor.TopCenter, new(1f, 80));
+            RootPanel.AddChild(ToolPanel);
+
+            SettingsPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1f, 40));
+            RootPanel.AddChild(SettingsPanel);
+
+            CheckNodes = new Checkbox(MLEM.Ui.Anchor.AutoInlineBottom, new(0.25f, 20), "Select nodes", true);
+            CheckSegments = new Checkbox(MLEM.Ui.Anchor.AutoInlineBottom, new(0.25f, 20), "Select segments", true);
+            SettingsPanel.AddChild(CheckNodes);
+            SettingsPanel.AddChild(CheckSegments);
 
             SetUpToolPictureButton("noTool", null);
             SetUpToolPictureButton("removeRoadTool", new RoadDemolitionTool(this));
@@ -88,7 +103,7 @@ namespace TranSimCS.Menus.InGame {
             var button = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(64, 64), CreateTextureCallback(Game.Content.Load<Texture2D>(texture)));
             if(callback != null) 
                 button.OnPressed = (e) => callback.Invoke();
-            RootPanel.AddChild(button);
+            ToolPanel.AddChild(button);
             return button;
         }
         private PictureButton SetUpToolPictureButton(String texture, ITool tool) {
@@ -125,9 +140,13 @@ namespace TranSimCS.Menus.InGame {
             //Road selection logic
             var meshes = new List<IRenderBin>();
 
-            ForeachLane(world.RoadSegments, (lane) => {
+            if(CheckSegments.Checked) ForeachLane(world.RoadSegments, (lane) => {
                 meshes.Add(lane.GetMesh());
             });
+            if (CheckNodes.Checked) {
+                foreach (var node in world.RoadNodes)
+                    meshes.Add(node.GetMesh());
+            }
             //Add road node selection meshes
 
             float distance = float.MaxValue;
@@ -221,6 +240,11 @@ namespace TranSimCS.Menus.InGame {
                 RoadRenderer.RenderRoadSegment(roadSegment, renderBin, 0.001f); // Render each road segment with a slight vertical offset
             }
 
+            //If requested, draw the road node selection meshes
+            if (CheckNodes.Checked)
+                foreach (var node in world.RoadNodes)
+                    renderBin.DrawModel(node.GetMesh());
+
             //If a road segment is selected, draw the selection
             var roadSelection = MouseOverRoad;
             if (roadSelection?.SelectedLaneTag != null) {
@@ -247,6 +271,10 @@ namespace TranSimCS.Menus.InGame {
             if(roadSelection?.SelectedLane != null && roadSelection.SelectedLaneStrip == null) {
                 //Lane selected, road strip not
                 var lane = roadSelection.SelectedLane;
+                var quad = RoadRenderer.GenerateLaneQuad(lane, 0.005f, Color.Yellow);
+                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(lane.RoadNode, roadSegmentHighlightColor, 0.002f);
+                renderBin.DrawQuad(quad);
+                renderBin.DrawQuad(nodeQuad);
             }
 
             //Render the ground (now just a flat plane)

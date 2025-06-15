@@ -60,7 +60,7 @@ namespace TranSimCS.Roads {
         }
 
         public Transform3 CalcReferenceFrame() {
-            Matrix matrix = Matrix.CreateFromYawPitchRoll(Geometry.FieldToRadians(Azimuth), Inclination, Tilt);
+            Matrix matrix = Matrix.CreateTranslation(Position) * Matrix.CreateFromYawPitchRoll(Geometry.FieldToRadians(Azimuth), Inclination, Tilt);
             return new Transform3(matrix);
         }
     }
@@ -97,6 +97,7 @@ namespace TranSimCS.Roads {
                     var oldPosition = _position;
                     _position = value;
                     PositionChanged?.Invoke(this, new NodePositionChangedEventArgs(oldPosition, value)); // Raise the event with old and new position
+                    InvalidateMesh();
                 }
             }
         }
@@ -164,6 +165,7 @@ namespace TranSimCS.Roads {
                 l.Index++; // Increment the index of each lane that will be shifted
             lane.Index = index; // Set the index of the new lane
             _lanes.Add(lane); // Add the lane to the list
+            InvalidateMesh();
         }
         public void RemoveLane(Lane lane) {
             if(lane == null) throw new ArgumentNullException(nameof(lane), "Lane cannot be null.");
@@ -179,13 +181,25 @@ namespace TranSimCS.Roads {
                 connection.Destroy();
             }
             lane.connections.Clear(); // Clear the connections of the lane being removed
+            InvalidateMesh();
         }
         public void ClearLanes() {
             var lanes = _lanes.ToArray();
             foreach(var lane in lanes) RemoveLane(lane);
         }
 
-        
+        //Node selection mesh
+        private Mesh mesh;
+        public Mesh GetMesh() {
+            if(mesh == null) {
+                mesh = new Mesh();
+                RoadRenderer.GenerateRoadNodeMesh(this, mesh);
+            }
+            return mesh;
+        }
+        public void InvalidateMesh() {
+            mesh = null;
+        }
 
         //Indexing component for the road node, maintained by the World class
         internal ISet<RoadStrip> connections = new HashSet<RoadStrip>(); // Connections to other road segments
