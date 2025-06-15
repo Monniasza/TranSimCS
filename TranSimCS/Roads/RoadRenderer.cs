@@ -120,17 +120,24 @@ namespace TranSimCS.Roads {
             var pos2L = calcLineEnd(n2l, laneIndexEndL.LeftPosition, dirEnd);
             var pos2R = calcLineEnd(n2r, laneIndexEndR.RightPosition, dirEnd);
             LineEnd tmp;
+
+            //Ensure the node ordering
+
             if(dirStart == NodeEnd.Backward) {
                 tmp = pos1L;
                 pos1L = pos1R;
                 pos1R = tmp;
+                
+            }
+            if (dirEnd == NodeEnd.Backward) {
                 tmp = pos2L;
                 pos2L = pos2R;
                 pos2R = tmp;
             }
             return (
                 GenerateJoinSpline(pos1L.Position + offset, pos2L.Position + offset, pos1L.Tangential, pos2L.Tangential),
-                GenerateJoinSpline(pos1R.Position + offset, pos2R.Position + offset, pos1R.Tangential, pos2R.Tangential));
+                GenerateJoinSpline(pos1R.Position + offset, pos2R.Position + offset, pos1R.Tangential, pos2R.Tangential)
+            );
         }
 
         public static void DrawBezierStrip(Bezier3 lbound, Bezier3 rbound, IRenderBin renderer, Color color) {
