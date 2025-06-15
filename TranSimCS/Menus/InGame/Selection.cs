@@ -35,16 +35,17 @@ namespace TranSimCS.Menus.InGame {
             SelectedLaneStrip = laneStrip; // Store the selected lane strip
             var splines = RoadRenderer.GenerateSplines(SelectedLaneTag.Value);
             Bezier3 averageBezier = (splines.Item1 + splines.Item2) / 2; // Average the two splines
+            SelectedLaneT = Bezier3.FindT(averageBezier, SelectedLanePosition); // Get the T value for the selected lane position
             selectedLaneBezier = averageBezier; // Store the selected lane bezier curve
             SelectedLaneEnd =
-                SelectedLaneT < InGameMenu.minT ? SelectedLaneStrip?.StartLane :
-                SelectedLaneT > InGameMenu.maxT ? SelectedLaneStrip?.EndLane : null;
-            SelectedLane = SelectedLaneEnd?.lane;
-            SelectedLaneT = Bezier3.FindT(averageBezier, SelectedLanePosition); // Get the T value for the selected lane position
-            SelectedRoadHalf =
+                SelectedLaneT < InGameMenu.minT ? laneStrip?.StartLane :
+                SelectedLaneT > InGameMenu.maxT ? laneStrip?.EndLane : null;
+            SelectedLane = SelectedLaneEnd?.lane; //somewhat this is null
+             SelectedRoadHalf =
                 SelectedLaneT < InGameMenu.minT ? SegmentHalf.Start : 
                 SelectedLaneT > InGameMenu.maxT ? SegmentHalf.End : null; // Determine which half of the road the selected lane tag belongs to
             SelectedRoadNode = SelectedLane?.RoadNode;
+            SelectedNodeSide = SelectedLaneEnd?.end;
         }
 
         public RoadSelection(LaneEnd lane, float intersectionDistance, Ray mouseRay) {
