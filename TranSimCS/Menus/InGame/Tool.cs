@@ -95,18 +95,18 @@ namespace TranSimCS.Menus.InGame {
         string ITool.Description => (node == null) ? "Select a road node end to create a lane strip"
             : "LMB on a segment end or road node end to build a segment, or RMB to cancel";
 
-        Lane node;
+        LaneEnd? node;
         public LaneStrip? SegmentAlreadyExists { get; private set; } = null;
 
         void ITool.OnClick(MouseButton button) {
             if(button == MouseButton.Left) {
-                var newNode = menu.MouseOverRoad?.SelectedLane;
+                var newNode = menu.MouseOverRoad?.SelectedLaneEnd;
                 if (node == null) {
                     node = newNode;
                     Debug.Print($"Selected node: {newNode}");
                 } else if(newNode != null){
-                    var segment = menu.world.GetOrMakeRoadStrip(node.RoadNode, newNode.RoadNode);
-                    var strip = new LaneStrip(segment, node, newNode);
+                    var segment = menu.world.GetOrMakeRoadStrip(node.Value.RoadNodeEnd, newNode.Value.RoadNodeEnd);
+                    var strip = new LaneStrip(segment, node.Value, newNode.Value);
                     segment.MaybeAddLaneStrip(strip);
                 }
             }else if(button == MouseButton.Right) {
@@ -133,19 +133,23 @@ namespace TranSimCS.Menus.InGame {
         public void Draw(GameTime gameTime) {
             //Draw the preview of the road segment
             if(node != null) {
+                var node0 = node.Value;
+                var lane0 = node0.lane;
+
                 //Initial placeholders for new values
                 var endLeftPos = Vector3.Zero;
                 var endRightPos = Vector3.Zero;
                 var endingTangent = Vector3.Zero;
 
-                var startingPosition0 = Geometry.calcLineEnd(node.RoadNode, node.LeftPosition);
+                var startingPosition0 = Geometry.calcLineEnd(node0.RoadNodeEnd, lane0.LeftPosition);
                 var startingTangent = startingPosition0.Tangential;
                 var startLeftPos = startingPosition0.Position;
-                var startRightPos = startLeftPos + (startingPosition0.Lateral * node.Width);
+                var startRightPos = startLeftPos + (startingPosition0.Lateral * lane0.Width);
 
                 //Calculate the new values
-                var mouseOverLane = menu.MouseOverRoad?.SelectedLane;
-                if (mouseOverLane == null) {
+                var mouseOverLaneEnd = menu.MouseOverRoad?.SelectedLaneEnd;
+                var mouseOverLane = mouseOverLaneEnd?.lane;
+                if (mouseOverLaneEnd == null) {
                     //Create a synthetic end
                     SegmentAlreadyExists = null;
                     var groundPlane = new Plane(0, 1, 0, 0);
@@ -155,19 +159,20 @@ namespace TranSimCS.Menus.InGame {
                     reflectionVector.Normalize();
                     endingTangent = Geometry.ReflectVectorByNormal(startingTangent, reflectionVector);
                     Vector3 endingLateral = new(endingTangent.Z, endingTangent.Y, -endingTangent.X);
-                    endRightPos = endLeftPos + (endingLateral * node.Width);
+                    endRightPos = endLeftPos + (endingLateral * node.Value.lane.Width);
                 } else {
                     var mouseOverNode = mouseOverLane.RoadNode;
-                    var lend = Geometry.calcLineEnd(mouseOverNode, mouseOverLane.LeftPosition);
-                    var rend = Geometry.calcLineEnd(mouseOverNode, mouseOverLane.RightPosition);
+                    var mouseOverNodeEnd = mouseOverLaneEnd.Value.RoadNodeEnd;
+                    var lend = Geometry.calcLineEnd(mouseOverNodeEnd, mouseOverLane.LeftPosition);
+                    var rend = Geometry.calcLineEnd(mouseOverNodeEnd, mouseOverLane.RightPosition);
                     endingTangent = lend.Tangential;
                     endLeftPos = lend.Position;
                     endRightPos = rend.Position;
-                    SegmentAlreadyExists = menu.world.FindLaneStrip(node, mouseOverLane);
+                    SegmentAlreadyExists = menu.world.FindLaneStrip(node.Value, mouseOverLaneEnd.Value);
                 }
 
                 //Draw the preview
-                Color previewColor = node.Spec.Color;
+                Color previewColor = lane0.Spec.Color;
                 previewColor.A = 100;
                 if (SegmentAlreadyExists != null) previewColor = Color.Red;
                 Bezier3 lbound = Geometry.GenerateJoinSpline(startLeftPos, endLeftPos, startingTangent, endingTangent) + offset;

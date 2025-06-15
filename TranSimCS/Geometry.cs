@@ -40,14 +40,20 @@ namespace TranSimCS
             }
         }
 
-        public static LineEnd calcLineEnd(RoadNode node, float offset) {
+        public static LineEnd calcLineEnd(RoadNodeEnd node, float offset)
+            => calcLineEnd(node.Node, offset, node.End);
+
+        public static LineEnd calcLineEnd(RoadNode node, float offset, NodeEnd end) {
             Transform3 nodeTransform = node.PositionData.CalcReferenceFrame();
             Vector3 nodePosition = nodeTransform.O;
             Vector3 tangential = nodeTransform.Z;
             Vector3 normal = nodeTransform.Y;
             Vector3 lateral = nodeTransform.X;
             Vector3 position = nodePosition + lateral * offset;
-
+            if(end == NodeEnd.Backward) {
+                tangential = -tangential;
+                lateral = -lateral;
+            }
             return new LineEnd(position, tangential, normal, lateral, node.PositionData.Curvature); // Return the end position as a Vector3
         }
 

@@ -10,19 +10,14 @@ namespace TranSimCS.Roads {
         End // Represents the right half of a road segment
     }
 
-    public struct LaneRange {
-        public RoadStrip road; // The road connection this tag is associated with
-        public Lane startLaneIndexL; // The starting lane index for the tag
-        public Lane startLaneIndexR;
-        public Lane endLaneIndexL;
-        public Lane endLaneIndexR;
-        public LaneRange(RoadStrip road, Lane startLaneIndexL, Lane startLaneIndexR, Lane endLaneIndexL, Lane endLaneIndexR) {
-            this.road = road;
-            this.startLaneIndexL = startLaneIndexL;
-            this.startLaneIndexR = startLaneIndexR;
-            this.endLaneIndexL = endLaneIndexL;
-            this.endLaneIndexR = endLaneIndexR;
-        }
+    public struct LaneRange(RoadStrip road, Lane startLaneIndexL, Lane startLaneIndexR, NodeEnd startSide, Lane endLaneIndexL, Lane endLaneIndexR, NodeEnd endSide) {
+        public RoadStrip road = road; // The road connection this tag is associated with
+        public Lane startLaneIndexL = startLaneIndexL; // The starting lane index for the tag
+        public Lane startLaneIndexR = startLaneIndexR;
+        public NodeEnd startSide = startSide;
+        public Lane endLaneIndexL = endLaneIndexL;
+        public Lane endLaneIndexR = endLaneIndexR;
+        public NodeEnd endSide = endSide;
     }
 
     public class RoadStripEventArgs : EventArgs {
@@ -38,11 +33,11 @@ namespace TranSimCS.Roads {
     /// <remarks>A <see cref="RoadStrip"/> defines the relationship between two road nodes, specifying
     /// the lanes involved at each node and their respective indices. It also includes properties for lane
     /// specifications and rendering-related data, such as meshes for visualization.</remarks>
-    public class RoadStrip(RoadNode startNode, RoadNode endNode) {
+    public class RoadStrip(RoadNodeEnd startNode, RoadNodeEnd endNode) {
         // Properties to hold the start and end nodes and their respective lane indices
-        public readonly RoadNode StartNode = startNode; // The starting road node of the connection
-        public readonly RoadNode EndNode = endNode;
-        public RoadNode GetHalf(SegmentHalf selectedRoadHalf) {
+        public readonly RoadNodeEnd StartNode = startNode; // The starting road node of the connection
+        public readonly RoadNodeEnd EndNode = endNode;
+        public RoadNodeEnd GetHalf(SegmentHalf selectedRoadHalf) {
             if (selectedRoadHalf == SegmentHalf.Start) {
                 return StartNode; // Return the start node if the selected half is Start
             } else if (selectedRoadHalf == SegmentHalf.End) {
@@ -75,7 +70,7 @@ namespace TranSimCS.Roads {
 
         public LaneRange FullSizeTag() {
             int maxIdx = lanes.Count - 1; // Get the maximum index of the lanes
-            return new LaneRange(this, lanes[0].StartLane, lanes[maxIdx].StartLane, lanes[0].EndLane, lanes[maxIdx].EndLane); // Create a LaneTag with the full size of the connection
+            return new LaneRange(this, lanes[0].StartLane.lane, lanes[maxIdx].StartLane.lane, StartNode.End, lanes[0].EndLane.lane, lanes[maxIdx].EndLane.lane, EndNode.End); // Create a LaneTag with the full size of the connection
         }
 
         //Meshes for the lane connection (can be used for rendering and cached)

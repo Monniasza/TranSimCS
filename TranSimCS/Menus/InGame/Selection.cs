@@ -40,13 +40,11 @@ namespace TranSimCS.Menus.InGame {
             SelectedRoadHalf =
                 SelectedLaneT < InGameMenu.minT ? SegmentHalf.Start : 
                 SelectedLaneT > InGameMenu.maxT ? SegmentHalf.End : null; // Determine which half of the road the selected lane tag belongs to
-            SelectedLane =
-                SelectedLaneT < InGameMenu.minT ? SelectedLaneStrip?.StartLane :
-                SelectedLaneT > InGameMenu.maxT ? SelectedLaneStrip?.EndLane : null;
             SelectedRoadNode = SelectedLane?.RoadNode;
             SelectedLaneEnd = 
-                SelectedLaneT < InGameMenu.minT ? SelectedLaneStrip?.StartLane?.Front :
-                SelectedLaneT > InGameMenu.maxT ? SelectedLaneStrip?.EndLane?.Rear : null; ;
+                SelectedLaneT < InGameMenu.minT ? SelectedLaneStrip?.StartLane :
+                SelectedLaneT > InGameMenu.maxT ? SelectedLaneStrip?.EndLane : null;
+            SelectedLane = SelectedLaneEnd?.lane;
         }
 
         public RoadSelection(LaneEnd lane, float intersectionDistance, Ray mouseRay) {

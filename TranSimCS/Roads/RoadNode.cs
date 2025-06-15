@@ -81,6 +81,34 @@ namespace TranSimCS.Roads {
         Forward, Backward
     }
 
+    public struct RoadNodeEnd(RoadNode node, NodeEnd end) : IEquatable<RoadNodeEnd> {
+        public NodeEnd End { get; } = end;
+        public RoadNode Node { get; } = node;
+
+        public override bool Equals(object obj) {
+            return obj is RoadNodeEnd end && Equals(end);
+        }
+
+        public bool Equals(RoadNodeEnd other) {
+            return End == other.End &&
+                   EqualityComparer<RoadNode>.Default.Equals(Node, other.Node);
+        }
+
+        public override int GetHashCode() {
+            return HashCode.Combine(End, Node);
+        }
+
+        public LaneEnd GetLaneEnd(int idx) => new LaneEnd(End, Node.Lanes[idx]);
+
+        public static bool operator ==(RoadNodeEnd left, RoadNodeEnd right) {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(RoadNodeEnd left, RoadNodeEnd right) {
+            return !(left == right);
+        }
+    }
+
     public class RoadNode {
         //Example azimuth values
         public const int AZIMUTH_NORTH = 0; // 0 degrees
@@ -164,6 +192,8 @@ namespace TranSimCS.Roads {
         public ISet<RoadStrip> Connections => new ReadOnlySet<RoadStrip>(connections); // Expose the connections set
 
         //Halves of this road node
+        public RoadNodeEnd rear => new RoadNodeEnd(this, NodeEnd.Backward);
+        public RoadNodeEnd front => new RoadNodeEnd(this, NodeEnd.Forward);
 
         // Constructor to initialize the RoadNode with a unique ID, name, position, and world
         public RoadNode(World world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0, float hCurvature = 0, float vCurvature = 0, float tiltCurvature = 0) {

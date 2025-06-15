@@ -48,7 +48,7 @@ namespace TranSimCS
         /// <param name="shle">how many lanes open from the left to the end</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public static RoadStrip GenerateLaneConnections(RoadNode start, int lstartIdx, int rstartIdx, RoadNode end, int lendIdx, int rendIdx, int shls = 0, int shle = 0){
+        public static RoadStrip GenerateLaneConnections(RoadNodeEnd start, int lstartIdx, int rstartIdx, RoadNodeEnd end, int lendIdx, int rendIdx, int shls = 0, int shle = 0){
             //Calculate lane balances
             int startingLanes = rstartIdx - lstartIdx; // How many lanes are open at the start node
             int endingLanes = rendIdx - lendIdx; // How many lanes are open at the start node
@@ -85,8 +85,8 @@ namespace TranSimCS
             for(int i = 0; i < unchangingLanesCount; i++) {
                 int startIdx = unchangingLanesStartLeft + i; // Calculate the starting index for the lane
                 int endIdx = unchangingLanesEndLeft + i; // Calculate the ending index for the lane
-                Lane startLane = strip.StartNode.Lanes[startIdx];
-                Lane endLane = strip.EndNode.Lanes[endIdx];
+                var startLane = strip.StartNode.GetLaneEnd(startIdx);
+                var endLane = strip.EndNode.GetLaneEnd(endIdx);
                 LaneStrip laneStrip = new LaneStrip(strip, startLane, endLane); // Create a new lane strip connecting the start and end lanes
                 strip.AddLaneStrip(laneStrip); // Add the lane strip to the road strip
             }
@@ -101,8 +101,8 @@ namespace TranSimCS
         public static void GenerateOneToOneConnections(RoadStrip strip, int lstartIdx, int rstartIdx, int lendIdx, int rendIdx) {
             for (int i = lstartIdx; i < rstartIdx; i++) {
                 for (int j = lendIdx; j < rendIdx; j++) {
-                    Lane startLane = strip.StartNode.Lanes[i];
-                    Lane endLane = strip.EndNode.Lanes[j];
+                    var startLane = strip.StartNode.GetLaneEnd(i);
+                    var endLane = strip.EndNode.GetLaneEnd(j);
                     LaneStrip laneStrip = new LaneStrip(strip, startLane, endLane); // Create a new lane strip connecting the start and end lanes
                     strip.AddLaneStrip(laneStrip); // Add the lane strip to the road strip
                 }
@@ -110,8 +110,8 @@ namespace TranSimCS
         }
 
         public static void JoinLanesByIndices(RoadStrip strip, int startIdx, int endIdx) {
-            Lane startLane = strip.StartNode.Lanes[startIdx];
-            Lane endLane = strip.EndNode.Lanes[endIdx];
+            var startLane = strip.StartNode.GetLaneEnd(startIdx);
+            var endLane = strip.EndNode.GetLaneEnd(endIdx);
             LaneStrip laneStrip = new LaneStrip(strip, startLane, endLane); // Create a new lane strip connecting the start and end lanes
             strip.AddLaneStrip(laneStrip); // Add the lane strip to the road strip
         }

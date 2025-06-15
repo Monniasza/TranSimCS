@@ -73,9 +73,7 @@ namespace TranSimCS.Roads {
             }
         }
         public static void GenerateLaneStripMesh(LaneStrip laneStrip, IRenderBin renderer, float voffset = 0) {
-            var startLane = laneStrip.StartLane; // Starting lane of the lane strip
-            var endLane = laneStrip.EndLane; // Ending lane of the lane strip
-            var tag = new LaneRange(laneStrip.road, startLane, startLane, endLane, endLane); // Create a tag for the lane
+            var tag = laneStrip.Tag;
             GenerateLaneRangeMesh(tag, renderer, laneStrip.spec.Color, voffset, laneStrip); // Generate the lane tag mesh
         }
 
@@ -102,14 +100,14 @@ namespace TranSimCS.Roads {
         }
 
         public static (Bezier3, Bezier3) GenerateSplines(LaneRange laneTag, float voffset = 0) {
-            return GenerateSplines(laneTag.startLaneIndexL, laneTag.startLaneIndexR, laneTag.endLaneIndexL, laneTag.endLaneIndexR, voffset);
+            return GenerateSplines(laneTag.startLaneIndexL, laneTag.startLaneIndexR, laneTag.startSide, laneTag.endLaneIndexL, laneTag.endLaneIndexR, laneTag.endSide, voffset);
         }
 
-        public static (Bezier3, Bezier3) GenerateSplines(Lane laneIndexStart, Lane laneIndexEnd, float voffset = 0) {
-            return GenerateSplines(laneIndexStart, laneIndexStart, laneIndexEnd, laneIndexEnd, voffset);
+        public static (Bezier3, Bezier3) GenerateSplines(LaneEnd laneIndexStart, LaneEnd laneIndexEnd, float voffset = 0) {
+            return GenerateSplines(laneIndexStart.lane, laneIndexStart.lane, laneIndexStart.end, laneIndexEnd.lane, laneIndexEnd.lane, laneIndexEnd.end, voffset);
         }
 
-        public static (Bezier3, Bezier3) GenerateSplines(Lane laneIndexStartL, Lane laneIndexStartR, Lane laneIndexEndL, Lane laneIndexEndR, float voffset = 0) {
+        public static (Bezier3, Bezier3) GenerateSplines(Lane laneIndexStartL, Lane laneIndexStartR, NodeEnd dirStart, Lane laneIndexEndL, Lane laneIndexEndR, NodeEnd dirEnd, float voffset = 0) {
             var offset = new Vector3(0, voffset, 0); // Offset for the lane position   
 
             var n1l = laneIndexStartL.RoadNode; // Starting road node for left lane
@@ -117,10 +115,21 @@ namespace TranSimCS.Roads {
             var n2l = laneIndexEndL.RoadNode; // Ending road node for left lane
             var n2r = laneIndexEndR.RoadNode; // Ending road node for right lane
 
-            var pos1L = calcLineEnd(n1l, laneIndexStartL.LeftPosition);
-            var pos1R = calcLineEnd(n1r, laneIndexStartR.RightPosition);
-            var pos2L = calcLineEnd(n2l, laneIndexEndL.LeftPosition);
-            var pos2R = calcLineEnd(n2r, laneIndexEndR.RightPosition);
+            var pos1L = calcLineEnd(n1l, laneIndexStartL.LeftPosition, dirStart);
+            var pos1R = calcLineEnd(n1r, laneIndexStartR.RightPosition, dirStart);
+            LineEnd tmp;
+            if(dirStart == NodeEnd.Backward) {
+                tmp = pos1L;
+                pos1L = pos1R;
+                pos1R = tmp;
+            }
+            var pos2L = calcLineEnd(n2l, laneIndexEndL.LeftPosition, dirEnd);
+            var pos2R = calcLineEnd(n2r, laneIndexEndR.RightPosition, dirEnd);
+            if (dirEnd == NodeEnd.Backward) {
+                tmp = pos2L;
+                pos1L = pos2R;
+                pos1R = tmp;
+            }
             return (
                 GenerateJoinSpline(pos1L.Position + offset, pos2L.Position + offset, pos1L.Tangential, pos2L.Tangential),
                 GenerateJoinSpline(pos1R.Position + offset, pos2R.Position + offset, pos1R.Tangential, pos2R.Tangential));

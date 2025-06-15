@@ -28,9 +28,32 @@ namespace TranSimCS.Roads {
         public static LaneSpec All => new(Color.White, VehicleTypes.All); // All vehicle types allowed
     }
 
-    public struct LaneEnd(NodeEnd End, Lane Lane) {
+    public struct LaneEnd(NodeEnd End, Lane Lane) : IEquatable<LaneEnd> {
         public NodeEnd end = End;
         public Lane lane = Lane;
+
+        public RoadNodeEnd RoadNodeEnd => new RoadNodeEnd(lane.RoadNode, end);
+
+        public override bool Equals(object obj) {
+            return obj is LaneEnd end && Equals(end);
+        }
+
+        public bool Equals(LaneEnd other) {
+            return end == other.end &&
+                   EqualityComparer<Lane>.Default.Equals(lane, other.lane);
+        }
+
+        public override int GetHashCode() {
+            return HashCode.Combine(end, lane);
+        }
+
+        public static bool operator ==(LaneEnd left, LaneEnd right) {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(LaneEnd left, LaneEnd right) {
+            return !(left == right);
+        }
     }
 
     public class Lane {
