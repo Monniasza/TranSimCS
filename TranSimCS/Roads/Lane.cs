@@ -28,6 +28,11 @@ namespace TranSimCS.Roads {
         public static LaneSpec All => new(Color.White, VehicleTypes.All); // All vehicle types allowed
     }
 
+    public struct LaneEnd(NodeEnd End, Lane Lane) {
+        public NodeEnd end = End;
+        public Lane lane = Lane;
+    }
+
     public class Lane {
         public RoadNode RoadNode { get; init; } // Reference to the road node this lane belongs to
         public LaneSpec Spec { get; set; } // Specification of the lane, including properties like width, type, etc.
@@ -36,6 +41,8 @@ namespace TranSimCS.Roads {
         public int Index { get; internal set; } // Index of the lane in the road node's lane list
         public float MiddlePosition => (LeftPosition + RightPosition) / 2; // Middle position of the lane, calculated as the average of left and right positions
         public float Width => RightPosition - LeftPosition;
+        public LaneEnd Rear => new LaneEnd(NodeEnd.Backward, this);
+        public LaneEnd Front => new LaneEnd(NodeEnd.Forward, this);
 
         //Indexing
         internal ISet<LaneStrip> connections = new HashSet<LaneStrip>(); // Set of lane strips that this lane is connected to

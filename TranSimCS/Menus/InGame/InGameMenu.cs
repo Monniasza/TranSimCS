@@ -155,7 +155,7 @@ namespace TranSimCS.Menus.InGame {
             if (selection is LaneStrip laneStrip) {
                 MouseOverRoad = new RoadSelection(laneStrip, distance, ray); // Create a new road selection with the lane tag and intersection distance
             }
-            if(selection is Lane lane) {
+            if(selection is LaneEnd lane) {
                 MouseOverRoad = new RoadSelection(lane, distance, ray);
             }
 
@@ -268,11 +268,11 @@ namespace TranSimCS.Menus.InGame {
             }
 
             //Draw the selected road node
-            if(roadSelection?.SelectedLane != null && roadSelection.SelectedLaneStrip == null) {
+            if(roadSelection?.SelectedLaneEnd != null && roadSelection.SelectedLaneStrip == null) {
                 //Lane selected, road strip not
-                var lane = roadSelection.SelectedLane;
+                var lane = roadSelection.SelectedLaneEnd.Value;
                 var quad = RoadRenderer.GenerateLaneQuad(lane, 0.005f, Color.Yellow);
-                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(lane.RoadNode, roadSegmentHighlightColor, 0.002f);
+                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(lane.lane.RoadNode, roadSegmentHighlightColor, 0.002f);
                 renderBin.DrawQuad(quad);
                 renderBin.DrawQuad(nodeQuad);
             }

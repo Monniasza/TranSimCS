@@ -72,22 +72,13 @@ namespace TranSimCS.Roads {
         }
     }
 
-    public class NodePositionChangedEventArgs : EventArgs {
-        public NodePosition OldPosition { get; }
-        public NodePosition NewPosition { get; }
-        public NodePositionChangedEventArgs(NodePosition oldPosition, NodePosition newPosition) {
-            OldPosition = oldPosition;
-            NewPosition = newPosition;
-        }
+    public class NodePositionChangedEventArgs(NodePosition oldPosition, NodePosition newPosition) : EventArgs {
+        public NodePosition OldPosition { get; } = oldPosition;
+        public NodePosition NewPosition { get; } = newPosition;
     }
 
     public enum NodeEnd {
         Forward, Backward
-    }
-
-    public struct RoadNodeEnd {
-        public RoadNode node;
-        public NodeEnd end;
     }
 
     public class RoadNode {
@@ -171,6 +162,8 @@ namespace TranSimCS.Roads {
         //Indexing component for the road node, maintained by the World class
         internal ISet<RoadStrip> connections = new HashSet<RoadStrip>(); // Connections to other road segments
         public ISet<RoadStrip> Connections => new ReadOnlySet<RoadStrip>(connections); // Expose the connections set
+
+        //Halves of this road node
 
         // Constructor to initialize the RoadNode with a unique ID, name, position, and world
         public RoadNode(World world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0, float hCurvature = 0, float vCurvature = 0, float tiltCurvature = 0) {

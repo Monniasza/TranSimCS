@@ -151,5 +151,11 @@ namespace TranSimCS
         public static float FieldToRadians(int azimuth) {
             return (azimuth / (float)(1L << 32)) * MathF.PI * 2;
         }
+
+        public static (float, float) RoadEndToRange(NodeEnd end) {
+            if (end == NodeEnd.Forward) return (0, 1);
+            if(end == NodeEnd.Backward) return (-1, 0);
+            throw new ArgumentException("Invalid node end");
+        }
     }
 }
