@@ -58,6 +58,11 @@ namespace TranSimCS.Roads {
         public static bool operator !=(NodePosition left, NodePosition right) {
             return !(left == right);
         }
+
+        public Transform3 CalcReferenceFrame() {
+            Matrix matrix = Matrix.CreateFromYawPitchRoll(Geometry.FieldToRadians(Azimuth), Inclination, Tilt);
+            return new Transform3(matrix);
+        }
     }
 
     public class NodePositionChangedEventArgs : EventArgs {

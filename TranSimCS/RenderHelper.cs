@@ -127,6 +127,7 @@ namespace TranSimCS {
         public void DrawQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color) {
             DrawQuad(new(a, color, new(0, 0)), new(b, color, new(1, 0)), new(c, color, new(1, 1)), new(d, color, new(0, 1)));
         }
+        public void DrawQuad(Quad q) => DrawQuad(q.a, q.b, q.c, q.d);
 
         /// <summary>
         /// Draws a triangle using the specified vertices. They must be in the clockwise order to form a triangle.

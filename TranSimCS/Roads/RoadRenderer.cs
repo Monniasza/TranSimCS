@@ -1,10 +1,27 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
-using TranSimCS.Roads;
 using static TranSimCS.Geometry;
 
-namespace TranSimCS {
+namespace TranSimCS.Roads {
     public static class RoadRenderer {
+        public static void GenerateRoadNodeMesh(RoadNode node, IRenderBin renderBin, float voffset = 0) {
+            foreach(var lane in node.Lanes) GenerateLaneMesh(lane, renderBin, voffset);
+        }
+        public static void GenerateLaneMesh(Lane lane, IRenderBin renderBin, float voffset = 0) {
+            var quad = GenerateLaneQuad(lane, voffset);
+            renderBin.DrawQuad(quad);
+            renderBin.AddTagsToLastTriangles(2, lane);
+        }
+        public static Quad GenerateLaneQuad(Lane lane, float voffset = 0) {
+            Vector3 offset = new Vector3(0, voffset, 0);
+            Transform3 transform = lane.RoadNode.PositionData.CalcReferenceFrame();
+            var vd = transform.O + lane.LeftPosition * transform.X;
+            var vc = transform.O + lane.RightPosition * transform.X;
+            var va = vd + transform.Z;
+            var vb = vc + transform.Z;
+            return new Quad(va, vb, vc, vd) + offset;
+        }
+
         /// <summary>
         /// Generates the mesh for a road segment.
         /// </summary>
@@ -31,12 +48,12 @@ namespace TranSimCS {
             var strips = GenerateSplines(range, voffset); // Generate the splines for the left and right lanes
 
             //Generate border curves
-            Vector3[] leftBorder = Geometry.GenerateSplinePoints(strips.Item1, 10);
-            Vector3[] rightBorder = Geometry.GenerateSplinePoints(strips.Item2, 10);
+            Vector3[] leftBorder = GenerateSplinePoints(strips.Item1, 10);
+            Vector3[] rightBorder = GenerateSplinePoints(strips.Item2, 10);
 
-            var leftBorder2 = Geometry.GeneratePositionsFromVectors(0, color, leftBorder);
-            var rightBorder2 = Geometry.GeneratePositionsFromVectors(1, color, rightBorder);
-            var strip = Geometry.WeaveStrip(leftBorder2, rightBorder2);
+            var leftBorder2 = GeneratePositionsFromVectors(0, color, leftBorder);
+            var rightBorder2 = GeneratePositionsFromVectors(1, color, rightBorder);
+            var strip = WeaveStrip(leftBorder2, rightBorder2);
             var triangleCount = strip.Length - 2; // Each triangle is formed by 3 vertices, so the number of triangles is the number of vertices minus 2
 
             //Draw strip representing the lane
@@ -63,22 +80,22 @@ namespace TranSimCS {
             var n2l = laneIndexEndL.RoadNode; // Ending road node for left lane
             var n2r = laneIndexEndR.RoadNode; // Ending road node for right lane
 
-            var pos1L = Geometry.calcLineEnd(n1l, laneIndexStartL.LeftPosition);
-            var pos1R = Geometry.calcLineEnd(n1r, laneIndexStartR.RightPosition);
-            var pos2L = Geometry.calcLineEnd(n2l, laneIndexEndL.LeftPosition);
-            var pos2R = Geometry.calcLineEnd(n2r, laneIndexEndR.RightPosition);
+            var pos1L = calcLineEnd(n1l, laneIndexStartL.LeftPosition);
+            var pos1R = calcLineEnd(n1r, laneIndexStartR.RightPosition);
+            var pos2L = calcLineEnd(n2l, laneIndexEndL.LeftPosition);
+            var pos2R = calcLineEnd(n2r, laneIndexEndR.RightPosition);
             return (
-                Geometry.GenerateJoinSpline(pos1L.Position + offset, pos2L.Position + offset, pos1L.Tangential, pos2L.Tangential),
-                Geometry.GenerateJoinSpline(pos1R.Position + offset, pos2R.Position + offset, pos1R.Tangential, pos2R.Tangential));
+                GenerateJoinSpline(pos1L.Position + offset, pos2L.Position + offset, pos1L.Tangential, pos2L.Tangential),
+                GenerateJoinSpline(pos1R.Position + offset, pos2R.Position + offset, pos1R.Tangential, pos2R.Tangential));
         }
 
         public static void DrawBezierStrip(Bezier3 lbound, Bezier3 rbound, IRenderBin renderer, Color color) {
-            Vector3[] leftBorder = Geometry.GenerateSplinePoints(lbound, 10);
-            Vector3[] rightBorder = Geometry.GenerateSplinePoints(rbound, 10);
+            Vector3[] leftBorder = GenerateSplinePoints(lbound, 10);
+            Vector3[] rightBorder = GenerateSplinePoints(rbound, 10);
 
-            var leftBorder2 = Geometry.GeneratePositionsFromVectors(0, color, leftBorder);
-            var rightBorder2 = Geometry.GeneratePositionsFromVectors(1, color, rightBorder);
-            var strip = Geometry.WeaveStrip(leftBorder2, rightBorder2);
+            var leftBorder2 = GeneratePositionsFromVectors(0, color, leftBorder);
+            var rightBorder2 = GeneratePositionsFromVectors(1, color, rightBorder);
+            var strip = WeaveStrip(leftBorder2, rightBorder2);
             var triangleCount = strip.Length - 2; // Each triangle is formed by 3 vertices, so the number of triangles is the number of vertices minus 2
             renderer.DrawStrip(strip);
         }

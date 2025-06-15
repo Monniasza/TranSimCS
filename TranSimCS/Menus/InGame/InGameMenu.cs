@@ -40,10 +40,10 @@ namespace TranSimCS.Menus.InGame {
         public Panel RootPanel {  get; private set; }
         public bool IsMouseOverUI { get; private set; }
 
-        
+        //Colors
         private Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
-        private Color laneHighlightColor2 = new Color(0, 192, 255, 100);
-        private Color roadSegmentHighlightColor = new Color(0, 128, 255, 100);
+        private Color laneHighlightColor2 = new Color(0, 192, 255, 100); //Color for highlighting the selected road half
+        private Color roadSegmentHighlightColor = new Color(0, 128, 255, 100); //Color for highlighting selected road segments
         
 
         internal InGameMenu(Game1 game): base(game) {
@@ -125,16 +125,19 @@ namespace TranSimCS.Menus.InGame {
             //Road selection logic
             var meshes = new List<IRenderBin>();
 
-
             ForeachLane(world.RoadSegments, (lane) => {
                 meshes.Add(lane.GetMesh());
             });
+            //Add road node selection meshes
 
             float distance = float.MaxValue;
             object selection = null;
             if (!IsMouseOverUI) selection = MeshUtil.RayIntersectMeshes(meshes, ray, out distance);
             if (selection is LaneStrip laneStrip) {
                 MouseOverRoad = new RoadSelection(laneStrip, distance, ray); // Create a new road selection with the lane tag and intersection distance
+            }
+            if(selection is Lane lane) {
+                MouseOverRoad = new RoadSelection(lane, distance, ray);
             }
 
             //Handle scroll wheel input for zooming in and out
@@ -238,6 +241,12 @@ namespace TranSimCS.Menus.InGame {
                 } else {
                     RoadRenderer.DrawBezierStrip(leftSubBezier3, rightSubBezier3, renderBin, laneHighlightColor2);
                 }
+            }
+
+            //Draw the selected road node
+            if(roadSelection?.SelectedLane != null && roadSelection.SelectedLaneStrip == null) {
+                //Lane selected, road strip not
+                var lane = roadSelection.SelectedLane;
             }
 
             //Render the ground (now just a flat plane)

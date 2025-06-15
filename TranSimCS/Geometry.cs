@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
@@ -40,19 +41,13 @@ namespace TranSimCS
         }
 
         public static LineEnd calcLineEnd(RoadNode node, float offset) {
-            Vector3 nodePos = node.Position;
-            int angle = node.Azimuth; // Azimuth angle in the 2^32 field
-            float radians = (angle / (float)(1L << 32)) * MathF.PI * 2; // Convert angle to radians
-            float sine = MathF.Sin(radians);
-            float cosine = MathF.Cos(radians);
-            float x = nodePos.X + offset * cosine;
-            float z = nodePos.Z - offset * sine;
-
-            Vector3 tangential = new Vector3(sine, 0, cosine); // Tangential vector (along the road)
-            Vector3 normal = new Vector3(0, 1, 0); // Normal vector (upwards)
-            Vector3 lateral = new Vector3(cosine, 0, -sine); // Lateral vector (to the right)
+            Transform3 nodeTransform = node.PositionData.CalcReferenceFrame();
+            Vector3 nodePosition = node.Position;
+            Vector3 tangential = nodeTransform.Z;
+            Vector3 normal = nodeTransform.Y;
+            Vector3 lateral = nodeTransform.X;
+            Vector3 position = nodePosition + lateral * offset;
             float radius = (1f / node.HCurvature) - offset; // Assuming offset is the radius of curvature
-            Vector3 position = new Vector3(x, nodePos.Y, z); // Position of the end point
 
             return new LineEnd(position, tangential, normal, lateral, radius); // Return the end position as a Vector3
         }
@@ -146,5 +141,16 @@ namespace TranSimCS
         }
         public static Vector3 ReflectVectorByNormal(Vector3 src, Vector3 normal) => src - 2 * Vector3.Dot(src, normal) * normal;
 
+
+        public static VertexPositionColorTexture OffsetVert(VertexPositionColorTexture vert, Vector3 offset) {
+            return new VertexPositionColorTexture(vert.Position + offset, vert.Color, vert.TextureCoordinate);
+        }
+        public static VertexPositionColorTexture SubVert(VertexPositionColorTexture vert, Vector3 offset) {
+            return new VertexPositionColorTexture(vert.Position - offset, vert.Color, vert.TextureCoordinate);
+        }
+
+        public static float FieldToRadians(int azimuth) {
+            return (azimuth / (float)(1L << 32)) * MathF.PI * 2;
+        }
     }
 }
