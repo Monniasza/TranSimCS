@@ -145,6 +145,11 @@ namespace TranSimCS.Menus.InGame {
                 var startingTangent = startingPosition0.Tangential;
                 var startLeftPos = startingPosition0.Position;
                 var startRightPos = startLeftPos + (startingPosition0.Lateral * lane0.Width);
+                if (node0.end == NodeEnd.Backward) {
+                    var shift = lane0.Width * startingPosition0.Lateral;
+                    startLeftPos -= shift;
+                    startRightPos -= shift;
+                }
 
                 //Calculate the new values
                 var mouseOverLaneEnd = menu.MouseOverRoad?.SelectedLaneEnd;
@@ -168,6 +173,11 @@ namespace TranSimCS.Menus.InGame {
                     endingTangent = lend.Tangential;
                     endLeftPos = lend.Position;
                     endRightPos = rend.Position;
+                    if(node0.end == NodeEnd.Backward) {
+                        var tmp = endLeftPos;
+                        endLeftPos = endRightPos;
+                        endRightPos = tmp;
+                    }
                     SegmentAlreadyExists = menu.world.FindLaneStrip(node.Value, mouseOverLaneEnd.Value);
                 }
 
