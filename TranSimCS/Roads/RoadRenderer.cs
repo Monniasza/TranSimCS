@@ -117,18 +117,16 @@ namespace TranSimCS.Roads {
 
             var pos1L = calcLineEnd(n1l, laneIndexStartL.LeftPosition, dirStart);
             var pos1R = calcLineEnd(n1r, laneIndexStartR.RightPosition, dirStart);
+            var pos2L = calcLineEnd(n2l, laneIndexEndL.LeftPosition, dirEnd);
+            var pos2R = calcLineEnd(n2r, laneIndexEndR.RightPosition, dirEnd);
             LineEnd tmp;
             if(dirStart == NodeEnd.Backward) {
                 tmp = pos1L;
                 pos1L = pos1R;
                 pos1R = tmp;
-            }
-            var pos2L = calcLineEnd(n2l, laneIndexEndL.LeftPosition, dirEnd);
-            var pos2R = calcLineEnd(n2r, laneIndexEndR.RightPosition, dirEnd);
-            if (dirEnd == NodeEnd.Backward) {
                 tmp = pos2L;
-                pos1L = pos2R;
-                pos1R = tmp;
+                pos2L = pos2R;
+                pos2R = tmp;
             }
             return (
                 GenerateJoinSpline(pos1L.Position + offset, pos2L.Position + offset, pos1L.Tangential, pos2L.Tangential),

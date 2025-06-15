@@ -60,7 +60,7 @@ namespace TranSimCS.Menus.InGame {
                 var selectedNode = MouseOverRoad?.SelectedRoadNode;
                 var selectedRoadHalf = MouseOverRoad?.SelectedRoadHalf;
                 var selectedLane = MouseOverRoad?.SelectedLane;
-                if(selectedRoadHalf != null) {
+                if(selectedLane != null) {
                     //Demolish the node lane
                     MouseOverRoad = null; // Reset the mouse over road selection
                     selectedNode.RemoveLane(selectedLane); // Remove the selected lane from the road node
