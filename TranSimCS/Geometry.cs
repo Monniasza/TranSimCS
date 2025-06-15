@@ -30,26 +30,25 @@ namespace TranSimCS
             public Vector3 Tangential { get; }
             public Vector3 Normal { get; }
             public Vector3 Lateral { get; }
-            public float Radius { get; }
-            public LineEnd(Vector3 position, Vector3 tangential, Vector3 normal, Vector3 lateral, float radius) {
+            public Vector3 Curvature { get; }
+            public LineEnd(Vector3 position, Vector3 tangential, Vector3 normal, Vector3 lateral, Vector3 curvature) {
                 Position = position;
                 Tangential = tangential;
                 Normal = normal;
                 Lateral = lateral;
-                Radius = radius;
+                Curvature = curvature;
             }
         }
 
         public static LineEnd calcLineEnd(RoadNode node, float offset) {
             Transform3 nodeTransform = node.PositionData.CalcReferenceFrame();
-            Vector3 nodePosition = node.Position;
+            Vector3 nodePosition = nodeTransform.O;
             Vector3 tangential = nodeTransform.Z;
             Vector3 normal = nodeTransform.Y;
             Vector3 lateral = nodeTransform.X;
             Vector3 position = nodePosition + lateral * offset;
-            float radius = (1f / node.HCurvature) - offset; // Assuming offset is the radius of curvature
 
-            return new LineEnd(position, tangential, normal, lateral, radius); // Return the end position as a Vector3
+            return new LineEnd(position, tangential, normal, lateral, node.PositionData.Curvature); // Return the end position as a Vector3
         }
 
         public static Bezier3 GenerateJoinSpline(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent){
