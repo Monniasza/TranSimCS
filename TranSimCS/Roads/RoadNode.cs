@@ -193,7 +193,7 @@ namespace TranSimCS.Roads {
         public Mesh GetMesh() {
             if(mesh == null) {
                 mesh = new Mesh();
-                RoadRenderer.GenerateRoadNodeMesh(this, mesh);
+                RoadRenderer.GenerateRoadNodeMesh(this, mesh, 0.001f);
             }
             return mesh;
         }
