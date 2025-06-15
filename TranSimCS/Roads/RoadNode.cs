@@ -67,7 +67,7 @@ namespace TranSimCS.Roads {
         }
 
         public Transform3 CalcReferenceFrame() {
-            Matrix matrix = Matrix.CreateTranslation(Position) * Matrix.CreateFromYawPitchRoll(Geometry.FieldToRadians(Azimuth), Inclination, Tilt);
+            Matrix matrix = Matrix.CreateFromYawPitchRoll(Geometry.FieldToRadians(Azimuth), Inclination, Tilt) * Matrix.CreateTranslation(Position);
             return new Transform3(matrix);
         }
     }
