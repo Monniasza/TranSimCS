@@ -170,13 +170,20 @@ namespace TranSimCS.Menus.InGame {
                 var mouseOverLane = mouseOverLaneEnd?.lane;
                 if (mouseOverLaneEnd == null) {
                     //Create a synthetic end
+                    var isSameDirection = menu.CheckSameDirection.Checked;
                     SegmentAlreadyExists = null;
                     var groundPlane = new Plane(0, 1, 0, -0.1f);
                     endLeftPos = Geometry.IntersectRayPlane(menu.MouseRay, groundPlane);
-                    var reflectionVector = endLeftPos - startLeftPos;
-                    reflectionVector = new(reflectionVector.Z, reflectionVector.Y, -reflectionVector.X);
-                    reflectionVector.Normalize();
-                    endingTangent = Geometry.ReflectVectorByNormal(startingTangent, reflectionVector);
+
+                    if (isSameDirection) {
+                        endingTangent = startingTangent;
+                    } else {
+                        var reflectionVector = endLeftPos - startLeftPos;
+                        reflectionVector = new(reflectionVector.Z, reflectionVector.Y, -reflectionVector.X);
+                        reflectionVector.Normalize();
+                        endingTangent = Geometry.ReflectVectorByNormal(startingTangent, reflectionVector);
+                    }
+                        
                     Vector3 endingLateral = new(endingTangent.Z, endingTangent.Y, -endingTangent.X);
                     endRightPos = endLeftPos + (endingLateral * node.Value.lane.Width);
                     var tilt = node.Value.lane.RoadNode.PositionData.Tilt;
