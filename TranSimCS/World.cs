@@ -14,11 +14,9 @@ namespace TranSimCS
         public ObservableCollection<RoadNode> RoadNodes { get; } = new();
 
         public RoadStrip? FindRoadStrip(RoadNodeEnd start, RoadNodeEnd end) {
-            foreach (var strip in RoadSegments) {
-                if (strip.StartNode == start && strip.EndNode == end) {
+            foreach (var strip in RoadSegments) 
+                if (strip.CheckEnds(start, end)) 
                     return strip;
-                }
-            }
             return null;
         }
         public RoadStrip GetOrMakeRoadStrip(RoadNodeEnd start, RoadNodeEnd end) {

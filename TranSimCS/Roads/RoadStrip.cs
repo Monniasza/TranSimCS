@@ -46,6 +46,9 @@ namespace TranSimCS.Roads {
                 throw new ArgumentException("Invalid segment half specified."); // Throw an exception for invalid segment half
             }
         }
+        public bool CheckEnds(RoadNodeEnd first, RoadNodeEnd second) {
+            return (first == StartNode && second == EndNode) || (first == EndNode && second == StartNode);
+        }
 
         private List<LaneStrip> lanes = new(); // List of lane strips associated with this road connection
         public void AddLaneStrip(LaneStrip laneStrip) {
