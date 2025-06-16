@@ -97,6 +97,7 @@ namespace TranSimCS.Menus.InGame {
 
         LaneEnd? node;
         public LaneStrip? SegmentAlreadyExists { get; private set; } = null;
+        public NodePosition? NewNodePosition { get; private set; }
 
         void ITool.OnClick(MouseButton button) {
             if(button == MouseButton.Left) {
@@ -104,12 +105,25 @@ namespace TranSimCS.Menus.InGame {
                 if (node == null) {
                     node = newNode;
                     Debug.Print($"Selected node: {newNode}");
-                } else if(newNode != null){
-                    var segment = menu.world.GetOrMakeRoadStrip(node.Value.RoadNodeEnd, newNode.Value.RoadNodeEnd);
-                    var strip = new LaneStrip(segment, node.Value, newNode.Value);
-                    segment.MaybeAddLaneStrip(strip);
+                } else {
+                    var world = node.Value.lane.RoadNode.World;
+                    if (newNode == null && NewNodePosition != null) {
+                        //Create a new node
+                        var newNode0 = new RoadNode(world, "", NewNodePosition.Value);
+                        var newLane = new Lane(newNode0);
+                        newLane.Spec = node.Value.lane.Spec;
+                        newLane.RightPosition = node.Value.lane.Width;
+                        newNode = newLane.Front;
+                        world.RoadNodes.Add(newNode0);
+                    }
+                    if(newNode != null) {
+                        var segment = world.GetOrMakeRoadStrip(node.Value.RoadNodeEnd, newNode.Value.RoadNodeEnd);
+                        var strip = new LaneStrip(segment, node.Value, newNode.Value);
+                        segment.MaybeAddLaneStrip(strip);
+                        node = newNode;
+                    }
                 }
-            }else if(button == MouseButton.Right) {
+            } else if(button == MouseButton.Right) {
                 node = null;
             }
         }
@@ -157,7 +171,7 @@ namespace TranSimCS.Menus.InGame {
                 if (mouseOverLaneEnd == null) {
                     //Create a synthetic end
                     SegmentAlreadyExists = null;
-                    var groundPlane = new Plane(0, 1, 0, 0);
+                    var groundPlane = new Plane(0, 1, 0, -0.1f);
                     endLeftPos = Geometry.IntersectRayPlane(menu.MouseRay, groundPlane);
                     var reflectionVector = endLeftPos - startLeftPos;
                     reflectionVector = new(reflectionVector.Z, reflectionVector.Y, -reflectionVector.X);
@@ -165,7 +179,11 @@ namespace TranSimCS.Menus.InGame {
                     endingTangent = Geometry.ReflectVectorByNormal(startingTangent, reflectionVector);
                     Vector3 endingLateral = new(endingTangent.Z, endingTangent.Y, -endingTangent.X);
                     endRightPos = endLeftPos + (endingLateral * node.Value.lane.Width);
+                    var tilt = node.Value.lane.RoadNode.PositionData.Tilt;
+                    //Calculate the NodePosition
+                    NewNodePosition = NodePosition.FromPosTangentTilt(endRightPos, endingTangent, tilt);
                 } else {
+                    //Take an existing end
                     var mouseOverNode = mouseOverLane.RoadNode;
                     var mouseOverNodeEnd = mouseOverLaneEnd.Value.RoadNodeEnd;
                     var lend = Geometry.calcLineEnd(mouseOverNodeEnd, mouseOverLane.LeftPosition);
@@ -179,7 +197,10 @@ namespace TranSimCS.Menus.InGame {
                         endRightPos = tmp;
                     }
                     SegmentAlreadyExists = menu.world.FindLaneStrip(node.Value, mouseOverLaneEnd.Value);
+                    NewNodePosition = null;
                 }
+
+                
 
                 //Draw the preview
                 Color previewColor = lane0.Spec.Color;

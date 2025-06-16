@@ -56,8 +56,8 @@ namespace TranSimCS.Roads {
         }
     }
 
-    public class Lane {
-        public RoadNode RoadNode { get; init; } // Reference to the road node this lane belongs to
+    public class Lane(RoadNode node) {
+        public RoadNode RoadNode => node; // Reference to the road node this lane belongs to
         public LaneSpec Spec { get; set; } // Specification of the lane, including properties like width, type, etc.
         public float LeftPosition { get; set; } // Left position of the lane relative to the road node
         public float RightPosition { get; set; } // Right position of the lane relative to the road node

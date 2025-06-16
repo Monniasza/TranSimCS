@@ -157,11 +157,23 @@ namespace TranSimCS
         public static float FieldToRadians(int azimuth) {
             return (azimuth / (float)(1L << 32)) * MathF.PI * 2;
         }
+        public static int RadiansToField(float azimuthRadians) {
+            return (int)MathF.Round(azimuthRadians * (float)(1L << 32) / MathF.Tau);
+        }
 
         public static (float, float) RoadEndToRange(NodeEnd end) {
             if (end == NodeEnd.Forward) return (0, 1);
             if(end == NodeEnd.Backward) return (-1, 0);
             throw new ArgumentException("Invalid node end");
         }
+
+        public static float hypot2(float x, float z) {
+            return MathF.Sqrt(x * x + z * z);
+        }
+        public static float hypot2sqr(float x, float z) {
+            return (x * x + z * z);
+        }
+
+        
     }
 }

@@ -43,6 +43,7 @@ namespace TranSimCS.Menus.InGame {
         public bool IsMouseOverUI { get; private set; }
         public Checkbox CheckNodes { get; private set; }
         public Checkbox CheckSegments { get; private set; }
+        public Checkbox CheckSameDirection { get; private set; }
 
         //Colors
         private Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
@@ -89,8 +90,10 @@ namespace TranSimCS.Menus.InGame {
 
             CheckNodes = new Checkbox(MLEM.Ui.Anchor.AutoInlineBottom, new(0.25f, 20), "Select nodes", true);
             CheckSegments = new Checkbox(MLEM.Ui.Anchor.AutoInlineBottom, new(0.25f, 20), "Select segments", true);
+            CheckSameDirection = new Checkbox(MLEM.Ui.Anchor.AutoInlineBottom, new(0.25f, 20), "New node in same direction", true);
             SettingsPanel.AddChild(CheckNodes);
             SettingsPanel.AddChild(CheckSegments);
+            SettingsPanel.AddChild(CheckSameDirection);
 
             SetUpToolPictureButton("noTool", null);
             SetUpToolPictureButton("removeRoadTool", new RoadDemolitionTool(this));

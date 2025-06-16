@@ -23,9 +23,7 @@ namespace TranSimCS
                 };
                 var lposition = offset + i * laneWidth; // Calculate the left position for the lane
                 var rposition = lposition + laneWidth; // Calculate the right position for the lane
-                Lane lane = new Lane
-                {
-                    RoadNode = node, // Set the road node for the lane
+                Lane lane = new Lane(node){
                     Spec = laneSpec, // Set the lane specification
                     LeftPosition = lposition, // Set the left position
                     RightPosition = rposition, // Set the right position

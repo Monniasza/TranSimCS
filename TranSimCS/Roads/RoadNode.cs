@@ -70,6 +70,14 @@ namespace TranSimCS.Roads {
             Matrix matrix = Matrix.CreateFromYawPitchRoll(Geometry.FieldToRadians(Azimuth), Inclination, Tilt) * Matrix.CreateTranslation(Position);
             return new Transform3(matrix);
         }
+
+        public static NodePosition FromPosTangentTilt(Vector3 pos, Vector3 tangent, float tilt) {
+            var htangent = Geometry.hypot2(tangent.X, tangent.Z);
+            var inclination = MathF.Atan2(tangent.Y, htangent);
+            var azimuthRadians = MathF.Atan2(tangent.X, tangent.Z);
+            var azimuth = Geometry.RadiansToField(azimuthRadians);
+            return new NodePosition(pos, azimuth, inclination, tilt);
+        }
     }
 
     public class NodePositionChangedEventArgs(NodePosition oldPosition, NodePosition newPosition) : EventArgs {
