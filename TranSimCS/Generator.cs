@@ -85,10 +85,7 @@ namespace TranSimCS
             for(int i = 0; i < unchangingLanesCount; i++) {
                 int startIdx = unchangingLanesStartLeft + i; // Calculate the starting index for the lane
                 int endIdx = unchangingLanesEndLeft + i; // Calculate the ending index for the lane
-                var startLane = strip.StartNode.GetLaneEnd(startIdx);
-                var endLane = strip.EndNode.GetLaneEnd(endIdx);
-                LaneStrip laneStrip = new LaneStrip(strip, startLane, endLane); // Create a new lane strip connecting the start and end lanes
-                strip.AddLaneStrip(laneStrip); // Add the lane strip to the road strip
+                JoinLanesByIndices(strip, startIdx, endIdx);
             }
 
             //Generate the right changing section of the road
