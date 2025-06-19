@@ -114,6 +114,7 @@ namespace TranSimCS.Menus.InGame {
                         var newNode0 = new RoadNode(world, "", NewNodePosition.Value);
                         var newLane = new Lane(newNode0);
                         newLane.Spec = node.Value.lane.Spec;
+                        newLane.LeftPosition = 0;
                         newLane.RightPosition = node.Value.lane.Width;
                         newNode = newLane.Front;
                         world.RoadNodes.Add(newNode0);
@@ -190,7 +191,7 @@ namespace TranSimCS.Menus.InGame {
                     endRightPos = endLeftPos + (endingLateral * node.Value.lane.Width);
                     var tilt = node.Value.lane.RoadNode.PositionData.Tilt;
                     //Calculate the NodePosition
-                    NewNodePosition = NodePosition.FromPosTangentTilt(endRightPos, endingTangent, tilt);
+                    NewNodePosition = NodePosition.FromPosTangentTilt(endLeftPos, endingTangent, tilt);
                 } else {
                     //Take an existing end
                     var mouseOverNode = mouseOverLane.RoadNode;
@@ -208,8 +209,6 @@ namespace TranSimCS.Menus.InGame {
                     SegmentAlreadyExists = menu.world.FindLaneStrip(node.Value, mouseOverLaneEnd.Value);
                     NewNodePosition = null;
                 }
-
-                
 
                 //Draw the preview
                 Color previewColor = lane0.Spec.Color;
