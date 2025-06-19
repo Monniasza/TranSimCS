@@ -27,7 +27,11 @@ namespace TranSimCS.Menus.InGame {
 
         //Inputs      
         public RoadSelection? MouseOverRoad { get; set; } = null; // Store the selected road selection
-        //public RoadSelection? SelectedRoadSelection { get; set; } = null; // Store the selected road selection
+        public Vector3 GroundSelection { get {
+                var groundPlane = new Plane(0, 1, 0, -0.1f);
+                return Geometry.IntersectRayPlane(MouseRay, groundPlane);  
+            }
+        }
 
         public Ray MouseRay { get; private set; } // Ray from the mouse position in the world
         public Camera camera = new Camera(new Vector3(0, 0, 0), 64, 0, 0.2f); // Initialize the camera
@@ -98,6 +102,7 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("noTool", null);
             SetUpToolPictureButton("removeRoadTool", new RoadDemolitionTool(this));
             SetUpToolPictureButton("addRoadTool", new RoadCreationTool(this));
+            SetUpToolPictureButton("addNodeTool", new AddNodeTool(this));
         }
         private Image.TextureCallback CreateTextureCallback(Texture2D texture2D) {
             return (_) => new MLEM.Textures.TextureRegion(texture2D);

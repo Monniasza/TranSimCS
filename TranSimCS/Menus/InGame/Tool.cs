@@ -5,9 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using TranSimCS.Roads;
+using static MLEM.Ui.Elements.Paragraph;
 
 namespace TranSimCS.Menus.InGame {
     public interface ITool {
@@ -92,8 +94,8 @@ namespace TranSimCS.Menus.InGame {
 
         string ITool.Name => "Road creation tool";
 
-        string ITool.Description => (node == null) ? "Select a road node end to create a lane strip"
-            : "LMB on a segment end or road node end to build a segment, or RMB to cancel";
+        string ITool.Description => (node == null) ? "Select a road node end to create a lane strip, or elsewhere to create a new node"
+            : "LMB on a segment end or road node end to build a segment, or RMB to cancel. 123456789 to set number of lanes, 0 for all";
 
         LaneEnd? node;
         public LaneStrip? SegmentAlreadyExists { get; private set; } = null;
@@ -228,7 +230,7 @@ namespace TranSimCS.Menus.InGame {
     public class MoveTool(InGameMenu game) : ITool {
         string ITool.Name => "Move nodes and objects";
 
-        string ITool.Description => throw new NotImplementedException();
+        string ITool.Description => "";
 
         RoadNode RoadNode { get; set; }
 
@@ -258,6 +260,118 @@ namespace TranSimCS.Menus.InGame {
 
         void ITool.Update(GameTime gameTime) {
             throw new NotImplementedException();
+        }
+    }
+
+    /*
+     * 
+     */
+    public class AddNodeTool(InGameMenu menu) : ITool {
+        string ITool.Name => "Add road nodes";
+
+        string ITool.Description => (NewlyCreatedNode != null) ? "Click to set direction of the newly built node"
+            : (Reference == null) ? "123456789 to set number of lanes, click on a node to set direction from it, click elsewhere to set direction manually"
+            : "Click to place a node. The reference will not be reset after placement";
+
+        /// <summary>
+        /// Set if the new node has to be rotated after placement
+        /// </summary>
+        public RoadNode NewlyCreatedNode { get; set; }
+        public RoadNode Reference { get; set; }
+       
+        //Preview variables
+        public NodePosition PrePosition { get; set; }
+        public int laneCount = 1;
+
+        void ITool.Draw(GameTime gameTime) {
+            if (NewlyCreatedNode == null && Reference == null) return;
+            var frame = PrePosition.CalcReferenceFrame();
+            var length = frame.Z;
+            var width = frame.X * 3.5f * laneCount;
+            var height = frame.Y * 0.01f;
+            var startPoint = frame.O + height;
+            var startPoint2 = startPoint + height;
+            var tw = frame.X * 0.1f;
+            var bw = frame.X * 0.2f;
+            var rl = frame.Z * 5;
+            var quad = new Quad(
+                new VertexPositionColorTexture(startPoint + length        , Color.Gray, new(0        , 0)),
+                new VertexPositionColorTexture(startPoint + length + width, Color.Gray, new(laneCount, 0)),
+                new VertexPositionColorTexture(startPoint          + width, Color.Gray, new(laneCount, 1)),
+                new VertexPositionColorTexture(startPoint                 , Color.Gray, new(0        , 1))
+            );
+            var quad2 = new Quad(
+                new VertexPositionColorTexture(startPoint2 - tw + rl, Color.Orange, new(0, 0)),
+                new VertexPositionColorTexture(startPoint2 + tw + rl, Color.Orange, new(1, 0)),
+                new VertexPositionColorTexture(startPoint2 + bw     , Color.Orange, new(1, 1)),
+                new VertexPositionColorTexture(startPoint2 - bw     , Color.Orange, new(0, 1))
+            );
+            IRenderBin bin = menu.renderHelper.GetOrCreateRenderBin(InGameMenu.roadTexture);
+            bin.DrawQuad(quad); bin.DrawQuad(quad2);
+        }
+
+        void ITool.Draw2D(GameTime gameTime) {
+            //unused
+        }
+
+        void ITool.OnClick(MouseButton button) {
+            if (button == MouseButton.Right) {
+                //Cancel the placement
+                Reference = null;
+                NewlyCreatedNode = null;
+            } else if (NewlyCreatedNode == null && Reference == null) {
+                //State: starting state
+                var selectedNode = menu.MouseOverRoad?.SelectedRoadNode;
+                if (selectedNode == null) {
+                    //Select a position
+                    var pos = new NodePosition(menu.GroundSelection, 0);
+                    NewlyCreatedNode = new RoadNode(menu.world, "", PrePosition);
+                } else {
+                    //Select a node
+                    Reference = selectedNode;
+                }
+            } else {
+                //Ready to place: selected reference or newly created node
+                var n = NewlyCreatedNode ?? new RoadNode(menu.world, "", PrePosition);
+                Generator.GenerateLanes(laneCount, n);
+                n.PositionData = PrePosition;
+                menu.world.RoadNodes.Add(n);
+                NewlyCreatedNode = null;
+            }
+        }
+
+        void ITool.OnKeyDown(Keys key) {
+            if (key >= Keys.D1 && key <= Keys.D9) laneCount = key - Keys.D0;
+        }
+
+        void ITool.OnKeyUp(Keys key) {
+            //unused
+        }
+
+        void ITool.OnRelease(MouseButton button) {
+            //unused
+        }
+
+        void ITool.Update(GameTime gameTime) {
+            var selectedPosition = menu.GroundSelection;
+            if (NewlyCreatedNode != null) {
+                //Orient the node towards the mouse
+                var pp = NewlyCreatedNode.PositionData;
+                var orientationVector = selectedPosition - pp.Position;
+                var yaw = MathF.Atan2(orientationVector.X, orientationVector.Z);
+                pp.Tilt = 0;
+                if(!float.IsNaN(yaw)) pp.Azimuth = Geometry.RadiansToField(yaw);
+                pp.Inclination = 0;
+                pp.HCurvature = 0;
+                pp.VCurvature = 0;
+                pp.TiltCurvature = 0;
+                PrePosition = pp;
+            } else {
+
+                var pp = Reference?.PositionData ?? NodePosition.Zero;
+                pp.Position = selectedPosition;
+                PrePosition = pp;
+            }
         }
     }
 }

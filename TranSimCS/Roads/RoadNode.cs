@@ -26,6 +26,8 @@ namespace TranSimCS.Roads {
             TiltCurvature = value.Z;
         } }
 
+        public static NodePosition Zero => new NodePosition(Vector3.Zero, 0);
+
         public NodePosition(Vector3 position, int azimuth, float inclination = 0f, float tilt = 0f, float hCurvature = 0, float vCurvature = 0, float tiltCurvature = 0) {
             Position = position;
             Azimuth = azimuth;
