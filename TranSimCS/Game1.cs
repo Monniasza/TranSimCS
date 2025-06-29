@@ -52,13 +52,13 @@ namespace TranSimCS
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             ih = new InputHandler(this);
+            Window.AllowUserResizing = true;
         }
 
         protected override void Initialize() {
             // TODO: Add your initialization logic here
             base.Initialize();
         }
-
         protected override void LoadContent() {
             SpriteBatch = new SpriteBatch(base.GraphicsDevice);
             //Font
@@ -114,7 +114,5 @@ namespace TranSimCS
             Menu?.Draw2D(gameTime);
             base.Draw(gameTime);
         }
-
-        
     }
 }
