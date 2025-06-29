@@ -102,9 +102,17 @@ namespace TranSimCS.Menus.InGame {
         public LaneStrip? SegmentAlreadyExists { get; private set; } = null;
         public NodePosition? NewNodePosition { get; private set; }
 
+        private LaneEnd? GetLaneEnd() {
+            var le = menu.MouseOverRoad?.SelectedLaneEnd;
+            if (le == null) return null;
+            var le1 = le.Value;
+            if (node == null) return le1.OppositeEnd;
+            return le1;
+        }
+
         void ITool.OnClick(MouseButton button) {
             if(button == MouseButton.Left) {
-                var selectedNode = menu.MouseOverRoad?.SelectedLaneEnd;
+                var selectedNode = GetLaneEnd();
                 if (node == null) {
                     node = selectedNode;
                     Debug.Print($"Selected node: {selectedNode}");
@@ -171,7 +179,7 @@ namespace TranSimCS.Menus.InGame {
                 }
 
                 //Calculate the new values
-                var mouseOverLaneEnd = menu.MouseOverRoad?.SelectedLaneEnd;
+                var mouseOverLaneEnd = GetLaneEnd();
                 var mouseOverLane = mouseOverLaneEnd?.lane;
                 if (mouseOverLaneEnd == null) {
                     //Create a synthetic end

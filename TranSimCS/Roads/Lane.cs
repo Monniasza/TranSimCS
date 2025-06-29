@@ -34,6 +34,8 @@ namespace TranSimCS.Roads {
 
         public RoadNodeEnd RoadNodeEnd => new RoadNodeEnd(lane.RoadNode, end);
 
+        public LaneEnd OppositeEnd => new LaneEnd(end.Negate(), lane);
+
         public override bool Equals(object obj) {
             return obj is LaneEnd end && Equals(end);
         }

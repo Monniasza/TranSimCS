@@ -39,7 +39,7 @@ namespace TranSimCS.Menus.InGame {
             selectedLaneBezier = averageBezier; // Store the selected lane bezier curve
             SelectedLaneEnd =
                 SelectedLaneT < InGameMenu.minT ? laneStrip?.StartLane :
-                SelectedLaneT > InGameMenu.maxT ? laneStrip?.EndLane : null;
+                SelectedLaneT > InGameMenu.maxT ? laneStrip?.EndLane.OppositeEnd : null;
             SelectedLane = SelectedLaneEnd?.lane; //somewhat this is null
              SelectedRoadHalf =
                 SelectedLaneT < InGameMenu.minT ? SegmentHalf.Start : 

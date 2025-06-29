@@ -93,8 +93,12 @@ namespace TranSimCS.Roads {
     }
 
     public struct RoadNodeEnd(RoadNode node, NodeEnd end) : IEquatable<RoadNodeEnd> {
+        
+
         public NodeEnd End { get; } = end;
         public RoadNode Node { get; } = node;
+
+        public RoadNodeEnd OppositeEnd => new(node, end.Negate());
 
         public override bool Equals(object obj) {
             return obj is RoadNodeEnd end && Equals(end);
@@ -121,6 +125,7 @@ namespace TranSimCS.Roads {
     }
 
     public class RoadNode {
+
         //Example azimuth values
         public const int AZIMUTH_NORTH = 0; // 0 degrees
         public const int AZIMUTH_EAST = 1 << 30; // 90 degrees
