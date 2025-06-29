@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using TranSimCS.Roads;
+using TranSimCS.Worlds;
 using static MLEM.Ui.Elements.Paragraph;
 
 namespace TranSimCS.Menus.InGame {
@@ -103,27 +104,28 @@ namespace TranSimCS.Menus.InGame {
 
         void ITool.OnClick(MouseButton button) {
             if(button == MouseButton.Left) {
-                var newNode = menu.MouseOverRoad?.SelectedLaneEnd;
+                var selectedNode = menu.MouseOverRoad?.SelectedLaneEnd;
                 if (node == null) {
-                    node = newNode;
-                    Debug.Print($"Selected node: {newNode}");
+                    node = selectedNode;
+                    Debug.Print($"Selected node: {selectedNode}");
                 } else {
                     var world = node.Value.lane.RoadNode.World;
-                    if (newNode == null && NewNodePosition != null) {
+                    if (selectedNode == null && NewNodePosition != null) {
                         //Create a new node
-                        var newNode0 = new RoadNode(world, "", NewNodePosition.Value);
-                        var newLane = new Lane(newNode0);
+                        var newNode = new RoadNode(world, "", NewNodePosition.Value);
+                        var newLane = new Lane(newNode);
                         newLane.Spec = node.Value.lane.Spec;
                         newLane.LeftPosition = 0;
                         newLane.RightPosition = node.Value.lane.Width;
-                        newNode = newLane.Front;
-                        world.RoadNodes.Add(newNode0);
+                        selectedNode = newLane.Front;
+                        newNode.AddLane(newLane);
+                        world.RoadNodes.Add(newNode);
                     }
-                    if(newNode != null) {
-                        var segment = world.GetOrMakeRoadStrip(node.Value.RoadNodeEnd, newNode.Value.RoadNodeEnd);
-                        var strip = new LaneStrip(segment, node.Value, newNode.Value);
+                    if(selectedNode != null) {
+                        var segment = world.GetOrMakeRoadStrip(node.Value.RoadNodeEnd, selectedNode.Value.RoadNodeEnd);
+                        var strip = new LaneStrip(segment, node.Value, selectedNode.Value);
                         segment.MaybeAddLaneStrip(strip);
-                        node = newNode;
+                        node = selectedNode;
                     }
                 }
             } else if(button == MouseButton.Right) {

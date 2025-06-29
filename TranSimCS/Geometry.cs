@@ -58,7 +58,7 @@ namespace TranSimCS
         }
 
         public static Bezier3 GenerateJoinSpline(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent){
-            float tangentLength = Vector3.Distance(startPos, endPos) * 0.5f;
+            float tangentLength = Vector3.Distance(startPos, endPos) * 0.4f;
             Vector3 a = startPos;
             Vector3 b = startPos + startTangent * tangentLength; // Start tangent point
             Vector3 c = endPos - endTangent * tangentLength; // End tangent point

@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 using TranSimCS.Roads;
 using System.Collections.ObjectModel;
 
-namespace TranSimCS
+namespace TranSimCS.Worlds
 {
     public class World{
         public ObservableCollection<RoadStrip> RoadSegments { get; } = new();
         public ObservableCollection<RoadNode> RoadNodes { get; } = new();
 
-        public RoadStrip? FindRoadStrip(RoadNodeEnd start, RoadNodeEnd end) {
+        public RoadStrip FindRoadStrip(RoadNodeEnd start, RoadNodeEnd end) {
             foreach (var strip in RoadSegments) 
                 if (strip.CheckEnds(start, end)) 
                     return strip;
