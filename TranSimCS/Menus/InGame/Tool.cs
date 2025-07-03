@@ -95,8 +95,8 @@ namespace TranSimCS.Menus.InGame {
 
         string ITool.Name => "Road creation tool";
 
-        string ITool.Description => (node == null) ? "Select a road node end to create a lane strip, or elsewhere to create a new node"
-            : "LMB on a segment end or road node end to build a segment, or RMB to cancel. 123456789 to set number of lanes, 0 for all";
+        string ITool.Description => (node == null) ? "Select a road node end to create a lane strip. Ctrl to connect inline"
+            : "LMB on a segment end or road node end to build a segment, or RMB to cancel. 123456789 to set number of lanes, 0 for all. Ctrl to connect with the end.";
 
         LaneEnd? node;
         public LaneStrip? SegmentAlreadyExists { get; private set; } = null;
@@ -104,8 +104,11 @@ namespace TranSimCS.Menus.InGame {
 
         private LaneEnd? GetLaneEnd() {
             var le = menu.MouseOverRoad?.SelectedLaneEnd;
+            var segment = menu.MouseOverRoad?.SelectedLaneStrip;
             if (le == null) return null;
             var le1 = le.Value;
+            if (segment == null) le1 = le1.OppositeEnd;
+            if (menu.Game.KeyboardState.IsKeyDown(Keys.LeftControl)) le1 = le1.OppositeEnd;
             if (node == null) return le1.OppositeEnd;
             return le1;
         }
