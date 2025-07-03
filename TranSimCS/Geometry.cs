@@ -30,13 +30,11 @@ namespace TranSimCS
             public Vector3 Tangential { get; }
             public Vector3 Normal { get; }
             public Vector3 Lateral { get; }
-            public Vector3 Curvature { get; }
-            public LineEnd(Vector3 position, Vector3 tangential, Vector3 normal, Vector3 lateral, Vector3 curvature) {
+            public LineEnd(Vector3 position, Vector3 tangential, Vector3 normal, Vector3 lateral) {
                 Position = position;
                 Tangential = tangential;
                 Normal = normal;
                 Lateral = lateral;
-                Curvature = curvature;
             }
         }
 
@@ -54,7 +52,7 @@ namespace TranSimCS
                 tangential = -tangential;
                 lateral = -lateral;
             }
-            return new LineEnd(position, tangential, normal, lateral, node.PositionData.Curvature); // Return the end position as a Vector3
+            return new LineEnd(position, tangential, normal, lateral); // Return the end position as a Vector3
         }
 
         public static Bezier3 GenerateJoinSpline(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent){

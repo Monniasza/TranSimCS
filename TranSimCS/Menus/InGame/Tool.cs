@@ -100,7 +100,7 @@ namespace TranSimCS.Menus.InGame {
 
         LaneEnd? node;
         public LaneStrip? SegmentAlreadyExists { get; private set; } = null;
-        public NodePosition? NewNodePosition { get; private set; }
+        public ObjPos? NewNodePosition { get; private set; }
 
         private LaneEnd? GetLaneEnd() {
             var le = menu.MouseOverRoad?.SelectedLaneEnd;
@@ -204,7 +204,7 @@ namespace TranSimCS.Menus.InGame {
                     endRightPos = endLeftPos + (endingLateral * node.Value.lane.Width);
                     var tilt = node.Value.lane.RoadNode.PositionData.Tilt;
                     //Calculate the NodePosition
-                    NewNodePosition = NodePosition.FromPosTangentTilt(endLeftPos, endingTangent, tilt);
+                    NewNodePosition = ObjPos.FromPosTangentTilt(endLeftPos, endingTangent, tilt);
                 } else {
                     //Take an existing end
                     var mouseOverNode = mouseOverLane.RoadNode;
@@ -292,7 +292,7 @@ namespace TranSimCS.Menus.InGame {
         public RoadNode Reference { get; set; }
        
         //Preview variables
-        public NodePosition PrePosition { get; set; }
+        public ObjPos PrePosition { get; set; }
         public int laneCount = 1;
 
         void ITool.Draw(GameTime gameTime) {
@@ -336,7 +336,7 @@ namespace TranSimCS.Menus.InGame {
                 var selectedNode = menu.MouseOverRoad?.SelectedRoadNode;
                 if (selectedNode == null) {
                     //Select a position
-                    var pos = new NodePosition(menu.GroundSelection, 0);
+                    var pos = new ObjPos(menu.GroundSelection, 0);
                     NewlyCreatedNode = new RoadNode(menu.world, "", PrePosition);
                 } else {
                     //Select a node
@@ -374,13 +374,10 @@ namespace TranSimCS.Menus.InGame {
                 pp.Tilt = 0;
                 if(!float.IsNaN(yaw)) pp.Azimuth = Geometry.RadiansToField(yaw);
                 pp.Inclination = 0;
-                pp.HCurvature = 0;
-                pp.VCurvature = 0;
-                pp.TiltCurvature = 0;
                 PrePosition = pp;
             } else {
 
-                var pp = Reference?.PositionData ?? NodePosition.Zero;
+                var pp = Reference?.PositionData ?? ObjPos.Zero;
                 pp.Position = selectedPosition;
                 PrePosition = pp;
             }
