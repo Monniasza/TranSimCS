@@ -134,6 +134,46 @@ namespace TranSimCS.Worlds
             world.RoadNodes.Add(node4b);
             world.RoadNodes.Add(node4c);
 
+            //Set up a fancy road example
+            var fancynode1 = new RoadNode(world, "Fancy node 1", new Vector3(50, 0.1f, 0), RoadNode.AZIMUTH_NORTH);
+            world.RoadNodes.Add(fancynode1); 
+            var fancynode2 = new RoadNode(world, "Fancy node 2", new Vector3(50, 0.1f, 100), RoadNode.AZIMUTH_NORTH);
+            world.RoadNodes.Add(fancynode2);
+            var fancyRoad = world.GetOrMakeRoadStrip(fancynode1.front, fancynode2.front);
+            var laneBus = LaneSpec.Bus;
+            var laneDefault = LaneSpec.Default;
+            var laneBike = LaneSpec.Bicycle;
+            var lanePed = LaneSpec.Pedestrian;
+            var lanePlatform = LaneSpec.Platform;
+            var lanetypes = new LaneSpec[] { lanePed, laneBike, laneDefault, laneDefault, lanePlatform, laneBus};
+            var laneSpecs = new LaneSpec[12];
+            for(int i = 0; i <  lanetypes.Length; i++) {
+                var lanetype = lanetypes[i];
+                laneSpecs[11-i] = lanetype;
+                lanetype.Flags ^= LaneFlags.Forward | LaneFlags.Backward;
+                laneSpecs[i] = lanetype;
+            }
+
+            for(int i = 0; i < 12; i++) {
+                var loffset = (i - 6) * 3.5f;
+                var roffset = loffset + 3.5f;
+                var spec = laneSpecs[i];
+
+                var lane1 = new Lane(fancynode1);
+                lane1.LeftPosition = loffset;
+                lane1.RightPosition = roffset;
+                lane1.Spec = spec;
+                fancynode1.AddLane(lane1);
+
+                var lane2 = new Lane(fancynode2);
+                lane2.LeftPosition = loffset;
+                lane2.RightPosition = roffset;
+                fancynode2.AddLane(lane2);
+                lane2.Spec = spec;
+
+                Generator.JoinLanesByIndices(fancyRoad, i, i, spec);
+            }
+
             //1-2
             var lc12 = Generator.GenerateLaneConnections(node1.front, 0, node1.Lanes.Count, node2.front, 0, node2.Lanes.Count);
             world.RoadSegments.Add(lc12);

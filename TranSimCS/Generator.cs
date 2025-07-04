@@ -105,9 +105,13 @@ namespace TranSimCS
         }
 
         public static void JoinLanesByIndices(RoadStrip strip, int startIdx, int endIdx) {
+            JoinLanesByIndices(strip, startIdx, endIdx, LaneSpec.Default);
+        }
+        public static void JoinLanesByIndices(RoadStrip strip, int startIdx, int endIdx, LaneSpec spec) {
             var startLane = strip.StartNode.GetLaneEnd(startIdx);
             var endLane = strip.EndNode.GetLaneEnd(endIdx);
             LaneStrip laneStrip = new LaneStrip(strip, startLane, endLane); // Create a new lane strip connecting the start and end lanes
+            laneStrip.spec = spec;
             strip.AddLaneStrip(laneStrip); // Add the lane strip to the road strip
         }
     }

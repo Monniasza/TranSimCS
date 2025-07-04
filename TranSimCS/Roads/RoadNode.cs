@@ -19,7 +19,7 @@ namespace TranSimCS.Roads {
         public NodeEnd End { get; } = end;
         public RoadNode Node { get; } = node;
 
-        public RoadNodeEnd OppositeEnd => new(node, end.Negate());
+        public RoadNodeEnd OppositeEnd => new(Node, End.Negate());
 
         public override bool Equals(object obj) {
             return obj is RoadNodeEnd eend && Equals(eend);
