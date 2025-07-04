@@ -121,11 +121,12 @@ namespace TranSimCS.Menus.InGame {
                     Debug.Print($"Selected node: {selectedNode}");
                 } else {
                     var world = node.Value.lane.RoadNode.World;
+                    var spec = node.Value.lane.Spec;
                     if (selectedNode == null && NewNodePosition != null) {
                         //Create a new node
                         var newNode = new RoadNode(world, "", NewNodePosition.Value);
                         var newLane = new Lane(newNode);
-                        newLane.Spec = node.Value.lane.Spec;
+                        newLane.Spec = spec;
                         newLane.LeftPosition = 0;
                         newLane.RightPosition = node.Value.lane.Width;
                         selectedNode = newLane.Front;
@@ -135,6 +136,7 @@ namespace TranSimCS.Menus.InGame {
                     if(selectedNode != null) {
                         var segment = world.GetOrMakeRoadStrip(node.Value.RoadNodeEnd, selectedNode.Value.RoadNodeEnd);
                         var strip = new LaneStrip(segment, node.Value, selectedNode.Value);
+                        strip.spec = spec;
                         segment.MaybeAddLaneStrip(strip);
                         node = selectedNode;
                     }
