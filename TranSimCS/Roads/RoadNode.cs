@@ -15,33 +15,23 @@ namespace TranSimCS.Roads {
         Forward, Backward
     }
 
-    public struct RoadNodeEnd(RoadNode node, NodeEnd end) : IEquatable<RoadNodeEnd> {
-        public NodeEnd End { get; } = end;
-        public RoadNode Node { get; } = node;
-
-        public RoadNodeEnd OppositeEnd => new(Node, End.Negate());
-
-        public override bool Equals(object obj) {
-            return obj is RoadNodeEnd eend && Equals(eend);
+    public class RoadNodeEnd {
+        //Constructor
+        public readonly NodeEnd End;
+        public readonly RoadNode Node;
+        internal RoadNodeEnd(NodeEnd end, RoadNode node) {
+            End = end;
+            Node = node;
         }
 
-        public bool Equals(RoadNodeEnd other) {
-            return End == other.End &&
-                   EqualityComparer<RoadNode>.Default.Equals(Node, other.Node);
-        }
+        public RoadNodeEnd OppositeEnd => Node.GetEnd(End.Negate());
 
-        public override int GetHashCode() {
-            return HashCode.Combine(End, Node);
-        }
+        //Indexing component for the road node, maintained by the World class
+        internal ISet<RoadStrip> connections = new HashSet<RoadStrip>(); // Connections to other road segments
+        public ISet<RoadStrip> Connections => new ReadOnlySet<RoadStrip>(connections); // Expose the connections set
 
-        public LaneEnd GetLaneEnd(int idx) => new LaneEnd(End, Node.Lanes[idx]);
-
-        public static bool operator ==(RoadNodeEnd left, RoadNodeEnd right) {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(RoadNodeEnd left, RoadNodeEnd right) {
-            return !(left == right);
+        public LaneEnd GetLaneEnd(int x) {
+            return new LaneEnd(End, Node.Lanes[x]);
         }
     }
 
@@ -124,26 +114,24 @@ namespace TranSimCS.Roads {
             mesh = null;
         }
 
-        //Indexing component for the road node, maintained by the World class
-        internal ISet<RoadStrip> connections = new HashSet<RoadStrip>(); // Connections to other road segments
-        public ISet<RoadStrip> Connections => new ReadOnlySet<RoadStrip>(connections); // Expose the connections set
-
         //Halves of this road node
-        public RoadNodeEnd rear => new RoadNodeEnd(this, NodeEnd.Backward);
-        public RoadNodeEnd front => new RoadNodeEnd(this, NodeEnd.Forward);
+        public readonly RoadNodeEnd RearEnd;
+        public readonly RoadNodeEnd FrontEnd;
+        public RoadNodeEnd GetEnd(NodeEnd end) => end.GetConditional(RearEnd, FrontEnd);
+
+        //Connections (maintained by the node ends)
+        public IEnumerable<RoadStrip> Connections => RearEnd.Connections.Union(FrontEnd.Connections);
 
         // Constructor to initialize the RoadNode with a unique ID, name, position, and world
-        public RoadNode(World world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) {
-            Id = _nextId++;
-            Name = name;
-            PositionData = new ObjPos(position, azimuth, inclination, tilt);
-            World = world;
-        }
+        public RoadNode(World world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) :
+            this(world, name, new ObjPos(position, azimuth, inclination, tilt)) { }
         public RoadNode(World world, string name, ObjPos positionData) {
             Id = _nextId++;
             Name = name;
             PositionData = positionData; // Set the position data
             World = world;
+            RearEnd = new RoadNodeEnd(NodeEnd.Backward, this);
+            FrontEnd = new RoadNodeEnd(NodeEnd.Forward, this);
         }
     }
 }

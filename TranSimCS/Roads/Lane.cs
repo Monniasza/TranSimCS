@@ -33,7 +33,7 @@ namespace TranSimCS.Roads {
         public NodeEnd end = End;
         public Lane lane = Lane;
 
-        public RoadNodeEnd RoadNodeEnd => new RoadNodeEnd(lane.RoadNode, end);
+        public RoadNodeEnd RoadNodeEnd => lane.RoadNode.GetEnd(end);
 
         public LaneEnd OppositeEnd => new LaneEnd(end.Negate(), lane);
 

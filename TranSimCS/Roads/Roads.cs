@@ -14,11 +14,25 @@ namespace TranSimCS.Roads {
     [Flags]
     public enum VehicleTypes {
         None = 0,
+
+        //Motor vehicles
         Car = 1,
         Truck = 2,
         Bus = 4,
+
+        //Non-motorized vehicles
         Bicycle = 8,
         Pedestrian = 16,
+        Horse = 128,
+
+        //Aircraft
+        Plane = 256,
+        Rocket = 512,
+
+        //Railways
+        LRT = 32,
+        Train = 64,
+
 
         // Composite types for convenience  
         Path = Bicycle | Pedestrian,

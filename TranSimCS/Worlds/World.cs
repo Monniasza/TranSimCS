@@ -87,7 +87,7 @@ namespace TranSimCS.Worlds
         private void HandleRemoveRoadNode(RoadNode node) {
             // Handle the removal of a road node
             node.PositionChanged -= RoadNodePositionChanged; // Unsubscribe from changes in the road node position
-            foreach (var segment in node.connections) {
+            foreach (var segment in node.Connections) {
                 segment.InvalidateMesh(); // Invalidate the mesh of the segment if the node is removed
                 RoadSegments.Remove(segment); // Remove the segment from the road segments collection
             }
@@ -95,7 +95,7 @@ namespace TranSimCS.Worlds
 
         private void RoadNodePositionChanged(object sender, NodePositionChangedEventArgs e) {
             if(sender is RoadNode node) {
-                foreach(var segment in node.connections) {
+                foreach(var segment in node.Connections) {
                     segment.InvalidateMesh(); // Invalidate the mesh of the segment if the node position changes
                 }
             }
@@ -139,7 +139,7 @@ namespace TranSimCS.Worlds
             world.RoadNodes.Add(fancynode1); 
             var fancynode2 = new RoadNode(world, "Fancy node 2", new Vector3(50, 0.1f, 100), RoadNode.AZIMUTH_NORTH);
             world.RoadNodes.Add(fancynode2);
-            var fancyRoad = world.GetOrMakeRoadStrip(fancynode1.front, fancynode2.front);
+            var fancyRoad = world.GetOrMakeRoadStrip(fancynode1.FrontEnd, fancynode2.FrontEnd);
             var laneBus = LaneSpec.Bus;
             var laneDefault = LaneSpec.Default;
             var laneBike = LaneSpec.Bicycle;
@@ -175,23 +175,23 @@ namespace TranSimCS.Worlds
             }
 
             //1-2
-            var lc12 = Generator.GenerateLaneConnections(node1.front, 0, node1.Lanes.Count, node2.front, 0, node2.Lanes.Count);
+            var lc12 = Generator.GenerateLaneConnections(node1.FrontEnd, 0, node1.Lanes.Count, node2.FrontEnd, 0, node2.Lanes.Count);
             world.RoadSegments.Add(lc12);
 
             //2-3
-            var lc23 = Generator.GenerateLaneConnections(node2.front, 0, node2.Lanes.Count, node3.front, 0, node3.Lanes.Count, 0, 1);
+            var lc23 = Generator.GenerateLaneConnections(node2.FrontEnd, 0, node2.Lanes.Count, node3.FrontEnd, 0, node3.Lanes.Count, 0, 1);
             world.RoadSegments.Add(lc23);
 
             //3-4a
-            var lc34a = Generator.GenerateLaneConnections(node3.front, 3, 4, node4a.front, 0, node4a.Lanes.Count);
+            var lc34a = Generator.GenerateLaneConnections(node3.FrontEnd, 3, 4, node4a.FrontEnd, 0, node4a.Lanes.Count);
             world.RoadSegments.Add(lc34a);
 
             //3-4b
-            var lc34b = Generator.GenerateLaneConnections(node3.front, 1, 3, node4b.front, 0, node4b.Lanes.Count);
+            var lc34b = Generator.GenerateLaneConnections(node3.FrontEnd, 1, 3, node4b.FrontEnd, 0, node4b.Lanes.Count);
             world.RoadSegments.Add(lc34b);
 
             //3-4c
-            var lc34c = Generator.GenerateLaneConnections(node3.front, 0, 1, node4c.front, 0, node4c.Lanes.Count);
+            var lc34c = Generator.GenerateLaneConnections(node3.FrontEnd, 0, 1, node4c.FrontEnd, 0, node4c.Lanes.Count);
             world.RoadSegments.Add(lc34c);
         }
 
