@@ -15,6 +15,7 @@ namespace TranSimCS.Roads {
         public LaneSpec(Color color, VehicleTypes vehicleTypes, LaneFlags flags = LaneFlags.Forward) {
             Color = color;
             VehicleTypes = vehicleTypes;
+            Flags = flags;
         }
 
         //Common presets for lane specifications

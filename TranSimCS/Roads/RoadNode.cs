@@ -35,7 +35,7 @@ namespace TranSimCS.Roads {
         }
     }
 
-    public class RoadNode {
+    public class RoadNode: Obj {
 
         //Example azimuth values
         public const int AZIMUTH_NORTH = 0; // 0 degrees
@@ -44,25 +44,8 @@ namespace TranSimCS.Roads {
         public const int AZIMUTH_WEST = 3 << 30; // 270 degrees
 
         //Identifiers
-        private static int _nextId = 1; // Static field to keep track of the next ID
-        public int Id { get; init; }
         public string Name { get; set; }
         public World World { get; init; }
-
-        //World position of the road node
-        public event EventHandler<NodePositionChangedEventArgs> PositionChanged; // Event to notify when the position changes
-        private ObjPos _position; // Backing field for the position
-        public ObjPos PositionData {
-            get => _position;
-            set {
-                if (_position != value) {
-                    var oldPosition = _position;
-                    _position = value;
-                    PositionChanged?.Invoke(this, new NodePositionChangedEventArgs(oldPosition, value)); // Raise the event with old and new position
-                    InvalidateMesh();
-                }
-            }
-        }
 
         //Lane structure
         private readonly List<Lane> _lanes = new List<Lane>(); // List to hold lanes associated with this road node
@@ -102,16 +85,8 @@ namespace TranSimCS.Roads {
         }
 
         //Node selection mesh
-        private Mesh mesh;
-        public Mesh GetMesh() {
-            if(mesh == null) {
-                mesh = new Mesh();
-                RoadRenderer.GenerateRoadNodeMesh(this, mesh, 0.001f);
-            }
-            return mesh;
-        }
-        public void InvalidateMesh() {
-            mesh = null;
+        protected override void GenerateMesh(Mesh mesh) {
+            RoadRenderer.GenerateRoadNodeMesh(this, mesh, 0.001f);
         }
 
         //Halves of this road node
@@ -126,12 +101,12 @@ namespace TranSimCS.Roads {
         public RoadNode(World world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) :
             this(world, name, new ObjPos(position, azimuth, inclination, tilt)) { }
         public RoadNode(World world, string name, ObjPos positionData) {
-            Id = _nextId++;
             Name = name;
-            PositionData = positionData; // Set the position data
+            Position.Value = positionData;
             World = world;
             RearEnd = new RoadNodeEnd(NodeEnd.Backward, this);
             FrontEnd = new RoadNodeEnd(NodeEnd.Forward, this);
+            //Parent = world;
         }
     }
 }

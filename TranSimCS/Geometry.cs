@@ -42,7 +42,7 @@ namespace TranSimCS
             => calcLineEnd(node.Node, offset, node.End);
 
         public static LineEnd calcLineEnd(RoadNode node, float offset, NodeEnd end) {
-            Transform3 nodeTransform = node.PositionData.CalcReferenceFrame();
+            Transform3 nodeTransform = node.Position.Value.CalcReferenceFrame();
             Vector3 nodePosition = nodeTransform.O;
             Vector3 tangential = nodeTransform.Z;
             Vector3 normal = nodeTransform.Y;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,10 +10,16 @@ namespace TranSimCS.Worlds {
     /// <summary>
     /// An object placed in the world. World themselves are objects
     /// </summary>
-    public abstract class Obj {
+    public abstract class Obj: INotifyPropertyChanged {
         //PROPERTIES
         public Guid Guid { get; init; } = Guid.NewGuid();
-        public readonly Property<ObjPos> Position = new(ObjPos.Zero, "pos");
+        public readonly Property<ObjPos> Position;
+        public Obj() {
+            Position = new(ObjPos.Zero, "Position", this);
+        }
+        public void FirePropertyEvent(object sender, PropertyChangedEventArgs eventArgs){
+            PropertyChanged?.Invoke(sender, eventArgs);
+        }
 
         //MESHING
         private Mesh mesh;
@@ -54,6 +61,7 @@ namespace TranSimCS.Worlds {
         public event Action<Obj> AfterChildRemoved;
         public event Action<Obj, Obj> BeforeParentChanged;
         public event Action<Obj, Obj> AfterParentChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
 
         //ABSTRACT METHODS
