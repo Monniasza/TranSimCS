@@ -14,6 +14,7 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Roads;
 using SpriteFontPlus;
 using System.IO;
+using MLEM.Misc;
 
 namespace TranSimCS
 {
@@ -87,6 +88,8 @@ namespace TranSimCS
             defaultUiStyle = new UntexturedStyle(SpriteBatch);
             defaultUiStyle.Font = GsfSmall;
             defaultUiStyle.PanelColor = Color.DarkGray;
+
+            MlemPlatform.Current = MlemPlatform.Current = new MlemPlatform.DesktopGl<TextInputEventArgs>((w, c) => w.TextInput += c);
             Menu = new InGameMenu(this);
         }
         

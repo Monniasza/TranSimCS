@@ -277,6 +277,47 @@ namespace TranSimCS.Menus.InGame {
         }
     }
 
+    public class PickerTool(InGameMenu game) : ITool {
+        string ITool.Name => "Lane spec picker";
+
+        string ITool.Description => "Left click near a node to select its lane spec, or in the middle of a lane strip for the lane strip's spec";
+
+        void ITool.Draw(GameTime gameTime) {
+            //unused
+        }
+
+        void ITool.Draw2D(GameTime gameTime) {
+            //unused
+        }
+
+        void ITool.OnClick(MouseButton button) {
+            if(button == MouseButton.Left) {
+                var selection = game.MouseOverRoad;
+                var laneSpec = selection?.SelectedLaneStrip?.spec;
+                var nodeSpec = selection?.SelectedLane?.Spec;
+                var spec = nodeSpec ?? laneSpec;
+                if (spec == null) return;
+                game.roadProperty.Value = spec.Value;
+            }
+        }
+
+        void ITool.OnKeyDown(Keys key) {
+            //unused
+        }
+
+        void ITool.OnKeyUp(Keys key) {
+            //unused
+        }
+
+        void ITool.OnRelease(MouseButton button) {
+            //unused
+        }
+
+        void ITool.Update(GameTime gameTime) {
+            //unused
+        }
+    }
+
     /*
      * 
      */

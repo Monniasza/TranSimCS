@@ -36,10 +36,9 @@ namespace TranSimCS.Menus.InGame {
 
         public Ray MouseRay { get; private set; } // Ray from the mouse position in the world
         public Camera camera = new Camera(new Vector3(0, 0, 0), 64, 0, 0.2f); // Initialize the camera
-        public float MotionSpeed = 0.3f; // Speed of camera movement
+        public float MotionSpeed = 1f; // Speed of camera movement
         public float RotationSpeed = 1f; // Speed of camera rotation
         static int scrollWheelValue = 0; // Store the scroll wheel value
-        public MouseState LastMouseState => Game.MouseStateOld; // Store the last mouse state for comparison
 
         //UI
         public Panel RootPanel {  get; private set; }
@@ -49,6 +48,8 @@ namespace TranSimCS.Menus.InGame {
         public Checkbox CheckNodes { get; private set; }
         public Checkbox CheckSegments { get; private set; }
         public Checkbox CheckSameDirection { get; private set; }
+        public Property<LaneSpec> roadProperty { get; private set; }
+        public RoadConfigurator configurator { get; private set; }
 
         //Colors
         private Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
@@ -57,7 +58,7 @@ namespace TranSimCS.Menus.InGame {
         
 
         internal InGameMenu(Game1 game): base(game) {
-
+            roadProperty = new Property<LaneSpec>(LaneSpec.Default, "lane spec");
         }
 
         public override void Destroy() {
@@ -100,10 +101,13 @@ namespace TranSimCS.Menus.InGame {
             SettingsPanel.AddChild(CheckSegments);
             SettingsPanel.AddChild(CheckSameDirection);
 
+            configurator = new RoadConfigurator(this, roadProperty, MLEM.Ui.Anchor.Center, new(0.5f, 0.5f));
+
             SetUpToolPictureButton("noTool", null);
             SetUpToolPictureButton("removeRoadTool", new RoadDemolitionTool(this));
             SetUpToolPictureButton("addRoadTool", new RoadCreationTool(this));
             SetUpToolPictureButton("addNodeTool", new AddNodeTool(this));
+            SetUpToolPictureButton("eyedropper", new PickerTool(this));
         }
         private Image.TextureCallback CreateTextureCallback(Texture2D texture2D) {
             return (_) => new MLEM.Textures.TextureRegion(texture2D);
@@ -146,9 +150,8 @@ namespace TranSimCS.Menus.InGame {
             //Reset the selected lane tag and position
             MouseOverRoad = null; // Reset the selected road selection
 
-            //Road selection logic
+            //Add road node selection meshes
             var meshes = new List<IRenderBin>();
-
             if(CheckSegments.Checked) ForeachLane(world.RoadSegments, (lane) => {
                 meshes.Add(lane.GetMesh());
             });
@@ -156,8 +159,8 @@ namespace TranSimCS.Menus.InGame {
                 foreach (var node in world.RoadNodes)
                     meshes.Add(node.GetMesh());
             }
-            //Add road node selection meshes
 
+            //Selection logic
             float distance = float.MaxValue;
             object selection = null;
             if (!IsMouseOverUI) selection = MeshUtil.RayIntersectMeshes(meshes, ray, out distance);
@@ -216,6 +219,8 @@ namespace TranSimCS.Menus.InGame {
 
             UiSystem.Update(time);
 
+            
+
             //Run the world tool
             if (!IsMouseOverUI) {
                 if (Game.MouseState.LeftButton == ButtonState.Pressed && Game.MouseStateOld.LeftButton == ButtonState.Released) Tool?.OnClick(MLEM.Input.MouseButton.Left);
@@ -230,11 +235,29 @@ namespace TranSimCS.Menus.InGame {
                 if (Game.MouseState.XButton2 == ButtonState.Released && Game.MouseStateOld.XButton2 == ButtonState.Pressed) Tool?.OnRelease(MLEM.Input.MouseButton.Left);
             }
             foreach (var key in Game.KeyboardState.GetPressedKeys())
-                if (Game.KeyboardStateOld.IsKeyUp(key)) Tool?.OnKeyDown(key);
+                if (Game.KeyboardStateOld.IsKeyUp(key)) {
+                    Tool?.OnKeyDown(key);
+                    OnKeyDown(key);
+                }
             foreach (var key in Game.KeyboardStateOld.GetPressedKeys()) {
                 if (Game.KeyboardState.IsKeyUp(key)) Tool?.OnKeyUp(key);
             }
             Tool?.Update(time);
+        }
+
+        private void OnKeyDown(Keys key) {
+            //Press T to open road config screen
+            if (key == Keys.T) {
+                if(UiSystem.Get("configurator") == null) {
+                    //Show
+                    UiSystem.Add("configurator", configurator);
+                    Debug.Print("Showing the configurator");
+                } else {
+                    //Hide
+                    UiSystem.Remove("configurator");
+                    Debug.Print("Hiding the configurator");
+                }
+            }
         }
 
         public const float minT = 0.3f;

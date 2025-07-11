@@ -18,21 +18,22 @@ namespace TranSimCS.Worlds {
     public class Property<T> {
         public T _val;
         public string name;
-        public readonly Obj Parent;
+        public readonly Obj? Parent;
         public event EventHandler<PropertyChangedEventArgs2<T>> ValueChanged;
 
-        public Property(T val, string name, Obj parent) {
+        public Property(T val, string name, Obj parent = null) {
             _val = val;
             this.name = name;
             Parent = parent;
         }
 
         public T Value { get => _val; set {
+            if (EqualityComparer<T>.Default.Equals(_val, value)) return;
             var eventArgs = new PropertyChangedEventArgs2<T>(_val, value);
             _val = value;
             var propEvent = new PropertyChangedEventArgs(name);
             ValueChanged?.Invoke(this, eventArgs);
-            Parent.FirePropertyEvent(this, propEvent);
+            Parent?.FirePropertyEvent(this, propEvent);
         }}
     }
 }
