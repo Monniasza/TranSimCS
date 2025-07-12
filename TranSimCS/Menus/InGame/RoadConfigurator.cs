@@ -64,12 +64,13 @@ namespace TranSimCS.Menus.InGame {
             var checksPanel = new Panel(Anchor.AutoInline, new(0.25f, 0.5f));
             AddChild(checksPanel);
             for(int i = 0; i <  vehicleTypes.Length; i++) {
-                var vehicleName = vehicleTypes[i];
-                var vehicleType = (VehicleTypes)(1 << i);
+                var x = i;
+                var vehicleName = vehicleTypes[x];
+                var vehicleType = (VehicleTypes)(1 << x);
                 var check = new Checkbox(Anchor.AutoInline, new(100, 20), vehicleName, false);
                 check.Checked = (vehicleType & laneSpecProp.Value.VehicleTypes) != VehicleTypes.None;
-                check.OnCheckStateChange += (element, ev) => SetVehicleTypeProperty(i, check.Checked);
-                checks[i] = check;
+                check.OnCheckStateChange += (element, ev) => SetVehicleTypeProperty(x, check.Checked);
+                checks[x] = check;
                 checksPanel.AddChild(check);
             }
 
@@ -119,7 +120,7 @@ namespace TranSimCS.Menus.InGame {
             var style = new UiStyle(menu.Game.defaultUiStyle);
             var styleProp = new StyleProp<UiStyle>(style);
             indicator.Style = styleProp;
-            OnChange(this, null);
+            UpdateValues(laneSpecProp.Value);
             laneSpecProp.ValueChanged += OnChange;
         }
 
@@ -147,9 +148,10 @@ namespace TranSimCS.Menus.InGame {
             if(byte.TryParse(s, out var value)) { return value; }
             return oldValue;
         }
-        private void OnChange(object sender, EventArgs e) {
+        private void OnChange(object sender, PropertyChangedEventArgs2<LaneSpec> e) => UpdateValues(e.NewValue);
+        private void UpdateValues(LaneSpec laneSpec) {
             var style = indicator.Style.Value;
-            var color = laneSpecProp.Value.Color;
+            var color = laneSpec.Color;
             style.PanelColor = color;
             indicator.Style = new StyleProp<UiStyle>(style);
             inR.SetText(color.R.ToString());
@@ -157,9 +159,9 @@ namespace TranSimCS.Menus.InGame {
             inB.SetText(color.B.ToString());
             inA.SetText(color.A.ToString());
 
-            for(int i = 0; i < checks.Length; i++) {
+            for (int i = 0; i < checks.Length; i++) {
                 VehicleTypes flag = (VehicleTypes)(1 << i);
-                checks[i].Checked = (laneSpecProp.Value.VehicleTypes & flag) != VehicleTypes.None;
+                checks[i].Checked = (laneSpec.VehicleTypes & flag) != VehicleTypes.None;
             }
         }
     }
