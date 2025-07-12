@@ -20,11 +20,11 @@ namespace TranSimCS.Roads {
 
         //Common presets for lane specifications
         public static LaneSpec Default => new(Color.Gray, VehicleTypes.Vehicles);
+        public static LaneSpec Motorway => new(Color.DarkGray, VehicleTypes.MotorVehicles);
         public static LaneSpec Bicycle => new(Color.Green, VehicleTypes.Bicycle);
         public static LaneSpec Pedestrian => new(Color.LightGray, VehicleTypes.Pedestrian);
+        public static LaneSpec Path => new(Color.LightGray, VehicleTypes.Path);
         public static LaneSpec Bus => new(Color.Red, VehicleTypes.Bus);
-        public static LaneSpec Truck => new(Color.Brown, VehicleTypes.Truck);
-        public static LaneSpec Car => new(Color.Red, VehicleTypes.Car);
         public static LaneSpec None => new(Color.Transparent, VehicleTypes.None);
         public static LaneSpec All => new(Color.White, VehicleTypes.All); // All vehicle types allowed
         public static LaneSpec Platform => new(Color.LightGoldenrodYellow, VehicleTypes.Pedestrian, LaneFlags.Platform);

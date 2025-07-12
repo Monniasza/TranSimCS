@@ -19,28 +19,32 @@ namespace TranSimCS.Menus.InGame {
         public TextField inR, inG, inB, inA;
         public RoadConfigurator(InGameMenu menu, Property<LaneSpec> laneSpecProp, Anchor anchor, Vector2 size, bool setHeightBasedOnChildren = false, bool scrollOverflow = false, bool autoHideScrollbar = true) : base(anchor, size, setHeightBasedOnChildren, scrollOverflow, autoHideScrollbar) {
             this.laneSpecProp = laneSpecProp;
-            inR = SetUpChannel("Red: ", (s) => {
+
+            //Color selector
+            var colorsPanel = new Panel(Anchor.AutoInline, new(0.25f, 0.5f));
+            AddChild(colorsPanel);
+            inR = SetUpChannel("Red: ", colorsPanel, (s) => {
                 var laneSpec = laneSpecProp.Value;
                 var color = laneSpec.Color;
                 color.R = GetNewValue(s, color.R);
                 laneSpec.Color = color;
                 laneSpecProp.Value = laneSpec;
             });
-            inG = SetUpChannel("Green: ", (s) => {
+            inG = SetUpChannel("Green: ", colorsPanel, (s) => {
                 var laneSpec = laneSpecProp.Value;
                 var color = laneSpec.Color;
                 color.G = GetNewValue(s, color.G);
                 laneSpec.Color = color;
                 laneSpecProp.Value = laneSpec;
             });
-            inB = SetUpChannel("Blue: ", (s) => {
+            inB = SetUpChannel("Blue: ", colorsPanel, (s) => {
                 var laneSpec = laneSpecProp.Value;
                 var color = laneSpec.Color;
                 color.B = GetNewValue(s, color.B);
                 laneSpec.Color = color;
                 laneSpecProp.Value = laneSpec;
             });
-            inA = SetUpChannel("Alpha: ", (s) => {
+            inA = SetUpChannel("Alpha: ", colorsPanel, (s) => {
                 var laneSpec = laneSpecProp.Value;
                 var color = laneSpec.Color;
                 color.A = GetNewValue(s, color.A);
@@ -49,35 +53,68 @@ namespace TranSimCS.Menus.InGame {
             }, "255");
 
             indicator = new Panel(Anchor.AutoLeft, new(200, 50));
-            AddChild(indicator);
+            colorsPanel.AddChild(indicator);
 
             //Vehicle types
             var vehicleTypes = new string[] {
                 "Car", "Truck", "Bus", "Bike", "Pedestrian",
                 "Light rail", "Heavy rail", "Equestrians", "Airplanes", "Rockets"
             };
-
             checks = new Checkbox[vehicleTypes.Length];
+            var checksPanel = new Panel(Anchor.AutoInline, new(0.25f, 0.5f));
+            AddChild(checksPanel);
             for(int i = 0; i <  vehicleTypes.Length; i++) {
                 var vehicleName = vehicleTypes[i];
                 var vehicleType = (VehicleTypes)(1 << i);
-                var check = new Checkbox((i == 0 ? Anchor.AutoLeft : Anchor.AutoInline), new(100, 20), vehicleName, false);
+                var check = new Checkbox(Anchor.AutoInline, new(100, 20), vehicleName, false);
                 check.Checked = (vehicleType & laneSpecProp.Value.VehicleTypes) != VehicleTypes.None;
                 check.OnCheckStateChange += (element, ev) => SetVehicleTypeProperty(i, check.Checked);
                 checks[i] = check;
-                AddChild(check);
+                checksPanel.AddChild(check);
             }
 
+            //Vehicle compound types
+            var compoundsPanel = new Panel(Anchor.AutoInline, new(0.25f, 0.5f));
+            AddChild(compoundsPanel);
             (string, VehicleTypes)[] compounds = [
                 ("Clear all", VehicleTypes.None),
                 ("Motor vehicles", VehicleTypes.MotorVehicles),
-                ("Non-motorized vehicles and pedestrians", VehicleTypes.Path),
+                ("Non-motorized traffic", VehicleTypes.Path),
                 ("Vehicles", VehicleTypes.Vehicles),
                 ("Aircraft", VehicleTypes.Aircraft),
-                ("All vehicles", VehicleTypes.Vehicles),
-                ("All traffic", VehicleTypes.Transport),
+                ("All road vehicles", VehicleTypes.Vehicles),
+                ("All road traffic", VehicleTypes.Transport),
+                ("Railway", VehicleTypes.Rail),
                 ("Everything", VehicleTypes.All)
             ];
+            foreach (var compound in compounds) {
+                var button = new Button(Anchor.AutoInline, new(100, 40), compound.Item1);
+                button.OnPressed += (s) => {
+                    var laneSpec = laneSpecProp.Value;
+                    laneSpec.VehicleTypes = compound.Item2;
+                    laneSpecProp.Value = laneSpec;
+                };
+                compoundsPanel.AddChild(button);
+            }
+
+            //Vehicle presets
+            (string, LaneSpec)[] presets = [
+                ("Default on road", LaneSpec.Default),
+                ("Bike lane", LaneSpec.Bicycle),
+                ("Sidewalk", LaneSpec.Pedestrian),
+                ("Path", LaneSpec.Path),
+                ("Motorway", LaneSpec.Motorway),
+                ("Bus lane", LaneSpec.Bus),
+                ("Platform", LaneSpec.Platform),
+                ("Empty", LaneSpec.None)
+            ];
+            var presetsPanel = new Panel(Anchor.AutoInline, new(0.25f, 0.5f));
+            AddChild(presetsPanel);
+            foreach (var preset in presets) {
+                var button = new Button(Anchor.AutoInline, new(100, 20), preset.Item1);
+                button.OnPressed += (s) => laneSpecProp.Value = preset.Item2;
+                presetsPanel.AddChild(button);
+            }
 
             var style = new UiStyle(menu.Game.defaultUiStyle);
             var styleProp = new StyleProp<UiStyle>(style);
@@ -95,12 +132,12 @@ namespace TranSimCS.Menus.InGame {
             laneSpec.VehicleTypes = vehicles;
             laneSpecProp.Value = laneSpec;
         }
-        private TextField SetUpChannel(string title, Action<string> action, string defaultValue = "128") {
+        private TextField SetUpChannel(string title, Panel panel, Action<string> action, string defaultValue = "128") {
             var textfieldSize = new Vector2(100, 20);
             Paragraph labelRed = new Paragraph(Anchor.AutoLeft, 100, title);
-            AddChild(labelRed);
+            panel.AddChild(labelRed);
             TextField inRed = new TextField(Anchor.AutoInline, textfieldSize, null, null, defaultValue);
-            AddChild(inRed);
+            panel.AddChild(inRed);
             inRed.OnTextChange = (field, str) => action(str);
             action(defaultValue);
             return inRed;
