@@ -23,34 +23,34 @@ namespace TranSimCS.Menus.InGame {
             //Color selector
             var colorsPanel = new Panel(Anchor.AutoInline, new(0.25f, 0.5f));
             AddChild(colorsPanel);
-            inR = SetUpChannel("Red: ", colorsPanel, (s) => {
+            inR = SetUpProp("Red: ", colorsPanel, ls => ls.Color.R.ToString(), (s) => {
                 var laneSpec = laneSpecProp.Value;
                 var color = laneSpec.Color;
                 color.R = GetNewValue(s, color.R);
                 laneSpec.Color = color;
                 laneSpecProp.Value = laneSpec;
             });
-            inG = SetUpChannel("Green: ", colorsPanel, (s) => {
+            inG = SetUpProp("Green: ", colorsPanel, ls => ls.Color.G.ToString(), (s) => {
                 var laneSpec = laneSpecProp.Value;
                 var color = laneSpec.Color;
                 color.G = GetNewValue(s, color.G);
                 laneSpec.Color = color;
                 laneSpecProp.Value = laneSpec;
             });
-            inB = SetUpChannel("Blue: ", colorsPanel, (s) => {
+            inB = SetUpProp("Blue: ", colorsPanel, ls => ls.Color.B.ToString(), (s) => {
                 var laneSpec = laneSpecProp.Value;
                 var color = laneSpec.Color;
                 color.B = GetNewValue(s, color.B);
                 laneSpec.Color = color;
                 laneSpecProp.Value = laneSpec;
             });
-            inA = SetUpChannel("Alpha: ", colorsPanel, (s) => {
+            inA = SetUpProp("Alpha: ", colorsPanel, ls => ls.Color.A.ToString(), (s) => {
                 var laneSpec = laneSpecProp.Value;
                 var color = laneSpec.Color;
                 color.A = GetNewValue(s, color.A);
                 laneSpec.Color = color;
                 laneSpecProp.Value = laneSpec;
-            }, "255");
+            });
 
             indicator = new Panel(Anchor.AutoLeft, new(200, 50));
             colorsPanel.AddChild(indicator);
@@ -148,25 +148,15 @@ namespace TranSimCS.Menus.InGame {
             laneSpec.VehicleTypes = vehicles;
             laneSpecProp.Value = laneSpec;
         }
-        private TextField SetUpChannel(string title, Panel panel, Action<string> action, string defaultValue = "128") {
-            var textfieldSize = new Vector2(100, 20);
-            Paragraph labelRed = new Paragraph(Anchor.AutoLeft, 100, title);
-            panel.AddChild(labelRed);
-            TextField inRed = new TextField(Anchor.AutoInline, textfieldSize, null, null, defaultValue);
-            panel.AddChild(inRed);
-            inRed.OnTextChange = (field, str) => action(str);
-            action(defaultValue);
-            return inRed;
-        }
         private TextField SetUpProp(string title, Panel panel, Func<LaneSpec, string> getter, Action<String> setter) {
             var textfieldSize = new Vector2(100, 20);
-            Paragraph labelRed = new Paragraph(Anchor.AutoLeft, 100, title);
-            panel.AddChild(labelRed);
-            TextField inRed = new TextField(Anchor.AutoInline, textfieldSize, null, null, getter(laneSpecProp.Value));
-            panel.AddChild(inRed);
-            inRed.OnTextChange = (field, str) => setter(str);
-            OnValuesChanged += (ls) => inRed.SetText(getter(ls));
-            return inRed;
+            Paragraph label = new Paragraph(Anchor.AutoLeft, 100, title);
+            panel.AddChild(label);
+            TextField textfield = new TextField(Anchor.AutoInline, textfieldSize, null, null, getter(laneSpecProp.Value));
+            panel.AddChild(textfield);
+            textfield.OnTextChange = (field, str) => setter(str);
+            OnValuesChanged += (ls) => textfield.SetText(getter(ls));
+            return textfield;
         }
         private byte GetNewValue(string s, byte oldValue) {
             if(s.Length == 0) return 0;
@@ -186,10 +176,6 @@ namespace TranSimCS.Menus.InGame {
             var color = laneSpec.Color;
             style.PanelColor = color;
             indicator.Style = new StyleProp<UiStyle>(style);
-            inR.SetText(color.R.ToString());
-            inG.SetText(color.G.ToString());
-            inB.SetText(color.B.ToString());
-            inA.SetText(color.A.ToString());
             OnValuesChanged?.Invoke(laneSpec);
 
             for (int i = 0; i < checks.Length; i++) {
