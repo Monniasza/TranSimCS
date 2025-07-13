@@ -95,7 +95,7 @@ namespace TranSimCS.Roads {
         }
         public static void GenerateLaneStripMesh(LaneStrip laneStrip, IRenderBin renderer, float voffset = 0) {
             var tag = laneStrip.Tag;
-            GenerateLaneRangeMesh(tag, renderer, laneStrip.spec.Color, voffset, laneStrip); // Generate the lane tag mesh
+            GenerateLaneRangeMesh(tag, renderer, laneStrip.Spec.Color, voffset, laneStrip); // Generate the lane tag mesh
         }
 
         public static void GenerateLaneRangeMesh(LaneRange range, IRenderBin renderer, Color color, float voffset = 0, object tag = null) {

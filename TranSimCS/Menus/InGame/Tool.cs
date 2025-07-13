@@ -136,7 +136,7 @@ namespace TranSimCS.Menus.InGame {
                     if(selectedNode != null) {
                         var segment = world.GetOrMakeRoadStrip(node.Value.RoadNodeEnd, selectedNode.Value.RoadNodeEnd);
                         var strip = new LaneStrip(segment, node.Value, selectedNode.Value);
-                        strip.spec = spec;
+                        strip.Spec = spec;
                         segment.MaybeAddLaneStrip(strip);
                         node = selectedNode;
                     }
@@ -293,7 +293,7 @@ namespace TranSimCS.Menus.InGame {
         void ITool.OnClick(MouseButton button) {
             if(button == MouseButton.Left) {
                 var selection = game.MouseOverRoad;
-                var laneSpec = selection?.SelectedLaneStrip?.spec;
+                var laneSpec = selection?.SelectedLaneStrip?.Spec;
                 var nodeSpec = selection?.SelectedLane?.Spec;
                 var spec = nodeSpec ?? laneSpec;
                 if (spec == null) return;

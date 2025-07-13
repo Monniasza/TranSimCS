@@ -9,8 +9,15 @@ namespace TranSimCS.Roads {
         private LaneEnd startLane;
         private LaneEnd endLane;
         public readonly RoadStrip road;
-        public LaneSpec spec; // Specification of the lane strip, including properties like width, type, etc.
+        public LaneSpec _spec; // Specification of the lane strip, including properties like width, type, etc.
 
+        public LaneSpec Spec {
+            get {
+                _spec.Width = (startLane.lane.Width + endLane.lane.Width) / 2;
+                return _spec;
+            }
+            set => _spec = value;
+        }
         public LaneEnd StartLane {
             get => startLane;
             set {
@@ -38,7 +45,7 @@ namespace TranSimCS.Roads {
             this.road = road; // Reference to the road this lane strip belongs to
             this.StartLane = startLane; // Starting lane of the lane strip
             this.EndLane = endLane; // Ending lane of the lane strip
-            this.spec = LaneSpec.Default; // Default specification for the lane strip
+            this.Spec = LaneSpec.Default; // Default specification for the lane strip
         }
 
         //Mesh cache
@@ -79,11 +86,11 @@ namespace TranSimCS.Roads {
                    EqualityComparer<LaneEnd>.Default.Equals(startLane, other.startLane) &&
                    EqualityComparer<LaneEnd>.Default.Equals(endLane, other.endLane) &&
                    EqualityComparer<RoadStrip>.Default.Equals(road, other.road) &&
-                   EqualityComparer<LaneSpec>.Default.Equals(spec, other.spec);
+                   EqualityComparer<LaneSpec>.Default.Equals(Spec, other.Spec);
         }
 
         public override int GetHashCode() {
-            return HashCode.Combine(startLane, endLane, road, spec);
+            return HashCode.Combine(startLane, endLane, road, Spec);
         }
 
         public bool IsBetween(LaneEnd start, LaneEnd end) {
