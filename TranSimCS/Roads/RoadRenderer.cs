@@ -13,18 +13,18 @@ namespace TranSimCS.Roads {
         public static Color SemiClearWhite => new Color(255, 255, 255, 128);
         public static Color SemiClearGray => new Color(128, 128, 128, 128);
 
-        public static void CreateAddLanes(RoadNode nodeEnd, IRenderBin mesh, Color? color = null, float voffset = 0.001f) {
+        public static void CreateAddLanes(RoadNode nodeEnd, IRenderBin mesh, float size = 1, Color? color = null, float voffset = 0.001f) {
             var leftLimit = nodeEnd.Lanes[0].LeftPosition;
             var rightLimit = nodeEnd.Lanes[nodeEnd.Lanes.Count - 1].RightPosition;
-            CreateAddLane(new AddLaneSelection(-1, leftLimit, nodeEnd.FrontEnd), mesh, color, voffset);
-            CreateAddLane(new AddLaneSelection(1, rightLimit, nodeEnd.FrontEnd), mesh, color, voffset);
-            CreateAddLane(new AddLaneSelection(-1, leftLimit, nodeEnd.RearEnd), mesh, color, voffset);
-            CreateAddLane(new AddLaneSelection(1, rightLimit, nodeEnd.RearEnd), mesh, color, voffset);
+            CreateAddLane(new AddLaneSelection(-1, leftLimit, nodeEnd.FrontEnd), mesh, size, color, voffset);
+            CreateAddLane(new AddLaneSelection(1, rightLimit, nodeEnd.FrontEnd), mesh, size, color, voffset);
+            CreateAddLane(new AddLaneSelection(-1, leftLimit, nodeEnd.RearEnd), mesh, size, color, voffset);
+            CreateAddLane(new AddLaneSelection(1, rightLimit, nodeEnd.RearEnd), mesh, size, color, voffset);
         }
-        public static Quad CreateAddLane(AddLaneSelection als, IRenderBin mesh, Color? color = null, float voffset = 0.001f) {
-            var zrange = Geometry.RoadEndToRange(als.nodeEnd.End);
-            var xrange = als.CalculateOffsets(1);
-            Quad quad = GenerateLaneQuad(als.nodeEnd.Node, xrange.X, xrange.Y, color ?? SemiClearGray, voffset, zrange.Item1, zrange.Item2);
+        public static Quad CreateAddLane(AddLaneSelection als, IRenderBin mesh, float size = 1, Color? color = null, float voffset = 0.001f) {
+            var zrange = Geometry.RoadEndToRange(als.nodeEnd.End) * size;
+            var xrange = als.CalculateOffsets(size);
+            Quad quad = GenerateLaneQuad(als.nodeEnd.Node, xrange.X, xrange.Y, color ?? SemiClearGray, voffset, zrange.X, zrange.Y);
             mesh.DrawQuad(quad);
             mesh.AddTagsToLastTriangles(2, als);
             return quad;
@@ -51,7 +51,7 @@ namespace TranSimCS.Roads {
             var altColor = lane.lane.Spec.Color;
             altColor.A /= 2;
             var range = Geometry.RoadEndToRange(lane.end);
-            return GenerateLaneQuad(lane.lane.RoadNode, lane.lane.LeftPosition, lane.lane.RightPosition, color ?? altColor, voffset, range.Item1, range.Item2);
+            return GenerateLaneQuad(lane.lane.RoadNode, lane.lane.LeftPosition, lane.lane.RightPosition, color ?? altColor, voffset, range.X, range.Y);
         }
         public static LaneQuadPair GenerateLaneQuads(RoadNode node, float lb, float rb, Color color, float voffset = 0) {
             Vector3 offset = new Vector3(0, voffset, 0);

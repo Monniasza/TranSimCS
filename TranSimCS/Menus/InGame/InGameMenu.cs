@@ -170,7 +170,7 @@ namespace TranSimCS.Menus.InGame {
             if (CheckAddLanes.Checked) {
                 var addLanesMesh = new Mesh();
                 foreach(var node in world.RoadNodes) {
-                    RoadRenderer.CreateAddLanes(node, addLanesMesh);
+                    RoadRenderer.CreateAddLanes(node, addLanesMesh, roadProperty.Value.Width);
                 }
                 meshes.Add(addLanesMesh);
                 AddLanesMesh = addLanesMesh;
@@ -334,7 +334,7 @@ namespace TranSimCS.Menus.InGame {
 
             //If the add lane button is selected, draw it
             if(SelectedObject is AddLaneSelection selection) {
-                RoadRenderer.CreateAddLane(selection, plusRenderBin, roadSegmentHighlightColor, 0.002f);
+                RoadRenderer.CreateAddLane(selection, plusRenderBin, roadProperty.Value.Width, roadSegmentHighlightColor, 0.002f);
             }
 
             //Render the ground (now just a flat plane)

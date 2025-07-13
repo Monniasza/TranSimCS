@@ -118,6 +118,19 @@ namespace TranSimCS.Menus.InGame {
             }
 
             //Geometric presets
+            var specsPanel = new Panel(Anchor.AutoInline, new(0.25f, 0.5f));
+            AddChild(specsPanel);
+            SetUpProp("Width [m]", specsPanel, ls => ls.Width.ToString(), str => {
+                var laneSpec = laneSpecProp.Value;
+                laneSpec.Width = GetNewFloat(str, laneSpec.Width);
+                laneSpecProp.Value = laneSpec;
+            });
+            SetUpProp("Speed limit [km/h]", specsPanel, ls => ls.SpeedLimit.ToString(), str => {
+                var laneSpec = laneSpecProp.Value;
+                laneSpec.SpeedLimit = GetNewFloat(str, laneSpec.SpeedLimit);
+                laneSpecProp.Value = laneSpec;
+            });
+
 
             var style = new UiStyle(menu.Game.defaultUiStyle);
             var styleProp = new StyleProp<UiStyle>(style);
@@ -145,12 +158,29 @@ namespace TranSimCS.Menus.InGame {
             action(defaultValue);
             return inRed;
         }
+        private TextField SetUpProp(string title, Panel panel, Func<LaneSpec, string> getter, Action<String> setter) {
+            var textfieldSize = new Vector2(100, 20);
+            Paragraph labelRed = new Paragraph(Anchor.AutoLeft, 100, title);
+            panel.AddChild(labelRed);
+            TextField inRed = new TextField(Anchor.AutoInline, textfieldSize, null, null, getter(laneSpecProp.Value));
+            panel.AddChild(inRed);
+            inRed.OnTextChange = (field, str) => setter(str);
+            OnValuesChanged += (ls) => inRed.SetText(getter(ls));
+            return inRed;
+        }
         private byte GetNewValue(string s, byte oldValue) {
             if(s.Length == 0) return 0;
             if(byte.TryParse(s, out var value)) { return value; }
             return oldValue;
         }
+        private float GetNewFloat(string s, float oldValue) {
+            if (s.Length == 0) return 0;
+            if (float.TryParse(s, out var value)) { return value; }
+            return oldValue;
+        }
         private void OnChange(object sender, PropertyChangedEventArgs2<LaneSpec> e) => UpdateValues(e.NewValue);
+
+        private event Action<LaneSpec> OnValuesChanged;
         private void UpdateValues(LaneSpec laneSpec) {
             var style = indicator.Style.Value;
             var color = laneSpec.Color;
@@ -160,6 +190,7 @@ namespace TranSimCS.Menus.InGame {
             inG.SetText(color.G.ToString());
             inB.SetText(color.B.ToString());
             inA.SetText(color.A.ToString());
+            OnValuesChanged?.Invoke(laneSpec);
 
             for (int i = 0; i < checks.Length; i++) {
                 VehicleTypes flag = (VehicleTypes)(1 << i);
