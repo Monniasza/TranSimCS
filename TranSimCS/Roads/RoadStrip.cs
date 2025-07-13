@@ -81,7 +81,7 @@ namespace TranSimCS.Roads {
         public Mesh WholeNodeMesh { get { 
             if (_wholeNodeMesh != null) return _wholeNodeMesh; // If the end mesh is set, return it
             _wholeNodeMesh = new Mesh();
-            RoadRenderer.GenerateRoadSegmentBoundingMesh(this, _wholeNodeMesh); // Otherwise, render the road segment
+            RoadRenderer.GenerateRoadSegmentFullMesh(this, _wholeNodeMesh); // Otherwise, render the road segment
             return _wholeNodeMesh; // Return the rendered mesh
         } private set => _wholeNodeMesh = value; } // Mesh for the lane connection at the start node
         internal void InvalidateMesh() {

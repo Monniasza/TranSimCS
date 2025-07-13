@@ -8,12 +8,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace TranSimCS {
-    public class RenderHelper {
+    public class RenderHelper: MultiMesh {
         public GraphicsDevice GraphicsDevice { get; private init; }
         public BasicEffect Effect { get; private init; }
-
-        //List of data to render
-        private Dictionary<Texture2D, RenderBin> _renderBins = [];
 
         public RenderHelper(GraphicsDevice graphicsDevice) {
             GraphicsDevice = graphicsDevice;
@@ -28,29 +25,11 @@ namespace TranSimCS {
             Effect = effect ?? throw new ArgumentNullException(nameof(effect), "Effect cannot be null. Please provide a valid BasicEffect instance.");
         }
 
-        //The helper method to add a render bin for a specific texture and populate it with vertices and indices.
-        public RenderBin GetOrCreateRenderBin(Texture2D texture) {
-            return GetOrCreateRenderBin(texture, null);
-        }
-        public void Clear() {
-            foreach (var renderBin in _renderBins.Values) 
-                renderBin.Clear();
-        }
-        public RenderBin GetOrCreateRenderBin(Texture2D texture, Action<RenderBin>? action) {
-            if (!_renderBins.TryGetValue(texture, out var renderBin)) {
-                renderBin = new RenderBin(this);
-                _renderBins[texture] = renderBin;
-            }
-            action?.Invoke(renderBin);
-            return renderBin;
-        }
-
         public void Render() {
             int TriCount = 0;
             int VertCount = 0;
             GraphicsDevice.SamplerStates[0] = SamplerState.PointWrap;
-            //GraphicsDevice.SamplerStates[1] = SamplerState.PointWrap;
-            foreach (var row in _renderBins) {
+            foreach (var row in RenderBins) {
                 var renderBin = row.Value;
                 var texture = row.Key;
                 Effect.Texture = texture;
@@ -64,7 +43,6 @@ namespace TranSimCS {
                     GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderBin.Vertices.ToArray(), 0, renderBin.Vertices.Count, renderBin.Indices.ToArray(), 0, renderBin.Indices.Count / 3);
                 }
             }
-            //Debug.Print($"Rendering {TriCount} triangles and {VertCount} vertices");
         }
     }
 
@@ -76,10 +54,6 @@ namespace TranSimCS {
     /// shapes and models. It is designed to facilitate rendering operations by organizing vertex and index data
     /// efficiently.</remarks>
     public interface IRenderBin {
-        /// <summary>
-        /// Gets the RenderHelper associated with this render bin.
-        /// </summary>
-        RenderHelper? RenderHelper { get; }   
         /// <summary>
         /// Gets the list of vertices in this render bin.
         /// </summary>
@@ -95,6 +69,7 @@ namespace TranSimCS {
 
         public int AddVertex(VertexPositionColorTexture vertex);
         public void AddIndex(int index);
+        public void Clear();
         public void AddTagsToLastTriangles(int count, object value) {
             if (value == null) return;
             ArgumentOutOfRangeException.ThrowIfNegative(count, nameof(count));
@@ -125,7 +100,11 @@ namespace TranSimCS {
             }
         }
         public void DrawQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color) {
-            DrawQuad(new(a, color, new(0, 0)), new(b, color, new(1, 0)), new(c, color, new(1, 1)), new(d, color, new(0, 1)));
+            DrawQuad(
+                new(a, color, new(0, 0)),
+                new(b, color, new(1, 0)),
+                new(c, color, new(1, 1)),
+                new(d, color, new(0, 1)));
         }
         public void DrawQuad(Quad q) => DrawQuad(q.a, q.b, q.c, q.d);
 
@@ -214,34 +193,5 @@ namespace TranSimCS {
 
             }
         }
-    }
-
-    /// <summary>
-    /// A render bin is a collection of vertices and indices that can be rendered together.
-    /// Each render bin is associated with a specific texture and uses a RenderHelper for rendering.
-    /// </summary>
-    public class RenderBin: IRenderBin{
-        public RenderHelper? RenderHelper { get; private init; }
-        public List<VertexPositionColorTexture> Vertices { get; private init; } = [];
-        public List<int> Indices { get; private init; } = [];
-        public IDictionary<int, object> Tags { get; } = new Dictionary<int, object>();
-
-        internal RenderBin(RenderHelper renderHelper) {
-            RenderHelper = renderHelper;
-        }
-        public RenderBin() { } //Public constructor for use without RenderHelper
-        public void Clear() {
-            Vertices.Clear();
-            Indices.Clear();
-        }
-        public int AddVertex(VertexPositionColorTexture vertex) {
-            Vertices.Add(vertex);
-            return Vertices.Count - 1;
-        }
-        public void AddIndex(int index) {
-            Indices.Add(index);
-        }
-
-        
     }
 }

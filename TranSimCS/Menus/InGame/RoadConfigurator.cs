@@ -117,6 +117,8 @@ namespace TranSimCS.Menus.InGame {
                 presetsPanel.AddChild(button);
             }
 
+            //Geometric presets
+
             var style = new UiStyle(menu.Game.defaultUiStyle);
             var styleProp = new StyleProp<UiStyle>(style);
             indicator.Style = styleProp;

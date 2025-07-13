@@ -11,6 +11,10 @@ namespace TranSimCS.Roads {
         public Color Color { get; set; } // Color of the lane
         public VehicleTypes VehicleTypes { get; set; } // Types of vehicles allowed in the lane
         public LaneFlags Flags { get; set; } // Flags for additional lane properties
+        public float Width { get; set; } //Width. Ignored by nodes, but used to store new lane widths
+        public float SpeedLimit { get; set; } //Speed limit
+
+
         // Constructor to initialize the LaneSpec with lane index, width, and offset
         public LaneSpec(Color color, VehicleTypes vehicleTypes, LaneFlags flags = LaneFlags.Forward) {
             Color = color;
@@ -62,7 +66,15 @@ namespace TranSimCS.Roads {
 
     public class Lane(RoadNode node) {
         public RoadNode RoadNode => node; // Reference to the road node this lane belongs to
-        public LaneSpec Spec { get; set; } // Specification of the lane, including properties like width, type, etc.
+        private LaneSpec _spec;
+        /// <summary>
+        /// Specification of the lane, including properties like color, type, etc.
+        /// The width here is ignored when set, but it's returned with the proper value when get.
+        /// </summary>
+        public LaneSpec Spec { get {
+            _spec.Width = Width;
+            return _spec;
+        } set => _spec = value; } 
         public float LeftPosition { get; set; } // Left position of the lane relative to the road node
         public float RightPosition { get; set; } // Right position of the lane relative to the road node
         public int Index { get; internal set; } // Index of the lane in the road node's lane list

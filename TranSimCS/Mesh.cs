@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -8,17 +9,46 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace TranSimCS {
+    /// <summary>
+    /// A collections of meshes, each with its own texture
+    /// </summary>
+    public class MultiMesh {
+        //List of data to render
+        private Dictionary<Texture2D, Mesh> _renderBins = [];
+        public IDictionary<Texture2D, Mesh> RenderBins => new ReadOnlyDictionary<Texture2D, Mesh>(_renderBins);
+
+        //The helper method to add a render bin for a specific texture and populate it with vertices and indices.
+        public Mesh GetOrCreateRenderBin(Texture2D texture) {
+            return GetOrCreateRenderBin(texture, null);
+        }
+        public void Clear() {
+            foreach (var renderBin in _renderBins.Values)
+                renderBin.Clear();
+        }
+        public Mesh GetOrCreateRenderBin(Texture2D texture, Action<Mesh>? action) {
+            if (!_renderBins.TryGetValue(texture, out var renderBin)) {
+                renderBin = new Mesh();
+                _renderBins[texture] = renderBin;
+            }
+            action?.Invoke(renderBin);
+            return renderBin;
+        }
+    }
+
     public class Mesh: IRenderBin {
         public List<VertexPositionColorTexture> Vertices { get; } = new List<VertexPositionColorTexture>();
         public List<int> Indices { get; } = new List<int>();
         public IDictionary<int, object> Tags { get; } = new Dictionary<int, object>();
 
-        RenderHelper IRenderBin.RenderHelper => throw new NotImplementedException();
-
         public Mesh() { }
         public Mesh(IEnumerable<VertexPositionColorTexture> vertices, IEnumerable<int> indices) {
             Vertices.AddRange(vertices);
             Indices.AddRange(indices);
+        }
+        public Mesh(IEnumerable<VertexPositionColorTexture> vertices, IEnumerable<int> indices, IDictionary<int, object> tags) {
+            Vertices.AddRange(vertices);
+            Indices.AddRange(indices);
+            foreach(var row in tags) Tags.Add(row.Key, row.Value);
         }
 
         int IRenderBin.AddVertex(VertexPositionColorTexture vertex) {
@@ -28,6 +58,12 @@ namespace TranSimCS {
 
         void IRenderBin.AddIndex(int index) {
             Indices.Add(index);
+        }
+
+        public void Clear() {
+            Vertices.Clear();
+            Indices.Clear();
+            Tags.Clear();
         }
     }
     public static class MeshUtil {

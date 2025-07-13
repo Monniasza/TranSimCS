@@ -25,9 +25,11 @@ namespace TranSimCS.Menus.InGame {
         public static Texture2D roadTexture { get; private set; } // Assuming you have a texture for the road
         public static Texture2D testTexture { get; private set; }
         public static Texture2D grassTexture {  get; private set; }
+        public static Texture2D addTexture { get; private set; }
 
         //Inputs      
         public RoadSelection? MouseOverRoad { get; set; } = null; // Store the selected road selection
+        public object SelectedObject;
         public Vector3 GroundSelection { get {
                 var groundPlane = new Plane(0, 1, 0, -0.1f);
                 return Geometry.IntersectRayPlane(MouseRay, groundPlane);  
@@ -48,8 +50,12 @@ namespace TranSimCS.Menus.InGame {
         public Checkbox CheckNodes { get; private set; }
         public Checkbox CheckSegments { get; private set; }
         public Checkbox CheckSameDirection { get; private set; }
+        public Checkbox CheckAddLanes { get; private set; }
         public Property<LaneSpec> roadProperty { get; private set; }
         public RoadConfigurator configurator { get; private set; }
+
+        //In-world UI
+        public Mesh AddLanesMesh { get; private set; }
 
         //Colors
         private Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
@@ -83,6 +89,7 @@ namespace TranSimCS.Menus.InGame {
             roadTexture = Game.Content.Load<Texture2D>("laneTex");
             testTexture = Game.Content.Load<Texture2D>("test");
             grassTexture = Game.Content.Load<Texture2D>("seamlessTextures2/grass1");
+            addTexture = Game.Content.Load<Texture2D>("addTex");
 
             //Set up the UI from below
             RootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 120));
@@ -97,6 +104,7 @@ namespace TranSimCS.Menus.InGame {
             CheckNodes = new Checkbox(MLEM.Ui.Anchor.AutoInlineBottom, new(0.25f, 20), "Select nodes", true);
             CheckSegments = new Checkbox(MLEM.Ui.Anchor.AutoInlineBottom, new(0.25f, 20), "Select segments", true);
             CheckSameDirection = new Checkbox(MLEM.Ui.Anchor.AutoInlineBottom, new(0.25f, 20), "New node in same direction", true);
+            CheckAddLanes = new Checkbox(MLEM.Ui.Anchor.AutoInlineBottom, new(0.25f, 20), "Select lane additions", true);
             SettingsPanel.AddChild(CheckNodes);
             SettingsPanel.AddChild(CheckSegments);
             SettingsPanel.AddChild(CheckSameDirection);
@@ -159,11 +167,22 @@ namespace TranSimCS.Menus.InGame {
                 foreach (var node in world.RoadNodes)
                     meshes.Add(node.GetMesh());
             }
+            if (CheckAddLanes.Checked) {
+                var addLanesMesh = new Mesh();
+                foreach(var node in world.RoadNodes) {
+                    RoadRenderer.CreateAddLanes(node, addLanesMesh);
+                }
+                meshes.Add(addLanesMesh);
+                AddLanesMesh = addLanesMesh;
+            } else {
+                AddLanesMesh = null;
+            }
 
-            //Selection logic
-            float distance = float.MaxValue;
+                //Selection logic
+                float distance = float.MaxValue;
             object selection = null;
             if (!IsMouseOverUI) selection = MeshUtil.RayIntersectMeshes(meshes, ray, out distance);
+            SelectedObject = selection;
             if (selection is LaneStrip laneStrip) {
                 MouseOverRoad = new RoadSelection(laneStrip, distance, ray); // Create a new road selection with the lane tag and intersection distance
             }
@@ -219,8 +238,6 @@ namespace TranSimCS.Menus.InGame {
 
             UiSystem.Update(time);
 
-            
-
             //Run the world tool
             if (!IsMouseOverUI) {
                 if (Game.MouseState.LeftButton == ButtonState.Pressed && Game.MouseStateOld.LeftButton == ButtonState.Released) Tool?.OnClick(MLEM.Input.MouseButton.Left);
@@ -268,6 +285,7 @@ namespace TranSimCS.Menus.InGame {
 
             Texture2D testTexture = Game.Content.Load<Texture2D>("test");
             IRenderBin renderBin = renderHelper.GetOrCreateRenderBin(roadTexture);
+            IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBin(addTexture);
 
             // Draw the asphalt texture for the road
             foreach (var roadSegment in world.RoadSegments) {
@@ -278,6 +296,9 @@ namespace TranSimCS.Menus.InGame {
             if (CheckNodes.Checked)
                 foreach (var node in world.RoadNodes)
                     renderBin.DrawModel(node.GetMesh());
+
+            //If requested, draw the lane addition meshes
+            if(AddLanesMesh != null) plusRenderBin.DrawModel(AddLanesMesh);
 
             //If a road segment is selected, draw the selection
             var roadSelection = MouseOverRoad;
@@ -309,6 +330,11 @@ namespace TranSimCS.Menus.InGame {
                 var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(lane.lane.RoadNode, roadSegmentHighlightColor, 0.002f);
                 renderBin.DrawQuad(quad);
                 renderBin.DrawQuad(nodeQuad);
+            }
+
+            //If the add lane button is selected, draw it
+            if(SelectedObject is AddLaneSelection selection) {
+                RoadRenderer.CreateAddLane(selection, plusRenderBin, roadSegmentHighlightColor, 0.002f);
             }
 
             //Render the ground (now just a flat plane)

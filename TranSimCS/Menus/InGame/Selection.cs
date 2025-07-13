@@ -7,6 +7,23 @@ using Microsoft.Xna.Framework;
 using TranSimCS.Roads;
 
 namespace TranSimCS.Menus.InGame {
+    public struct AddLaneSelection {
+        public sbyte side; //-1 for left, 1 for right
+        public float position;
+        public RoadNodeEnd nodeEnd;
+
+        public AddLaneSelection(sbyte side, float position, RoadNodeEnd nodeEnd) {
+            this.side = side;
+            this.position = position;
+            this.nodeEnd = nodeEnd;
+        }
+
+        public Vector2 CalculateOffsets(float width) {
+            if(side < 0) 
+                return new(position - width, position);
+            return new(position, position + width);
+        }
+    }
     public class RoadSelection {
         //In all cases
         public Ray MouseRay; // Ray from the mouse position in the world

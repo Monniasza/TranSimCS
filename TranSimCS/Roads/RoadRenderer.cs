@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
+using TranSimCS.Menus.InGame;
 using static TranSimCS.Geometry;
 
 namespace TranSimCS.Roads {
@@ -8,6 +9,26 @@ namespace TranSimCS.Roads {
     }
 
     public static class RoadRenderer {
+        //Colors used by default
+        public static Color SemiClearWhite => new Color(255, 255, 255, 128);
+        public static Color SemiClearGray => new Color(128, 128, 128, 128);
+
+        public static void CreateAddLanes(RoadNode nodeEnd, IRenderBin mesh, Color? color = null, float voffset = 0.001f) {
+            var leftLimit = nodeEnd.Lanes[0].LeftPosition;
+            var rightLimit = nodeEnd.Lanes[nodeEnd.Lanes.Count - 1].RightPosition;
+            CreateAddLane(new AddLaneSelection(-1, leftLimit, nodeEnd.FrontEnd), mesh, color, voffset);
+            CreateAddLane(new AddLaneSelection(1, rightLimit, nodeEnd.FrontEnd), mesh, color, voffset);
+            CreateAddLane(new AddLaneSelection(-1, leftLimit, nodeEnd.RearEnd), mesh, color, voffset);
+            CreateAddLane(new AddLaneSelection(1, rightLimit, nodeEnd.RearEnd), mesh, color, voffset);
+        }
+        public static Quad CreateAddLane(AddLaneSelection als, IRenderBin mesh, Color? color = null, float voffset = 0.001f) {
+            var zrange = Geometry.RoadEndToRange(als.nodeEnd.End);
+            var xrange = als.CalculateOffsets(1);
+            Quad quad = GenerateLaneQuad(als.nodeEnd.Node, xrange.X, xrange.Y, color ?? SemiClearGray, voffset, zrange.Item1, zrange.Item2);
+            mesh.DrawQuad(quad);
+            mesh.AddTagsToLastTriangles(2, als);
+            return quad;
+        }
         public static Quad GenerateRoadNodeSelQuad(RoadNode node, Color color, float voffset = 0) {
             return GenerateLaneQuad(node, node.Lanes[0].LeftPosition, node.Lanes[node.Lanes.Count - 1].RightPosition, color, voffset);
         }
@@ -60,11 +81,11 @@ namespace TranSimCS.Roads {
 
 
         /// <summary>
-        /// Generates the mesh for a road segment.
+        /// Generates the mesh for a road segment. Does not contain any lane meshes
         /// </summary>
         /// <param name="connection">road segment</param>
         /// <param name="renderHelper">render helper</param>
-        public static void GenerateRoadSegmentBoundingMesh(RoadStrip connection, IRenderBin renderHelper, float voffset = 0) {
+        public static void GenerateRoadSegmentFullMesh(RoadStrip connection, IRenderBin renderHelper, float voffset = 0) {
             
         }
         public static void RenderRoadSegment(RoadStrip connection, IRenderBin renderHelper, float voffset = 0) {
