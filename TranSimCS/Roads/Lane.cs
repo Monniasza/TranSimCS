@@ -83,6 +83,14 @@ namespace TranSimCS.Roads {
         public LaneEnd Rear => new LaneEnd(NodeEnd.Backward, this);
         public LaneEnd Front => new LaneEnd(NodeEnd.Forward, this);
 
+        //Positioning utilities
+        public void Align(float t, float pos, float width = -1) {
+            if (width < 0) width = Width;
+            LeftPosition = pos - t * width;
+            RightPosition = LeftPosition + width;
+        }
+
+
         //Indexing
         internal ISet<LaneStrip> connections = new HashSet<LaneStrip>(); // Set of lane strips that this lane is connected to
         public ISet<LaneStrip> Connections => new ReadOnlySet<LaneStrip>(connections); // Read-only set of lane strips that this lane is connected to
