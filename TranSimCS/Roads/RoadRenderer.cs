@@ -14,6 +14,7 @@ namespace TranSimCS.Roads {
         public static Color SemiClearGray => new Color(128, 128, 128, 128);
 
         public static void CreateAddLanes(RoadNode nodeEnd, IRenderBin mesh, float size = 1, Color? color = null, float voffset = 0.001f) {
+            if (nodeEnd.Lanes.Count < 1) return;
             var leftLimit = nodeEnd.Lanes[0].LeftPosition;
             var rightLimit = nodeEnd.Lanes[nodeEnd.Lanes.Count - 1].RightPosition;
             CreateAddLane(new AddLaneSelection(-1, leftLimit, nodeEnd.FrontEnd), mesh, size, color, voffset);

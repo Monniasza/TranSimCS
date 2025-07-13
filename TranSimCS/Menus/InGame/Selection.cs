@@ -23,6 +23,21 @@ namespace TranSimCS.Menus.InGame {
                 return new(position - width, position);
             return new(position, position + width);
         }
+        /// <summary>
+        /// Creates the new lane for this add-lane button. This becomes invalid after addition for new lane creations.
+        /// The newly created lane is already added to the node
+        /// </summary>
+        /// <param name="spec">lane spec to use</param>
+        /// <returns>a new lane</returns>
+        public LaneEnd NewLane(LaneSpec spec) {
+            Lane newLane = new Lane(nodeEnd.Node);
+            var positions = CalculateOffsets(spec.Width);
+            newLane.LeftPosition = positions.X;
+            newLane.RightPosition = positions.Y;
+            newLane.Spec = spec;
+            nodeEnd.Node.AddLane(newLane);
+            return newLane.GetEnd(nodeEnd.End);
+        }
     }
     public class RoadSelection {
         //In all cases

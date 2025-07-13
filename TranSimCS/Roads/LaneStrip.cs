@@ -13,7 +13,17 @@ namespace TranSimCS.Roads {
 
         public LaneSpec Spec {
             get {
-                _spec.Width = (startLane.lane.Width + endLane.lane.Width) / 2;
+                var width = 0f;
+                var n = 0;
+                if(startLane.lane != null) {
+                    width += startLane.lane.Width;
+                    n++;
+                }
+                if(endLane.lane != null) {
+                    width += endLane.lane.Width;
+                    n++;
+                }
+                if(n != 0) _spec.Width = width / n;
                 return _spec;
             }
             set => _spec = value;

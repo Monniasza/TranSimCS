@@ -92,6 +92,10 @@ namespace TranSimCS.Roads {
             RightPosition = LeftPosition + width;
         }
 
+        public LaneEnd GetEnd(NodeEnd end) {
+            return end.GetConditional(Rear, Front);
+        }
+
 
         //Indexing
         internal ISet<LaneStrip> connections = new HashSet<LaneStrip>(); // Set of lane strips that this lane is connected to
