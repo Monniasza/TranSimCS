@@ -37,6 +37,7 @@ namespace TranSimCS.Roads {
         // Properties to hold the start and end nodes and their respective lane indices
         public readonly RoadNodeEnd StartNode = startNode; // The starting road node of the connection
         public readonly RoadNodeEnd EndNode = endNode;
+
         public RoadNodeEnd GetHalf(SegmentHalf selectedRoadHalf) {
             if (selectedRoadHalf == SegmentHalf.Start) {
                 return StartNode; // Return the start node if the selected half is Start

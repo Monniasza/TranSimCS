@@ -298,9 +298,7 @@ namespace TranSimCS.Menus.InGame {
             var gs = game.GroundSelection;
             var gsOld = game.GroundSelectionOld;
             if (game.Game.MouseState.LeftButton == ButtonState.Pressed) {
-                if(DragFrom == null) {
-                    DragFrom = gs;
-                } else {
+                if(DragFrom != null){
                     var dragFrom = DragFrom.Value;
                     var delta = gs - dragFrom;
                     var selectedObject = game.MouseOverRoad?.SelectedRoadNode;
@@ -310,6 +308,7 @@ namespace TranSimCS.Menus.InGame {
                         selectedObject.Position.Value = pos;
                     }
                 }
+                DragFrom = gs;
             } else {
                 DragFrom = null;
             }

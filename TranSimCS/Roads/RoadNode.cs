@@ -89,6 +89,10 @@ namespace TranSimCS.Roads {
         protected override void GenerateMesh(Mesh mesh) {
             RoadRenderer.GenerateRoadNodeMesh(this, mesh, 0.001f);
         }
+        private void InvalidateMeshes() {
+            InvalidateMesh();
+            foreach (var connection in Connections) connection.InvalidateMesh();
+        }
 
         //Halves of this road node
         public readonly RoadNodeEnd RearEnd;
@@ -107,6 +111,7 @@ namespace TranSimCS.Roads {
             World = world;
             RearEnd = new RoadNodeEnd(NodeEnd.Backward, this);
             FrontEnd = new RoadNodeEnd(NodeEnd.Forward, this);
+            Position.ValueChanged += (sender, e) => InvalidateMeshes();
             //Parent = world;
         }
     }
