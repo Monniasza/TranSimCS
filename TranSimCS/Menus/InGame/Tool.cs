@@ -266,9 +266,10 @@ namespace TranSimCS.Menus.InGame {
     public class MoveTool(InGameMenu game) : ITool {
         string ITool.Name => "Move nodes and objects";
 
-        string ITool.Description => "";
+        string ITool.Description => "Drag the object with the left mouse button to move it.";
 
         public Vector3? DragFrom { get; private set; }
+        public Obj ObjToDrag { get; private set; }
 
         void ITool.Draw(GameTime gameTime) {
             //unused
@@ -296,12 +297,15 @@ namespace TranSimCS.Menus.InGame {
 
         void ITool.Update(GameTime gameTime) {
             var gs = game.GroundSelection;
-            var gsOld = game.GroundSelectionOld;
             if (game.Game.MouseState.LeftButton == ButtonState.Pressed) {
-                if(DragFrom != null){
+                if(game.Game.MouseStateOld.LeftButton == ButtonState.Released) {
+                    //Object newly clicked
+                    ObjToDrag = game.MouseOverRoad?.SelectedRoadNode;
+                } else if (DragFrom != null) {
+                    //Object is held
                     var dragFrom = DragFrom.Value;
                     var delta = gs - dragFrom;
-                    var selectedObject = game.MouseOverRoad?.SelectedRoadNode;
+                    var selectedObject = ObjToDrag;
                     if (selectedObject != null) {
                         var pos = selectedObject.Position.Value;
                         pos.Position += delta;
@@ -310,6 +314,7 @@ namespace TranSimCS.Menus.InGame {
                 }
                 DragFrom = gs;
             } else {
+                ObjToDrag = null;
                 DragFrom = null;
             }
         }
