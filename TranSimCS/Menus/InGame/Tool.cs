@@ -213,7 +213,7 @@ namespace TranSimCS.Menus.InGame {
                     var isSameDirection = menu.CheckSameDirection.Checked;
                     SegmentAlreadyExists = null;
                     var groundPlane = new Plane(0, 1, 0, -0.1f);
-                    endLeftPos = Geometry.IntersectRayPlane(menu.MouseRay, groundPlane);
+                    endLeftPos = menu.GroundSelection;
 
                     if (isSameDirection) {
                         endingTangent = startingTangent;
@@ -268,34 +268,51 @@ namespace TranSimCS.Menus.InGame {
 
         string ITool.Description => "";
 
-        RoadNode RoadNode { get; set; }
+        public Vector3? DragFrom { get; private set; }
 
         void ITool.Draw(GameTime gameTime) {
-            throw new NotImplementedException();
+            //unused
         }
 
         void ITool.Draw2D(GameTime gameTime) {
-            throw new NotImplementedException();
+            //unused
         }
 
         void ITool.OnClick(MouseButton button) {
-            throw new NotImplementedException();
+            //unused
         }
 
         void ITool.OnKeyDown(Keys key) {
-            throw new NotImplementedException();
+            //unused
         }
 
         void ITool.OnKeyUp(Keys key) {
-            throw new NotImplementedException();
+            //unused
         }
 
         void ITool.OnRelease(MouseButton button) {
-            throw new NotImplementedException();
+            //unused
         }
 
         void ITool.Update(GameTime gameTime) {
-            throw new NotImplementedException();
+            var gs = game.GroundSelection;
+            var gsOld = game.GroundSelectionOld;
+            if (game.Game.MouseState.LeftButton == ButtonState.Pressed) {
+                if(DragFrom == null) {
+                    DragFrom = gs;
+                } else {
+                    var dragFrom = DragFrom.Value;
+                    var delta = gs - dragFrom;
+                    var selectedObject = game.MouseOverRoad?.SelectedRoadNode;
+                    if (selectedObject != null) {
+                        var pos = selectedObject.Position.Value;
+                        pos.Position += delta;
+                        selectedObject.Position.Value = pos;
+                    }
+                }
+            } else {
+                DragFrom = null;
+            }
         }
     }
 

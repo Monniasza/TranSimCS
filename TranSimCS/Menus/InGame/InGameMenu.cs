@@ -30,13 +30,15 @@ namespace TranSimCS.Menus.InGame {
         //Inputs      
         public RoadSelection? MouseOverRoad { get; set; } = null; // Store the selected road selection
         public object SelectedObject;
-        public Vector3 GroundSelection { get {
-                var groundPlane = new Plane(0, 1, 0, -0.1f);
-                return Geometry.IntersectRayPlane(MouseRay, groundPlane);  
-            }
+        public Vector3 IntersectWithGround(Ray ray) {
+            var groundPlane = new Plane(0, 1, 0, -0.1f);
+            return Geometry.IntersectRayPlane(ray, groundPlane);
         }
+        public Vector3 GroundSelection => IntersectWithGround(MouseRay);
+        public Vector3 GroundSelectionOld => IntersectWithGround(MouseRayOld);
 
         public Ray MouseRay { get; private set; } // Ray from the mouse position in the world
+        public Ray MouseRayOld { get; private set; } // Ray from the mouse position in the world
         public Camera camera = new Camera(new Vector3(0, 0, 0), 64, 0, 0.2f); // Initialize the camera
         public float MotionSpeed = 1f; // Speed of camera movement
         public float RotationSpeed = 1f; // Speed of camera rotation
@@ -108,6 +110,7 @@ namespace TranSimCS.Menus.InGame {
             SettingsPanel.AddChild(CheckNodes);
             SettingsPanel.AddChild(CheckSegments);
             SettingsPanel.AddChild(CheckSameDirection);
+            SettingsPanel.AddChild(CheckAddLanes);
 
             configurator = new RoadConfigurator(this, roadProperty, MLEM.Ui.Anchor.Center, new(0.5f, 0.5f));
 
@@ -116,6 +119,7 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("addRoadTool", new RoadCreationTool(this));
             SetUpToolPictureButton("addNodeTool", new AddNodeTool(this));
             SetUpToolPictureButton("eyedropper", new PickerTool(this));
+            SetUpToolPictureButton("moveTool", new MoveTool(this));
         }
         private Image.TextureCallback CreateTextureCallback(Texture2D texture2D) {
             return (_) => new MLEM.Textures.TextureRegion(texture2D);
@@ -153,6 +157,7 @@ namespace TranSimCS.Menus.InGame {
             Vector3 nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), effect.Projection, effect.View, effect.World);
             Vector3 farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), effect.Projection, effect.View, effect.World);
             Ray ray = new(nearPoint, Vector3.Normalize(farPoint - nearPoint));
+            MouseRayOld = MouseRay;
             MouseRay = ray; // Store the ray for later use
 
             //Reset the selected lane tag and position
