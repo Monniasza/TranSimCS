@@ -35,7 +35,9 @@ namespace TranSimCS.Roads {
         }
     }
 
-    public class RoadNode: Obj {
+    public class RoadNode: Obj, IPosition {
+
+        public Property<ObjPos> PositionProp { get; private set; }
 
         //Example azimuth values
         public const int AZIMUTH_NORTH = 0; // 0 degrees
@@ -106,13 +108,13 @@ namespace TranSimCS.Roads {
         public RoadNode(World world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) :
             this(world, name, new ObjPos(position, azimuth, inclination, tilt)) { }
         public RoadNode(World world, string name, ObjPos positionData) {
+            PositionProp = new(ObjPos.Zero, "Position", this);
             Name = name;
-            Position.Value = positionData;
+            PositionProp.Value = positionData;
             World = world;
             RearEnd = new RoadNodeEnd(NodeEnd.Backward, this);
             FrontEnd = new RoadNodeEnd(NodeEnd.Forward, this);
-            Position.ValueChanged += (sender, e) => InvalidateMeshes();
-            //Parent = world;
+            PositionProp.ValueChanged += (sender, e) => InvalidateMeshes();
         }
     }
 }

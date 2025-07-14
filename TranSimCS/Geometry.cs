@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Roads;
+using TranSimCS.Worlds;
 
 namespace TranSimCS
 {
@@ -41,8 +42,8 @@ namespace TranSimCS
         public static LineEnd calcLineEnd(RoadNodeEnd node, float offset)
             => calcLineEnd(node.Node, offset, node.End);
 
-        public static LineEnd calcLineEnd(RoadNode node, float offset, NodeEnd end) {
-            Transform3 nodeTransform = node.Position.Value.CalcReferenceFrame();
+        public static LineEnd calcLineEnd(IPosition node, float offset, NodeEnd end) {
+            Transform3 nodeTransform = node.PositionData.CalcReferenceFrame();
             Vector3 nodePosition = nodeTransform.O;
             Vector3 tangential = nodeTransform.Z;
             Vector3 normal = nodeTransform.Y;

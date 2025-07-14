@@ -86,11 +86,11 @@ namespace TranSimCS.Worlds
         }
         private void HandleAddRoadNode(RoadNode node) {
             // Handle the addition of a new road node
-            node.Position.ValueChanged += RoadNodePositionChanged; // Subscribe to changes in the road node position
+            node.PositionProp.ValueChanged += RoadNodePositionChanged; // Subscribe to changes in the road node position
         }
         private void HandleRemoveRoadNode(RoadNode node) {
             // Handle the removal of a road node
-            node.Position.ValueChanged -= RoadNodePositionChanged; // Unsubscribe from changes in the road node position
+            node.PositionProp.ValueChanged -= RoadNodePositionChanged; // Unsubscribe from changes in the road node position
             foreach (var segment in node.Connections) {
                 segment.InvalidateMesh(); // Invalidate the mesh of the segment if the node is removed
                 RoadSegments.Remove(segment); // Remove the segment from the road segments collection

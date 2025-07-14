@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Iesi.Collections.Generic;
+using Microsoft.Xna.Framework;
 
 namespace TranSimCS.Worlds {
     /// <summary>
@@ -13,10 +14,7 @@ namespace TranSimCS.Worlds {
     public abstract class Obj: INotifyPropertyChanged {
         //PROPERTIES
         public Guid Guid { get; init; } = Guid.NewGuid();
-        public readonly Property<ObjPos> Position;
-        public Obj() {
-            Position = new(ObjPos.Zero, "Position", this);
-        }
+        public Obj() {}
         public void FirePropertyEvent(object sender, PropertyChangedEventArgs eventArgs){
             PropertyChanged?.Invoke(sender, eventArgs);
         }
@@ -66,5 +64,27 @@ namespace TranSimCS.Worlds {
 
         //ABSTRACT METHODS
         protected abstract void GenerateMesh(Mesh mesh);
+    }
+
+    //Component-interfaces for objects
+    public interface IPosition: IDraggableObj {
+        public Property<ObjPos> PositionProp { get; }
+        public ObjPos PositionData { get => PositionProp.Value; set => PositionProp.Value = value; }
+
+        void IDraggableObj.Drag(Vector3 vector) {
+            var posdata = PositionData;
+            posdata.Position += vector;
+            PositionData = posdata;
+        }
+    }
+    public interface IDraggableObj {
+        /// <summary>
+        /// Moves the object by the specified amount
+        /// </summary>
+        /// <param name="vector">amount to move</param>
+        public void Drag(Vector3 vector);
+    }
+    public class SimpleDraggable: IPosition {
+        public Property<ObjPos> PositionProp { get; } = new Property<ObjPos>(ObjPos.Zero, "pos", null);
     }
 }

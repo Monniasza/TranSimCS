@@ -226,7 +226,7 @@ namespace TranSimCS.Menus.InGame {
 
                     Vector3 endingLateral = new(endingTangent.Z, endingTangent.Y, -endingTangent.X);
                     endRightPos = endLeftPos + (endingLateral * node.Value.lane.Width);
-                    var tilt = node.Value.lane.RoadNode.Position.Value.Tilt;
+                    var tilt = node.Value.lane.RoadNode.PositionProp.Value.Tilt;
                     //Calculate the NodePosition
                     NewNodePosition = ObjPos.FromPosTangentTilt(endLeftPos, endingTangent, tilt);
                 } else {
@@ -269,7 +269,7 @@ namespace TranSimCS.Menus.InGame {
         string ITool.Description => "Drag the object with the left mouse button to move it.";
 
         public Vector3? DragFrom { get; private set; }
-        public Obj ObjToDrag { get; private set; }
+        public IDraggableObj ObjToDrag { get; private set; }
 
         void ITool.Draw(GameTime gameTime) {
             //unused
@@ -305,12 +305,7 @@ namespace TranSimCS.Menus.InGame {
                     //Object is held
                     var dragFrom = DragFrom.Value;
                     var delta = gs - dragFrom;
-                    var selectedObject = ObjToDrag;
-                    if (selectedObject != null) {
-                        var pos = selectedObject.Position.Value;
-                        pos.Position += delta;
-                        selectedObject.Position.Value = pos;
-                    }
+                    ObjToDrag?.Drag(delta);
                 }
                 DragFrom = gs;
             } else {
@@ -432,7 +427,7 @@ namespace TranSimCS.Menus.InGame {
                 //Ready to place: selected reference or newly created node
                 var n = NewlyCreatedNode ?? new RoadNode(menu.world, "", PrePosition);
                 Generator.GenerateLanes(laneCount, n);
-                n.Position.Value = PrePosition;
+                n.PositionProp.Value = PrePosition;
                 menu.world.RoadNodes.Add(n);
                 NewlyCreatedNode = null;
             }
@@ -454,7 +449,7 @@ namespace TranSimCS.Menus.InGame {
             var selectedPosition = menu.GroundSelection;
             if (NewlyCreatedNode != null) {
                 //Orient the node towards the mouse
-                var pp = NewlyCreatedNode.Position.Value;
+                var pp = NewlyCreatedNode.PositionProp.Value;
                 var orientationVector = selectedPosition - pp.Position;
                 var yaw = MathF.Atan2(orientationVector.X, orientationVector.Z);
                 pp.Tilt = 0;
@@ -463,7 +458,7 @@ namespace TranSimCS.Menus.InGame {
                 PrePosition = pp;
             } else {
 
-                var pp = Reference?.Position?.Value ?? ObjPos.Zero;
+                var pp = Reference?.PositionProp?.Value ?? ObjPos.Zero;
                 pp.Position = selectedPosition;
                 PrePosition = pp;
             }
