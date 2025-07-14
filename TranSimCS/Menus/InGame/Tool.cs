@@ -300,7 +300,9 @@ namespace TranSimCS.Menus.InGame {
             if (game.Game.MouseState.LeftButton == ButtonState.Pressed) {
                 if(game.Game.MouseStateOld.LeftButton == ButtonState.Released) {
                     //Object newly clicked
-                    ObjToDrag = game.MouseOverRoad?.SelectedRoadNode;
+                    //ObjToDrag = game.MouseOverRoad?.SelectedRoadNode;
+                    var candidate = game.SelectedObject;
+                    if (candidate is IDraggableObj drag) ObjToDrag = drag;
                 } else if (DragFrom != null) {
                     //Object is held
                     var dragFrom = DragFrom.Value;

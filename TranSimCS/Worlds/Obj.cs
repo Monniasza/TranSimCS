@@ -84,7 +84,4 @@ namespace TranSimCS.Worlds {
         /// <param name="vector">amount to move</param>
         public void Drag(Vector3 vector);
     }
-    public class SimpleDraggable: IPosition {
-        public Property<ObjPos> PositionProp { get; } = new Property<ObjPos>(ObjPos.Zero, "pos", null);
-    }
 }

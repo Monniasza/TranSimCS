@@ -15,7 +15,7 @@ namespace TranSimCS.Roads {
         Forward, Backward
     }
 
-    public class RoadNodeEnd {
+    public class RoadNodeEnd: IPosition {
         //Constructor
         public readonly NodeEnd End;
         public readonly RoadNode Node;
@@ -29,6 +29,8 @@ namespace TranSimCS.Roads {
         //Indexing component for the road node, maintained by the World class
         internal ISet<RoadStrip> connections = new HashSet<RoadStrip>(); // Connections to other road segments
         public ISet<RoadStrip> Connections => new ReadOnlySet<RoadStrip>(connections); // Expose the connections set
+
+        public Property<ObjPos> PositionProp => Node.PositionProp;
 
         public LaneEnd GetLaneEnd(int x) {
             return new LaneEnd(End, Node.Lanes[x]);

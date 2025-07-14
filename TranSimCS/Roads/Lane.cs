@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Iesi.Collections.Generic;
 using Microsoft.Xna.Framework;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads {
     public struct LaneSpec {
@@ -36,7 +37,10 @@ namespace TranSimCS.Roads {
         public static LaneSpec Platform => new(Color.LightGoldenrodYellow, VehicleTypes.Pedestrian, 3, 10, LaneFlags.Platform);
     }
 
-    public struct LaneEnd(NodeEnd End, Lane Lane) : IEquatable<LaneEnd> {
+    public struct LaneEnd(NodeEnd End, Lane Lane) : IEquatable<LaneEnd>, IDraggableObj {
+        //DRAGGING
+        public void Drag(Vector3 vector) => lane.Drag(vector);
+
         public NodeEnd end = End;
         public Lane lane = Lane;
 
@@ -66,7 +70,7 @@ namespace TranSimCS.Roads {
         }
     }
 
-    public class Lane(RoadNode node) {
+    public class Lane(RoadNode node): IDraggableObj {
         public RoadNode RoadNode => node; // Reference to the road node this lane belongs to
         private LaneSpec _spec;
         /// <summary>
@@ -96,9 +100,11 @@ namespace TranSimCS.Roads {
             return end.GetConditional(Rear, Front);
         }
 
-
         //Indexing
         internal ISet<LaneStrip> connections = new HashSet<LaneStrip>(); // Set of lane strips that this lane is connected to
         public ISet<LaneStrip> Connections => new ReadOnlySet<LaneStrip>(connections); // Read-only set of lane strips that this lane is connected to
+
+        //Dragging
+        public void Drag(Vector3 vector) => ((IDraggableObj)RoadNode).Drag(vector);
     }
 }

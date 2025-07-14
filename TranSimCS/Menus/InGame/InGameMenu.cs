@@ -183,8 +183,8 @@ namespace TranSimCS.Menus.InGame {
                 AddLanesMesh = null;
             }
 
-                //Selection logic
-                float distance = float.MaxValue;
+            //Selection logic
+            float distance = float.MaxValue;
             object selection = null;
             if (!IsMouseOverUI) selection = MeshUtil.RayIntersectMeshes(meshes, ray, out distance);
             SelectedObject = selection;
@@ -194,6 +194,7 @@ namespace TranSimCS.Menus.InGame {
             if(selection is LaneEnd lane) {
                 MouseOverRoad = new RoadSelection(lane, distance, ray);
             }
+            if (MouseOverRoad != null) SelectedObject = MouseOverRoad.hitObject;
 
             //Handle scroll wheel input for zooming in and out
             if (Game.MouseState.ScrollWheelValue != scrollWheelValue) {

@@ -3,9 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads {
-    public class LaneStrip : IEquatable<LaneStrip> {
+    public struct LaneStripEnd(LaneStrip strip, SegmentHalf half) : IDraggableObj {
+        public LaneStrip strip = strip;
+        public SegmentHalf half = half;
+
+        public void Drag(Vector3 vector) {
+            strip.GetHalf(half).Drag(vector);
+        }
+    }
+
+    public class LaneStrip : IEquatable<LaneStrip>, IDraggableObj {
         private LaneEnd startLane;
         private LaneEnd endLane;
         public readonly RoadStrip road;
@@ -87,6 +98,13 @@ namespace TranSimCS.Roads {
             road.RemoveLaneStrip(this);
         }
 
+        //Dragging
+        void IDraggableObj.Drag(Vector3 vector) {
+            StartLane.Drag(vector);
+            EndLane.Drag(vector);
+        }
+
+
         public override bool Equals(object obj) {
             return Equals(obj as LaneStrip);
         }
@@ -106,6 +124,8 @@ namespace TranSimCS.Roads {
         public bool IsBetween(LaneEnd start, LaneEnd end) {
             return (start == StartLane && end == EndLane) || (start == EndLane && end == StartLane);
         }
+
+        
 
         public static bool operator ==(LaneStrip left, LaneStrip right) {
             return EqualityComparer<LaneStrip>.Default.Equals(left, right);
