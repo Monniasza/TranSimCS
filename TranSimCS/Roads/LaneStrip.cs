@@ -37,7 +37,11 @@ namespace TranSimCS.Roads {
                 if(n != 0) _spec.Width = width / n;
                 return _spec;
             }
-            set => _spec = value;
+            set {
+                if (_spec == value) return;
+                InvalidateMesh();
+                _spec = value;
+            }
         }
         public LaneEnd StartLane {
             get => startLane;

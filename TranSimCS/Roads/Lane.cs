@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads {
-    public struct LaneSpec {
+    public struct LaneSpec : IEquatable<LaneSpec> {
         public Color Color { get; set; } // Color of the lane
         public VehicleTypes VehicleTypes { get; set; } // Types of vehicles allowed in the lane
         public LaneFlags Flags { get; set; } // Flags for additional lane properties
@@ -35,6 +35,30 @@ namespace TranSimCS.Roads {
         public static LaneSpec None => new(Color.Transparent, VehicleTypes.None, 3, 0);
         public static LaneSpec All => new(Color.White, VehicleTypes.All, 3, 100); // All vehicle types allowed
         public static LaneSpec Platform => new(Color.LightGoldenrodYellow, VehicleTypes.Pedestrian, 3, 10, LaneFlags.Platform);
+
+        public override bool Equals(object obj) {
+            return obj is LaneSpec spec && Equals(spec);
+        }
+
+        public bool Equals(LaneSpec other) {
+            return Color.Equals(other.Color) &&
+                   VehicleTypes == other.VehicleTypes &&
+                   Flags == other.Flags &&
+                   Width == other.Width &&
+                   SpeedLimit == other.SpeedLimit;
+        }
+
+        public override int GetHashCode() {
+            return HashCode.Combine(Color, VehicleTypes, Flags, Width, SpeedLimit);
+        }
+
+        public static bool operator ==(LaneSpec left, LaneSpec right) {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(LaneSpec left, LaneSpec right) {
+            return !(left == right);
+        }
     }
 
     public struct LaneEnd(NodeEnd End, Lane Lane) : IEquatable<LaneEnd>, IDraggableObj {
@@ -80,7 +104,13 @@ namespace TranSimCS.Roads {
         public LaneSpec Spec { get {
             _spec.Width = Width;
             return _spec;
-        } set => _spec = value; } 
+        } set {
+            if (value == _spec) return;
+            _spec = value;
+            RoadNode.InvalidateMesh();
+            foreach(var connection in Connections) 
+                connection.InvalidateMesh();
+        }} 
         public float LeftPosition { get; set; } // Left position of the lane relative to the road node
         public float RightPosition { get; set; } // Right position of the lane relative to the road node
         public int Index { get; internal set; } // Index of the lane in the road node's lane list

@@ -358,9 +358,6 @@ namespace TranSimCS.Menus.InGame {
         }
     }
 
-    /*
-     * 
-     */
     public class AddNodeTool(InGameMenu menu) : ITool {
         string ITool.Name => "Add road nodes";
 
@@ -464,6 +461,47 @@ namespace TranSimCS.Menus.InGame {
                 pp.Position = selectedPosition;
                 PrePosition = pp;
             }
+        }
+    }
+
+    public class PaintTool(InGameMenu game) : ITool {
+        string ITool.Name => "Paint lane specs";
+
+        string ITool.Description => "Click on roads to set their lane specs";
+
+        void ITool.Draw(GameTime gameTime) {
+            //unused
+        }
+
+        void ITool.Draw2D(GameTime gameTime) {
+            //unused
+        }
+
+        void ITool.OnClick(MouseButton button) {
+            if(button == MouseButton.Left) {
+                var laneSpec = game.roadProperty.Value;
+                var selection = game.MouseOverRoad;
+                var lane = selection?.SelectedLane;
+                if(lane != null) lane.Spec = laneSpec;
+                var strip = selection?.SelectedLaneStrip;
+                if (strip != null) strip.Spec = laneSpec;
+            }
+        }
+
+        void ITool.OnKeyDown(Keys key) {
+            //unused
+        }
+
+        void ITool.OnKeyUp(Keys key) {
+            //unused
+        }
+
+        void ITool.OnRelease(MouseButton button) {
+            //unused
+        }
+
+        void ITool.Update(GameTime gameTime) {
+            //unused
         }
     }
 }
