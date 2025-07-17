@@ -174,20 +174,24 @@ namespace TranSimCS.Menus.InGame {
                 var node0 = node.Value;
                 var lane0 = node0.lane;
 
-                //Initial placeholders for new values
-                var endLeftPos = Vector3.Zero;
-                var endRightPos = Vector3.Zero;
-                var endingTangent = Vector3.Zero;
-
-                var startingPosition0 = Geometry.calcLineEnd(node0.RoadNodeEnd, lane0.LeftPosition);
+                var startingPosition0 = Geometry.calcLineEnd(node0.RoadNodeEnd, lane0.MiddlePosition);
                 var startingTangent = startingPosition0.Tangential;
-                var startLeftPos = startingPosition0.Position;
-                var startRightPos = startLeftPos + (startingPosition0.Lateral * lane0.Width);
-                if (node0.end == NodeEnd.Backward) {
-                    var shift = lane0.Width * startingPosition0.Lateral;
-                    startLeftPos -= shift;
-                    startRightPos -= shift;
+                var startingLateral = startingPosition0.Lateral;
+                var startPos = startingPosition0.Position;
+                var startWidth = lane0.Width;
+
+                //Initial placeholders for new values
+                var endPos = Vector3.Zero;
+                var endTangent = Vector3.Zero;
+                var endLateral = Vector3.Zero;
+                var endWidth = startWidth;
+
+                if (node0.end == NodeEnd.Forward) {
+                    
                 }
+
+                //var shift = lane0.Width * startingPosition0.Lateral;
+                //startPos -= shift;
 
                 //Calculate the new values
                 var mouseOverLaneEnd = GetLaneEnd();
@@ -196,17 +200,12 @@ namespace TranSimCS.Menus.InGame {
                 if (menu.SelectedObject is AddLaneSelection als) {
                     //The user wants to create a new lane
                     var mouseOverNodeEnd = als.nodeEnd;
-                    var range = als.CalculateOffsets(menu.roadProperty.Value.Width);
-                    var lend = Geometry.calcLineEnd(mouseOverNodeEnd, range.X);
-                    var rend = Geometry.calcLineEnd(mouseOverNodeEnd, range.Y);
-                    endingTangent = lend.Tangential;
-                    endLeftPos = lend.Position;
-                    endRightPos = rend.Position;
-                    if (node0.end == NodeEnd.Backward) {
-                        var tmp = endLeftPos;
-                        endLeftPos = endRightPos;
-                        endRightPos = tmp;
-                    }
+                    endWidth = menu.roadProperty.Value.Width;
+                    var range = als.CalculateOffset(endWidth/2);
+                    var end = Geometry.calcLineEnd(mouseOverNodeEnd, range);
+                    endTangent = end.Tangential;
+                    endPos = end.Position;
+                    endLateral = end.Lateral;
                     SegmentAlreadyExists = null;
                     NewNodePosition = null;
                 } else if (mouseOverLaneEnd == null) {
@@ -214,33 +213,32 @@ namespace TranSimCS.Menus.InGame {
                     var isSameDirection = menu.CheckSameDirection.Checked;
                     SegmentAlreadyExists = null;
                     var groundPlane = new Plane(0, 1, 0, -0.1f);
-                    endLeftPos = menu.GroundSelection;
+                    endPos = menu.GroundSelection;
 
                     if (isSameDirection) {
-                        endingTangent = startingTangent;
+                        endTangent = startingTangent;
+                        endLateral = startingLateral;
                     } else {
-                        var reflectionVector = endLeftPos - startLeftPos;
+                        var reflectionVector = endPos - startPos;
                         reflectionVector = new(reflectionVector.Z, reflectionVector.Y, -reflectionVector.X);
                         reflectionVector.Normalize();
-                        endingTangent = Geometry.ReflectVectorByNormal(startingTangent, reflectionVector);
+                        endTangent = Geometry.ReflectVectorByNormal(startingTangent, reflectionVector);
+                        endLateral = -Geometry.ReflectVectorByNormal(startingLateral, reflectionVector);
                     }
 
-                    Vector3 endingLateral = new(endingTangent.Z, endingTangent.Y, -endingTangent.X);
-                    endRightPos = endLeftPos + (endingLateral * node.Value.lane.Width);
+                    Vector3 endingLateral = new(endTangent.Z, endTangent.Y, -endTangent.X);
+                    var endLeftPos = endPos - (endingLateral * node.Value.lane.Width / 2);
                     var tilt = node.Value.lane.RoadNode.PositionProp.Value.Tilt;
                     //Calculate the NodePosition
-                    NewNodePosition = ObjPos.FromPosTangentTilt(endLeftPos, endingTangent, tilt);
+                    NewNodePosition = ObjPos.FromPosTangentTilt(endLeftPos, endTangent, tilt);
                 } else {
                     //Take an existing end
                     var mouseOverNodeEnd = mouseOverLaneEnd.Value.RoadNodeEnd;
-                    var lend = Geometry.calcLineEnd(mouseOverNodeEnd, mouseOverLane.LeftPosition);
-                    var rend = Geometry.calcLineEnd(mouseOverNodeEnd, mouseOverLane.RightPosition);
-                    endingTangent = lend.Tangential;
-                    endLeftPos = lend.Position;
-                    endRightPos = rend.Position;
-                    if (node0.end == NodeEnd.Backward) {
-                        (endRightPos, endLeftPos) = (endLeftPos, endRightPos);
-                    }
+                    var end = Geometry.calcLineEnd(mouseOverNodeEnd, mouseOverLane.MiddlePosition);
+                    endTangent = end.Tangential;
+                    endLateral = end.Lateral;
+                    endPos = end.Position;
+                    endWidth = mouseOverLane.Width;
                     SegmentAlreadyExists = menu.world.FindLaneStrip(node.Value, mouseOverLaneEnd.Value);
                     NewNodePosition = null;
                 }
@@ -249,8 +247,10 @@ namespace TranSimCS.Menus.InGame {
                 Color previewColor = lane0.Spec.Color;
                 previewColor.A = 100;
                 if (SegmentAlreadyExists != null) previewColor = Color.Red;
-                Bezier3 lbound = Geometry.GenerateJoinSpline(startLeftPos, endLeftPos, startingTangent, endingTangent) + offset;
-                Bezier3 rbound = Geometry.GenerateJoinSpline(startRightPos, endRightPos, startingTangent, endingTangent) + offset;
+                var startDiff = (startingLateral * startWidth) / 2;
+                var endDiff = (endLateral * endWidth) / 2;
+                Bezier3 lbound = Geometry.GenerateJoinSpline(startPos - startDiff, endPos - endDiff, startingTangent, endTangent) + offset;
+                Bezier3 rbound = Geometry.GenerateJoinSpline(startPos + startDiff, endPos + endDiff, startingTangent, endTangent) + offset;
                 IRenderBin renderBin = menu.renderHelper.GetOrCreateRenderBin(InGameMenu.roadTexture);
                 RoadRenderer.DrawBezierStrip(lbound, rbound, renderBin, previewColor);
             }

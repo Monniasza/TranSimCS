@@ -23,6 +23,10 @@ namespace TranSimCS.Menus.InGame {
                 return new(position - width, position);
             return new(position, position + width);
         }
+        public float CalculateOffset(float width) {
+            if(side < 0) return position - width;
+            return position + width;
+        }
         /// <summary>
         /// Creates the new lane for this add-lane button. This becomes invalid after addition for new lane creations.
         /// The newly created lane is already added to the node
