@@ -23,7 +23,7 @@ namespace TranSimCS.Menus.InGame {
         public void Update(GameTime gameTime);
         public void Draw(GameTime gameTime);
         public void Draw2D(GameTime gameTime);
-        public void AddSelectors(Action<Mesh> addAction) { }
+        public void AddSelectors(MultiMesh addTo) { }
     }
 
     public class RoadDemolitionTool(InGameMenu game) : ITool {
@@ -186,13 +186,6 @@ namespace TranSimCS.Menus.InGame {
                 var endLateral = Vector3.Zero;
                 var endWidth = startWidth;
 
-                if (node0.end == NodeEnd.Forward) {
-                    
-                }
-
-                //var shift = lane0.Width * startingPosition0.Lateral;
-                //startPos -= shift;
-
                 //Calculate the new values
                 var mouseOverLaneEnd = GetLaneEnd();
                 var mouseOverLane = mouseOverLaneEnd?.lane;
@@ -212,7 +205,6 @@ namespace TranSimCS.Menus.InGame {
                     //Create a synthetic end
                     var isSameDirection = menu.CheckSameDirection.Checked;
                     SegmentAlreadyExists = null;
-                    var groundPlane = new Plane(0, 1, 0, -0.1f);
                     endPos = menu.GroundSelection;
 
                     if (isSameDirection) {
@@ -260,8 +252,9 @@ namespace TranSimCS.Menus.InGame {
             //unused
         }
 
-        void ITool.AddSelectors(Action<Mesh> addAction) {
-            
+        void ITool.AddSelectors(MultiMesh addTo) {
+            var renderBin = addTo.GetOrCreateRenderBin(InGameMenu.addTexture);
+            SelectionUtils.AddAddLaneSelectors(renderBin, menu);
         }
     }
 

@@ -52,19 +52,17 @@ namespace TranSimCS.Menus.InGame {
         public Checkbox CheckNodes { get; private set; }
         public Checkbox CheckSegments { get; private set; }
         public Checkbox CheckSameDirection { get; private set; }
-        public Checkbox CheckAddLanes { get; private set; }
         public Property<LaneSpec> roadProperty { get; private set; }
         public RoadConfigurator configurator { get; private set; }
 
         //In-world UI
-        public Mesh AddLanesMesh { get; private set; }
+        public MultiMesh SelectorObjects { get; private set; }
 
         //Colors
         private Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
         private Color laneHighlightColor2 = new Color(0, 192, 255, 100); //Color for highlighting the selected road half
         private Color roadSegmentHighlightColor = new Color(0, 128, 255, 100); //Color for highlighting selected road segments
         
-
         internal InGameMenu(Game1 game): base(game) {
             roadProperty = new Property<LaneSpec>(LaneSpec.Default, "lane spec");
         }
@@ -93,6 +91,9 @@ namespace TranSimCS.Menus.InGame {
             grassTexture = Game.Content.Load<Texture2D>("seamlessTextures2/grass1");
             addTexture = Game.Content.Load<Texture2D>("addTex");
 
+            //Set up meshes
+            SelectorObjects = new MultiMesh();
+
             //Set up the UI from below
             RootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 120));
             UiSystem.Add("lower", RootPanel);
@@ -106,11 +107,9 @@ namespace TranSimCS.Menus.InGame {
             CheckNodes = new Checkbox(MLEM.Ui.Anchor.AutoInlineBottom, new(0.25f, 20), "Select nodes", true);
             CheckSegments = new Checkbox(MLEM.Ui.Anchor.AutoInlineBottom, new(0.25f, 20), "Select segments", true);
             CheckSameDirection = new Checkbox(MLEM.Ui.Anchor.AutoInlineBottom, new(0.25f, 20), "New node in same direction", true);
-            CheckAddLanes = new Checkbox(MLEM.Ui.Anchor.AutoInlineBottom, new(0.25f, 20), "Select lane additions", true);
             SettingsPanel.AddChild(CheckNodes);
             SettingsPanel.AddChild(CheckSegments);
             SettingsPanel.AddChild(CheckSameDirection);
-            SettingsPanel.AddChild(CheckAddLanes);
 
             configurator = new RoadConfigurator(this, roadProperty, MLEM.Ui.Anchor.Center, new(0.5f, 0.5f));
 
@@ -173,16 +172,12 @@ namespace TranSimCS.Menus.InGame {
                 foreach (var node in world.RoadNodes)
                     meshes.Add(node.GetMesh());
             }
-            if (CheckAddLanes.Checked) {
-                var addLanesMesh = new Mesh();
-                foreach(var node in world.RoadNodes) {
-                    RoadRenderer.CreateAddLanes(node, addLanesMesh, roadProperty.Value.Width);
-                }
-                meshes.Add(addLanesMesh);
-                AddLanesMesh = addLanesMesh;
-            } else {
-                AddLanesMesh = null;
-            }
+
+            //Add tool selectors
+            SelectorObjects.Clear();
+            Tool?.AddSelectors(SelectorObjects);
+            foreach(var mesh in SelectorObjects.RenderBins.Values) 
+                meshes.Add(mesh); 
 
             //Selection logic
             float distance = float.MaxValue;
@@ -298,10 +293,12 @@ namespace TranSimCS.Menus.InGame {
                 RoadRenderer.RenderRoadSegment(roadSegment, renderBin, 0.001f); // Render each road segment with a slight vertical offset
             }
 
-            //If requested, draw the road node selection meshes
-            if (CheckNodes.Checked)
-                foreach (var node in world.RoadNodes)
-                    renderBin.DrawModel(node.GetMesh());
+            //Draw road node meshes
+            if(CheckNodes.Checked) foreach(var roadNode in world.RoadNodes)
+                renderBin.DrawModel(roadNode.GetMesh());
+
+            //Draw the tool mesh
+            renderHelper.AddAll(SelectorObjects);
 
             //If a road segment is selected, draw the selection
             var roadSelection = MouseOverRoad;
@@ -335,11 +332,8 @@ namespace TranSimCS.Menus.InGame {
                 renderBin.DrawQuad(nodeQuad);
             }
 
-            //If requested, draw the lane addition meshes
-            IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBin(addTexture);
-            if (AddLanesMesh != null) plusRenderBin.DrawModel(AddLanesMesh);
-
             //If the add lane button is selected, draw it
+            IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBin(addTexture);
             if (SelectedObject is AddLaneSelection selection) 
                 RoadRenderer.CreateAddLane(selection, plusRenderBin, roadProperty.Value.Width, roadSegmentHighlightColor, 0.002f);
             

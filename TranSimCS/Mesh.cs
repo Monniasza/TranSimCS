@@ -25,6 +25,9 @@ namespace TranSimCS {
             foreach (var renderBin in _renderBins.Values)
                 renderBin.Clear();
         }
+        public void ClearAll() {
+            _renderBins.Clear();
+        }
         public Mesh GetOrCreateRenderBin(Texture2D texture, Action<Mesh>? action) {
             if (!_renderBins.TryGetValue(texture, out var renderBin)) {
                 renderBin = new Mesh();
@@ -32,6 +35,12 @@ namespace TranSimCS {
             }
             action?.Invoke(renderBin);
             return renderBin;
+        }
+        public void AddAll(MultiMesh meshes) {
+            foreach (var kv in meshes.RenderBins) {
+                IRenderBin renderBin = GetOrCreateRenderBin(kv.Key);
+                renderBin.DrawModel(kv.Value);
+            }
         }
     }
 
