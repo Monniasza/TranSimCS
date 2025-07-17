@@ -45,7 +45,7 @@ namespace TranSimCS.Menus.InGame {
 
         void ITool.OnClick(MouseButton button) {
             RoadSelection MouseOverRoad = game.MouseOverRoad;
-            World world = game.world;
+            World world = game.World;
 
             //Demolish the selected road segment if the left mouse button is clicked
             if (button == MouseButton.Left) {
@@ -231,7 +231,7 @@ namespace TranSimCS.Menus.InGame {
                     endLateral = end.Lateral;
                     endPos = end.Position;
                     endWidth = mouseOverLane.Width;
-                    SegmentAlreadyExists = menu.world.FindLaneStrip(node.Value, mouseOverLaneEnd.Value);
+                    SegmentAlreadyExists = menu.World.FindLaneStrip(node.Value, mouseOverLaneEnd.Value);
                     NewNodePosition = null;
                 }
 
@@ -412,17 +412,17 @@ namespace TranSimCS.Menus.InGame {
                 if (selectedNode == null) {
                     //Select a position
                     var pos = new ObjPos(menu.GroundSelection, 0);
-                    NewlyCreatedNode = new RoadNode(menu.world, "", PrePosition);
+                    NewlyCreatedNode = new RoadNode(menu.World, "", PrePosition);
                 } else {
                     //Select a node
                     Reference = selectedNode;
                 }
             } else {
                 //Ready to place: selected reference or newly created node
-                var n = NewlyCreatedNode ?? new RoadNode(menu.world, "", PrePosition);
+                var n = NewlyCreatedNode ?? new RoadNode(menu.World, "", PrePosition);
                 Generator.GenerateLanes(laneCount, n);
                 n.PositionProp.Value = PrePosition;
-                menu.world.RoadNodes.Add(n);
+                menu.World.RoadNodes.Add(n);
                 NewlyCreatedNode = null;
             }
         }

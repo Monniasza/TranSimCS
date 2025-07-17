@@ -14,7 +14,7 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.Menus.InGame {
     public class InGameMenu : Menu {
-        public World world { get; private set; }
+        public World World { get; private set; }
         public ITool Tool {  get; set; }
 
         //Graphics
@@ -57,6 +57,7 @@ namespace TranSimCS.Menus.InGame {
 
         //In-world UI
         public MultiMesh SelectorObjects { get; private set; }
+        public Mesh InvisibleSelectors { get; private set; }
 
         //Colors
         private Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
@@ -68,12 +69,12 @@ namespace TranSimCS.Menus.InGame {
         }
 
         public override void Destroy() {
-            throw new NotImplementedException();
+            //unused
         }
 
         public override void LoadContent() {
-            world = new World();
-            World.SetUpExampleWorld(world);
+            World = new World();
+            World.SetUpExampleWorld(World);
 
             //Generate graphics stuff
             effect = new BasicEffect(Game.GraphicsDevice) {
@@ -143,6 +144,13 @@ namespace TranSimCS.Menus.InGame {
             KeyboardState keyboardState = Keyboard.GetState();
             float secondsElapsed = (float)time.ElapsedGameTime.TotalSeconds; // Get the elapsed time in seconds
 
+            // Unproject screen coordinates to near and far points in 3D space
+            Vector3 nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), effect.Projection, effect.View, effect.World);
+            Vector3 farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), effect.Projection, effect.View, effect.World);
+            Ray ray = new(nearPoint, Vector3.Normalize(farPoint - nearPoint));
+            MouseRayOld = MouseRay;
+            MouseRay = ray; // Store the ray for later use
+
             //Check if mouse is over UI
             IsMouseOverUI = false;
             foreach(var root in UiSystem.GetRootElements()) {
@@ -153,31 +161,23 @@ namespace TranSimCS.Menus.InGame {
                 }
             }
 
-            // Unproject screen coordinates to near and far points in 3D space
-            Vector3 nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), effect.Projection, effect.View, effect.World);
-            Vector3 farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), effect.Projection, effect.View, effect.World);
-            Ray ray = new(nearPoint, Vector3.Normalize(farPoint - nearPoint));
-            MouseRayOld = MouseRay;
-            MouseRay = ray; // Store the ray for later use
-
             //Reset the selected lane tag and position
             MouseOverRoad = null; // Reset the selected road selection
 
             //Add road node selection meshes
             var meshes = new List<IRenderBin>();
-            if(CheckSegments.Checked) ForeachLane(world.RoadSegments, (lane) => {
+            if(CheckSegments.Checked) ForeachLane(World.RoadSegments, (lane) => {
                 meshes.Add(lane.GetMesh());
             });
-            if (CheckNodes.Checked) {
-                foreach (var node in world.RoadNodes)
-                    meshes.Add(node.GetMesh());
-            }
+            if (CheckNodes.Checked) foreach (var node in World.RoadNodes)
+                meshes.Add(node.GetMesh());
 
             //Add tool selectors
             SelectorObjects.Clear();
             Tool?.AddSelectors(SelectorObjects);
             foreach(var mesh in SelectorObjects.RenderBins.Values) 
-                meshes.Add(mesh); 
+                meshes.Add(mesh);
+            meshes.Add(InvisibleSelectors);
 
             //Selection logic
             float distance = float.MaxValue;
@@ -289,12 +289,12 @@ namespace TranSimCS.Menus.InGame {
             IRenderBin renderBin = renderHelper.GetOrCreateRenderBin(roadTexture);
 
             // Draw the asphalt texture for the road
-            foreach (var roadSegment in world.RoadSegments) {
+            foreach (var roadSegment in World.RoadSegments) {
                 RoadRenderer.RenderRoadSegment(roadSegment, renderBin, 0.001f); // Render each road segment with a slight vertical offset
             }
 
             //Draw road node meshes
-            if(CheckNodes.Checked) foreach(var roadNode in world.RoadNodes)
+            if(CheckNodes.Checked) foreach(var roadNode in World.RoadNodes)
                 renderBin.DrawModel(roadNode.GetMesh());
 
             //Draw the tool mesh
