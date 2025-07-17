@@ -23,6 +23,7 @@ namespace TranSimCS.Menus.InGame {
         public void Update(GameTime gameTime);
         public void Draw(GameTime gameTime);
         public void Draw2D(GameTime gameTime);
+        public void AddSelectors(Action<Mesh> addAction) { }
     }
 
     public class RoadDemolitionTool(InGameMenu game) : ITool {
@@ -231,7 +232,6 @@ namespace TranSimCS.Menus.InGame {
                     NewNodePosition = ObjPos.FromPosTangentTilt(endLeftPos, endingTangent, tilt);
                 } else {
                     //Take an existing end
-                    var mouseOverNode = mouseOverLane.RoadNode;
                     var mouseOverNodeEnd = mouseOverLaneEnd.Value.RoadNodeEnd;
                     var lend = Geometry.calcLineEnd(mouseOverNodeEnd, mouseOverLane.LeftPosition);
                     var rend = Geometry.calcLineEnd(mouseOverNodeEnd, mouseOverLane.RightPosition);
@@ -239,9 +239,7 @@ namespace TranSimCS.Menus.InGame {
                     endLeftPos = lend.Position;
                     endRightPos = rend.Position;
                     if (node0.end == NodeEnd.Backward) {
-                        var tmp = endLeftPos;
-                        endLeftPos = endRightPos;
-                        endRightPos = tmp;
+                        (endRightPos, endLeftPos) = (endLeftPos, endRightPos);
                     }
                     SegmentAlreadyExists = menu.world.FindLaneStrip(node.Value, mouseOverLaneEnd.Value);
                     NewNodePosition = null;
@@ -260,6 +258,10 @@ namespace TranSimCS.Menus.InGame {
 
         public void Draw2D(GameTime gameTime) {
             //unused
+        }
+
+        void ITool.AddSelectors(Action<Mesh> addAction) {
+            
         }
     }
 

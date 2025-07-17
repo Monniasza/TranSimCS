@@ -292,7 +292,6 @@ namespace TranSimCS.Menus.InGame {
 
             Texture2D testTexture = Game.Content.Load<Texture2D>("test");
             IRenderBin renderBin = renderHelper.GetOrCreateRenderBin(roadTexture);
-            IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBin(addTexture);
 
             // Draw the asphalt texture for the road
             foreach (var roadSegment in world.RoadSegments) {
@@ -303,9 +302,6 @@ namespace TranSimCS.Menus.InGame {
             if (CheckNodes.Checked)
                 foreach (var node in world.RoadNodes)
                     renderBin.DrawModel(node.GetMesh());
-
-            //If requested, draw the lane addition meshes
-            if(AddLanesMesh != null) plusRenderBin.DrawModel(AddLanesMesh);
 
             //If a road segment is selected, draw the selection
             var roadSelection = MouseOverRoad;
@@ -339,11 +335,14 @@ namespace TranSimCS.Menus.InGame {
                 renderBin.DrawQuad(nodeQuad);
             }
 
-            //If the add lane button is selected, draw it
-            if(SelectedObject is AddLaneSelection selection) {
-                RoadRenderer.CreateAddLane(selection, plusRenderBin, roadProperty.Value.Width, roadSegmentHighlightColor, 0.002f);
-            }
+            //If requested, draw the lane addition meshes
+            IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBin(addTexture);
+            if (AddLanesMesh != null) plusRenderBin.DrawModel(AddLanesMesh);
 
+            //If the add lane button is selected, draw it
+            if (SelectedObject is AddLaneSelection selection) 
+                RoadRenderer.CreateAddLane(selection, plusRenderBin, roadProperty.Value.Width, roadSegmentHighlightColor, 0.002f);
+            
             //Render the ground (now just a flat plane)
             float r = 100000;
             float s = 10000;
@@ -358,14 +357,13 @@ namespace TranSimCS.Menus.InGame {
             //Render road tool
             Tool?.Draw(time);
 
-            //Red the render helper
+            //Render the render helper
             renderHelper.Render();
         }
         private void ForeachLane(ICollection<RoadStrip> segments, Action<LaneStrip> action) {
             foreach (var segment in segments)
                 foreach (var lane in segment.Lanes)
                     action(lane);
-
         }
 
         public override void Draw2D(GameTime time) {
