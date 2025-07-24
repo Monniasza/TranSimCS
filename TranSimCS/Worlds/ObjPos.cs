@@ -46,7 +46,7 @@ namespace TranSimCS.Worlds {
         }
 
         public Transform3 CalcReferenceFrame() {
-            Matrix matrix = Matrix.CreateFromYawPitchRoll(Geometry.FieldToRadians(Azimuth), Inclination, Tilt) * Matrix.CreateTranslation(Position);
+            Matrix matrix = Matrix.CreateFromYawPitchRoll(Geometry.FieldToRadians(Azimuth), -Inclination, Tilt) * Matrix.CreateTranslation(Position);
             return new Transform3(matrix);
         }
 

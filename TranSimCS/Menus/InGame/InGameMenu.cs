@@ -94,6 +94,7 @@ namespace TranSimCS.Menus.InGame {
 
             //Set up meshes
             SelectorObjects = new MultiMesh();
+            InvisibleSelectors = new Mesh();
 
             //Set up the UI from below
             RootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 120));
