@@ -253,8 +253,7 @@ namespace TranSimCS.Menus.InGame {
         }
 
         void ITool.AddSelectors(MultiMesh addTo) {
-            var renderBin = addTo.GetOrCreateRenderBin(InGameMenu.addTexture);
-            SelectionUtils.AddAddLaneSelectors(renderBin, menu);
+            SelectionUtils.AddAddLaneSelectors(menu);
         }
     }
 
