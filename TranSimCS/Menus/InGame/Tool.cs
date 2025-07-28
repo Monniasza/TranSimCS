@@ -301,7 +301,7 @@ namespace TranSimCS.Menus.InGame {
                     //Object is held
                     var dragFrom = DragFrom.Value;
                     var delta = gs - dragFrom;
-                    ObjToDrag?.Drag(delta);
+                    ObjToDrag?.Drag(delta, dragFrom);
                 }
                 DragFrom = gs;
             } else {

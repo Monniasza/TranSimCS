@@ -63,7 +63,7 @@ namespace TranSimCS.Roads {
 
     public struct LaneEnd(NodeEnd End, Lane Lane) : IEquatable<LaneEnd>, IDraggableObj {
         //DRAGGING
-        public void Drag(Vector3 vector) => lane.Drag(vector);
+        public void Drag(Vector3 vector, Vector3 dragFrom) => lane.Drag(vector, dragFrom);
 
         public NodeEnd end = End;
         public Lane lane = Lane;
@@ -135,6 +135,6 @@ namespace TranSimCS.Roads {
         public ISet<LaneStrip> Connections => new ReadOnlySet<LaneStrip>(connections); // Read-only set of lane strips that this lane is connected to
 
         //Dragging
-        public void Drag(Vector3 vector) => ((IDraggableObj)RoadNode).Drag(vector);
+        public void Drag(Vector3 vector, Vector3 dragFrom) => ((IDraggableObj)RoadNode).Drag(vector, dragFrom);
     }
 }

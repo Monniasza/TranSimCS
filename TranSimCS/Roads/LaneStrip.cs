@@ -11,8 +11,8 @@ namespace TranSimCS.Roads {
         public LaneStrip strip = strip;
         public SegmentHalf half = half;
 
-        public void Drag(Vector3 vector) {
-            strip.GetHalf(half).Drag(vector);
+        public void Drag(Vector3 vector, Vector3 dragFrom) {
+            strip.GetHalf(half).Drag(vector, dragFrom);
         }
     }
 
@@ -103,9 +103,9 @@ namespace TranSimCS.Roads {
         }
 
         //Dragging
-        void IDraggableObj.Drag(Vector3 vector) {
-            StartLane.Drag(vector);
-            EndLane.Drag(vector);
+        void IDraggableObj.Drag(Vector3 vector, Vector3 dragFrom) {
+            StartLane.Drag(vector, dragFrom);
+            EndLane.Drag(vector, dragFrom);
         }
 
 

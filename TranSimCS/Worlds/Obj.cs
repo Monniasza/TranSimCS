@@ -71,7 +71,7 @@ namespace TranSimCS.Worlds {
         public Property<ObjPos> PositionProp { get; }
         public ObjPos PositionData { get => PositionProp.Value; set => PositionProp.Value = value; }
 
-        void IDraggableObj.Drag(Vector3 vector) {
+        void IDraggableObj.Drag(Vector3 vector, Vector3 dragFrom) {
             var posdata = PositionData;
             posdata.Position += vector;
             PositionData = posdata;
@@ -82,6 +82,7 @@ namespace TranSimCS.Worlds {
         /// Moves the object by the specified amount
         /// </summary>
         /// <param name="vector">amount to move</param>
-        public void Drag(Vector3 vector);
+        /// <param name="dragFrom"></param>
+        public void Drag(Vector3 vector, Vector3 dragFrom);
     }
 }
