@@ -108,9 +108,8 @@ namespace TranSimCS.Menus.InGame {
             var segment = menu.MouseOverRoad?.SelectedLaneStrip;
             if (le == null) return null;
             var le1 = le.Value;
-            if (segment == null) le1 = le1.OppositeEnd;
             if (menu.Game.KeyboardState.IsKeyDown(Keys.LeftControl)) le1 = le1.OppositeEnd;
-            if (node == null) return le1.OppositeEnd;
+            if (node != null) return le1.OppositeEnd;
             return le1;
         }
 
@@ -141,7 +140,7 @@ namespace TranSimCS.Menus.InGame {
                     }
                     if(selectedNode != null) {
                         var segment = world.GetOrMakeRoadStrip(node.Value.RoadNodeEnd, selectedNode.Value.RoadNodeEnd);
-                        var strip = new LaneStrip(segment, node.Value, selectedNode.Value);
+                        var strip = new LaneStrip(segment, node.Value, selectedNode.Value.OppositeEnd);
                         strip.Spec = spec;
                         segment.MaybeAddLaneStrip(strip);
                         node = selectedNode;

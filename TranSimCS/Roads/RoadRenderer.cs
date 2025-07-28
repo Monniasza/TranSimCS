@@ -130,7 +130,8 @@ namespace TranSimCS.Roads {
         }
 
         public static (Bezier3, Bezier3) GenerateSplines(Lane laneIndexStartL, Lane laneIndexStartR, NodeEnd dirStart, Lane laneIndexEndL, Lane laneIndexEndR, NodeEnd dirEnd, float voffset = 0) {
-            var offset = new Vector3(0, voffset, 0); // Offset for the lane position   
+            var offset = new Vector3(0, voffset, 0); // Offset for the lane position
+            dirEnd = dirEnd.Negate();
 
             var n1l = laneIndexStartL.RoadNode; // Starting road node for left lane
             var n1r = laneIndexStartR.RoadNode; // Starting road node for right lane
