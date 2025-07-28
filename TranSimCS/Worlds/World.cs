@@ -13,6 +13,8 @@ namespace TranSimCS.Worlds
         public ObservableCollection<RoadStrip> RoadSegments { get; } = new();
         public ObservableCollection<RoadNode> RoadNodes { get; } = new();
 
+        public ObservableCollection<RoadSection> RoadSections { get; } = new();
+
         public RoadStrip FindRoadStrip(RoadNodeEnd start, RoadNodeEnd end) {
             foreach (var strip in RoadSegments) 
                 if (strip.CheckEnds(start, end)) 
@@ -197,6 +199,34 @@ namespace TranSimCS.Worlds
             //3-4c
             var lc34c = Generator.GenerateLaneConnections(node3.FrontEnd, 0, 1, node4c.RearEnd, 0, node4c.Lanes.Count);
             world.RoadSegments.Add(lc34c);
+
+            //Set up an intersection example
+            var n10 = new RoadNode(world, "Node 10", new Vector3(-100, 0.1f,  20), RoadNode.AZIMUTH_NORTH);
+            var n11 = new RoadNode(world, "Node 11", new Vector3( -80, 0.1f,   0), RoadNode.AZIMUTH_EAST);
+            var n12 = new RoadNode(world, "Node 12", new Vector3(-100, 0.1f, -20), RoadNode.AZIMUTH_SOUTH);
+            var n13 = new RoadNode(world, "Node 13", new Vector3(-120, 0.1f,   0), RoadNode.AZIMUTH_WEST);
+
+            Generator.GenerateLanes(2, n10, 3, -3);
+            Generator.GenerateLanes(2, n11, 3, -3);
+            Generator.GenerateLanes(2, n12, 3, -3);
+            Generator.GenerateLanes(2, n13, 3, -3);
+
+            world.RoadNodes.Add(n10);
+            world.RoadNodes.Add(n11);
+            world.RoadNodes.Add(n12);
+            world.RoadNodes.Add(n13);
+
+            var n10b = n10.RearEnd;
+            var n11b = n11.RearEnd;
+            var n12b = n12.RearEnd;
+            var n13b = n13.RearEnd;
+
+            var section = new RoadSection();
+            n10b.ConnectedSection.Value = section;
+            n11b.ConnectedSection.Value = section;
+            n12b.ConnectedSection.Value = section;
+            n13b.ConnectedSection.Value = section;
+            world.RoadSections.Add(section);
         }
 
         

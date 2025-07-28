@@ -30,7 +30,9 @@ namespace TranSimCS.Worlds {
         }
         public void InvalidateMesh() {
             mesh = null;
-        }        
+            InvalidateMesh0();
+        }
+        protected virtual void InvalidateMesh0() { }
 
         //CHILDREN & PARENT
         private Obj _parent;

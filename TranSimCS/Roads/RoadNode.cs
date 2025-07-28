@@ -43,6 +43,8 @@ namespace TranSimCS.Roads {
 
         public Property<ObjPos> PositionProp => Node.PositionProp;
 
+        public Vector3 CenterPosition => Node.CenterPosition;
+
         public LaneEnd GetLaneEnd(int x) {
             return new LaneEnd(End, Node.Lanes[x]);
         }
@@ -108,6 +110,9 @@ namespace TranSimCS.Roads {
             InvalidateMesh();
             foreach (var connection in Connections) connection.InvalidateMesh();
         }
+        protected override void InvalidateMesh0(){
+            _centerPos = null;
+        }
 
         //Halves of this road node
         public readonly RoadNodeEnd RearEnd;
@@ -116,6 +121,22 @@ namespace TranSimCS.Roads {
 
         //Connections (maintained by the node ends)
         public IEnumerable<RoadStrip> Connections => RearEnd.ConnectionsOld.Union(FrontEnd.ConnectionsOld);
+
+        //Center position
+        private void CalcCenterPos(){
+            if (Lanes.Count == 0) {
+                _centerPos = PositionProp.Value.Position;
+            } else {
+                var leftPos = Lanes[0].LeftPosition;
+                var rightPos = Lanes[Lanes.Count - 1].RightPosition;
+                _centerPos = Geometry.calcLineEnd(FrontEnd, (leftPos + rightPos) / 2).Position;
+            }
+        }
+        public Vector3? _centerPos;
+        public Vector3 CenterPosition { get {
+            if (_centerPos == null) CalcCenterPos();
+            return _centerPos.Value;
+        } }
 
         // Constructor to initialize the RoadNode with a unique ID, name, position, and world
         public RoadNode(World world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) :

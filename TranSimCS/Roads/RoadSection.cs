@@ -35,15 +35,15 @@ namespace TranSimCS.Roads {
             InvalidateMesh();
 
             //Find the center of mass
-            foreach (var node in nodes) 
-                Center += node.PositionProp.Value.Position;
+            foreach (var node in nodes)
+                Center += node.CenterPosition;
             Center /= nodes.Count;
 
             //Sort the nodes clockwise
             var sortingList = new List<(RoadNodeEnd, float)>();
             foreach (var node in nodes) {
-                var nodePos = node.PositionProp.Value.Position;
-                var angle = MathF.Atan2(nodePos.Z - Center.Z, nodePos.X - Center.X);
+                var nodePos = node.CenterPosition;
+                var angle = MathF.Atan2(nodePos.X - Center.X, nodePos.Z - Center.Z);
                 sortingList.Add((node, angle));
             }
             Comparison<(RoadNodeEnd, float)> comparer = (x, y) => (x.Item2.CompareTo(y.Item2));

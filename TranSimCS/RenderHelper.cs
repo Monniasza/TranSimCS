@@ -179,8 +179,8 @@ namespace TranSimCS {
                 var idx2 = perimeterIndexes[(i + 1) % perimeterIndexes.Length];
                 var idx0 = centerIdx;
                 AddIndex(idx0);
-                AddIndex(idx2);
                 AddIndex(idx1);
+                AddIndex(idx2);
             }
         }
 

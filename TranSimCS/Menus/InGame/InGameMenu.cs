@@ -26,7 +26,7 @@ namespace TranSimCS.Menus.InGame {
         public static Texture2D testTexture { get; private set; }
         public static Texture2D grassTexture {  get; private set; }
         public static Texture2D addTexture { get; private set; }
-        //IMGP5511_seamless - asphalt texture
+        public static Texture2D asphaltTexture { get; private set; }
 
         //Inputs      
         public RoadSelection? MouseOverRoad { get; set; } = null; // Store the selected road selection
@@ -92,6 +92,7 @@ namespace TranSimCS.Menus.InGame {
             testTexture = Game.Content.Load<Texture2D>("test");
             grassTexture = Game.Content.Load<Texture2D>("seamlessTextures2/grass1");
             addTexture = Game.Content.Load<Texture2D>("addTex");
+            asphaltTexture = Game.Content.Load<Texture2D>("seamlessTextures2/IMGP5511_seamless");
 
             //Set up meshes
             SelectorObjects = new MultiMesh();
@@ -298,6 +299,12 @@ namespace TranSimCS.Menus.InGame {
             //Draw road node meshes
             if(CheckNodes.Checked) foreach(var roadNode in World.RoadNodes)
                 renderBin.DrawModel(roadNode.GetMesh());
+
+            //Draw road sections
+            IRenderBin asphaltBin = renderHelper.GetOrCreateRenderBin(asphaltTexture);
+            foreach (var section in World.RoadSections) {
+                asphaltBin.DrawModel(section.GetMesh());
+            }
 
             //Draw the tool mesh
             renderHelper.AddAll(SelectorObjects);

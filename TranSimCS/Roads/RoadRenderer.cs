@@ -184,12 +184,14 @@ namespace TranSimCS.Roads {
             for (int i = 0; i < nodeCount; i++) {
                 var currNode = roadSection.Nodes[i];
                 var nextNode = roadSection.Nodes[(i + 1) % nodeCount];
-                var firstPosition = Geometry.calcBoundingLineEndFaced(currNode, 1);
-                var secondPosition = Geometry.calcBoundingLineEndFaced(nextNode, -1);
-                var spline = Geometry.GenerateJoinSpline(firstPosition.Position, secondPosition.Position, firstPosition.Tangential, secondPosition.Tangential);
+                var firstPosition = Geometry.calcBoundingLineEndFaced(currNode, -1);
+                var secondPosition = Geometry.calcBoundingLineEndFaced(nextNode, 1);
+                var spline = Geometry.GenerateJoinSpline(firstPosition.Position, secondPosition.Position, firstPosition.Tangential, -secondPosition.Tangential);
                 var points = Geometry.GenerateSplinePoints(spline, accuracy);
                 boundingVertices.AddRange(points);
             }
+
+            //boundingVertices.Reverse();
 
             //Generate vertices from positions
             IRenderBin iMesh = mesh;
