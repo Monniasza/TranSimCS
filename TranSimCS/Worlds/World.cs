@@ -53,15 +53,15 @@ namespace TranSimCS.Worlds
             // Handle the addition of a new road segment
             segment.OnLaneRemoved += LaneRemovedFromRoad; // Subscribe to lane removal events in the road segment
             segment.OnLaneAdded += LaneAddedToRoad; // Subscribe to lane addition events in the road segment
-            segment.StartNode.connections.Add(segment);
-            segment.EndNode.connections.Add(segment);
+            segment.StartNode.connectionsOld.Add(segment);
+            segment.EndNode.connectionsOld.Add(segment);
         }
         private void HandleRemoveRoadSegment(RoadStrip segment) {
             // Handle the removal of a road segment
             segment.OnLaneAdded -= LaneAddedToRoad; // Unsubscribe from lane addition events in the road segment
             segment.OnLaneRemoved -= LaneRemovedFromRoad; // Unsubscribe from lane removal events in the road segment
-            segment.StartNode.connections.Remove(segment);
-            segment.EndNode.connections.Remove(segment);
+            segment.StartNode.connectionsOld.Remove(segment);
+            segment.EndNode.connectionsOld.Remove(segment);
 
             //Remove node connections that are no longer valid
             var lanes = segment.Lanes.ToArray();

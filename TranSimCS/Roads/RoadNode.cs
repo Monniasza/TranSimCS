@@ -22,13 +22,24 @@ namespace TranSimCS.Roads {
         internal RoadNodeEnd(NodeEnd end, RoadNode node) {
             End = end;
             Node = node;
+            ConnectedSection.ValueChanged += ConnectedSection_ValueChanged;
+        }
+
+        private void ConnectedSection_ValueChanged(object sender, PropertyChangedEventArgs2<RoadSection> e) {
+            var oldNode = e.OldValue;
+            oldNode?.OnDisconnect(this);
+            var newNode = e.NewValue;
+            newNode?.OnConnect(this);
         }
 
         public RoadNodeEnd OppositeEnd => Node.GetEnd(End.Negate());
 
         //Indexing component for the road node, maintained by the World class
-        internal ISet<RoadStrip> connections = new HashSet<RoadStrip>(); // Connections to other road segments
-        public ISet<RoadStrip> Connections => new ReadOnlySet<RoadStrip>(connections); // Expose the connections set
+        internal ISet<RoadStrip> connectionsOld = new HashSet<RoadStrip>(); // Connections to other road segments
+        public ISet<RoadStrip> ConnectionsOld => new ReadOnlySet<RoadStrip>(connectionsOld); // Expose the connections set
+
+        //Indexing of the road sections
+        public Property<RoadSection> ConnectedSection { get; } = new Property<RoadSection>(null, "connection");
 
         public Property<ObjPos> PositionProp => Node.PositionProp;
 
@@ -104,7 +115,7 @@ namespace TranSimCS.Roads {
         public RoadNodeEnd GetEnd(NodeEnd end) => end.GetConditional(RearEnd, FrontEnd);
 
         //Connections (maintained by the node ends)
-        public IEnumerable<RoadStrip> Connections => RearEnd.Connections.Union(FrontEnd.Connections);
+        public IEnumerable<RoadStrip> Connections => RearEnd.ConnectionsOld.Union(FrontEnd.ConnectionsOld);
 
         // Constructor to initialize the RoadNode with a unique ID, name, position, and world
         public RoadNode(World world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) :

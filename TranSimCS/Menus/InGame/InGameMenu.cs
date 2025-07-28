@@ -26,6 +26,7 @@ namespace TranSimCS.Menus.InGame {
         public static Texture2D testTexture { get; private set; }
         public static Texture2D grassTexture {  get; private set; }
         public static Texture2D addTexture { get; private set; }
+        //IMGP5511_seamless - asphalt texture
 
         //Inputs      
         public RoadSelection? MouseOverRoad { get; set; } = null; // Store the selected road selection

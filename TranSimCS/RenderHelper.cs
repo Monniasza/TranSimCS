@@ -169,6 +169,21 @@ namespace TranSimCS {
             }
         }
 
+        public void DrawCenteredPoly(VertexPositionColorTexture center, params VertexPositionColorTexture[] perimeter) {
+            var centerIdx = AddVertex(center);
+            var perimeterIndexes = new int[perimeter.Length];
+            for(int i = 0; i < perimeter.Length; i++) 
+                perimeterIndexes[i] = AddVertex(perimeter[i]);
+            for(int i = 0; i < perimeter.Length; i++) {
+                var idx1 = perimeterIndexes[i];
+                var idx2 = perimeterIndexes[(i + 1) % perimeterIndexes.Length];
+                var idx0 = centerIdx;
+                AddIndex(idx0);
+                AddIndex(idx2);
+                AddIndex(idx1);
+            }
+        }
+
         /// <summary>
         /// Draws a strip of vertices, where each vertex is connected to the next one in a triangle strip fashion.
         /// The vertices should start at the bottom left and even positions are the left vertices, odd positions are the right vertices.

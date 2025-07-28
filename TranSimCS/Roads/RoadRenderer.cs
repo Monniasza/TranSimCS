@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Menus.InGame;
 using static TranSimCS.Geometry;
 
@@ -172,6 +174,27 @@ namespace TranSimCS.Roads {
             var strip = WeaveStrip(leftBorder2, rightBorder2);
             var triangleCount = strip.Length - 2; // Each triangle is formed by 3 vertices, so the number of triangles is the number of vertices minus 2
             renderer.DrawStrip(strip);
+        }
+
+        internal static void GenerateSectionMesh(RoadSection roadSection, Mesh mesh, int accuracy = 17) {
+            //Bounding mesh calculation
+            var boundingVertices = new List<Vector3>();
+            var nodeCount = roadSection.Nodes.Count;
+            var centerPos = roadSection.Center;
+            for (int i = 0; i < nodeCount; i++) {
+                var currNode = roadSection.Nodes[i];
+                var nextNode = roadSection.Nodes[(i + 1) % nodeCount];
+                var firstPosition = Geometry.calcBoundingLineEndFaced(currNode, 1);
+                var secondPosition = Geometry.calcBoundingLineEndFaced(nextNode, -1);
+                var spline = Geometry.GenerateJoinSpline(firstPosition.Position, secondPosition.Position, firstPosition.Tangential, secondPosition.Tangential);
+                var points = Geometry.GenerateSplinePoints(spline, accuracy);
+                boundingVertices.AddRange(points);
+            }
+
+            //Generate vertices from positions
+            IRenderBin iMesh = mesh;
+            var centerVert = Geometry.CreateVertex(centerPos);
+            iMesh.DrawCenteredPoly(centerVert, boundingVertices.ConvertAll(Geometry.CreateVertex).ToArray());
         }
     }
 }

@@ -42,6 +42,27 @@ namespace TranSimCS
         public static LineEnd calcLineEnd(RoadNodeEnd node, float offset)
             => calcLineEnd(node.Node, offset, node.End);
 
+        public static (LineEnd, LineEnd) calcBoundingLineEnds(RoadNodeEnd node) {
+            if(node.Node.Lanes.Count == 0) {
+                var leftEnd0 = calcLineEnd(node, 0);
+                return (leftEnd0, leftEnd0);
+            }
+            var leftEnd = calcLineEnd(node, node.Node.Lanes[0].LeftPosition);
+            var rightEnd = calcLineEnd(node, node.Node.Lanes[node.Node.Lanes.Count - 1].RightPosition);
+            if(node.End == NodeEnd.Backward) 
+                (leftEnd, rightEnd) = (rightEnd, leftEnd);
+            return (leftEnd, rightEnd);
+        }
+        public static LineEnd calcBoundingLineEndFaced(RoadNodeEnd node, int discriminator = 1) {
+            if (node.Node.Lanes.Count == 0) {
+                var leftEnd0 = calcLineEnd(node, 0);
+                return leftEnd0;
+            }
+            if (discriminator < 0 ^ node.End == NodeEnd.Backward)
+                return calcLineEnd(node, node.Node.Lanes[0].LeftPosition);
+            return calcLineEnd(node, node.Node.Lanes[node.Node.Lanes.Count - 1].RightPosition);
+        }
+
         public static LineEnd calcLineEnd(IPosition node, float offset, NodeEnd end) {
             Transform3 nodeTransform = node.PositionData.CalcReferenceFrame();
             Vector3 nodePosition = nodeTransform.O;
@@ -151,6 +172,9 @@ namespace TranSimCS
         }
         public static VertexPositionColorTexture SubVert(VertexPositionColorTexture vert, Vector3 offset) {
             return new VertexPositionColorTexture(vert.Position - offset, vert.Color, vert.TextureCoordinate);
+        }
+        public static VertexPositionColorTexture CreateVertex(Vector3 pos) {
+            return new(pos, Color.White, new(pos.X, pos.Z));
         }
 
         public static float FieldToRadians(int azimuth) {
