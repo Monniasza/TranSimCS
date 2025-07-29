@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
+using TranSimCS.Menus.Gizmo;
 using TranSimCS.Roads;
 using TranSimCS.Worlds;
 using static MLEM.Ui.Elements.Paragraph;
@@ -308,6 +309,17 @@ namespace TranSimCS.Menus.InGame {
                 DragFrom = null;
             }
         }
+
+        void ITool.AddSelectors(MultiMesh addTo) {
+            //Add azimuth gizmos
+            var renderBin = addTo.GetOrCreateRenderBin(InGameMenu.addTexture);
+
+            foreach (var roadNode in game.World.RoadNodes) {
+                var azimuthGizmo = new AzimuthGizmo(roadNode);
+                azimuthGizmo.CreateMesh(renderBin);
+            }
+            
+        }
     }
 
     public class PickerTool(InGameMenu game) : ITool {
@@ -495,6 +507,40 @@ namespace TranSimCS.Menus.InGame {
 
         void ITool.Update(GameTime gameTime) {
             //unused
+        }
+    }
+
+    public class EditNodeTool : ITool {
+        public string Name => "Edit road nodes";
+
+        public string Description => throw new NotImplementedException();
+
+        public void Draw(GameTime gameTime) {
+            throw new NotImplementedException();
+        }
+
+        public void Draw2D(GameTime gameTime) {
+            throw new NotImplementedException();
+        }
+
+        public void OnClick(MouseButton button) {
+            throw new NotImplementedException();
+        }
+
+        public void OnKeyDown(Keys key) {
+            throw new NotImplementedException();
+        }
+
+        public void OnKeyUp(Keys key) {
+            throw new NotImplementedException();
+        }
+
+        public void OnRelease(MouseButton button) {
+            throw new NotImplementedException();
+        }
+
+        public void Update(GameTime gameTime) {
+            throw new NotImplementedException();
         }
     }
 }

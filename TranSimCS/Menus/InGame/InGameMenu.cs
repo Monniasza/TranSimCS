@@ -14,6 +14,8 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.Menus.InGame {
     public class InGameMenu : Menu {
+        public static readonly Plane groundPlane = new Plane(0, 1, 0, -0.1f);
+
         public World World { get; private set; }
         public ITool Tool {  get; set; }
 
@@ -32,7 +34,6 @@ namespace TranSimCS.Menus.InGame {
         public RoadSelection? MouseOverRoad { get; set; } = null; // Store the selected road selection
         public object SelectedObject;
         public Vector3 IntersectWithGround(Ray ray) {
-            var groundPlane = new Plane(0, 1, 0, -0.1f);
             return Geometry.IntersectRayPlane(ray, groundPlane);
         }
         public Vector3 GroundSelection => IntersectWithGround(MouseRay);

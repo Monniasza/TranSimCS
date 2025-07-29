@@ -138,6 +138,8 @@ namespace TranSimCS.Roads {
             return _centerPos.Value;
         } }
 
+        public Lane LastLane => Lanes[Lanes.Count - 1];
+
         // Constructor to initialize the RoadNode with a unique ID, name, position, and world
         public RoadNode(World world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) :
             this(world, name, new ObjPos(position, azimuth, inclination, tilt)) { }

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Iesi.Collections.Generic;
 using Microsoft.Xna.Framework;
+using TranSimCS.Menus.InGame;
 
 namespace TranSimCS.Worlds {
     /// <summary>
@@ -86,5 +87,6 @@ namespace TranSimCS.Worlds {
         /// <param name="vector">amount to move</param>
         /// <param name="dragFrom"></param>
         public void Drag(Vector3 vector, Vector3 dragFrom);
+        public Plane DragPlane() => InGameMenu.groundPlane;
     }
 }
