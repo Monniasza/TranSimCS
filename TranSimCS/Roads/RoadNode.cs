@@ -41,8 +41,8 @@ namespace TranSimCS.Roads {
         //Indexing of the road sections
         public Property<RoadSection> ConnectedSection { get; } = new Property<RoadSection>(null, "connection");
 
+        //Position
         public Property<ObjPos> PositionProp => Node.PositionProp;
-
         public Vector3 CenterPosition => Node.CenterPosition;
 
         public LaneEnd GetLaneEnd(int x) {

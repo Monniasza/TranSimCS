@@ -191,8 +191,6 @@ namespace TranSimCS.Roads {
                 boundingVertices.AddRange(points);
             }
 
-            //boundingVertices.Reverse();
-
             //Generate vertices from positions
             IRenderBin iMesh = mesh;
             var centerVert = Geometry.CreateVertex(centerPos);

@@ -14,6 +14,10 @@ namespace TranSimCS.Roads {
         public IList<RoadNodeEnd> Nodes => new ReadOnlyCollection<RoadNodeEnd>(nodes);
         public Vector3 Center { get; private set; }
 
+        public RoadSection() { 
+            
+        }
+
         internal void OnConnect(RoadNodeEnd node) {
             nodes.Add(node);
             node.Node.PropertyChanged += Node_PropertyChanged;
@@ -34,22 +38,24 @@ namespace TranSimCS.Roads {
         public void Regenerate() {
             InvalidateMesh();
 
+            if (nodes.Count == 0) return;
+
             //Find the center of mass
+            Center = Vector3.Zero;
             foreach (var node in nodes)
                 Center += node.CenterPosition;
             Center /= nodes.Count;
 
             //Sort the nodes clockwise
-            var sortingList = new List<(RoadNodeEnd, float)>();
-            foreach (var node in nodes) {
-                var nodePos = node.CenterPosition;
-                var angle = MathF.Atan2(nodePos.X - Center.X, nodePos.Z - Center.Z);
-                sortingList.Add((node, angle));
-            }
-            Comparison<(RoadNodeEnd, float)> comparer = (x, y) => (x.Item2.CompareTo(y.Item2));
-            sortingList.Sort(comparer);
-            nodes.Clear();
-            nodes.AddRange(sortingList.ConvertAll((x) => x.Item1));
+            Comparison<RoadNodeEnd> comparer = (n1, n2) => {
+                var p1 = n1.CenterPosition;
+                var p2 = n2.CenterPosition;
+                var det = (p1.X - Center.X) * (p2.Z - Center.Z) -
+                    (p2.X - Center.X) * (p1.Z - Center.Z);
+                var reference = 0.0f;
+                return det.CompareTo(reference);
+            };
+            nodes.Sort(comparer);
         }
 
         protected override void GenerateMesh(Mesh mesh) {
