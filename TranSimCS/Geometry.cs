@@ -197,6 +197,39 @@ namespace TranSimCS
             return (x * x + z * z);
         }
 
-        
+        //NORMAL CALCULATIONS
+        /// <summary>
+        /// Normal vector for an arbitrary polygon. Works even if the polygon is not flat.
+        /// </summary>
+        /// <param name="vertices">list of vertices clockwise</param>
+        /// <returns></returns>
+        public static Vector3 NormalPoly(params Vector3[] vertices) {
+            Vector3 crossSum = new Vector3();
+            for (int i = 0; i < vertices.Length; i++) {
+                var v1 = vertices[i];
+                var v2 = vertices[(i + 1) % vertices.Length];
+                crossSum += Vector3.Cross(v1, v2);
+            }
+            crossSum.Normalize();
+            return crossSum;
+        }
+
+        /// <summary>
+        /// Compares two vectors based on their relative direction in respect of a normal rather than individual components or their lengths.
+        /// =0 if A or B is equal to 0
+        /// =0 is A and B are on the same line
+        /// >0 if A is clockwise of B in respect to the normal
+        /// <0 otherwise
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="n"></param>
+        /// <returns>negative if A is counter-clockwise of B, positive if clockwise and 0 if on the same line or any vector is 0</returns>
+        public static int CompareRotary(Vector3 a, Vector3 b, Vector3 n) {
+            Vector3 c = n * a;
+            var discriminant = Vector3.Dot(c, b);
+            var reference = 0.0f;
+            return discriminant.CompareTo(reference);
+        }
     }
 }

@@ -55,7 +55,13 @@ namespace TranSimCS.Render {
         }
     }
     public static class EarClipping {
+        public static void DrawEarClipping(IRenderBin mesh, params int[] indices) {
+
+        }
+
         public static void DrawEarClipping(IRenderBin mesh, params VertexPositionColorTexture[] verts) {
+            var normal = Geometry.NormalPoly(verts.Select(v => v.Position).ToArray());
+
             var addedVerts = verts.Select(v => (mesh.AddVertex(v), v)).ToArray();
             var workingList = DLNode<(int, VertexPositionColorTexture)>.CreateCircular(addedVerts);
             var length = verts.Length;
@@ -72,6 +78,13 @@ namespace TranSimCS.Render {
 
                 var checkNode = currentNode.Next.Next;
                 bool isEar = true;
+
+                //If the vertex is concave, it's not an ear. That means that prev->curr is counterclockwise of curr->next
+                var PtoC = currPos - prevPos;
+                var CtoN = prevPos - nextPos;
+                int negIfConcave = Geometry.CompareRotary(PtoC, CtoN, normal);
+                if(negIfConcave < 0) isEar = false;
+
                 while(isEar && checkNode != currentNode.Prev) {
                     //Iterate over vertices to check them
                     var checkPos = checkNode.val.Item2.Position;
