@@ -122,6 +122,12 @@ namespace TranSimCS {
             AddIndex(indexB);
             AddIndex(indexC);
         }
+        public void DrawTriangle(int a, int b, int c) {
+            AddIndex(a);
+            AddIndex(b);
+            AddIndex(c);
+        }
+
         /// <summary>
         /// Draws a model using the specified vertices and indices.
         /// </summary>
@@ -183,6 +189,8 @@ namespace TranSimCS {
                 AddIndex(idx2);
             }
         }
+
+        
 
         /// <summary>
         /// Draws a strip of vertices, where each vertex is connected to the next one in a triangle strip fashion.

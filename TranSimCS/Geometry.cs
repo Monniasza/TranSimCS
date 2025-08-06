@@ -127,7 +127,7 @@ namespace TranSimCS
             return results.ToArray();
         }
 
-        public static bool RayIntersectsTriangle(Ray ray, Vector3 v0, Vector3 v1, Vector3 v2, out float intersectionDistance) {
+        public static bool RayIntersectsTriangle(Ray ray, Vector3 v0, Vector3 v1, Vector3 v2, out float intersectionDistance, float minT = 1e-6f, float maxT = float.PositiveInfinity) {
             Vector3 edge1 = v1 - v0;
             Vector3 edge2 = v2 - v0;
             Vector3 h = Vector3.Cross(ray.Direction, edge2);
@@ -148,7 +148,7 @@ namespace TranSimCS
             }
             // Calculate the intersection point
             float t = f * Vector3.Dot(edge2, q);
-            if (t > 1e-6f) // Check if the intersection is in front of the ray
+            if (t > minT && t < maxT) // Check if the intersection is in front of the ray
             {
                 intersectionDistance = t; // Calculate the intersection point
                 return true; // Intersection found

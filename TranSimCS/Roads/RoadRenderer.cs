@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Menus.InGame;
@@ -177,6 +178,41 @@ namespace TranSimCS.Roads {
         }
 
         internal static void GenerateSectionMesh(RoadSection roadSection, Mesh mesh, int accuracy = 17) {
+            //Rotate the list so the 1st main end lies on the index 0
+            var endsPair = roadSection.MainSlopeNodes.Value;
+            var start = endsPair.Start;
+            var end = endsPair.End;
+            var endsArray = roadSection.Nodes.ToArray();
+            var startLoc = Array.IndexOf(endsArray, start);
+            endsArray = endsArray.Skip(startLoc).Concat(endsArray.Take(startLoc)).ToArray();
+            var endLoc = Array.IndexOf(endsArray, end);
+            startLoc = 0;
+
+            IRenderBin iMesh = mesh;
+
+            //Generate bounding edges
+            var startLeft = Geometry.calcBoundingLineEndFaced(start, -1);
+            var startRight = Geometry.calcBoundingLineEndFaced(start, 1);
+            var endRight = Geometry.calcBoundingLineEndFaced(end, 1);
+            var endLeft = Geometry.calcBoundingLineEndFaced(end, -1);
+
+            var leftEdge = Geometry.GenerateSplinePoints(startLeft.Position, endRight.Position, startLeft.Tangential, endRight.Tangential,  accuracy);
+            var rightEdge = Geometry.GenerateSplinePoints(startRight.Position, endLeft.Position, startRight.Tangential, endLeft.Tangential, accuracy);
+            var wovenStrip = WeaveStrip(leftEdge, rightEdge);
+            var stripVerts = wovenStrip.Select(Geometry.CreateVertex).ToArray();
+
+            iMesh.DrawStrip(stripVerts);
+
+            //Generate other vertices on the right
+            var rightCycle
+            for(int i = 1; i < endLoc; i++) {
+                var prevEnd = endsArray[i - 1];
+                var nextEnd = endsArray[i];
+
+            }
+
+
+
             //Bounding mesh calculation
             var boundingVertices = new List<Vector3>();
             var nodeCount = roadSection.Nodes.Count;
@@ -192,7 +228,7 @@ namespace TranSimCS.Roads {
             }
 
             //Generate vertices from positions
-            IRenderBin iMesh = mesh;
+            
             var centerVert = Geometry.CreateVertex(centerPos);
             iMesh.DrawCenteredPoly(centerVert, boundingVertices.ConvertAll(Geometry.CreateVertex).ToArray());
         }

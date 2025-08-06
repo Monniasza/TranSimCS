@@ -10,7 +10,7 @@ using TranSimCS.Menus.InGame;
 
 namespace TranSimCS.Worlds {
     /// <summary>
-    /// An object placed in the world. World themselves are objects
+    /// An object placed in the world. Worlds themselves are objects
     /// </summary>
     public abstract class Obj: INotifyPropertyChanged {
         //PROPERTIES

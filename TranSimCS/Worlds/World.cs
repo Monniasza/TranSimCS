@@ -202,9 +202,9 @@ namespace TranSimCS.Worlds
 
             //Set up an intersection example
             var n10 = new RoadNode(world, "Node 10", new Vector3(-100, 0.1f,  20), RoadNode.AZIMUTH_NORTH);
-            var n11 = new RoadNode(world, "Node 11", new Vector3( -80, 0.1f,   0), RoadNode.AZIMUTH_EAST);
+            var n11 = new RoadNode(world, "Node 11", new Vector3( -80, 2.1f,   0), RoadNode.AZIMUTH_EAST);
             var n12 = new RoadNode(world, "Node 12", new Vector3(-100, 0.1f, -20), RoadNode.AZIMUTH_SOUTH);
-            var n13 = new RoadNode(world, "Node 13", new Vector3(-120, 0.1f,   0), RoadNode.AZIMUTH_WEST);
+            var n13 = new RoadNode(world, "Node 13", new Vector3(-120, 2.1f,   0), RoadNode.AZIMUTH_WEST);
 
             Generator.GenerateLanes(2, n10, 3, -3);
             Generator.GenerateLanes(2, n11, 3, -3);
@@ -226,6 +226,7 @@ namespace TranSimCS.Worlds
             n11b.ConnectedSection.Value = section;
             n12b.ConnectedSection.Value = section;
             n13b.ConnectedSection.Value = section;
+            section.MainSlopeNodes.Value = new RoadNodeEndPair(n10b, n12b);
             world.RoadSections.Add(section);
         }
 
