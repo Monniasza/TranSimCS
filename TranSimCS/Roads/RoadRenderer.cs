@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Menus.InGame;
+using TranSimCS.Render;
 using static TranSimCS.Geometry;
 
 namespace TranSimCS.Roads {
@@ -201,36 +202,44 @@ namespace TranSimCS.Roads {
             var wovenStrip = WeaveStrip(leftEdge, rightEdge);
             var stripVerts = wovenStrip.Select(Geometry.CreateVertex).ToArray();
 
-            iMesh.DrawStrip(stripVerts);
+            //iMesh.DrawStrip(stripVerts);
+
+            //Generate the main strip
+            var revLeftEdge = new List<Vector3>(leftEdge);
+            revLeftEdge.Reverse();
+            var combinedStrip = new List<Vector3>(revLeftEdge);
+            combinedStrip.AddRange(rightEdge);
+            var mappedVerts = combinedStrip.Select(Geometry.CreateVertex).ToArray();
+            EarClipping.DrawEarClipping(mesh, mappedVerts);
 
             //Generate other vertices on the right
-            var rightCycle
+            var generatedRightPoints = new List<Vector3>();
+            generatedRightPoints.AddRange(rightEdge);
             for(int i = 1; i < endLoc; i++) {
                 var prevEnd = endsArray[i - 1];
                 var nextEnd = endsArray[i];
-
+                var prevRightRay = Geometry.calcBoundingLineEndFaced(prevEnd, -1);
+                var nextLeftRay = Geometry.calcBoundingLineEndFaced(nextEnd, 1);
+                var generatedPoints = Geometry.GenerateSplinePoints(prevRightRay.Position, nextLeftRay.Position, prevRightRay.Tangential, nextLeftRay.Tangential);
+                generatedRightPoints.AddRange(generatedPoints);
             }
+            var mappedRightPoints = generatedRightPoints.Select(Geometry.CreateVertex).ToArray();
+            //EarClipping.DrawEarClipping(mesh, mappedRightPoints);
 
-
-
-            //Bounding mesh calculation
-            var boundingVertices = new List<Vector3>();
-            var nodeCount = roadSection.Nodes.Count;
-            var centerPos = roadSection.Center;
-            for (int i = 0; i < nodeCount; i++) {
-                var currNode = roadSection.Nodes[i];
-                var nextNode = roadSection.Nodes[(i + 1) % nodeCount];
-                var firstPosition = Geometry.calcBoundingLineEndFaced(currNode, -1);
-                var secondPosition = Geometry.calcBoundingLineEndFaced(nextNode, 1);
-                var spline = Geometry.GenerateJoinSpline(firstPosition.Position, secondPosition.Position, firstPosition.Tangential, -secondPosition.Tangential);
-                var points = Geometry.GenerateSplinePoints(spline, accuracy);
-                boundingVertices.AddRange(points);
-            }
-
-            //Generate vertices from positions
+            //Generate other vertices on the left
+            var generatedLeftPoints = new List<Vector3>();
             
-            var centerVert = Geometry.CreateVertex(centerPos);
-            iMesh.DrawCenteredPoly(centerVert, boundingVertices.ConvertAll(Geometry.CreateVertex).ToArray());
+            generatedLeftPoints.AddRange(revLeftEdge);
+            for (int i = endLoc; i < endsArray.Length; i++) {
+                var prevEnd = endsArray[i - 1];
+                var nextEnd = endsArray[i];
+                var prevRightRay = Geometry.calcBoundingLineEndFaced(prevEnd, -1);
+                var nextLeftRay = Geometry.calcBoundingLineEndFaced(nextEnd, 1);
+                var generatedPoints = Geometry.GenerateSplinePoints(prevRightRay.Position, nextLeftRay.Position, prevRightRay.Tangential, nextLeftRay.Tangential);
+                generatedLeftPoints.AddRange(generatedPoints);
+            }
+            var mappedLeftPoints = generatedLeftPoints.Select(Geometry.CreateVertex).ToArray();
+            //EarClipping.DrawEarClipping(mesh, mappedLeftPoints);
         }
     }
 }

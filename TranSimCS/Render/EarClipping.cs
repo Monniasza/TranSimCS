@@ -14,6 +14,7 @@ namespace TranSimCS.Render {
                 var currNode = nodes[i];
                 var nextNode = nodes[(i + 1) % nodes.Length];
                 currNode.Next = nextNode;
+                //nextNode.Prev = currNode;
             }
             return nodes[0];
         }
@@ -28,8 +29,7 @@ namespace TranSimCS.Render {
         }
 
         public DLNode<T> Prev {
-            get => _prev;
-            set {
+            get => _prev; set {
                 var oldPrev = _prev;
                 var newPrev = value;
                 oldPrev?._next = null;
@@ -41,19 +41,34 @@ namespace TranSimCS.Render {
             get => _next; set {
                 var oldNext = _next;
                 var newNext = value;
-                oldNext?._prev = this;
+                oldNext?._prev = null;
                 newNext?._prev = this;
                 _next = value;
             }
         }
 
         public void ClipOut() {
-            Prev.Next = Next;
-            Next.Prev = Prev;
+            var next = Next;
+            var prev = Prev;
             Prev = null;
             Next = null;
+            prev.Next = next;
+            next.Prev = prev;
         }
     }
+
+    public class VertexNode {
+        public bool isConvex;
+        public VertexPositionColorTexture data;
+        public Vector3 position => data.Position;
+        public int index;
+
+        public VertexNode(IRenderBin mesh, VertexPositionColorTexture position) {
+            index = mesh.AddVertex(position);
+            data = position;
+        }
+    }
+
     public static class EarClipping {
         public static void DrawEarClipping(IRenderBin mesh, params int[] indices) {
 
@@ -61,13 +76,12 @@ namespace TranSimCS.Render {
 
         public static void DrawEarClipping(IRenderBin mesh, params VertexPositionColorTexture[] verts) {
             var normal = Geometry.NormalPoly(verts.Select(v => v.Position).ToArray());
-
             var addedVerts = verts.Select(v => (mesh.AddVertex(v), v)).ToArray();
-            var workingList = DLNode<(int, VertexPositionColorTexture)>.CreateCircular(addedVerts);
             var length = verts.Length;
-            var currentNode = workingList;
+            var currentNode = DLNode<(int, VertexPositionColorTexture)>.CreateCircular(addedVerts);
             while(length > 3) {
                 //Check if the current vertex is an ear. It is an ear if none of the other vertices are on the triangle
+                var nextNode = currentNode.Next;
                 var prevVert = currentNode.Prev.val;
                 var nextVert = currentNode.Next.val;
                 var currVert = currentNode.val;
@@ -90,20 +104,26 @@ namespace TranSimCS.Render {
                     var checkPos = checkNode.val.Item2.Position;
                     var check = IsOnTriangle(prevPos, currPos, nextPos, checkPos);
                     if (check) isEar = false;
+                    checkNode = checkNode.Next;
                 }
 
                 if (isEar) {
                     //The vertex is an ear, clip it
-                    var prevIndex = prevVert.Item1;
-                    var nextIndex = nextVert.Item1;
-                    var currIndex = currVert.Item1;
-                    mesh.DrawTriangle(prevIndex, nextIndex, currIndex);
+                    OutputTriangle(mesh, currentNode);
                     currentNode.ClipOut();
                     length--;
                 }
 
-                currentNode = currentNode.Next;
+                currentNode = nextNode;
             }
+            OutputTriangle(mesh, currentNode);
+        }
+
+        public static void OutputTriangle(IRenderBin mesh, DLNode<(int, VertexPositionColorTexture)> node) {
+            var prevIndex = node.Prev.val.Item1;
+            var nextIndex = node.Next.val.Item1;
+            var currIndex = node.val.Item1;
+            mesh.DrawTriangle(currIndex, prevIndex, nextIndex);
         }
 
         public static bool IsOnTriangle(Vector3 a, Vector3 b, Vector3 c, Vector3 v) {

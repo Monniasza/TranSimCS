@@ -98,6 +98,7 @@ namespace TranSimCS
             return points;
         }
 
+        public static Vector3[] GenerateSplinePoints(Ray start, Ray end, int numPoints = 32) => GenerateSplinePoints(start.Position, end.Position, start.Direction, end.Direction, numPoints);
         public static Vector3[] GenerateSplinePoints(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent, int numPoints = 32)
         {
             return GenerateSplinePoints(GenerateJoinSpline(startPos, endPos, startTangent, endTangent), numPoints);
@@ -216,10 +217,10 @@ namespace TranSimCS
 
         /// <summary>
         /// Compares two vectors based on their relative direction in respect of a normal rather than individual components or their lengths.
-        /// =0 if A or B is equal to 0
-        /// =0 is A and B are on the same line
-        /// >0 if A is clockwise of B in respect to the normal
-        /// <0 otherwise
+        /// <br>returns 0 if A or B is equal to 0
+        /// <br>returns 0 is A and B are on the same line
+        /// <br>returns + if A is clockwise of B in respect to the normal
+        /// <br>returns - otherwise
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>

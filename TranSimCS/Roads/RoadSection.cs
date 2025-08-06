@@ -58,8 +58,8 @@ namespace TranSimCS.Roads {
 
         public Vector3 Center { get; private set; }
 
-        public RoadSection() { 
-            
+        public RoadSection() {
+            MainSlopeNodes = new Property<RoadNodeEndPair>(new(null, null), "slopeNodes", this);
         }
 
         internal void OnConnect(RoadNodeEnd node) {
