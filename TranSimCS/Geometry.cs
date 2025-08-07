@@ -81,7 +81,7 @@ namespace TranSimCS
             float tangentLength = Vector3.Distance(startPos, endPos) * 0.4f;
             Vector3 a = startPos;
             Vector3 b = startPos + startTangent * tangentLength; // Start tangent point
-            Vector3 c = endPos - endTangent * tangentLength; // End tangent point
+            Vector3 c = endPos + endTangent * tangentLength; // End tangent point
             Vector3 d = endPos; // End position
             return new Bezier3 { a = a, b = b, c = c, d = d };
         }

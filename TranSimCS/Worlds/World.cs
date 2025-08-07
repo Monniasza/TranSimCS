@@ -226,7 +226,7 @@ namespace TranSimCS.Worlds
             n11b.ConnectedSection.Value = section;
             n12b.ConnectedSection.Value = section;
             n13b.ConnectedSection.Value = section;
-            section.MainSlopeNodes.Value = new RoadNodeEndPair(n10b, n12b);
+            section.MainSlopeNodes.Value = new RoadNodeEndPair(n11b, n13b);
             world.RoadSections.Add(section);
         }
 

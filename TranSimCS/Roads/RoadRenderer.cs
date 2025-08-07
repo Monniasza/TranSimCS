@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -178,18 +179,11 @@ namespace TranSimCS.Roads {
             renderer.DrawStrip(strip);
         }
 
-        internal static void GenerateSectionMesh(RoadSection roadSection, Mesh mesh, int accuracy = 17) {
+        internal static void GenerateSectionMesh(RoadSection roadSection, IRenderBin mesh, int accuracy = 17) {
             //Rotate the list so the 1st main end lies on the index 0
             var endsPair = roadSection.MainSlopeNodes.Value;
             var start = endsPair.Start;
             var end = endsPair.End;
-            var endsArray = roadSection.Nodes.ToArray();
-            var startLoc = Array.IndexOf(endsArray, start);
-            endsArray = endsArray.Skip(startLoc).Concat(endsArray.Take(startLoc)).ToArray();
-            var endLoc = Array.IndexOf(endsArray, end);
-            startLoc = 0;
-
-            IRenderBin iMesh = mesh;
 
             //Generate bounding edges
             var startLeft = Geometry.calcBoundingLineEndFaced(start, -1);
@@ -202,44 +196,77 @@ namespace TranSimCS.Roads {
             var wovenStrip = WeaveStrip(leftEdge, rightEdge);
             var stripVerts = wovenStrip.Select(Geometry.CreateVertex).ToArray();
 
-            //iMesh.DrawStrip(stripVerts);
+            mesh.DrawStrip(stripVerts);
+
+            //Find the nodes in the circular list
+            var circularList = DLNode<RoadNodeEnd>.CreateCircular(roadSection.Nodes);
+            var startNode = circularList;
+            while (startNode.val != start) startNode = startNode.Next;
+            var endNode = circularList;
+            while (endNode.val != end) endNode = endNode.Next;
+
+            //Categorize the nodes into categories: left or right of the main. Since they're already sorted, there's no need to sort.
+            var rightNodes = new List<RoadNodeEnd>();
+            var rightNode = startNode;
+            while(rightNode != endNode) {
+                rightNodes.Add(rightNode.val);
+                rightNode = rightNode.Next;
+            }
+            rightNodes.Add(rightNode.val);
+
+            var leftNodes = new List<RoadNodeEnd>();
+            var leftNode = endNode;
+            while (leftNode != startNode) {
+                leftNodes.Add(leftNode.val);
+                leftNode = leftNode.Next;
+            }
+            leftNodes.Add(leftNode.val);
+            Debug.Print($"{leftNodes.Count} lnodes {rightNodes.Count} rnodes");
 
             //Generate the main strip
             var revLeftEdge = new List<Vector3>(leftEdge);
             revLeftEdge.Reverse();
-            var combinedStrip = new List<Vector3>(revLeftEdge);
-            combinedStrip.AddRange(rightEdge);
-            var mappedVerts = combinedStrip.Select(Geometry.CreateVertex).ToArray();
-            EarClipping.DrawEarClipping(mesh, mappedVerts);
 
             //Generate other vertices on the right
-            var generatedRightPoints = new List<Vector3>();
-            generatedRightPoints.AddRange(rightEdge);
-            for(int i = 1; i < endLoc; i++) {
-                var prevEnd = endsArray[i - 1];
-                var nextEnd = endsArray[i];
-                var prevRightRay = Geometry.calcBoundingLineEndFaced(prevEnd, -1);
-                var nextLeftRay = Geometry.calcBoundingLineEndFaced(nextEnd, 1);
-                var generatedPoints = Geometry.GenerateSplinePoints(prevRightRay.Position, nextLeftRay.Position, prevRightRay.Tangential, nextLeftRay.Tangential);
-                generatedRightPoints.AddRange(generatedPoints);
-            }
-            var mappedRightPoints = generatedRightPoints.Select(Geometry.CreateVertex).ToArray();
-            //EarClipping.DrawEarClipping(mesh, mappedRightPoints);
+            GenerateSubrangeVerts(mesh, revLeftEdge.ToArray(), Color.Blue, rightNodes.ToArray());
 
             //Generate other vertices on the left
-            var generatedLeftPoints = new List<Vector3>();
-            
-            generatedLeftPoints.AddRange(revLeftEdge);
-            for (int i = endLoc; i < endsArray.Length; i++) {
-                var prevEnd = endsArray[i - 1];
-                var nextEnd = endsArray[i];
-                var prevRightRay = Geometry.calcBoundingLineEndFaced(prevEnd, -1);
-                var nextLeftRay = Geometry.calcBoundingLineEndFaced(nextEnd, 1);
-                var generatedPoints = Geometry.GenerateSplinePoints(prevRightRay.Position, nextLeftRay.Position, prevRightRay.Tangential, nextLeftRay.Tangential);
-                generatedLeftPoints.AddRange(generatedPoints);
+            GenerateSubrangeVerts(mesh, rightEdge, Color.Red, leftNodes.ToArray());
+        }
+
+        public static void GenerateSubrangeVerts(IRenderBin mesh, Vector3[] stripBound, Color debugColor, params RoadNodeEnd[] nodes) {
+            var generatedPoints = new List<Vector3>();
+            for (int i = 1; i < nodes.Length; i++) {
+                var prev = nodes[i - 1];
+                var next = nodes[i];
+                var prevLeftRay = Geometry.calcBoundingLineEndFaced(prev, -1);
+                var nextRightRay = Geometry.calcBoundingLineEndFaced(next, 1);
+                var generatedEdge = Geometry.GenerateSplinePoints(prevLeftRay.Position, nextRightRay.Position, prevLeftRay.Tangential, nextRightRay.Tangential);
+                generatedPoints.AddRange(generatedEdge);
             }
-            var mappedLeftPoints = generatedLeftPoints.Select(Geometry.CreateVertex).ToArray();
-            //EarClipping.DrawEarClipping(mesh, mappedLeftPoints);
+
+            //Add points from the strip bound EXCEPT the beginning and end
+            generatedPoints.AddRange(stripBound.Skip(1).Take(stripBound.Length-2));
+            generatedPoints.Reverse();
+            var mappedPoints = generatedPoints.Select(Geometry.CreateVertex).ToArray();
+            EarClipping.DrawEarClipping(mesh, mappedPoints);
+
+            //DEBUG: Draw a fence that is visible only from the inside
+            var pointCount = generatedPoints.Count();
+            var height = Vector3.UnitY * 5;
+            var bottomEdge = new VertexPositionColorTexture[pointCount+1];
+            var topEdge = new VertexPositionColorTexture[pointCount+1];
+            for(int i = 0; i < pointCount; i++) {
+                var pos = generatedPoints[i];
+                var topCoord = new VertexPositionColorTexture(pos, debugColor, new(0, i));
+                var bottomCoord = new VertexPositionColorTexture(pos+height, debugColor, new(1, i));
+                bottomEdge[i] = bottomCoord;
+                topEdge[i] = topCoord;
+            }
+            topEdge[pointCount] = topEdge[0];
+            bottomEdge[pointCount] = bottomEdge[0];
+            var weave = Geometry.WeaveStrip(topEdge, bottomEdge);
+            mesh.DrawStrip(weave);
         }
     }
 }

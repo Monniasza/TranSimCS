@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -79,7 +80,11 @@ namespace TranSimCS.Render {
             var addedVerts = verts.Select(v => (mesh.AddVertex(v), v)).ToArray();
             var length = verts.Length;
             var currentNode = DLNode<(int, VertexPositionColorTexture)>.CreateCircular(addedVerts);
+
+            var itersSinceLastClip = 0;
+
             while(length > 3) {
+                itersSinceLastClip++;
                 //Check if the current vertex is an ear. It is an ear if none of the other vertices are on the triangle
                 var nextNode = currentNode.Next;
                 var prevVert = currentNode.Prev.val;
@@ -97,13 +102,19 @@ namespace TranSimCS.Render {
                 var PtoC = currPos - prevPos;
                 var CtoN = prevPos - nextPos;
                 int negIfConcave = Geometry.CompareRotary(PtoC, CtoN, normal);
-                if(negIfConcave < 0) isEar = false;
+                if(negIfConcave < 0) {
+                    Debug.Print($"Vertex {currVert.Item1} is concave");
+                    isEar = false;
+                }
 
                 while(isEar && checkNode != currentNode.Prev) {
                     //Iterate over vertices to check them
                     var checkPos = checkNode.val.Item2.Position;
                     var check = IsOnTriangle(prevPos, currPos, nextPos, checkPos);
-                    if (check) isEar = false;
+                    if (check) {
+                        Debug.Print("Vertex is on the triangle");
+                        isEar = false;
+                    }
                     checkNode = checkNode.Next;
                 }
 
@@ -111,7 +122,12 @@ namespace TranSimCS.Render {
                     //The vertex is an ear, clip it
                     OutputTriangle(mesh, currentNode);
                     currentNode.ClipOut();
+                    itersSinceLastClip = 0;
                     length--;
+                }
+
+                if(itersSinceLastClip > length) {
+                    throw new Exception("Too many iterations after the clip");
                 }
 
                 currentNode = nextNode;

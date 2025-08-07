@@ -44,6 +44,7 @@ namespace TranSimCS.Roads {
         //Position
         public Property<ObjPos> PositionProp => Node.PositionProp;
         public Vector3 CenterPosition => Node.CenterPosition;
+        public Vector3 CenterOffset => Node.CenterOffset;
 
         public LaneEnd GetLaneEnd(int x) {
             return new LaneEnd(End, Node.Lanes[x]);
@@ -137,8 +138,11 @@ namespace TranSimCS.Roads {
             if (_centerPos == null) CalcCenterPos();
             return _centerPos.Value;
         } }
+        public Vector3 CenterOffset { get; internal set; }
 
         public Lane LastLane => Lanes[Lanes.Count - 1];
+
+        
 
         // Constructor to initialize the RoadNode with a unique ID, name, position, and world
         public RoadNode(World world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) :
