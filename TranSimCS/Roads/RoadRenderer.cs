@@ -249,7 +249,7 @@ namespace TranSimCS.Roads {
             generatedPoints.AddRange(stripBound.Skip(1).Take(stripBound.Length-2));
             generatedPoints.Reverse();
             var mappedPoints = generatedPoints.Select(Geometry.CreateVertex).ToArray();
-            EarClipping.DrawEarClipping(mesh, mappedPoints);
+            //EarClipping.DrawEarClipping(mesh, mappedPoints);
 
             //DEBUG: Draw a fence that is visible only from the inside
             var pointCount = generatedPoints.Count();
