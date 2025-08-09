@@ -31,6 +31,8 @@ namespace TranSimCS
             public Vector3 Tangential { get; }
             public Vector3 Normal { get; }
             public Vector3 Lateral { get; }
+            public Ray Ray => new Ray(Position, Tangential);
+
             public LineEnd(Vector3 position, Vector3 tangential, Vector3 normal, Vector3 lateral) {
                 Position = position;
                 Tangential = tangential;
@@ -77,6 +79,8 @@ namespace TranSimCS
             return new LineEnd(position, tangential, normal, lateral); // Return the end position as a Vector3
         }
 
+        public static Bezier3 GenerateJoinSpline(Ray start, Ray end) => GenerateJoinSpline(start.Position, end.Position, start.Direction, end.Direction);
+
         public static Bezier3 GenerateJoinSpline(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent){
             float tangentLength = Vector3.Distance(startPos, endPos) * 0.4f;
             Vector3 a = startPos;
@@ -86,14 +90,14 @@ namespace TranSimCS
             return new Bezier3 { a = a, b = b, c = c, d = d };
         }
 
-        public static Vector3[] GenerateSplinePoints(Bezier3 spline, int numPoints = 32, float minT = 0, float maxT = 1) {
+        public static Vector3[] GenerateSplinePoints(ISpline<Vector3> spline, int numPoints = 32, float minT = 0, float maxT = 1) {
             if (numPoints < 2) throw new ArgumentException("numPoints must be at least 2.");
             Vector3[] points = new Vector3[numPoints];
             float step = 1f / (numPoints - 1);
-            Bezier3 bezier = spline; // Use the provided Bezier curve
+            // Use the provided Bezier curve
             for (int i = 0; i < numPoints; i++) {
                 float t = i * step;
-                points[i] = bezier[MathHelper.Lerp(minT, maxT, t)]; // Use the Bezier curve to calculate the point at t
+                points[i] = spline[MathHelper.Lerp(minT, maxT, t)]; // Use the Bezier curve to calculate the point at t
             }
             return points;
         }

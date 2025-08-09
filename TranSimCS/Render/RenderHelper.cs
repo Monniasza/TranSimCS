@@ -151,7 +151,7 @@ namespace TranSimCS {
         /// Draws a grid of vertices, where each square is made up of two triangles.
         /// The vertices should be in a 2D array, where each element is a VertexPositionColorTexture.
         /// The Elements should be in the order of (x, y), where x is the horizontal index and y is the vertical index.
-        /// The elements should be in the clockwise order to form a rectangular mesh.
+        /// The elements should start at top left
         /// </summary>
         /// <param name="vertices"></param>
         public void DrawGrid(VertexPositionColorTexture[,] vertices) {

@@ -1,9 +1,44 @@
 ﻿using System;
+using System.Runtime.Intrinsics.X86;
 using Microsoft.Xna.Framework;
 
 namespace TranSimCS
 {
-    public struct Bezier3 {
+    public class SplineFromFunction<T>(Func<float, T> fn) : ISpline<T> {
+        public T this[float t] => fn(t);
+    }
+
+    public class SubRangeSpline<T>(ISpline<T> spline, float from, float to): ISpline<T> {
+        public T this[float t] => spline[from + (to-from) * t];
+        public ISpline<T> SubRange(float from2, float to2) {
+            var lerpedFrom = from + (to - from) * from2;
+            var lerpedTo= from + (to - from) * to2;
+            return new SubRangeSpline<T>(spline, lerpedFrom, lerpedTo);
+        }
+    }
+
+
+    public interface ISpline<T> {
+        public T this[float t] { get; }
+        public ISpline<T> Inverse() => SubRange(1, 0);
+        public ISpline<T> SubRange(float from, float to) => new SubRangeSpline<T>(this, from, to);
+    }
+
+    public struct LineSegment: ISpline<Vector3> {
+        public Vector3 a;
+        public Vector3 b;
+        public Vector3 this[float t] => Vector3.Lerp(a, b, t);
+        public LineSegment(Vector3 a, Vector3 b) {
+            this.a = a;
+            this.b = b;
+        }
+        public LineSegment SubRange(float from, float to) {
+            return new LineSegment(this[from], this[to]);
+        }
+        public LineSegment Inverse() => new(b, a);
+    }
+
+    public struct Bezier3: ISpline<Vector3> {
         public Vector3 a;
         public Vector3 b;
         public Vector3 c;
@@ -82,6 +117,8 @@ namespace TranSimCS
                 d = bezier.d / scalar
             };
         }
+
+        public Bezier3 Inverse() => new(d, c, b, a);
 
         public static Bezier3 SubSection(Bezier3 bezier, float startT, float endT) {
             if (startT < 0 || endT > 1 || startT >= endT) throw new ArgumentOutOfRangeException("startT and endT must be in the range [0, 1] and startT < endT.");

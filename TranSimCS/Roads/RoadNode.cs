@@ -49,6 +49,13 @@ namespace TranSimCS.Roads {
         public LaneEnd GetLaneEnd(int x) {
             return new LaneEnd(End, Node.Lanes[x]);
         }
+
+        public Vector2 Bounds() {
+            float lbound = Node.Lanes[0].LeftPosition;
+            float rbound = Node.Lanes[Node.Lanes.Count-1].RightPosition;
+            if (End == NodeEnd.Backward) (lbound, rbound) = (rbound, lbound);
+            return new Vector2(lbound, rbound);
+        }
     }
 
     public class RoadNode: Obj, IPosition {

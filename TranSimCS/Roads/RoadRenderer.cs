@@ -228,45 +228,84 @@ namespace TranSimCS.Roads {
             revLeftEdge.Reverse();
 
             //Generate other vertices on the right
-            GenerateSubrangeVerts(mesh, revLeftEdge.ToArray(), Color.Blue, rightNodes.ToArray());
+            GenerateSubrangeVerts(mesh, rightNodes.ToArray(), 1, accuracy);
 
             //Generate other vertices on the left
-            GenerateSubrangeVerts(mesh, rightEdge, Color.Red, leftNodes.ToArray());
+            //GenerateSubrangeVerts(mesh, leftNodes.ToArray(), -1, accuracy);
         }
 
-        public static void GenerateSubrangeVerts(IRenderBin mesh, Vector3[] stripBound, Color debugColor, params RoadNodeEnd[] nodes) {
-            var generatedPoints = new List<Vector3>();
-            for (int i = 1; i < nodes.Length; i++) {
-                var prev = nodes[i - 1];
-                var next = nodes[i];
-                var prevLeftRay = Geometry.calcBoundingLineEndFaced(prev, -1);
-                var nextRightRay = Geometry.calcBoundingLineEndFaced(next, 1);
-                var generatedEdge = Geometry.GenerateSplinePoints(prevLeftRay.Position, nextRightRay.Position, prevLeftRay.Tangential, nextRightRay.Tangential);
-                generatedPoints.AddRange(generatedEdge);
-            }
+        public static void GenerateSubrangeVerts(IRenderBin mesh, RoadNodeEnd[] nodes, int discriminant, int accuracy = 17) {
+            var lbound = 1;
+            var ubound = nodes.Length - 2;
 
-            //Add points from the strip bound EXCEPT the beginning and end
-            generatedPoints.AddRange(stripBound.Skip(1).Take(stripBound.Length-2));
-            generatedPoints.Reverse();
-            var mappedPoints = generatedPoints.Select(Geometry.CreateVertex).ToArray();
-            //EarClipping.DrawEarClipping(mesh, mappedPoints);
+            var prevSpline = GenerateRoadEdge(nodes[0], nodes[nodes.Length-1], -discriminant).Inverse();
 
-            //DEBUG: Draw a fence that is visible only from the inside
-            var pointCount = generatedPoints.Count();
-            var height = Vector3.UnitY * 5;
-            var bottomEdge = new VertexPositionColorTexture[pointCount+1];
-            var topEdge = new VertexPositionColorTexture[pointCount+1];
-            for(int i = 0; i < pointCount; i++) {
-                var pos = generatedPoints[i];
-                var topCoord = new VertexPositionColorTexture(pos, debugColor, new(0, i));
-                var bottomCoord = new VertexPositionColorTexture(pos+height, debugColor, new(1, i));
-                bottomEdge[i] = bottomCoord;
-                topEdge[i] = topCoord;
+            while (lbound <= ubound) {
+                var preNode = nodes[lbound - 1];
+                var startNode = nodes[lbound];
+                var endNode = nodes[ubound];
+                var nextNode = nodes[ubound + 1];
+
+                var preToStartSpline = GenerateRoadEdge(preNode, startNode, -1);
+                var endToNextSpline = GenerateRoadEdge(endNode, nextNode, -1);
+
+                ISpline<Vector3> A;//A[0] = D[1]
+                ISpline<Vector3> B;//B[0] = A[1]
+                ISpline<Vector3> C;//C[0] = B[1]
+                ISpline<Vector3> D;//D[0] = C[1]
+
+                if (lbound == ubound) {
+                    var bounds = startNode.Bounds();
+                    var lpos = Geometry.calcLineEnd(startNode, bounds.X).Position;
+                    var rpos = Geometry.calcLineEnd(startNode, bounds.Y).Position;
+
+                    //One node remaining
+                    A = prevSpline;
+                    B = preToStartSpline;
+                    C = new LineSegment(lpos, rpos);
+                    D = endToNextSpline;
+                } else {
+                    //More nodes remaining
+                    var ledge = GenerateRoadEdge(startNode, endNode, -1);
+                    var redge = GenerateRoadEdge(startNode, endNode, 1);
+                    var innerSpline = (discriminant < 0) ? redge : ledge;
+                    var outerSpline = (discriminant < 0) ? ledge : redge;
+
+                    //Calculations for the fill patch
+                    
+                    A = prevSpline;
+                    B = preToStartSpline;
+                    C = innerSpline;
+                    D = endToNextSpline;
+                    
+                    prevSpline = outerSpline;
+                }
+
+                var h = Vector3.UnitY * 5;
+                RenderPatch.DrawDebugFence(mesh, A, h, Color.Red, accuracy);
+                RenderPatch.DrawDebugFence(mesh, B, h, Color.Yellow, accuracy);
+                RenderPatch.DrawDebugFence(mesh, C, h, Color.Lime, accuracy);
+                RenderPatch.DrawDebugFence(mesh, D, h, Color.Blue, accuracy);
+
+                RenderPatch.RenderCoonsPatch(mesh, A.Inverse(), C, B, D.Inverse(), (p, uv) => Geometry.CreateVertex(p), accuracy, accuracy);
+
+
+
+                lbound++;
+                ubound--;
             }
-            topEdge[pointCount] = topEdge[0];
-            bottomEdge[pointCount] = bottomEdge[0];
-            var weave = Geometry.WeaveStrip(topEdge, bottomEdge);
-            mesh.DrawStrip(weave);
+        }
+        public static Bezier3 GenerateRoadEdge(RoadNodeEnd start, RoadNodeEnd end, int discriminant) {
+            LineEnd startPos;
+            LineEnd endPos;
+            if(discriminant < 0) {
+                startPos = Geometry.calcBoundingLineEndFaced(end, 1);
+                endPos = Geometry.calcBoundingLineEndFaced(start, -1);
+            } else {
+                startPos = Geometry.calcBoundingLineEndFaced(start, 1);
+                endPos = Geometry.calcBoundingLineEndFaced(end, -1);
+            }
+            return Geometry.GenerateJoinSpline(startPos.Ray, endPos.Ray);
         }
     }
 }
