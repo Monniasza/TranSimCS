@@ -231,7 +231,7 @@ namespace TranSimCS.Roads {
             GenerateSubrangeVerts(mesh, rightNodes.ToArray(), 1, accuracy);
 
             //Generate other vertices on the left
-            //GenerateSubrangeVerts(mesh, leftNodes.ToArray(), -1, accuracy);
+            GenerateSubrangeVerts(mesh, leftNodes.ToArray(), -1, accuracy);
         }
 
         public static void GenerateSubrangeVerts(IRenderBin mesh, RoadNodeEnd[] nodes, int discriminant, int accuracy = 17) {
@@ -272,7 +272,6 @@ namespace TranSimCS.Roads {
                     var outerSpline = (discriminant < 0) ? ledge : redge;
 
                     //Calculations for the fill patch
-                    
                     A = prevSpline;
                     B = preToStartSpline;
                     C = innerSpline;
@@ -281,15 +280,8 @@ namespace TranSimCS.Roads {
                     prevSpline = outerSpline;
                 }
 
-                var h = Vector3.UnitY * 5;
-                RenderPatch.DrawDebugFence(mesh, A, h, Color.Red, accuracy);
-                RenderPatch.DrawDebugFence(mesh, B, h, Color.Yellow, accuracy);
-                RenderPatch.DrawDebugFence(mesh, C, h, Color.Lime, accuracy);
-                RenderPatch.DrawDebugFence(mesh, D, h, Color.Blue, accuracy);
-
+                //Render the last-node or the inter-strip patch
                 RenderPatch.RenderCoonsPatch(mesh, A.Inverse(), C, B, D.Inverse(), (p, uv) => Geometry.CreateVertex(p), accuracy, accuracy);
-
-
 
                 lbound++;
                 ubound--;
