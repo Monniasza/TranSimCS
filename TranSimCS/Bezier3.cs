@@ -119,7 +119,14 @@ namespace TranSimCS
         }
 
         public Bezier3 Inverse() => new(d, c, b, a);
+        public Bezier3 SubRange(float from, float to) => LenientSubSection(this, from, to);
 
+        public static Bezier3 LenientSubSection(Bezier3 bezier, float startT, float endT) {
+            if (startT > endT) return SubSection(bezier, endT, startT).Inverse();
+            if (startT == endT) return new Bezier3(bezier[startT]);
+            return SubSection(bezier, startT, endT);
+
+        }
         public static Bezier3 SubSection(Bezier3 bezier, float startT, float endT) {
             if (startT < 0 || endT > 1 || startT >= endT) throw new ArgumentOutOfRangeException("startT and endT must be in the range [0, 1] and startT < endT.");
             Split(bezier, startT, out var beginningSection, out var endSection);

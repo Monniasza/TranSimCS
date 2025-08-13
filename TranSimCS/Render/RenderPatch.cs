@@ -24,17 +24,20 @@ namespace TranSimCS.Render {
         }
 
         /// <summary>
-        /// C0D0 C1D0
-        /// C0D1 C1D1
+        /// Generates a Coons patch, a square-like patch made with four border splines with four conditions:
+        /// <br/> C0[0] = D0[0]
+        /// <br/> C0[1] = D1[0]
+        /// <br/> C1[0] = D0[1]
+        /// <br/> C1[1] = D1[1]
         /// </summary>
-        /// <param name="mesh"></param>
-        /// <param name="c0"></param>
-        /// <param name="c1"></param>
-        /// <param name="d0"></param>
-        /// <param name="d1"></param>
-        /// <param name="vertFn"></param>
-        /// <param name="resC"></param>
-        /// <param name="resD"></param>
+        /// <param name="mesh">render bin to render to</param>
+        /// <param name="c0">top patch, going right</param>
+        /// <param name="c1">bottom patch, going right</param>
+        /// <param name="d0">left patch, going down</param>
+        /// <param name="d1">right patch, going down</param>
+        /// <param name="vertFn">converts positions and UVs into vertices</param>
+        /// <param name="resC">resolution of the top and bottom</param>
+        /// <param name="resD">resolution of the left and right</param>
         public static void RenderCoonsPatch(
             IRenderBin mesh,
             ISpline<Vector3> c0,

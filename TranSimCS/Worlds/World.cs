@@ -12,7 +12,6 @@ namespace TranSimCS.Worlds
     public class World{
         public ObservableCollection<RoadStrip> RoadSegments { get; } = new();
         public ObservableCollection<RoadNode> RoadNodes { get; } = new();
-
         public ObservableCollection<RoadSection> RoadSections { get; } = new();
 
         public RoadStrip FindRoadStrip(RoadNodeEnd start, RoadNodeEnd end) {
@@ -201,28 +200,33 @@ namespace TranSimCS.Worlds
             world.RoadSegments.Add(lc34c);
 
             //Set up an intersection example
-            var n10 = new RoadNode(world, "Node 10", new Vector3(-100, 0.1f,  20), RoadNode.AZIMUTH_NORTH);
-            var n11 = new RoadNode(world, "Node 11", new Vector3( -80, 2.1f,   0), RoadNode.AZIMUTH_EAST);
-            var n12 = new RoadNode(world, "Node 12", new Vector3(-100, 0.1f, -20), RoadNode.AZIMUTH_SOUTH);
-            var n13 = new RoadNode(world, "Node 13", new Vector3(-120, 2.1f,   0), RoadNode.AZIMUTH_WEST);
+            var n10l = new RoadNode(world, "Node 10", new Vector3(-110, 0.1f,  20), RoadNode.AZIMUTH_NORTH);
+            var n10r = new RoadNode(world, "Node 10", new Vector3( -90, 0.1f,  20), RoadNode.AZIMUTH_NORTH);
+            var n11  = new RoadNode(world, "Node 11", new Vector3( -80, 2.1f,   0), RoadNode.AZIMUTH_EAST);
+            var n12  = new RoadNode(world, "Node 12", new Vector3(-100, 0.1f, -20), RoadNode.AZIMUTH_SOUTH);
+            var n13  = new RoadNode(world, "Node 13", new Vector3(-120, 2.1f,   0), RoadNode.AZIMUTH_WEST);
 
-            Generator.GenerateLanes(2, n10, 3, -3);
+            Generator.GenerateLanes(2, n10l, 3, -3);
+            Generator.GenerateLanes(2, n10r, 3, -3);
             Generator.GenerateLanes(2, n11, 3, -3);
             Generator.GenerateLanes(2, n12, 3, -3);
             Generator.GenerateLanes(2, n13, 3, -3);
 
-            world.RoadNodes.Add(n10);
+            world.RoadNodes.Add(n10l);
+            world.RoadNodes.Add(n10r);
             world.RoadNodes.Add(n11);
             world.RoadNodes.Add(n12);
             world.RoadNodes.Add(n13);
 
-            var n10b = n10.RearEnd;
+            var n10lb = n10l.RearEnd;
+            var n10rb = n10r.RearEnd;
             var n11b = n11.RearEnd;
             var n12b = n12.RearEnd;
             var n13b = n13.RearEnd;
 
             var section = new RoadSection();
-            n10b.ConnectedSection.Value = section;
+            n10lb.ConnectedSection.Value = section;
+            n10rb.ConnectedSection.Value = section;
             n11b.ConnectedSection.Value = section;
             n12b.ConnectedSection.Value = section;
             n13b.ConnectedSection.Value = section;

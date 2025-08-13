@@ -185,19 +185,6 @@ namespace TranSimCS.Roads {
             var start = endsPair.Start;
             var end = endsPair.End;
 
-            //Generate bounding edges
-            var startLeft = Geometry.calcBoundingLineEndFaced(start, -1);
-            var startRight = Geometry.calcBoundingLineEndFaced(start, 1);
-            var endRight = Geometry.calcBoundingLineEndFaced(end, 1);
-            var endLeft = Geometry.calcBoundingLineEndFaced(end, -1);
-
-            var leftEdge = Geometry.GenerateSplinePoints(startLeft.Position, endRight.Position, startLeft.Tangential, endRight.Tangential,  accuracy);
-            var rightEdge = Geometry.GenerateSplinePoints(startRight.Position, endLeft.Position, startRight.Tangential, endLeft.Tangential, accuracy);
-            var wovenStrip = WeaveStrip(leftEdge, rightEdge);
-            var stripVerts = wovenStrip.Select(Geometry.CreateVertex).ToArray();
-
-            mesh.DrawStrip(stripVerts);
-
             //Find the nodes in the circular list
             var circularList = DLNode<RoadNodeEnd>.CreateCircular(roadSection.Nodes);
             var startNode = circularList;
@@ -221,11 +208,9 @@ namespace TranSimCS.Roads {
                 leftNode = leftNode.Next;
             }
             leftNodes.Add(leftNode.val);
-            Debug.Print($"{leftNodes.Count} lnodes {rightNodes.Count} rnodes");
 
             //Generate the main strip
-            var revLeftEdge = new List<Vector3>(leftEdge);
-            revLeftEdge.Reverse();
+            GenerateIntersectionStrip(mesh, start, end, accuracy);
 
             //Generate other vertices on the right
             GenerateSubrangeVerts(mesh, rightNodes.ToArray(), 1, accuracy);
@@ -238,66 +223,99 @@ namespace TranSimCS.Roads {
             var lbound = 1;
             var ubound = nodes.Length - 2;
 
-            var prevSpline = GenerateRoadEdge(nodes[0], nodes[nodes.Length-1], -discriminant).Inverse();
+            var prevSpline = GenerateRoadEdge(nodes[0], nodes[nodes.Length-1], -1).Inverse();
 
             while (lbound <= ubound) {
                 var preNode = nodes[lbound - 1];
                 var startNode = nodes[lbound];
                 var endNode = nodes[ubound];
                 var nextNode = nodes[ubound + 1];
+                var color = Color.White;
+
+                //top[0] = left[0]
+                //bottom[0] = left[1]
+                //top[1] = right[0]
+                //bottom[1] = right[1]
+                ISpline<Vector3> topSpline;
+                ISpline<Vector3> bottomSpline;
+                ISpline<Vector3> leftSpline;
+                ISpline<Vector3> rightSpline;
 
                 var preToStartSpline = GenerateRoadEdge(preNode, startNode, -1);
-                var endToNextSpline = GenerateRoadEdge(endNode, nextNode, -1);
-
-                ISpline<Vector3> A;//A[0] = D[1]
-                ISpline<Vector3> B;//B[0] = A[1]
-                ISpline<Vector3> C;//C[0] = B[1]
-                ISpline<Vector3> D;//D[0] = C[1]
+                var nextToEndSpline = GenerateRoadEdge(nextNode, endNode, 1);
 
                 if (lbound == ubound) {
                     var bounds = startNode.Bounds();
                     var lpos = Geometry.calcLineEnd(startNode, bounds.X).Position;
                     var rpos = Geometry.calcLineEnd(startNode, bounds.Y).Position;
-
+                    
                     //One node remaining
-                    A = prevSpline;
-                    B = preToStartSpline;
-                    C = new LineSegment(lpos, rpos);
-                    D = endToNextSpline;
+                    topSpline = prevSpline;
+                    bottomSpline = new LineSegment(rpos, lpos);
+                    leftSpline = preToStartSpline;
+                    rightSpline = nextToEndSpline;
                 } else {
                     //More nodes remaining
-                    var ledge = GenerateRoadEdge(startNode, endNode, -1);
-                    var redge = GenerateRoadEdge(startNode, endNode, 1);
+                    var ledge = GenerateRoadEdge(startNode, endNode, -discriminant);
+                    var redge = GenerateRoadEdge(startNode, endNode, discriminant);
                     var innerSpline = (discriminant < 0) ? redge : ledge;
                     var outerSpline = (discriminant < 0) ? ledge : redge;
 
                     //Calculations for the fill patch
-                    A = prevSpline;
-                    B = preToStartSpline;
-                    C = innerSpline;
-                    D = endToNextSpline;
+                    topSpline = prevSpline;
+                    bottomSpline = outerSpline;
+                    leftSpline = preToStartSpline;
+                    rightSpline = nextToEndSpline;
+                    color = Color.Cyan;
+                    color.A = 128;
+
+                    //Draw the road strip
+                    GenerateIntersectionStrip(mesh, startNode, endNode, accuracy);
                     
-                    prevSpline = outerSpline;
+                    prevSpline = innerSpline;
                 }
 
+
+
                 //Render the last-node or the inter-strip patch
-                RenderPatch.RenderCoonsPatch(mesh, A.Inverse(), C, B, D.Inverse(), (p, uv) => Geometry.CreateVertex(p), accuracy, accuracy);
+                RenderPatch.RenderCoonsPatch(mesh, bottomSpline, topSpline, leftSpline.Inverse(), rightSpline.Inverse(), (p, uv) => Geometry.CreateVertex(p, color), accuracy, accuracy);
+                var h = Vector3.UnitY * 5;
+                RenderPatch.DrawDebugFence(mesh, topSpline.Inverse(), h, Color.Red, accuracy);
+                RenderPatch.DrawDebugFence(mesh, leftSpline.Inverse(), h, Color.Yellow, accuracy);
+                RenderPatch.DrawDebugFence(mesh, bottomSpline.Inverse(), h, Color.Lime, accuracy);
+                RenderPatch.DrawDebugFence(mesh, rightSpline, h, Color.Blue, accuracy);
 
                 lbound++;
                 ubound--;
             }
         }
+
+        /// <summary>
+        /// Generates a road edge from <paramref name="start"/> to <paramref name="end"/>, at left if <paramref name="discriminant"/>&lt;0, at the right otherwise
+        /// </summary>
+        /// <param name="start">start node</param>
+        /// <param name="end">end node</param>
+        /// <param name="discriminant">determines the sidea</param>
+        /// <returns></returns>
         public static Bezier3 GenerateRoadEdge(RoadNodeEnd start, RoadNodeEnd end, int discriminant) {
-            LineEnd startPos;
-            LineEnd endPos;
-            if(discriminant < 0) {
-                startPos = Geometry.calcBoundingLineEndFaced(end, 1);
-                endPos = Geometry.calcBoundingLineEndFaced(start, -1);
-            } else {
-                startPos = Geometry.calcBoundingLineEndFaced(start, 1);
-                endPos = Geometry.calcBoundingLineEndFaced(end, -1);
-            }
+            LineEnd startPos = Geometry.calcBoundingLineEndFaced(start, discriminant);
+            LineEnd endPos = Geometry.calcBoundingLineEndFaced(end, -discriminant);            
             return Geometry.GenerateJoinSpline(startPos.Ray, endPos.Ray);
+        }
+
+        public static void GenerateIntersectionStrip(IRenderBin mesh, RoadNodeEnd start, RoadNodeEnd end, int accuracy = 17) {
+            //Generate bounding edges
+            var startLeft = Geometry.calcBoundingLineEndFaced(start, -1);
+            var startRight = Geometry.calcBoundingLineEndFaced(start, 1);
+            var endRight = Geometry.calcBoundingLineEndFaced(end, 1);
+            var endLeft = Geometry.calcBoundingLineEndFaced(end, -1);
+
+            var leftEdge = Geometry.GenerateSplinePoints(startLeft.Position, endRight.Position, startLeft.Tangential, endRight.Tangential, accuracy);
+            var rightEdge = Geometry.GenerateSplinePoints(startRight.Position, endLeft.Position, startRight.Tangential, endLeft.Tangential, accuracy);
+            var wovenStrip = WeaveStrip(leftEdge, rightEdge);
+            var stripVerts = wovenStrip.Select(Geometry.CreateVertex).ToArray();
+
+            mesh.DrawStrip(stripVerts);
         }
     }
 }

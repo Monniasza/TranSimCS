@@ -182,6 +182,10 @@ namespace TranSimCS
             return new(pos, Color.White, new(pos.X, pos.Z));
         }
 
+        public static VertexPositionColorTexture CreateVertex(Vector3 pos, Color c) {
+            return new(pos, c, new(pos.X, pos.Z));
+        }
+
         public static float FieldToRadians(int azimuth) {
             return (azimuth / (float)(1L << 32)) * MathF.PI * 2;
         }
