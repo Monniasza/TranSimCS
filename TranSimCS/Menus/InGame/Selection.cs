@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using TranSimCS.Roads;
+using TranSimCS.Spline;
 
 namespace TranSimCS.Menus.InGame {
     public struct AddLaneSelection {

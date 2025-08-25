@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework.Input;
 using MLEM.Ui.Elements;
 using TranSimCS.Model;
 using TranSimCS.Roads;
+using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Menus.InGame {

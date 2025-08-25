@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Render;
+using TranSimCS.Spline;
 using static TranSimCS.Geometry;
 
 namespace TranSimCS.Roads {
@@ -232,11 +233,6 @@ namespace TranSimCS.Roads {
                 var endNode = nodes[ubound];
                 var nextNode = nodes[ubound + 1];
                 var color = Color.White;
-
-                //top[0] = left[0]
-                //bottom[0] = left[1]
-                //top[1] = right[0]
-                //bottom[1] = right[1]
                 ISpline<Vector3> topSpline;
                 ISpline<Vector3> bottomSpline;
                 ISpline<Vector3> leftSpline;

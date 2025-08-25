@@ -2,27 +2,8 @@
 using System.Runtime.Intrinsics.X86;
 using Microsoft.Xna.Framework;
 
-namespace TranSimCS
+namespace TranSimCS.Spline
 {
-    public class SplineFromFunction<T>(Func<float, T> fn) : ISpline<T> {
-        public T this[float t] => fn(t);
-    }
-
-    public class SubRangeSpline<T>(ISpline<T> spline, float from, float to): ISpline<T> {
-        public T this[float t] => spline[from + (to-from) * t];
-        public ISpline<T> SubRange(float from2, float to2) {
-            var lerpedFrom = from + (to - from) * from2;
-            var lerpedTo= from + (to - from) * to2;
-            return new SubRangeSpline<T>(spline, lerpedFrom, lerpedTo);
-        }
-    }
-
-
-    public interface ISpline<T> {
-        public T this[float t] { get; }
-        public ISpline<T> Inverse() => SubRange(1, 0);
-        public ISpline<T> SubRange(float from, float to) => new SubRangeSpline<T>(this, from, to);
-    }
 
     public struct LineSegment: ISpline<Vector3> {
         public Vector3 a;
@@ -52,17 +33,29 @@ namespace TranSimCS
         }
         public Bezier3(Vector3 a) {
             this.a = a;
-            this.b = a;
-            this.c = a;
-            this.d = a;
+            b = a;
+            c = a;
+            d = a;
         }
-
 
         public Vector3 this[float t] {
             get {
                 float u = 1 - t;
                 return u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d;
             }
+        }
+
+        public static Vector3 Interpolate(Vector3 a, Vector3 b, Vector3 c, Vector3 d, int t) {
+            float u = 1 - t;
+            float tt = t * t;
+            float uu = u * u;
+            return uu * u * a + 3 * uu * t * b + 3 * u * tt * c + t * tt * d;
+        }
+        public static Vector4 BasisFunctions(int t) {
+            float u = 1 - t;
+            float tt = t * t;
+            float uu = u * u;
+            return new(u * uu, t * uu, u * tt, t * tt);
         }
 
         public static Bezier3 operator +(Bezier3 first, Bezier3 other) {
@@ -120,6 +113,14 @@ namespace TranSimCS
 
         public Bezier3 Inverse() => new(d, c, b, a);
         public Bezier3 SubRange(float from, float to) => LenientSubSection(this, from, to);
+        public static Bezier3 Lerp(Bezier3 from, Bezier3 to, float t) {
+            return new(
+                Vector3.Lerp(from.a, to.a, t),
+                Vector3.Lerp(from.b, to.b, t),
+                Vector3.Lerp(from.c, to.c, t),
+                Vector3.Lerp(from.d, to.d, t)
+            );
+        }
 
         public static Bezier3 LenientSubSection(Bezier3 bezier, float startT, float endT) {
             if (startT > endT) return SubSection(bezier, endT, startT).Inverse();

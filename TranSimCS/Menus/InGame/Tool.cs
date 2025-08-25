@@ -11,6 +11,7 @@ using MLEM.Input;
 using TranSimCS.Menus.Gizmo;
 using TranSimCS.Model;
 using TranSimCS.Roads;
+using TranSimCS.Spline;
 using TranSimCS.Worlds;
 using static MLEM.Ui.Elements.Paragraph;
 
