@@ -267,8 +267,6 @@ namespace TranSimCS.Roads {
                     bottomSpline = outerSpline;
                     leftSpline = preToStartSpline;
                     rightSpline = nextToEndSpline;
-                    color = Color.Cyan;
-                    color.A = 128;
 
                     //Draw the road strip
                     GenerateIntersectionStrip(mesh, startNode, endNode, accuracy);
@@ -276,15 +274,8 @@ namespace TranSimCS.Roads {
                     prevSpline = innerSpline;
                 }
 
-
-
                 //Render the last-node or the inter-strip patch
                 RenderPatch.RenderCoonsPatch(mesh, bottomSpline, topSpline, leftSpline.Inverse(), rightSpline.Inverse(), (p, uv) => Geometry.CreateVertex(p, color), accuracy, accuracy);
-                var h = Vector3.UnitY * 5;
-                RenderPatch.DrawDebugFence(mesh, topSpline.Inverse(), h, Color.Red, accuracy);
-                RenderPatch.DrawDebugFence(mesh, leftSpline.Inverse(), h, Color.Yellow, accuracy);
-                RenderPatch.DrawDebugFence(mesh, bottomSpline.Inverse(), h, Color.Lime, accuracy);
-                RenderPatch.DrawDebugFence(mesh, rightSpline, h, Color.Blue, accuracy);
 
                 lbound++;
                 ubound--;
