@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Ui.Elements;
+using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Worlds;
 

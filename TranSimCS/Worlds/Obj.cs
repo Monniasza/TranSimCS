@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Iesi.Collections.Generic;
 using Microsoft.Xna.Framework;
 using TranSimCS.Menus.InGame;
+using TranSimCS.Model;
 
 namespace TranSimCS.Worlds {
     /// <summary>

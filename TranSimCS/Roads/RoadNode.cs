@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Iesi.Collections.Generic;
 using Microsoft.Xna.Framework;
+using TranSimCS.Model;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads {

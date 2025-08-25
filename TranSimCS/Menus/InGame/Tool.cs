@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using TranSimCS.Menus.Gizmo;
+using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Worlds;
 using static MLEM.Ui.Elements.Paragraph;

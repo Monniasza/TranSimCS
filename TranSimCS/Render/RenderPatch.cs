@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Model;
 
 namespace TranSimCS.Render {
     public delegate VertexPositionColorTexture PointGenerator(Vector3 pointPos, Vector2 interpPos);

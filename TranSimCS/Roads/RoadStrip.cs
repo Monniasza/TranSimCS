@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
+using TranSimCS.Model;
 using static TranSimCS.Roads.Roads;
 
 namespace TranSimCS.Roads {

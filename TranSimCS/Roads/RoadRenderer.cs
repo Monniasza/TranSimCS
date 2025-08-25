@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Menus.InGame;
+using TranSimCS.Model;
 using TranSimCS.Render;
 using static TranSimCS.Geometry;
 
