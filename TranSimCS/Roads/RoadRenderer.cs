@@ -147,8 +147,8 @@ namespace TranSimCS.Roads {
 
             var pos1L = calcLineEnd(n1l, laneIndexStartL.LeftPosition, dirStart);
             var pos1R = calcLineEnd(n1r, laneIndexStartR.RightPosition, dirStart);
-            var pos2L = calcLineEnd(n2l, laneIndexEndL.LeftPosition, dirEnd);
-            var pos2R = calcLineEnd(n2r, laneIndexEndR.RightPosition, dirEnd);
+            var pos2L = calcLineEnd(n2l, laneIndexEndL.LeftPosition, dirEnd.Negate());
+            var pos2R = calcLineEnd(n2r, laneIndexEndR.RightPosition, dirEnd.Negate());
             LineEnd tmp;
 
             //Ensure the node ordering
