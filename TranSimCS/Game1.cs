@@ -15,6 +15,8 @@ using TranSimCS.Roads;
 using SpriteFontPlus;
 using System.IO;
 using MLEM.Misc;
+using MLEM.Textures;
+using MLEM.Ui.Elements;
 
 namespace TranSimCS
 {
@@ -85,9 +87,9 @@ namespace TranSimCS
             GsfSmall = new GenericSpriteFont(FontSmall);
 
 
-            defaultUiStyle = new UntexturedStyle(SpriteBatch);
-            defaultUiStyle.Font = GsfSmall;
-            defaultUiStyle.PanelColor = Color.DarkGray;
+            defaultUiStyle = CreateUiStyle();
+
+            
 
             MlemPlatform.Current = MlemPlatform.Current = new MlemPlatform.DesktopGl<TextInputEventArgs>((w, c) => w.TextInput += c);
             Menu = new InGameMenu(this);
@@ -116,6 +118,40 @@ namespace TranSimCS
             Menu?.Draw(gameTime);
             Menu?.Draw2D(gameTime);
             base.Draw(gameTime);
+        }
+
+        private UntexturedStyle CreateUiStyle() {
+            var s = new UntexturedStyle(SpriteBatch);
+            s.Font = GsfSmall;
+            s.PanelColor = Color.DarkGray;
+            var panelTex = Content.Load<Texture2D>("ui/panel");
+            var panel9patch = new NinePatch(panelTex, 4);
+            var panelTex2 = Content.Load<Texture2D>("ui/panelsmokeblack");
+            var panel9patch2 = new NinePatch(panelTex2, 4);
+
+            //s.ButtonTexture = panel9patch;
+            //Workaround for no ButtonColor - going to go in future
+            s.ButtonTexture = panel9patch2;
+
+            s.ButtonHoveredTexture = panel9patch;
+            s.ButtonHoveredColor = Colors.SemiClearAzure;
+            s.ButtonDisabledColor = Colors.SemiClearGray;
+            s.ButtonDisabledTexture = panel9patch;
+
+            s.PanelColor = Colors.SmokedGlass;
+            s.PanelTexture = panel9patch;
+
+            s.TextFieldTexture = panel9patch2;
+            s.TextFieldHoveredTexture = panel9patch;
+            s.TextFieldHoveredColor = Colors.SemiClearAzure;
+            s.TextFieldCaretWidth = 2;
+
+            s.CheckboxTexture = panel9patch2;
+            s.CheckboxHoveredColor = Colors.SemiClearAzure;
+            s.CheckboxDisabledColor = Colors.SemiClearGray;
+            s.CheckboxCheckmark = new TextureRegion(Content.Load<Texture2D>("ui/check"));
+
+            return s;
         }
     }
 }

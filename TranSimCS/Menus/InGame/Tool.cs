@@ -142,10 +142,8 @@ namespace TranSimCS.Menus.InGame {
                         world.RoadNodes.Add(newNode);
                     }
                     if(selectedNode != null) {
-                        var segment = world.GetOrMakeRoadStrip(node.Value.RoadNodeEnd, selectedNode.Value.RoadNodeEnd);
-                        var strip = new LaneStrip(segment, node.Value, selectedNode.Value.OppositeEnd);
+                        var strip = world.GetOrMakeLaneStrip(node.Value, selectedNode.Value.OppositeEnd);
                         strip.Spec = spec;
-                        segment.MaybeAddLaneStrip(strip);
                         node = selectedNode;
                     }
                 }
