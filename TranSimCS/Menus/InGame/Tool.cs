@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
+using MLEM.Ui;
 using TranSimCS.Menus.Gizmo;
 using TranSimCS.Model;
 using TranSimCS.Roads;
@@ -27,6 +28,9 @@ namespace TranSimCS.Menus.InGame {
         public void Draw(GameTime gameTime);
         public void Draw2D(GameTime gameTime);
         public void AddSelectors(MultiMesh addTo) { }
+
+        public void OnOpen() { }
+        public void OnClose() { }
     }
 
     public class RoadDemolitionTool(InGameMenu game) : ITool {
@@ -94,7 +98,7 @@ namespace TranSimCS.Menus.InGame {
         }
     }
 
-    public class RoadCreationTool(InGameMenu menu): ITool {
+    public class RoadCreationTool: ITool {
         static readonly Vector3 offset = new Vector3(0, 0.01f, 0);
 
         string ITool.Name => "Road creation tool";
@@ -105,6 +109,12 @@ namespace TranSimCS.Menus.InGame {
         LaneEnd? node;
         public LaneStrip? SegmentAlreadyExists { get; private set; } = null;
         public ObjPos? NewNodePosition { get; private set; }
+
+        public readonly InGameMenu menu;
+        public RoadCreationTool(InGameMenu menu) {
+            this.menu = menu;
+            RoadTools = new RoadTools(menu, Anchor.CenterLeft, new(200, 0.5f));
+        }
 
         private LaneEnd? GetLaneEnd() {
             var le = menu.MouseOverRoad?.SelectedLaneEnd;
@@ -254,6 +264,15 @@ namespace TranSimCS.Menus.InGame {
 
         void ITool.AddSelectors(MultiMesh addTo) {
             SelectionUtils.AddAddLaneSelectors(menu);
+        }
+
+        public RoadTools RoadTools { get; private set; }
+        public const string uiID = "roadTools";
+        void ITool.OnOpen() {
+            menu.UiSystem.Add(uiID, RoadTools);
+        }
+        void ITool.OnClose() {
+            menu.UiSystem.Remove(uiID);
         }
     }
 

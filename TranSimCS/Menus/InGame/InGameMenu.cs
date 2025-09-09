@@ -19,7 +19,17 @@ namespace TranSimCS.Menus.InGame {
         public static readonly Plane groundPlane = new Plane(0, 1, 0, -0.1f);
 
         public World World { get; private set; }
-        public ITool Tool {  get; set; }
+
+        private ITool _tool;
+        public ITool Tool {
+            get => _tool;
+            set {
+                var newTool = value;
+                _tool?.OnClose();
+                newTool?.OnOpen();
+                _tool = value;
+            }
+        }
 
         //Graphics
         private BasicEffect effect;
