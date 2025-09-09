@@ -19,8 +19,10 @@ namespace TranSimCS.Menus.InGame {
 
         public RoadTools(InGameMenu game, Anchor anchor, Vector2 size)
             : base(anchor, size, true) {
-            Checkbox anarchyCheck = new Checkbox(Anchor.AutoInline, new(20, 20), "", false);
+
+            Checkbox anarchyCheck = new Checkbox(Anchor.AutoInline, new(21, 21), "", false);
             anarchyCheck.Checkmark = LoadStyleProp(game, "ui/anarchy2");
+            AddChild(anarchyCheck);
         }
     }
 }
