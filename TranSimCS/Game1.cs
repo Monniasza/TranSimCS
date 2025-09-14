@@ -190,6 +190,13 @@ namespace TranSimCS
             s.CheckboxDisabledColor = Colors.SemiClearGray;
             s.CheckboxCheckmark = new TextureRegion(Content.Load<Texture2D>("ui/check"));
 
+            s.RadioColor = Colors.SmokedGlass;
+            s.RadioTexture = panel9patch;
+            s.RadioHoveredColor = Colors.SemiClearAzure;
+            s.RadioHoveredTexture = panel9patch;
+            //s.RadioUncheckedColor = Color.Gray;
+            //s.RadioCheckColor = Color.White;
+
             s.SelectionIndicator = outline;
 
             return s;
