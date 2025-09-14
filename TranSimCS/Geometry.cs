@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Graphics.PackedVector;
 using TranSimCS.Roads;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
@@ -14,6 +15,17 @@ namespace TranSimCS
 {
     internal static class Geometry
     {
+        public static Vector3 FindNearest(Ray ray, Vector3 point, out float tt) {
+            var direction = ray.Direction;
+            var dirLen = direction.Length();
+            direction.Normalize();
+            var point2vec = point - ray.Position;
+            var dist = Vector3.Dot(direction, point2vec);
+            var t = dist / dirLen;
+            tt = t;
+            return ray.Position + t * ray.Direction;
+        }
+
         /// <summary>
         /// Calculates the distance between two points in 2D space.
         /// </summary>

@@ -73,8 +73,6 @@
 /processorParam:TextureFormat=Color
 /build:eyedropper.png
 
-
-
 #begin laneTex.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -482,6 +480,30 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:ui/curved.png
+
+#begin ui/flatIncline.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:ui/flatIncline.png
+
+#begin ui/flatTilt.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:ui/flatTilt.png
 
 #begin ui/line.png
 /importer:TextureImporter

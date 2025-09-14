@@ -78,6 +78,9 @@ namespace TranSimCS.Menus.InGame {
         private Color laneHighlightColor2 = new Color(0, 192, 255, 100); //Color for highlighting the selected road half
         private Color roadSegmentHighlightColor = new Color(0, 128, 255, 100); //Color for highlighting selected road segments
         
+        //Tools
+        public RoadCreationTool RoadCreationTool { get; private set; }
+
         internal InGameMenu(Game1 game): base(game) {
             roadProperty = new Property<LaneSpec>(LaneSpec.Default, "lane spec");
         }
@@ -130,9 +133,10 @@ namespace TranSimCS.Menus.InGame {
 
             configurator = new RoadConfigurator(this, roadProperty, MLEM.Ui.Anchor.Center, new(0.5f, 0.5f));
 
+            RoadCreationTool = new RoadCreationTool(this);
             SetUpToolPictureButton("noTool", null);
             SetUpToolPictureButton("removeRoadTool", new RoadDemolitionTool(this));
-            SetUpToolPictureButton("addRoadTool", new RoadCreationTool(this));
+            SetUpToolPictureButton("addRoadTool", RoadCreationTool);
             SetUpToolPictureButton("addNodeTool", new AddNodeTool(this));
             SetUpToolPictureButton("eyedropper", new PickerTool(this));
             SetUpToolPictureButton("moveTool", new MoveTool(this));

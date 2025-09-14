@@ -13,6 +13,8 @@ using MLEM.Ui.Style;
 namespace TranSimCS.Menus.InGame {
     public class RoadTools : Panel {
         public InGameMenu Game { get; private set; }
+        public Checkbox flattenTilt { get; private set; }
+        public Checkbox flattenIncline { get; private set; }
 
         public StyleProp<TextureRegion> LoadStyleProp(string name) {
             return new StyleProp<TextureRegion>(new TextureRegion(Game.Game.Content.Load<Texture2D>(name)));
@@ -28,19 +30,32 @@ namespace TranSimCS.Menus.InGame {
             anarchyCheck.CheckColor = Color.Orange;
             AddChild(anarchyCheck);
 
+            flattenTilt = new Checkbox(Anchor.AutoInline, new(21, 21), "", false);
+            flattenTilt.AddTooltip("Flatten tilt");
+            flattenTilt.Checkmark = LoadStyleProp("ui/flatTilt");
+            flattenTilt.UncheckColor = Color.Gray;
+            AddChild(flattenTilt);
+
+            flattenIncline = new Checkbox(Anchor.AutoInline, new(21, 21), "", false);
+            flattenIncline.AddTooltip("Flatten inclination");
+            flattenIncline.Checkmark = LoadStyleProp("ui/flatIncline");
+            flattenIncline.UncheckColor = Color.Gray;
+            AddChild(flattenIncline);
+
             //Modes
-            CreateModeButton("ui/line", "Straight");
-            CreateModeButton("ui/curved", "Circular arc");
-            CreateModeButton("ui/sbend", "S-bend, same-direction");
-            CreateModeButton("ui/sbend3C", "S-bend, custom direction");
+            CreateModeButton(new StraightMode(), "ui/line");
+            CreateModeButton(new CircMode(), "ui/curved");
+            CreateModeButton(new SBendMode(), "ui/sbend");
+            //CreateModeButton("ui/sbend3C", "S-bend, custom direction");
         }
 
-        public RadioButton CreateModeButton(/*RoadMode mode,*/ String icon, String name) {
+        public RadioButton CreateModeButton(RoadMode mode, String icon) {
             RadioButton radio = new RadioButton(Anchor.AutoInline, new(21, 21), "", false, "mode");
             radio.Checkmark = LoadStyleProp(icon);
             radio.UncheckColor = Color.Gray;
             radio.CheckColor = Color.White;
-            radio.AddTooltip(name);
+            radio.AddTooltip((p) => mode.Name);
+            radio.OnSelected += (a) => Game.RoadCreationTool.Mode = mode;
             AddChild(radio);
             return radio;
         }
