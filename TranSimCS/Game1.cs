@@ -64,32 +64,70 @@ namespace TranSimCS
         }
         protected override void LoadContent() {
             SpriteBatch = new SpriteBatch(base.GraphicsDevice);
+
             //Font
-            var fontBakeResult = TtfFontBaker.Bake(File.ReadAllBytes(@"C:\\Windows\\Fonts\arial.ttf"),
-                25, 1024, 1024, [
-                    CharacterRange.BasicLatin,
-                    CharacterRange.Latin1Supplement,
-                    CharacterRange.LatinExtendedA,
-                    CharacterRange.Cyrillic
-                ]
-            );
-            Font = fontBakeResult.CreateSpriteFont(base.GraphicsDevice);
+            SpriteFont TryBakeOrFallback(string relativeTtfPath, int size, int atlasW, int atlasH, CharacterRange[] ranges) {
+                // Local helper to try baking from a single path
+                SpriteFont TryBakeFromPath(string path) {
+                    var bytes = File.ReadAllBytes(path);
+                    var baked = TtfFontBaker.Bake(bytes, size, atlasW, atlasH, ranges);
+                    return baked.CreateSpriteFont(base.GraphicsDevice);
+                }
+                try {
+                    var ttfPath = Path.Combine(Content.RootDirectory, relativeTtfPath);
+                    if (File.Exists(ttfPath))
+                        return TryBakeFromPath(ttfPath);
+                } catch {
+                    // ignore and fall back to system fonts below
+                }
+                // Fallback to common system font locations per OS
+                var candidates = new List<string>();
+                if (OperatingSystem.IsWindows()) {
+                    var fonts = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
+                    candidates.AddRange(new[] {
+                        Path.Combine(fonts, "arial.ttf"),
+                        Path.Combine(fonts, "segoeui.ttf"),
+                        Path.Combine(fonts, "tahoma.ttf"),
+                        Path.Combine(fonts, "calibri.ttf"),
+                    });
+                } else if (OperatingSystem.IsLinux()) {
+                    candidates.AddRange(new[] {
+                        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                        "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+                        "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
+                        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+                    });
+                } else if (OperatingSystem.IsMacOS()) {
+                    candidates.AddRange(new[] {
+                        "/Library/Fonts/Arial.ttf",
+                        "/System/Library/Fonts/Supplemental/Arial.ttf",
+                        "/Library/Fonts/Helvetica.ttc"
+                    });
+                }
+                foreach (var path in candidates) {
+                    try {
+                        if (File.Exists(path))
+                            return TryBakeFromPath(path);
+                    } catch {
+                        // try next candidate
+                    }
+                }
+                throw new FileNotFoundException("No usable TTF font found. Add a TTF to Content/Fonts (e.g., Roboto-Regular.ttf) or install a common system font (Arial/DejaVuSans).");
+            }
+            var ranges = new[] {
+                CharacterRange.BasicLatin,
+                CharacterRange.Latin1Supplement,
+                CharacterRange.LatinExtendedA,
+                CharacterRange.Cyrillic
+            };
+            // Attempt to load a cross-platform TTF shipped with the game
+            // Place a TTF at Content/Fonts/Roboto-Regular.ttf for portability
+            Font = TryBakeOrFallback(Path.Combine("Fonts", "Roboto-Regular.ttf"), 25, 1024, 1024, ranges);
             Gsf = new GenericSpriteFont(Font);
-            var fontBakeResultSmall = TtfFontBaker.Bake(File.ReadAllBytes(@"C:\\Windows\\Fonts\arial.ttf"),
-                12, 512, 512, [
-                    CharacterRange.BasicLatin,
-                    CharacterRange.Latin1Supplement,
-                    CharacterRange.LatinExtendedA,
-                    CharacterRange.Cyrillic
-                ]
-            );
-            FontSmall = fontBakeResultSmall.CreateSpriteFont(base.GraphicsDevice);
+            FontSmall = TryBakeOrFallback(Path.Combine("Fonts", "Roboto-Regular.ttf"), 12, 512, 512, ranges);
             GsfSmall = new GenericSpriteFont(FontSmall);
 
-
-            defaultUiStyle = CreateUiStyle();
-
-            
+            defaultUiStyle = CreateUiStyle();   
 
             MlemPlatform.Current = MlemPlatform.Current = new MlemPlatform.DesktopGl<TextInputEventArgs>((w, c) => w.TextInput += c);
             Menu = new InGameMenu(this);

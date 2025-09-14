@@ -36,9 +36,11 @@ namespace TranSimCS.Model {
                 if (renderBin.Vertices.Count == 0 || renderBin.Indices.Count == 0) continue;
                 foreach (var pass in Effect.CurrentTechnique.Passes) {
                     pass.Apply();
-                    GraphicsDevice.SetVertexBuffer(new VertexBuffer(GraphicsDevice, typeof(VertexPositionColorTexture), renderBin.Vertices.Count, BufferUsage.WriteOnly));
-                    GraphicsDevice.Indices = new IndexBuffer(GraphicsDevice, IndexElementSize.ThirtyTwoBits, renderBin.Indices.Count, BufferUsage.WriteOnly);
-                    GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, renderBin.Vertices.ToArray(), 0, renderBin.Vertices.Count, renderBin.Indices.ToArray(), 0, renderBin.Indices.Count / 3);
+                    // Use user-provided arrays directly to avoid per-frame buffer allocations
+                    GraphicsDevice.DrawUserIndexedPrimitives(
+                        PrimitiveType.TriangleList,
+                        renderBin.Vertices.ToArray(), 0, renderBin.Vertices.Count,
+                        renderBin.Indices.ToArray(), 0, renderBin.Indices.Count / 3);
                 }
             }
         }
