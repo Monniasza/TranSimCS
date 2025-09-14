@@ -22,6 +22,8 @@ namespace TranSimCS.Menus.InGame {
 
             Checkbox anarchyCheck = new Checkbox(Anchor.AutoInline, new(1, 21), "Anarchy", false);
             anarchyCheck.Checkmark = LoadStyleProp(game, "ui/anarchy2");
+            anarchyCheck.UncheckColor = Color.LightGray;
+            anarchyCheck.CheckColor = Color.Orange;
             AddChild(anarchyCheck);
         }
     }
