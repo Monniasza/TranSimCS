@@ -104,6 +104,10 @@ namespace TranSimCS.Roads {
                 connection.Destroy();
             }
             lane.connections.Clear(); // Clear the connections of the lane being removed
+            if(Lanes.Count == 0) {
+                //Demolish the node
+                World.RoadNodes.Remove(this);
+            }
             InvalidateMesh();
         }
         public void ClearLanes() {
