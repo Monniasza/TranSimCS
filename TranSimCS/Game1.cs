@@ -128,6 +128,7 @@ namespace TranSimCS
             var panel9patch = new NinePatch(panelTex, 4);
             var panelTex2 = Content.Load<Texture2D>("ui/panelsmokeblack");
             var panel9patch2 = new NinePatch(panelTex2, 4);
+            var outline = new NinePatch(Content.Load<Texture2D>("ui/outline"), 6);
 
             //s.ButtonTexture = panel9patch;
             //Workaround for no ButtonColor - going to go in future
@@ -150,6 +151,8 @@ namespace TranSimCS
             s.CheckboxHoveredColor = Colors.SemiClearAzure;
             s.CheckboxDisabledColor = Colors.SemiClearGray;
             s.CheckboxCheckmark = new TextureRegion(Content.Load<Texture2D>("ui/check"));
+
+            s.SelectionIndicator = outline;
 
             return s;
         }

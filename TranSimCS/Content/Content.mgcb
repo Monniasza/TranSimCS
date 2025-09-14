@@ -433,30 +433,6 @@
 /processorParam:TextureFormat=Color
 /build:ui/anarchy.png
 
-#begin ui/anarchy.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:ui/anarchy.png
-
-#begin ui/anarchy2.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:ui/anarchy2.png
-
 #begin ui/anarchy2.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -480,18 +456,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:ui/blast.png
-
-#begin ui/check.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:ui/check.png
 
 #begin ui/check.png
 /importer:TextureImporter
@@ -541,7 +505,7 @@
 /processorParam:TextureFormat=Color
 /build:ui/node.png
 
-#begin ui/panel.png
+#begin ui/outline.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -551,7 +515,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:ui/panel.png
+/build:ui/outline.png
 
 #begin ui/panel.png
 /importer:TextureImporter
@@ -564,18 +528,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:ui/panel.png
-
-#begin ui/panelsmokeblack.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:ui/panelsmokeblack.png
 
 #begin ui/panelsmokeblack.png
 /importer:TextureImporter
