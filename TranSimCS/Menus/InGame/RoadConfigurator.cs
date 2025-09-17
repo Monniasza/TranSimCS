@@ -158,7 +158,7 @@ namespace TranSimCS.Menus.InGame {
             if(byte.TryParse(s, out var value)) { return value; }
             return oldValue;
         }
-        private float GetNewFloat(string s, float oldValue) {
+        public static float GetNewFloat(string s, float oldValue) {
             if (s.Length == 0) return 0;
             if (float.TryParse(s, out var value)) { return value; }
             return oldValue;

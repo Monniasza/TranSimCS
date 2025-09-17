@@ -118,7 +118,14 @@ namespace TranSimCS.Menus.InGame {
         }
 
         void ITool.OnKeyDown(Keys key) {
-            //unused
+            switch (key) {
+                case Keys.PageUp:
+                    RoadTools.Height.Value += RoadTools.HeightStep.Value;
+                    break;
+                case Keys.PageDown:
+                    RoadTools.Height.Value -= RoadTools.HeightStep.Value;
+                    break;
+            }
         }
 
         void ITool.OnKeyUp(Keys key) {
@@ -168,9 +175,9 @@ namespace TranSimCS.Menus.InGame {
                     NewNodePosition = null;
                 } else if (mouseOverLaneEnd == null) {
                     //Create a synthetic end
-                    var isSameDirection = menu.CheckSameDirection.Checked;
                     SegmentAlreadyExists = null;
-                    endPos = menu.GroundSelection;
+                    Plane selectionPlane = new Plane(Vector3.UnitY * RoadTools.Height.Value, Vector3.UnitY);
+                    endPos = Geometry.IntersectRayPlane(menu.MouseRay, selectionPlane);
 
                     RoadPlan plan = new RoadPlan {
                         startLateral = startingLateral,

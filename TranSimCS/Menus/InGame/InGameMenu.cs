@@ -65,7 +65,7 @@ namespace TranSimCS.Menus.InGame {
         public bool IsMouseOverUI { get; private set; }
         public Checkbox CheckNodes { get; private set; }
         public Checkbox CheckSegments { get; private set; }
-        public Checkbox CheckSameDirection { get; private set; }
+        public Checkbox CheckSections { get; private set; }
         public Property<LaneSpec> roadProperty { get; private set; }
         public RoadConfigurator configurator { get; private set; }
 
@@ -118,24 +118,24 @@ namespace TranSimCS.Menus.InGame {
             RootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 120));
             UiSystem.Add("lower", RootPanel);
 
-            ToolPanel = new Panel(MLEM.Ui.Anchor.TopCenter, new(1f, 80));
+            ToolPanel = new Panel(MLEM.Ui.Anchor.TopCenter, new(1f, 48));
             RootPanel.AddChild(ToolPanel);
 
             SettingsPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1f, 40));
             RootPanel.AddChild(SettingsPanel);
 
-            CheckNodes = new Checkbox(MLEM.Ui.Anchor.AutoInlineBottom, new(0.25f, 20), "Select nodes", true);
-            CheckSegments = new Checkbox(MLEM.Ui.Anchor.AutoInlineBottom, new(0.25f, 20), "Select segments", true);
-            CheckSameDirection = new Checkbox(MLEM.Ui.Anchor.AutoInlineBottom, new(0.25f, 20), "New node in same direction", true);
-            SettingsPanel.AddChild(CheckNodes);
-            SettingsPanel.AddChild(CheckSegments);
-            SettingsPanel.AddChild(CheckSameDirection);
+            CheckNodes = UI.CreateCheck(this, SettingsPanel, "Select nodes", "ui/node");
+            CheckNodes.Checked = true;
+            CheckSegments = UI.CreateCheck(this, SettingsPanel, "Select segments", "ui/road");
+            CheckSegments.Checked = true;
+            CheckSections = UI.CreateCheck(this, SettingsPanel, "Select sections and intersections", "ui/junction");
+            CheckSections.Checked = true;
 
             configurator = new RoadConfigurator(this, roadProperty, MLEM.Ui.Anchor.Center, new(0.5f, 0.5f));
 
             RoadCreationTool = new RoadCreationTool(this);
             SetUpToolPictureButton("noTool", null);
-            SetUpToolPictureButton("removeRoadTool", new RoadDemolitionTool(this));
+            SetUpToolPictureButton("ui/blast2", new RoadDemolitionTool(this));
             SetUpToolPictureButton("addRoadTool", RoadCreationTool);
             SetUpToolPictureButton("addNodeTool", new AddNodeTool(this));
             SetUpToolPictureButton("eyedropper", new PickerTool(this));
@@ -146,14 +146,14 @@ namespace TranSimCS.Menus.InGame {
             return (_) => new MLEM.Textures.TextureRegion(texture2D);
         }
         private PictureButton SetUpPictureButton(String texture, Action? callback = null) {
-            var button = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(64, 64), CreateTextureCallback(Game.Content.Load<Texture2D>(texture)));
+            var button = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(40, 40), CreateTextureCallback(Game.Content.Load<Texture2D>(texture)), MLEM.Ui.Anchor.Center, new(32, 32));
             if(callback != null) 
                 button.OnPressed = (e) => callback.Invoke();
             ToolPanel.AddChild(button);
             return button;
         }
-        private PictureButton SetUpToolPictureButton(String texture, ITool tool) {
-            return SetUpPictureButton(texture, () => Tool = tool);
+        private (PictureButton, ITool) SetUpToolPictureButton(String texture, ITool tool) {
+            return (SetUpPictureButton(texture, () => Tool = tool), tool);
         }
 
         public override void Update(GameTime time) {
