@@ -47,7 +47,7 @@ namespace TranSimCS.Roads {
         RoadNodeEnd IReadOnlyList<RoadNodeEnd>.this[int index] => GetElement(index);
     }
 
-    public class RoadSection : Obj {
+    public class RoadSection : Obj{
         //Added nodes, maintained by the 
         private List<RoadNodeEnd> nodes = new();
         public IList<RoadNodeEnd> Nodes => new ReadOnlyCollection<RoadNodeEnd>(nodes);

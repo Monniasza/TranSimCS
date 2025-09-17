@@ -20,11 +20,31 @@ namespace TranSimCS.Menus {
             container.AddChild(check);
             return check;
         }
+        public static RadioButton CreateRadio(InGameMenu menu, Element container, string name, string icon, Action onSelected, string group = "") {
+            var radio = new RadioButton(Anchor.AutoInline, new(21, 21), "", false, group);
+            radio.OnCheckStateChange += (s, e) => {
+                if (radio.Checked) onSelected();
+            };
+            radio.AddTooltip(name);
+            radio.Checkmark = LoadStyleProp(menu, icon);
+            container.AddChild(radio);
+            return radio;
+        }
+        public static RadioButton CreateRadio<T>(InGameMenu menu, Element container, string name, string icon, Property<T> prop, T value){
+            RadioButton radio = CreateRadio(menu, container, name, icon, () => prop.Value = value);
+            prop.ValueChanged += (s, e) => {
+                if (Object.Equals(e.OldValue, value)) radio.Checked = false;
+                if (Object.Equals(e.NewValue, value)) radio.Checked = true;
+            };
+            radio.Checked = Object.Equals(value, prop.Value);
+            return radio;
+        }
+
         public static StyleProp<TextureRegion> LoadStyleProp(InGameMenu menu, string name) {
             return new StyleProp<TextureRegion>(new TextureRegion(menu.Game.Content.Load<Texture2D>(name)));
         }
 
-        public static TextField SetUpProp<T>(string title, Panel panel, Property<T> prop, Func<T, string> getter, Func<string, T> setter) {
+        public static TextField SetUpProp<T>(string title, Panel panel, Property<T> prop, Func<T, string> getter, Func<string, T> setter){
             var textfieldSize = new Vector2(0.5f, 20);
             Paragraph label = new Paragraph(Anchor.AutoLeft, 0.5f, title);
             panel.AddChild(label);

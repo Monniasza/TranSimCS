@@ -1,4 +1,7 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Formats.Asn1;
+using System.Security.AccessControl;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
@@ -52,7 +55,31 @@ namespace TranSimCS.Menus.InGame {
         }
     }
 
+    public interface ChainMode: IEquatable<ChainMode> {
+        public string Name { get; }
+        public LaneSpec ChainValues(InGameMenu game);
+        bool IEquatable<ChainMode>.Equals(ChainMode other) {
+            return this == other;
+        }
+    }
+    public class ChainModeChained: ChainMode {
+        public static ChainModeChained value = new ChainModeChained();
+        private ChainModeChained() { }
+        public string Name => "From previous";
+        public LaneSpec ChainValues(InGameMenu game) =>
+            game.RoadCreationTool.node?.lane?.Spec
+            ?? ChainModeCustom.value.ChainValues(game);
+    }
+    public class ChainModeCustom : ChainMode {
+        public static ChainModeCustom value = new ChainModeCustom();
+        private ChainModeCustom() { }
+        public string Name => "Custom from road configurator";
+        public LaneSpec ChainValues(InGameMenu game) => game.configurator.laneSpecProp.Value;
+    }
+
     public class RoadCreationTool: ITool {
+        public static readonly ChainMode chained = ChainModeChained.value;
+        public static readonly ChainMode custom = ChainModeCustom.value;
         static readonly Vector3 offset = new Vector3(0, 0.01f, 0);
 
         string ITool.Name => "Road creation tool";
@@ -60,7 +87,7 @@ namespace TranSimCS.Menus.InGame {
         string ITool.Description => (node == null) ? "Select a road node end to create a lane strip. Ctrl to connect inline"
             : "LMB on a segment end or road node end to build a segment, or RMB to cancel. 123456789 to set number of lanes, 0 for all. Ctrl to connect with the end.";
 
-        LaneEnd? node;
+        public LaneEnd? node { get; set; }
         public LaneStrip? SegmentAlreadyExists { get; private set; } = null;
         public ObjPos? NewNodePosition { get; private set; }
         public RoadMode Mode { get; set; } = new CircMode();
@@ -87,14 +114,16 @@ namespace TranSimCS.Menus.InGame {
                 if (menu.SelectedObject is AddLaneSelection als) {
                     //The user wants to create a new lane
                     var newLaneEnd = als.NewLane(menu.roadProperty.Value);
+                    var spec = RoadTools.ChainMode.Value.ChainValues(menu);
                     selectedNode = newLaneEnd;
+                    newLaneEnd.lane.Spec = spec;
                 }
                 if (node == null) {
                     node = selectedNode;
                     Debug.Print($"Selected node: {selectedNode}");
                 } else {
                     var world = node.Value.lane.RoadNode.World;
-                    var spec = node.Value.lane.Spec;
+                    var spec = RoadTools.ChainMode.Value.ChainValues(menu);
                     if (selectedNode == null && NewNodePosition != null) {
                         //Create a new node
                         var newNode = new RoadNode(world, "", NewNodePosition.Value);

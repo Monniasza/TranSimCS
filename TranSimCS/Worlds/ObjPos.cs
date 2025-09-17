@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework;
 
 namespace TranSimCS.Worlds {
-    public struct ObjPos {
+    public struct ObjPos: IEquatable<ObjPos> {
         //Position
         public Vector3 Position { get; set; } // World position of the node
 
@@ -56,6 +56,13 @@ namespace TranSimCS.Worlds {
             var azimuthRadians = MathF.Atan2(tangent.X, tangent.Z);
             var azimuth = Geometry.RadiansToField(azimuthRadians);
             return new ObjPos(pos, azimuth, inclination, tilt);
+        }
+
+        public bool Equals(ObjPos other) {
+            return Position.Equals(other.Position)
+                && Tilt .Equals(other.Tilt)
+                && Inclination.Equals(other.Inclination)
+                && Azimuth.Equals(other.Azimuth);
         }
     }
 }

@@ -13,7 +13,7 @@ namespace TranSimCS.Worlds {
     /// <summary>
     /// An object placed in the world. Worlds themselves are objects
     /// </summary>
-    public abstract class Obj: INotifyPropertyChanged {
+    public abstract class Obj: INotifyPropertyChanged, IEquatable<Obj> {
         //PROPERTIES
         public Guid Guid { get; init; } = Guid.NewGuid();
         public Obj() {}
@@ -68,6 +68,10 @@ namespace TranSimCS.Worlds {
 
         //ABSTRACT METHODS
         protected abstract void GenerateMesh(Mesh mesh);
+
+        public bool Equals(Obj other) {
+            return this == other;
+        }
     }
 
     //Component-interfaces for objects
