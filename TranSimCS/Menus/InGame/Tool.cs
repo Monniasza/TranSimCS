@@ -110,7 +110,7 @@ namespace TranSimCS.Menus.InGame {
     public class MoveTool(InGameMenu game) : ITool {
         string ITool.Name => "Move nodes and objects";
 
-        string ITool.Description => "Drag the object with the left mouse button to move it.";
+        string ITool.Description => "Drag and rotate objects";
 
         public Vector3? DragFrom { get; private set; }
         public IDraggableObj ObjToDrag { get; private set; }
@@ -180,7 +180,7 @@ namespace TranSimCS.Menus.InGame {
     public class PickerTool(InGameMenu game) : ITool {
         string ITool.Name => "Lane spec picker";
 
-        string ITool.Description => "Left click near a node to select its lane spec, or in the middle of a lane strip for the lane strip's spec";
+        string ITool.Description => "Pick lane specs";
 
         public (object[], string)[] PromptKeys() => [
             ([MouseButton.Left], " near a node to select its lane spec"),
@@ -227,7 +227,7 @@ namespace TranSimCS.Menus.InGame {
         string ITool.Name => "Add road nodes";
 
         string ITool.Description => (NewlyCreatedNode != null) ? "Click to set direction of the newly built node"
-            : (Reference == null) ? "123456789 to set number of lanes, click on a node to set direction from it, click elsewhere to set direction manually"
+            : (Reference == null) ? "Click on a node to set direction from it, click elsewhere to set direction manually"
             : "Click to place a node. The reference will not be reset after placement";
 
         public (object[], string)[] PromptKeys() {
