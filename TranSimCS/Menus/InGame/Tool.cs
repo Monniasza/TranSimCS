@@ -35,7 +35,7 @@ namespace TranSimCS.Menus.InGame {
     public class RoadDemolitionTool(InGameMenu game) : ITool {
         string ITool.Name => "Road Demolition Tool";
 
-        string ITool.Description => "LMB to demolish the selected road segment, RMB to demolish only the selected lane";
+        string ITool.Description => "Demolish objects and subcomponents";
 
         public void Draw(GameTime gameTime) {
             //unused
@@ -46,8 +46,8 @@ namespace TranSimCS.Menus.InGame {
         }
 
         public (object[], string)[] PromptKeys() => [
-            ([MouseButton.Left], "to demolish the road segment or a node"),
-            ([MouseButton.Right], "to demolish the lane or lane strip")
+            ([MouseButton.Left], "to demolish the road segment, a node or the entire object"),
+            ([MouseButton.Right], "to demolish the lane, a lane strip or a subcomponent")
         ];
 
         public void Update(GameTime gameTime) {
@@ -62,7 +62,12 @@ namespace TranSimCS.Menus.InGame {
             if (button == MouseButton.Left) {
                 // If a road segment is selected, remove it from the world
                 var selectedRoad = MouseOverRoad?.SelectedLaneTag?.road;
-                if (selectedRoad != null) {
+                var selectedNode = MouseOverRoad?.SelectedRoadNode;
+                if (selectedNode != null) {
+                    //Demolish a node
+                    MouseOverRoad = null;
+                    world.RoadNodes.Remove(selectedNode);
+                } else if (selectedRoad != null) {
                     Debug.Print($"Demolishing road segment: {selectedRoad}");
                     MouseOverRoad = null; // Reset the mouse over road selection
                     world.RoadSegments.Remove(selectedRoad); // Remove the selected road segment from the world
