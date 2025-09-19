@@ -426,9 +426,9 @@ namespace TranSimCS.Menus.InGame {
                     var keys = keybind.Item1;
                     bool firstInLine = true;
                     foreach(var key in keys) {
-                        Texture2D tex = KeyPromptMapper.GetPrompt(key);
+                        var tex = KeyPromptMapper.GetPrompt(key);
                         if (tex != null) {
-                            Image img = new Image(firstInLine ? MLEM.Ui.Anchor.AutoLeft : MLEM.Ui.Anchor.AutoInline, new(16, 16), new TextureRegion(tex));
+                            Image img = new Image(firstInLine ? MLEM.Ui.Anchor.AutoLeft : MLEM.Ui.Anchor.AutoInline, new(1, 1), tex, true);
                             KeyBindPanel.AddChild(img);
                             firstInLine = false;
                         }

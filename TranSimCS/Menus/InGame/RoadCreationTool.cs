@@ -95,6 +95,8 @@ namespace TranSimCS.Menus.InGame {
             if (node == null) {
                 keys.Add(([MouseButton.Left], "Select a road node end to create a lane strip."));
                 keys.Add(([MouseButton.Left], "elsewhere to set direction manually"));
+            } else {
+                keys.Add(([MouseButton.Right], "to cancel"));
             }
             return keys.ToArray();
         }
