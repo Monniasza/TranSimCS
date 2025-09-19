@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Formats.Asn1;
 using System.Security.AccessControl;
@@ -86,6 +87,17 @@ namespace TranSimCS.Menus.InGame {
 
         string ITool.Description => (node == null) ? "Select a road node end to create a lane strip. Ctrl to connect inline"
             : "LMB on a segment end or road node end to build a segment, or RMB to cancel. 123456789 to set number of lanes, 0 for all. Ctrl to connect with the end.";
+
+        public (object[], string)[] PromptKeys() {
+            (object[], string) countPrompt = ([Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9], " to set number of lanes");
+            List<(object[], string)> keys = [countPrompt];
+            keys.Add(([Keys.LeftControl], "to connect inline"));
+            if (node == null) {
+                keys.Add(([MouseButton.Left], "Select a road node end to create a lane strip."));
+                keys.Add(([MouseButton.Left], "elsewhere to set direction manually"));
+            }
+            return keys.ToArray();
+        }
 
         public LaneEnd? node { get; set; }
         public LaneStrip? SegmentAlreadyExists { get; private set; } = null;

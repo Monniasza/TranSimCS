@@ -26,6 +26,7 @@ namespace TranSimCS.Menus.InGame {
         public void Draw(GameTime gameTime);
         public void Draw2D(GameTime gameTime);
         public void AddSelectors(MultiMesh addTo) { }
+        public (object[], string)[] PromptKeys();
 
         public void OnOpen() { }
         public void OnClose() { }
@@ -43,6 +44,11 @@ namespace TranSimCS.Menus.InGame {
         public void Draw2D(GameTime gameTime) {
             //unused
         }
+
+        public (object[], string)[] PromptKeys() => [
+            ([MouseButton.Left], "to demolish the road segment or a node"),
+            ([MouseButton.Right], "to demolish the lane or lane strip")
+        ];
 
         public void Update(GameTime gameTime) {
             //unused
@@ -159,12 +165,22 @@ namespace TranSimCS.Menus.InGame {
             }
             
         }
+
+        public (object[], string)[] PromptKeys() => [
+            ([MouseButton.Left, SpecialKey.MouseMove], "to move the object"),
+            ([MouseButton.Right, SpecialKey.MouseMove], "to rotate the object")
+        ];
     }
 
     public class PickerTool(InGameMenu game) : ITool {
         string ITool.Name => "Lane spec picker";
 
         string ITool.Description => "Left click near a node to select its lane spec, or in the middle of a lane strip for the lane strip's spec";
+
+        public (object[], string)[] PromptKeys() => [
+            ([MouseButton.Left], " near a node to select its lane spec"),
+            ([MouseButton.Left], " in the middle of a lane strip for the lane strip's spec")
+        ];
 
         void ITool.Draw(GameTime gameTime) {
             //unused
@@ -208,6 +224,19 @@ namespace TranSimCS.Menus.InGame {
         string ITool.Description => (NewlyCreatedNode != null) ? "Click to set direction of the newly built node"
             : (Reference == null) ? "123456789 to set number of lanes, click on a node to set direction from it, click elsewhere to set direction manually"
             : "Click to place a node. The reference will not be reset after placement";
+
+        public (object[], string)[] PromptKeys() {
+            (object[], string) countPrompt = ([Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9], " to set number of lanes");
+            List<(object[], string)> keys = [countPrompt]; 
+            if (Reference == null) {
+                keys.Add(([MouseButton.Left], "on a node to set direction from it"));
+                keys.Add(([MouseButton.Left], "elsewhere to set direction manually"));
+            } else {
+                keys.Add(([MouseButton.Left], "to place a node. The reference will not be reset after placement"));
+                keys.Add(([MouseButton.Right], "to cancel placement"));
+            }
+            return keys.ToArray();
+        }
 
         /// <summary>
         /// Set if the new node has to be rotated after placement
@@ -313,6 +342,10 @@ namespace TranSimCS.Menus.InGame {
 
         string ITool.Description => "Click on roads to set their lane specs";
 
+        public (object[], string)[] PromptKeys() => [
+            ([MouseButton.Left], "on roads to set their lane specs"),
+        ];
+
         void ITool.Draw(GameTime gameTime) {
             //unused
         }
@@ -352,7 +385,11 @@ namespace TranSimCS.Menus.InGame {
     public class EditNodeTool : ITool {
         public string Name => "Edit road nodes";
 
-        public string Description => throw new NotImplementedException();
+        public string Description => "";
+
+        public (object[], string)[] PromptKeys() => [
+            ([MouseButton.Left], "dummy"),
+        ];
 
         public void Draw(GameTime gameTime) {
             throw new NotImplementedException();

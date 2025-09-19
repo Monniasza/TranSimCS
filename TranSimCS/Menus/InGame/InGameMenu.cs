@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MLEM.Textures;
 using MLEM.Ui.Elements;
 using TranSimCS.Model;
 using TranSimCS.Roads;
@@ -62,6 +63,10 @@ namespace TranSimCS.Menus.InGame {
         public Panel RootPanel {  get; private set; }
         public Panel ToolPanel {  get; private set; }
         public Panel SettingsPanel { get; private set; }
+        public Panel ToolDescPanel { get; private set; }
+        public Panel KeyBindPanel { get; private set; }
+        public Paragraph ToolName {  get; private set; }
+        public Paragraph ToolDesc {  get; private set; }
         public bool IsMouseOverUI { get; private set; }
         public Checkbox CheckNodes { get; private set; }
         public Checkbox CheckSegments { get; private set; }
@@ -141,6 +146,19 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("eyedropper", new PickerTool(this));
             SetUpToolPictureButton("moveTool", new MoveTool(this));
             SetUpToolPictureButton("bucket", new PaintTool(this));
+
+            //Set up the tool preview
+            ToolDescPanel = new Panel(MLEM.Ui.Anchor.TopLeft, new(0.5f, 20), true);
+            UiSystem.Add("tooldesc", ToolDescPanel);
+
+            KeyBindPanel = new Panel(MLEM.Ui.Anchor.TopRight, new(0.5f, 40), true);
+            UiSystem.Add("keybinds", KeyBindPanel);
+
+            ToolName = new Paragraph(MLEM.Ui.Anchor.AutoInline, 1, "");
+            ToolName.RegularFont = Game.Gsf;
+            ToolDescPanel.AddChild(ToolName);
+            ToolDesc = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 1, "");
+            ToolDescPanel.AddChild(ToolDesc);
         }
         private Image.TextureCallback CreateTextureCallback(Texture2D texture2D) {
             return (_) => new MLEM.Textures.TextureRegion(texture2D);
@@ -386,12 +404,44 @@ namespace TranSimCS.Menus.InGame {
                     action(lane);
         }
 
+        private (object[], string)[] lastDescription;
         public override void Draw2D(GameTime time) {
             string toolName = (Tool?.Name) ?? "no tool";
-            string toolDesc = Tool?.Description;
+            string toolDesc = (Tool?.Description) ?? "";
             Game.SpriteBatch.Begin();
-            Game.SpriteBatch.DrawString(Game.Font, toolName, new(25, 25), Color.Gray);
-            if (toolDesc != null) Game.SpriteBatch.DrawString(Game.Font, toolDesc, new(25, 50), Color.Gray);
+            ToolName.Text = toolName;
+            ToolDesc.Text = toolDesc;
+
+            //Handle keybinds
+            var keybinds = Tool?.PromptKeys();
+
+            var keybindsChanged = !Equality.DeepArrayEqualsWithNull(lastDescription, keybinds);
+
+            if (keybindsChanged) {
+                Debug.WriteLine("Refreshing keybinds: ");
+                Debug.WriteLine(keybinds);
+                //Keybinds changed
+                KeyBindPanel.RemoveChildren();
+                foreach(var keybind in keybinds ?? []) {
+                    var keys = keybind.Item1;
+                    bool firstInLine = true;
+                    foreach(var key in keys) {
+                        Texture2D tex = KeyPromptMapper.GetPrompt(key);
+                        if (tex != null) {
+                            Image img = new Image(firstInLine ? MLEM.Ui.Anchor.AutoLeft : MLEM.Ui.Anchor.AutoInline, new(16, 16), new TextureRegion(tex));
+                            KeyBindPanel.AddChild(img);
+                            firstInLine = false;
+                        }
+                    }
+                    var desc = keybind.Item2;
+                    var paragraph = new Paragraph(MLEM.Ui.Anchor.AutoInline, 0.5f, desc ?? "", true);
+                    KeyBindPanel.AddChild(paragraph);
+                }
+                KeyBindPanel.SetAreaDirty();
+            }
+            lastDescription = keybinds;
+
+            ToolDescPanel.SetAreaDirty();
             Game.SpriteBatch.End();
             Tool?.Draw2D(time);
 
