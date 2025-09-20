@@ -196,8 +196,8 @@ namespace TranSimCS
             s.RadioTexture = panel9patch;
             s.RadioHoveredColor = Colors.SemiClearAzure;
             s.RadioHoveredTexture = panel9patch;
-            //s.RadioUncheckedColor = Color.Gray;
-            //s.RadioCheckColor = Color.White;
+            s.RadioUncheckedColor = Color.Gray;
+            s.RadioCheckColor = Color.White;
 
             s.SelectionIndicator = outline;
 
