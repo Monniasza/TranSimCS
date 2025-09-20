@@ -56,7 +56,7 @@ namespace TranSimCS.Menus.InGame {
 
         void ITool.OnClick(MouseButton button) {
             RoadSelection MouseOverRoad = game.MouseOverRoad;
-            World world = game.World;
+            TSWorld world = game.World;
 
             //Demolish the selected road segment if the left mouse button is clicked
             if (button == MouseButton.Left) {

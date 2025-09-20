@@ -6,13 +6,16 @@ using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Roads;
 using System.Collections.ObjectModel;
+using MonoGame.Extended.ECS;
 
 namespace TranSimCS.Worlds
 {
-    public class World{
+    public class TSWorld{
         public ObservableCollection<RoadStrip> RoadSegments { get; } = new();
         public ObservableCollection<RoadNode> RoadNodes { get; } = new();
         public ObservableCollection<RoadSection> RoadSections { get; } = new();
+
+        public World ECS;
 
         public RoadStrip FindRoadStrip(RoadNodeEnd start, RoadNodeEnd end) {
             foreach (var strip in RoadSegments) 
@@ -45,9 +48,11 @@ namespace TranSimCS.Worlds
             return strip;
         }
 
-        public World() {
+        public TSWorld() {
             RoadSegments.CollectionChanged += RoadSegments_CollectionChanged; // Subscribe to changes in the road segments collection
             RoadNodes.CollectionChanged += RoadNodes_CollectionChanged; // Subscribe to changes in the road nodes collection
+            var ecsBuilder = new WorldBuilder();
+            ECS = ecsBuilder.Build();
         }
 
         private void RoadSegments_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) {
@@ -125,7 +130,7 @@ namespace TranSimCS.Worlds
             }
         }
 
-        public static void SetUpExampleWorld(World world) {
+        public static void SetUpExampleWorld(TSWorld world) {
             //Add some example road nodes and segments
             var node1 = new RoadNode(world, "Node 1", new Vector3(0, 0.1f, 0), RoadNode.AZIMUTH_NORTH);
             var node2 = new RoadNode(world, "Node 2", new Vector3(0, 10.1f, 100), RoadNode.AZIMUTH_NORTH);

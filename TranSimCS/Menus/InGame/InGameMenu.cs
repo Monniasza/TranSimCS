@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -19,7 +20,7 @@ namespace TranSimCS.Menus.InGame {
     public class InGameMenu : Menu {
         public static readonly Plane groundPlane = new Plane(0, 1, 0, -0.1f);
 
-        public World World { get; private set; }
+        public TSWorld World { get; private set; }
 
         private ITool _tool;
         public ITool Tool {
@@ -95,8 +96,8 @@ namespace TranSimCS.Menus.InGame {
         }
 
         public override void LoadContent() {
-            World = new World();
-            World.SetUpExampleWorld(World);
+            World = new TSWorld();
+            TSWorld.SetUpExampleWorld(World);
 
             //Generate graphics stuff
             effect = new BasicEffect(Game.GraphicsDevice) {
@@ -404,6 +405,13 @@ namespace TranSimCS.Menus.InGame {
                     action(lane);
         }
 
+        private (object[], string)[] PromptKeys() => [
+            ([Keys.Escape], "Quit to desktop"),
+            ([Keys.W, Keys.A, Keys.S, Keys.D], "Move"),
+            ([Keys.T], "Edit lane specs"),
+            ([Keys.Left, Keys.Right, Keys.Up, Keys.Down], "Rotate the camera")
+        ];
+
         private (object[], string)[] lastDescription;
         public override void Draw2D(GameTime time) {
             string toolName = (Tool?.Name) ?? "no tool";
@@ -413,7 +421,11 @@ namespace TranSimCS.Menus.InGame {
             ToolDesc.Text = toolDesc;
 
             //Handle keybinds
-            var keybinds = Tool?.PromptKeys();
+            var keylist = new List<(object[], string)>();
+            keylist.AddRange(PromptKeys());
+            var k2 = Tool?.PromptKeys();
+            if (k2 != null) keylist.AddRange(k2);
+            var keybinds = keylist.ToArray();
 
             var keybindsChanged = !Equality.DeepArrayEqualsWithNull(lastDescription, keybinds);
 
