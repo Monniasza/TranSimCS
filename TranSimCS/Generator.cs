@@ -9,28 +9,28 @@ using TranSimCS.Roads;
 namespace TranSimCS
 {
     internal static class Generator {
-        public static void GenerateLanes(int count, RoadNode node, float laneWidth = 3.5f, float offset = 0){
-            if (count < 1)  throw new ArgumentException("Count must be at least 1.", nameof(count));
+        public static void GenerateLanes(int count, RoadNode node, LaneSpec spec, float offset = 0) {
+            if (count < 1) throw new ArgumentException("Count must be at least 1.", nameof(count));
             // Clear existing position offsets
             node.ClearLanes();
             //Generate lane specifications for each lane
-            for (int i = 0; i < count; i++)
-            {
-                var laneSpec = new LaneSpec
-                {
-                    Color = Color.Gray, // Default color, can be customized
-                    VehicleTypes = VehicleTypes.All // Default to all vehicle types, can be customized
-                };
-                var lposition = offset + i * laneWidth; // Calculate the left position for the lane
-                var rposition = lposition + laneWidth; // Calculate the right position for the lane
-                Lane lane = new Lane(node){
-                    Spec = laneSpec, // Set the lane specification
+            for (int i = 0; i < count; i++) {
+                var lposition = offset + i * (float)spec.Width; // Calculate the left position for the lane
+                var rposition = lposition + (float)spec.Width; // Calculate the right position for the lane
+                Lane lane = new Lane(node) {
+                    Spec = spec, // Set the lane specification
                     LeftPosition = lposition, // Set the left position
                     RightPosition = rposition, // Set the right position
                     Index = i // Set the index of the lane
                 };
                 node.AddLane(lane); // Add the lane to the road node
             }
+        }
+
+        public static void GenerateLanes(int count, RoadNode node, float laneWidth = 3.5f, float offset = 0){
+            var laneSpec = LaneSpec.Default;
+            laneSpec.Width = laneWidth;
+            GenerateLanes(count, node, laneSpec, offset);
         }
 
         /// <summary>

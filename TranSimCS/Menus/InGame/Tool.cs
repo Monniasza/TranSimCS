@@ -255,9 +255,11 @@ namespace TranSimCS.Menus.InGame {
 
         void ITool.Draw(GameTime gameTime) {
             if (NewlyCreatedNode == null && Reference == null) return;
+            var laneWidth = menu.roadProperty.Value.Width;
+            var laneColor = menu.roadProperty.Value.Color;
             var frame = PrePosition.CalcReferenceFrame();
             var length = frame.Z;
-            var width = frame.X * 3.5f * laneCount;
+            var width = frame.X * laneWidth * laneCount;
             var height = frame.Y * 0.01f;
             var startPoint = frame.O + height;
             var startPoint2 = startPoint + height;
@@ -265,10 +267,10 @@ namespace TranSimCS.Menus.InGame {
             var bw = frame.X * 0.2f;
             var rl = frame.Z * 5;
             var quad = new Quad(
-                new VertexPositionColorTexture(startPoint + length        , Color.Gray, new(0        , 0)),
-                new VertexPositionColorTexture(startPoint + length + width, Color.Gray, new(laneCount, 0)),
-                new VertexPositionColorTexture(startPoint          + width, Color.Gray, new(laneCount, 1)),
-                new VertexPositionColorTexture(startPoint                 , Color.Gray, new(0        , 1))
+                new VertexPositionColorTexture(startPoint + length        , laneColor, new(0        , 0)),
+                new VertexPositionColorTexture(startPoint + length + width, laneColor, new(laneCount, 0)),
+                new VertexPositionColorTexture(startPoint          + width, laneColor, new(laneCount, 1)),
+                new VertexPositionColorTexture(startPoint                 , laneColor, new(0        , 1))
             );
             var quad2 = new Quad(
                 new VertexPositionColorTexture(startPoint2 - tw + rl, Color.Orange, new(0, 0)),
@@ -303,7 +305,7 @@ namespace TranSimCS.Menus.InGame {
             } else {
                 //Ready to place: selected reference or newly created node
                 var n = NewlyCreatedNode ?? new RoadNode(menu.World, "", PrePosition);
-                Generator.GenerateLanes(laneCount, n);
+                Generator.GenerateLanes(laneCount, n, menu.roadProperty.Value);
                 n.PositionProp.Value = PrePosition;
                 menu.World.RoadNodes.Add(n);
                 NewlyCreatedNode = null;
