@@ -28,11 +28,11 @@ namespace TranSimCS.Menus {
                 AddPrompt(key, tr);
             }
             (MouseButton, int)[] mousedata = [
-                (MouseButton.Left, 0),
-                (MouseButton.Middle, 3),
-                (MouseButton.Right, 1),
-                (MouseButton.Extra1, 4),
-                (MouseButton.Extra2, 5),
+                (MouseButton.Left, 1),
+                (MouseButton.Middle, 4),
+                (MouseButton.Right, 2),
+                (MouseButton.Extra1, 5),
+                (MouseButton.Extra2, 6),
             ];
             foreach (var key in mousedata) {
                 var mouse = key.Item1;
