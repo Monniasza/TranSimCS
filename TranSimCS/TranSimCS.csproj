@@ -28,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Iesi.Collections" Version="4.1.1" />
+    <PackageReference Include="MLEM" Version="8.0.0-ci.222" />
     <PackageReference Include="MLEM.Ui" Version="8.0.0-ci.221" />
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.*" />
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.*" />
