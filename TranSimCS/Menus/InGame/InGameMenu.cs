@@ -17,7 +17,7 @@ using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Menus.InGame {
-    public class InGameMenu : Menu {
+    public partial class InGameMenu : Menu {
         public static readonly Plane groundPlane = new Plane(0, 1, 0, -0.1f);
 
         public TSWorld World { get; private set; }
@@ -73,7 +73,10 @@ namespace TranSimCS.Menus.InGame {
         public Checkbox CheckSegments { get; private set; }
         public Checkbox CheckSections { get; private set; }
         public Property<LaneSpec> roadProperty { get; private set; }
+
+        //Overlays
         public RoadConfigurator configurator { get; private set; }
+        public EscapeMenu escapeMenu { get; private set; }
 
         //In-world UI
         public MultiMesh SelectorObjects { get; private set; }
@@ -160,6 +163,9 @@ namespace TranSimCS.Menus.InGame {
             ToolDescPanel.AddChild(ToolName);
             ToolDesc = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 1, "");
             ToolDescPanel.AddChild(ToolDesc);
+
+            //Set up the escape menu
+            escapeMenu = new EscapeMenu(this);
         }
         private Image.TextureCallback CreateTextureCallback(Texture2D texture2D) {
             return (_) => new MLEM.Textures.TextureRegion(texture2D);
@@ -303,18 +309,27 @@ namespace TranSimCS.Menus.InGame {
             Tool?.Update(time);
         }
 
+        private Element _overlay;
+        public Element Overlay { get => _overlay; set{
+                if (_overlay == value) return;
+                if(_overlay != null) UiSystem.Remove("configurator");
+                _overlay = value;
+                if (_overlay != null) UiSystem.Add("configurator", _overlay);
+            }
+        }
+        public void ToggleOverlay(Element overlay) {
+            if (overlay == Overlay) Overlay = null;
+            else Overlay = overlay;
+        }
+
         private void OnKeyDown(Keys key) {
-            //Press T to open road config screen
-            if (key == Keys.T) {
-                if(UiSystem.Get("configurator") == null) {
-                    //Show
-                    UiSystem.Add("configurator", configurator);
-                    Debug.Print("Showing the configurator");
-                } else {
-                    //Hide
-                    UiSystem.Remove("configurator");
-                    Debug.Print("Hiding the configurator");
-                }
+            switch (key) {
+                case Keys.T:
+                    ToggleOverlay(configurator);
+                    break;
+                case Keys.Escape:
+                    Overlay = (Overlay == null) ? escapeMenu : null;
+                    break;
             }
         }
 
@@ -406,7 +421,7 @@ namespace TranSimCS.Menus.InGame {
         }
 
         private (object[], string)[] PromptKeys() => [
-            ([Keys.Escape], "Quit to desktop"),
+            ([Keys.Escape], "Pause menu"),
             ([Keys.W, Keys.A, Keys.S, Keys.D], "Move"),
             ([Keys.T], "Edit lane specs"),
             ([Keys.Left, Keys.Right, Keys.Up, Keys.Down], "Rotate the camera")
