@@ -44,7 +44,7 @@ namespace TranSimCS.Menus.InGame {
             private Button NewOption(String text, Action? action) {
                 Button result = new Button(MLEM.Ui.Anchor.AutoLeft, new(1, 40), text);
                 result.OnPressed += (s) => action?.Invoke();
-                result.Text.Style = buttonStyle;
+                result.Text.RegularFont = parent.Game.Gsf;
                 AddChild(result);
                 return result;
             }

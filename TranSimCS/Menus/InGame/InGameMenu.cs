@@ -312,7 +312,9 @@ namespace TranSimCS.Menus.InGame {
         private Element _overlay;
         public Element Overlay { get => _overlay; set{
                 if (_overlay == value) return;
-                if(_overlay != null) UiSystem.Remove("configurator");
+                if(_overlay != null) {
+                    UiSystem.Remove("configurator");
+                }
                 _overlay = value;
                 if (_overlay != null) UiSystem.Add("configurator", _overlay);
             }
