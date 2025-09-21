@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -11,7 +12,8 @@ public class Program {
     public static readonly JsonConverter nodeConverter = new RoadNodeConverter();
 
     private static void Main(string[] args) {
-        DataRoot = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "/TranSim");
+        var appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        DataRoot = Path.Combine(appdata, "TranSim");
         Directory.CreateDirectory(DataRoot);
 
         LaneSpec laneSpec = LaneSpec.Default;
@@ -22,6 +24,7 @@ public class Program {
         var serializer = JsonSerializer.Create(settings);
 
         string filepath = Path.Combine(DataRoot, "laneSpec.json");
+        Debug.Print("Saved the data to " + filepath);
         using (var filestream = File.OpenWrite(filepath)) {
             var writer = new StreamWriter(filestream);
             serializer.Serialize(writer, laneSpec, typeof(LaneSpec));
