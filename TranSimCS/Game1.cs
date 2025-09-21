@@ -136,9 +136,6 @@ namespace TranSimCS
         }
         
         protected override void Update(GameTime gameTime) {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-
             MouseStateOld = MouseState;
             MouseState = Mouse.GetState();
             KeyboardStateOld = KeyboardState;
@@ -196,8 +193,8 @@ namespace TranSimCS
             s.RadioTexture = panel9patch;
             s.RadioHoveredColor = Colors.SemiClearAzure;
             s.RadioHoveredTexture = panel9patch;
-            //s.RadioUncheckedColor = Color.Gray;
-            //s.RadioCheckColor = Color.White;
+            s.RadioUncheckedColor = Color.Gray;
+            s.RadioCheckColor = Color.White;
 
             s.SelectionIndicator = outline;
 

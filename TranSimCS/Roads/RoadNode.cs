@@ -71,7 +71,7 @@ namespace TranSimCS.Roads {
 
         //Identifiers
         public string Name { get; set; }
-        public World World { get; init; }
+        public TSWorld World { get; init; }
 
         //Lane structure
         private readonly List<Lane> _lanes = new List<Lane>(); // List to hold lanes associated with this road node
@@ -157,9 +157,9 @@ namespace TranSimCS.Roads {
         
 
         // Constructor to initialize the RoadNode with a unique ID, name, position, and world
-        public RoadNode(World world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) :
+        public RoadNode(TSWorld world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) :
             this(world, name, new ObjPos(position, azimuth, inclination, tilt)) { }
-        public RoadNode(World world, string name, ObjPos positionData) {
+        public RoadNode(TSWorld world, string name, ObjPos positionData) {
             PositionProp = new(ObjPos.Zero, "Position", this);
             Name = name;
             PositionProp.Value = positionData;
