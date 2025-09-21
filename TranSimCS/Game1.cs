@@ -129,7 +129,7 @@ namespace TranSimCS
 
             defaultUiStyle = CreateUiStyle();   
 
-            MlemPlatform.Current = MlemPlatform.Current = new MlemPlatform.DesktopGl<TextInputEventArgs>((w, c) => w.TextInput += c);
+            MlemPlatform.Current = new MlemPlatform.DesktopGl<TextInputEventArgs>((w, c) => w.TextInput += c);
             Menu = new InGameMenu(this);
 
             KeyPromptMapper.SetUpKeyPrompts(Content);
