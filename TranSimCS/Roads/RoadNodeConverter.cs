@@ -6,17 +6,12 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace TranSimCS.Roads {
-    public class RoadNodeConverter : JsonConverter {
-
-        public override bool CanConvert(Type objectType) {
-            return typeof(RoadNode).IsAssignableFrom(objectType);
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
+    public class RoadNodeConverter : JsonConverter<RoadNode> {
+        public override RoadNode ReadJson(JsonReader reader, Type objectType, RoadNode existingValue, bool hasExistingValue, JsonSerializer serializer) {
             throw new NotImplementedException();
         }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) {
+        public override void WriteJson(JsonWriter writer, RoadNode value, JsonSerializer serializer) {
             var node = (RoadNode)value;
             writer.WriteStartObject();
 

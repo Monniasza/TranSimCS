@@ -6,17 +6,12 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace TranSimCS.Roads {
-    public class LaneConverter : JsonConverter {
-        public override bool CanConvert(Type objectType) {
-            return typeof(Lane).IsAssignableFrom(objectType);
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
+    public class LaneConverter : JsonConverter<Lane> {
+        public override Lane ReadJson(JsonReader reader, Type objectType, Lane existingValue, bool hasExistingValue, JsonSerializer serializer) {
             throw new NotImplementedException();
         }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) {
-            var lane = (Lane)value;
+        public override void WriteJson(JsonWriter writer, Lane lane, JsonSerializer serializer) {
             writer.WriteStartObject();
 
             // Serialize properties of the Lane class
