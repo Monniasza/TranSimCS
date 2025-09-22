@@ -18,6 +18,7 @@ public class Program {
     public static readonly JsonConverter nodeEndConverter = new RoadNodeEndConverter();
     public static readonly JsonConverter laneStripConverter = new LaneStripConverter();
     public static readonly JsonConverter roadStripConverter = new RoadStripConverter();
+    public static readonly JsonConverter worldConverter = new TSWorldConverter();
 
     private static void Main(string[] args) {
         var appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
@@ -33,6 +34,7 @@ public class Program {
         settings.Converters.Add(nodeEndConverter);
         settings.Converters.Add(laneStripConverter);
         settings.Converters.Add(roadStripConverter);
+        settings.Converters.Add(worldConverter);
         var serializer = JsonSerializer.Create(settings);
 
         LaneSpec laneSpec = LaneSpec.Default;
@@ -44,6 +46,9 @@ public class Program {
         var node = exampleWorld.RoadNodes.First(roadNode => roadNode.Name.StartsWith("Fancy"));
         string roadNodePath = Path.Combine(DataRoot, "roadNode.json");
         SerializeToFile<RoadNode>(roadNodePath, node, serializer);
+
+        var worldPath = Path.Combine(DataRoot, "world.json");
+        SerializeToFile<TSWorld>(worldPath, exampleWorld, serializer);
 
         using var game = new TranSimCS.Game1();
         game.Run();
