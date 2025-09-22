@@ -10,7 +10,7 @@ using Arch.Core;
 
 namespace TranSimCS.Worlds
 {
-    public class TSWorld{
+    public partial class TSWorld{
         //The contents of the world
         public ObservableCollection<RoadStrip> RoadSegments { get; } = new();
         public ObservableCollection<RoadNode> RoadNodes { get; } = new();
