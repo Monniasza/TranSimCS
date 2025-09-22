@@ -8,8 +8,11 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads {
 
-    public class Lane(RoadNode node): IDraggableObj {
-        public RoadNode RoadNode => node; // Reference to the road node this lane belongs to
+    public class Lane: IDraggableObj {
+        /// <summary>
+        /// The parent <see cref="RoadNode"/>
+        /// </summary>
+        public RoadNode RoadNode { get; internal set; }
         private LaneSpec _spec;
         /// <summary>
         /// Specification of the lane, including properties like color, type, etc.
@@ -21,7 +24,7 @@ namespace TranSimCS.Roads {
         } set {
             if (value == _spec) return;
             _spec = value;
-            RoadNode.InvalidateMesh();
+            RoadNode?.InvalidateMesh();
             foreach(var connection in Connections) 
                 connection.InvalidateMesh();
         }} 

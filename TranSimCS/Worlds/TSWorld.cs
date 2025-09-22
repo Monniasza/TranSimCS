@@ -179,13 +179,13 @@ namespace TranSimCS.Worlds
                 var roffset = loffset + 3.5f;
                 var spec = laneSpecs[i];
 
-                var lane1 = new Lane(fancynode1);
+                var lane1 = new Lane();
                 lane1.LeftPosition = loffset;
                 lane1.RightPosition = roffset;
                 lane1.Spec = spec;
                 fancynode1.AddLane(lane1);
 
-                var lane2 = new Lane(fancynode2);
+                var lane2 = new Lane();
                 lane2.LeftPosition = loffset;
                 lane2.RightPosition = roffset;
                 fancynode2.AddLane(lane2);

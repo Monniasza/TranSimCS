@@ -17,7 +17,7 @@ namespace TranSimCS
             for (int i = 0; i < count; i++) {
                 var lposition = offset + i * (float)spec.Width; // Calculate the left position for the lane
                 var rposition = lposition + (float)spec.Width; // Calculate the right position for the lane
-                Lane lane = new Lane(node) {
+                Lane lane = new Lane() {
                     Spec = spec, // Set the lane specification
                     LeftPosition = lposition, // Set the left position
                     RightPosition = rposition, // Set the right position

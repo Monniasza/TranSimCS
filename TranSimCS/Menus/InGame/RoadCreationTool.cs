@@ -141,7 +141,7 @@ namespace TranSimCS.Menus.InGame {
                     if (selectedNode == null && NewNodePosition != null) {
                         //Create a new node
                         var newNode = new RoadNode(world, "", NewNodePosition.Value);
-                        var newLane = new Lane(newNode);
+                        var newLane = new Lane();
                         newLane.Spec = spec;
                         newLane.LeftPosition = 0;
                         newLane.RightPosition = node.Value.lane.Width;
