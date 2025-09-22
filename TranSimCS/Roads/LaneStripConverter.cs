@@ -20,7 +20,6 @@ namespace TranSimCS.Roads {
             serializer.Serialize(writer, value.EndLane);
             writer.WritePropertyName("spec");
             serializer.Serialize(writer, value.Spec);
-            writer.WriteEndObject();
         }
     }
 }
