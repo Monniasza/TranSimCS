@@ -52,8 +52,13 @@ namespace TranSimCS.Menus.InGame {
             }
 
             private void SaveClicked(Element e) {
-                var saved = save();
-                if (saved) ok();
+                var taskFactory = TaskFactoryFactory<object?>.GetFactory();
+                taskFactory.StartNew((x) => {
+                    var result = save();
+                    if (result) ok();
+                    else cancel();
+                    return null;
+                }, null);                
             }
             private void CancelClicked(Element e) {
                 cancel();

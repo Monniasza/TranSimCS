@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Arch.Core;
-using Eto.Forms;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TranSimCS;
@@ -12,7 +11,6 @@ using TranSimCS.Worlds;
 using TranSimCS.Worlds.ECS;
 
 public class Program {
-    private static Application Application;
 
     public static string DataRoot { get; private set; }
     public static string SaveDirectory => Path.Combine(Program.DataRoot, "saves");
@@ -35,9 +33,6 @@ public class Program {
         var node = exampleWorld.RoadNodes.First(roadNode => roadNode.Name.StartsWith("Fancy"));
         string roadNodePath = Path.Combine(DataRoot, "roadNode.json");
         SerializeToFile<RoadNode>(roadNodePath, node, serializer);
-
-
-        Application = new Application();
 
         using var game = new TranSimCS.Game1();
         game.Run();
