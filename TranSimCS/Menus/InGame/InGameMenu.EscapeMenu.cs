@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,7 +19,7 @@ namespace TranSimCS.Menus.InGame {
                 this.parent = parent;
                 buttonStyle = new UiStyle(parent.UiSystem.Style);
                 buttonStyle.Font = parent.Game.Gsf;
-                NewOption("Back to game", () => parent.Overlay = null);
+                NewOption("Back to game", () => parent.Overlay = null!);
                 NewOption("Reset", ResetWorld);
                 NewOption("Load", LoadSave);
                 NewOption("Save", SaveGame);
@@ -36,7 +36,7 @@ namespace TranSimCS.Menus.InGame {
 
             public void ResetWorld() {
                 TSWorld.SetUpExampleWorld(parent.World);
-                parent.Overlay = null;
+                parent.Overlay = null!;
             }
 
             public void Exit() => parent.Game.Exit();
