@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,7 +32,8 @@ namespace TranSimCS.Roads {
                 spec);
         }
 
-        public override void WriteJson(JsonWriter writer, LaneStrip value, JsonSerializer serializer) {
+        public override void WriteJson(JsonWriter writer, LaneStrip? value, JsonSerializer serializer) {
+            if (value is null) { writer.WriteNull(); return; }
             writer.WriteStartObject();
             writer.WritePropertyName("start");
             serializer.Serialize(writer, value.StartLane);

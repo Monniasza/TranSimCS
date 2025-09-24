@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -52,7 +52,7 @@ namespace TranSimCS.Model {
         public void DrawModel(IList<VertexPositionColorTexture> vertices, IList<int> indices) {
             ArgumentNullException.ThrowIfNull(vertices);
             ArgumentNullException.ThrowIfNull(indices);
-            int[] newVertexIds = new int[indices.Count];
+            int[] newVertexIds = new int[vertices.Count];
             for (int i = 0; i < vertices.Count; i++)
                 newVertexIds[i] = AddVertex(vertices[i]);
             foreach (var index in indices)

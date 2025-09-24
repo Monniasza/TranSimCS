@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -40,7 +40,8 @@ namespace TranSimCS.Roads {
             return roadStrip;
         }
 
-        public override void WriteJson(JsonWriter writer, RoadStrip value, JsonSerializer serializer) {
+        public override void WriteJson(JsonWriter writer, RoadStrip? value, JsonSerializer serializer) {
+            if (value is null) { writer.WriteNull(); return; }
             writer.WriteStartObject();
             writer.WritePropertyName("guid");
             serializer.Serialize(writer, value.Guid);

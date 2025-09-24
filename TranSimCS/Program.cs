@@ -31,9 +31,6 @@ public class Program {
         string roadNodePath = Path.Combine(DataRoot, "roadNode.json");
         SerializeToFile<RoadNode>(roadNodePath, node, serializer);
 
-        var worldPath = Path.Combine(DataRoot, "world.json");
-        SerializeToFile<TSWorld>(worldPath, exampleWorld, serializer);
-
         using var game = new TranSimCS.Game1();
         game.Run();
     }

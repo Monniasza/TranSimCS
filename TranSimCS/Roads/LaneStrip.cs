@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,7 +17,7 @@ namespace TranSimCS.Roads {
         }
     }
 
-    public class LaneStrip : IEquatable<LaneStrip>, IDraggableObj {
+    public class LaneStrip : IEquatable<LaneStrip?>, IDraggableObj {
         private LaneEnd startLane;
         private LaneEnd endLane;
         public RoadStrip road { get; internal set;}
@@ -120,11 +120,11 @@ namespace TranSimCS.Roads {
         }
 
 
-        public override bool Equals(object obj) {
+        public override bool Equals(object? obj) {
             return Equals(obj as LaneStrip);
         }
 
-        public bool Equals(LaneStrip other) {
+        public bool Equals(LaneStrip? other) {
             return other is not null &&
                    EqualityComparer<LaneEnd>.Default.Equals(startLane, other.startLane) &&
                    EqualityComparer<LaneEnd>.Default.Equals(endLane, other.endLane) &&

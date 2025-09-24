@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Xna.Framework;
 
 namespace TranSimCS.Worlds {
@@ -21,7 +21,7 @@ namespace TranSimCS.Worlds {
             Tilt = tilt;
         }
 
-        public override bool Equals(object obj) {
+        public override bool Equals(object? obj) {
             if (obj is ObjPos other) {
                 return Position.Equals(other.Position) &&
                        Azimuth == other.Azimuth &&

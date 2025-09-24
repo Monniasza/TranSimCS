@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
@@ -23,16 +23,16 @@ namespace TranSimCS
     public class Game1 : Game
     {
         public GraphicsDeviceManager GraphicsDeviceManager { get; private set; }
-        public SpriteBatch SpriteBatch { get; private set; }
-        private Menu menu;
+        public SpriteBatch SpriteBatch { get; private set; } = null!;
+        private Menu? menu = null;
         public readonly InputHandler ih;
-        public UiStyle defaultUiStyle { get; private set; }
+        public UiStyle DefaultUiStyle { get; private set; } = null!;
 
         //Fonts
-        public SpriteFont Font { get; private set; }
-        public GenericSpriteFont Gsf { get; private set; }
-        public SpriteFont FontSmall { get; private set; }
-        public GenericSpriteFont GsfSmall { get; private set; }
+        public SpriteFont Font { get; private set; } = null!;
+        public GenericSpriteFont Gsf { get; private set; } = null!;
+        public SpriteFont FontSmall { get; private set; } = null!;
+        public GenericSpriteFont GsfSmall { get; private set; } = null!;
 
         //Inputs
         public Point MousePos { get; private set; } = new();
@@ -41,13 +41,12 @@ namespace TranSimCS
         public KeyboardState KeyboardState { get; private set; }
         public KeyboardState KeyboardStateOld { get; private set; }
 
-        public Menu Menu { get => menu; set {
+        public Menu? Menu { get => menu; set {
             ArgumentNullException.ThrowIfNull(value, nameof(value));
-            var oldMenu = menu;
             menu?.Destroy();
             menu = value;
             menu.LoadContent();
-            
+
         } }
 
         public Game1() {
@@ -84,25 +83,19 @@ namespace TranSimCS
                 var candidates = new List<string>();
                 if (OperatingSystem.IsWindows()) {
                     var fonts = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
-                    candidates.AddRange(new[] {
-                        Path.Combine(fonts, "arial.ttf"),
-                        Path.Combine(fonts, "segoeui.ttf"),
-                        Path.Combine(fonts, "tahoma.ttf"),
-                        Path.Combine(fonts, "calibri.ttf"),
-                    });
+                    candidates.Add(Path.Combine(fonts, "arial.ttf"));
+                    candidates.Add(Path.Combine(fonts, "segoeui.ttf"));
+                    candidates.Add(Path.Combine(fonts, "tahoma.ttf"));
+                    candidates.Add(Path.Combine(fonts, "calibri.ttf"));
                 } else if (OperatingSystem.IsLinux()) {
-                    candidates.AddRange(new[] {
-                        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-                        "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
-                        "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
-                        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-                    });
+                    candidates.Add("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
+                    candidates.Add("/usr/share/fonts/truetype/freefont/FreeSans.ttf");
+                    candidates.Add("/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf");
+                    candidates.Add("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf");
                 } else if (OperatingSystem.IsMacOS()) {
-                    candidates.AddRange(new[] {
-                        "/Library/Fonts/Arial.ttf",
-                        "/System/Library/Fonts/Supplemental/Arial.ttf",
-                        "/Library/Fonts/Helvetica.ttc"
-                    });
+                    candidates.Add("/Library/Fonts/Arial.ttf");
+                    candidates.Add("/System/Library/Fonts/Supplemental/Arial.ttf");
+                    candidates.Add("/Library/Fonts/Helvetica.ttc");
                 }
                 foreach (var path in candidates) {
                     try {
@@ -127,14 +120,14 @@ namespace TranSimCS
             FontSmall = TryBakeOrFallback(Path.Combine("Fonts", "Roboto-Regular.ttf"), 12, 512, 512, ranges);
             GsfSmall = new GenericSpriteFont(FontSmall);
 
-            defaultUiStyle = CreateUiStyle();   
+            DefaultUiStyle = CreateUiStyle();
 
             MlemPlatform.Current = new MlemPlatform.DesktopGl<TextInputEventArgs>((w, c) => w.TextInput += c);
             Menu = new InGameMenu(this);
 
             KeyPromptMapper.SetUpKeyPrompts(Content);
         }
-        
+
         protected override void Update(GameTime gameTime) {
             MouseStateOld = MouseState;
             MouseState = Mouse.GetState();
@@ -143,12 +136,12 @@ namespace TranSimCS
 
             ih.Update();
             Menu?.Update(gameTime);
-            
+
             //Refresh the mouse state for the next frame
             base.Update(gameTime);
         }
 
-        
+
         protected override void Draw(GameTime gameTime) {
             GraphicsDevice.Clear(Color.CornflowerBlue);
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;

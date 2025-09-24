@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using TranSimCS.Worlds;
@@ -15,7 +15,7 @@ namespace TranSimCS.Roads {
 
         public LaneEnd OppositeEnd => new LaneEnd(end.Negate(), lane);
 
-        public override bool Equals(object obj) {
+        public override bool Equals(object? obj) {
             return obj is LaneEnd end && Equals(end);
         }
 

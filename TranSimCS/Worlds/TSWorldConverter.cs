@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,12 +13,14 @@ namespace TranSimCS.Worlds {
             return world;
         }
 
-        public override void WriteJson(JsonWriter writer, TSWorld value, JsonSerializer serializer) {
+        public override void WriteJson(JsonWriter writer, TSWorld? value, JsonSerializer serializer) {
+            if (value is null) { writer.WriteNull(); return; }
             writer.WriteStartObject();
             writer.WritePropertyName("nodes");
             serializer.Serialize(writer, value.RoadNodes);
             writer.WritePropertyName("segments");
             serializer.Serialize(writer, value.RoadSegments);
+            writer.WriteEndObject();
         }
     }
 }

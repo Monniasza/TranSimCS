@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -20,10 +20,10 @@ namespace TranSimCS.Menus.InGame {
     public partial class InGameMenu : Menu {
         public static readonly Plane groundPlane = new Plane(0, 1, 0, -0.1f);
 
-        public TSWorld World { get; private set; }
+        public TSWorld World { get; private set; } = null!;
 
-        private ITool _tool;
-        public ITool Tool {
+        private ITool? _tool;
+        public ITool? Tool {
             get => _tool;
             set {
                 var newTool = value;
@@ -34,19 +34,19 @@ namespace TranSimCS.Menus.InGame {
         }
 
         //Graphics
-        private BasicEffect effect;
-        public RenderHelper renderHelper { get; private set; } // Assuming you have a RenderHelper class for rendering
+        private BasicEffect effect = null!;
+        public RenderHelper renderHelper { get; private set; } = null!; // Assuming you have a RenderHelper class for rendering
 
         //Textures
-        public static Texture2D roadTexture { get; private set; } // Assuming you have a texture for the road
-        public static Texture2D testTexture { get; private set; }
-        public static Texture2D grassTexture {  get; private set; }
-        public static Texture2D addTexture { get; private set; }
-        public static Texture2D asphaltTexture { get; private set; }
+        public static Texture2D roadTexture { get; private set; } = null!; // Assuming you have a texture for the road
+        public static Texture2D testTexture { get; private set; } = null!;
+        public static Texture2D grassTexture {  get; private set; } = null!;
+        public static Texture2D addTexture { get; private set; } = null!;
+        public static Texture2D asphaltTexture { get; private set; } = null!;
 
-        //Inputs      
+        //Inputs
         public RoadSelection? MouseOverRoad { get; set; } = null; // Store the selected road selection
-        public object SelectedObject;
+        public object? SelectedObject = null;
         public Vector3 IntersectWithGround(Ray ray) {
             return Geometry.IntersectRayPlane(ray, groundPlane);
         }
@@ -61,17 +61,17 @@ namespace TranSimCS.Menus.InGame {
         static int scrollWheelValue = 0; // Store the scroll wheel value
 
         //UI
-        public Panel RootPanel {  get; private set; }
-        public Panel ToolPanel {  get; private set; }
-        public Panel SettingsPanel { get; private set; }
-        public Panel ToolDescPanel { get; private set; }
-        public Panel KeyBindPanel { get; private set; }
-        public Paragraph ToolName {  get; private set; }
-        public Paragraph ToolDesc {  get; private set; }
+        public Panel RootPanel {  get; private set; } = null!;
+        public Panel ToolPanel {  get; private set; } = null!;
+        public Panel SettingsPanel { get; private set; } = null!;
+        public Panel ToolDescPanel { get; private set; } = null!;
+        public Panel KeyBindPanel { get; private set; } = null!;
+        public Paragraph ToolName {  get; private set; } = null!;
+        public Paragraph ToolDesc {  get; private set; } = null!;
         public bool IsMouseOverUI { get; private set; }
-        public Checkbox CheckNodes { get; private set; }
-        public Checkbox CheckSegments { get; private set; }
-        public Checkbox CheckSections { get; private set; }
+        public Checkbox CheckNodes { get; private set; } = null!;
+        public Checkbox CheckSegments { get; private set; } = null!;
+        public Checkbox CheckSections { get; private set; } = null!;
         public Property<LaneSpec> roadProperty { get; private set; }
 
         //Overlays
@@ -226,7 +226,7 @@ namespace TranSimCS.Menus.InGame {
 
             //Selection logic
             float distance = float.MaxValue;
-            object selection = null;
+            object? selection = null;
             if (!IsMouseOverUI) selection = MeshUtil.RayIntersectMeshes(meshes, ray, out distance);
             SelectedObject = selection;
             if (selection is LaneStrip laneStrip) {
@@ -309,8 +309,8 @@ namespace TranSimCS.Menus.InGame {
             Tool?.Update(time);
         }
 
-        private Element _overlay;
-        public Element Overlay { get => _overlay; set{
+        private Element? _overlay;
+        public Element? Overlay { get => _overlay; set{
                 if (_overlay == value) return;
                 if(_overlay != null) {
                     UiSystem.Remove("configurator");
