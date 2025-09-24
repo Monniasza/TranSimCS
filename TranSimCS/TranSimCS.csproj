@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
@@ -26,7 +26,11 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Arch" Version="2.1.0-beta" />
+    <PackageReference Include="Eto.Forms" Version="2.10.1" />
+    <PackageReference Include="Eto.Platform.Gtk" Version="2.10.1" />
+    <PackageReference Include="Eto.Platform.Wpf" Version="2.10.1" />
     <PackageReference Include="Iesi.Collections" Version="4.1.1" />
+    <PackageReference Include="Microsoft.WinForms.Designer.SDK" Version="1.6.0" />
     <PackageReference Include="MLEM" Version="8.0.0-ci.222" />
     <PackageReference Include="MLEM.Ui" Version="8.0.0-ci.222" />
     <PackageReference Include="MonoGame.Extended" Version="5.0.2" />
