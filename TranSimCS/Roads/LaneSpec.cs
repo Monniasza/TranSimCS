@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json.Linq;
 
@@ -31,7 +31,7 @@ namespace TranSimCS.Roads {
         public static LaneSpec All => new(Color.White, VehicleTypes.All, 3, 100); // All vehicle types allowed
         public static LaneSpec Platform => new(Color.LightGoldenrodYellow, VehicleTypes.Pedestrian, 3, 10, LaneFlags.Platform);
 
-        public override bool Equals(object obj) {
+        public override bool Equals(object? obj) {
             return obj is LaneSpec spec && Equals(spec);
         }
 

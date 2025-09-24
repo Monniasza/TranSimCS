@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Formats.Asn1;
@@ -33,7 +33,7 @@ namespace TranSimCS.Menus.InGame {
             plan.endLateral = plan.startLateral;
             plan.endTangent = plan.startTangent;
             Ray ray = new Ray(plan.startPos, plan.startTangent);
-            var endPos = Geometry.FindNearest(ray, plan.endPos, out var discard);
+            var endPos = Geometry.FindNearest(ray, plan.endPos, out var _);
             plan.endPos = endPos;
         }
     }
@@ -56,11 +56,11 @@ namespace TranSimCS.Menus.InGame {
         }
     }
 
-    public interface ChainMode: IEquatable<ChainMode> {
+    public interface ChainMode: IEquatable<ChainMode?> {
         public string Name { get; }
         public LaneSpec ChainValues(InGameMenu game);
-        bool IEquatable<ChainMode>.Equals(ChainMode other) {
-            return this == other;
+        bool IEquatable<ChainMode?>.Equals(ChainMode? other) {
+            return ReferenceEquals(this, other);
         }
     }
     public class ChainModeChained: ChainMode {
@@ -254,7 +254,7 @@ namespace TranSimCS.Menus.InGame {
                     var frame = newNodePosition.CalcReferenceFrame();
                     endTangent = frame.Z;
                     endLateral = frame.X;
-                    
+
                 } else {
                     //Take an existing end
                     var mouseOverNodeEnd = mouseOverLaneEnd.Value.RoadNodeEnd;

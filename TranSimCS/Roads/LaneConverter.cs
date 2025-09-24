@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,11 +7,15 @@ using Newtonsoft.Json;
 
 namespace TranSimCS.Roads {
     public class LaneConverter : JsonConverter<Lane> {
-        public override Lane ReadJson(JsonReader reader, Type objectType, Lane existingValue, bool hasExistingValue, JsonSerializer serializer) {
+        public override Lane ReadJson(JsonReader reader, Type objectType, Lane? existingValue, bool hasExistingValue, JsonSerializer serializer) {
             throw new NotImplementedException();
         }
 
-        public override void WriteJson(JsonWriter writer, Lane lane, JsonSerializer serializer) {
+        public override void WriteJson(JsonWriter writer, Lane? lane, JsonSerializer serializer) {
+            if (lane == null) {
+                writer.WriteNull();
+                return;
+            }
             writer.WriteStartObject();
 
             // Serialize properties of the Lane class
