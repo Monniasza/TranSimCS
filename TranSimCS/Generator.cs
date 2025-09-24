@@ -98,7 +98,7 @@ namespace TranSimCS
                 for (int j = lendIdx; j < rendIdx; j++) {
                     var startLane = strip.StartNode.GetLaneEnd(i);
                     var endLane = strip.EndNode.GetLaneEnd(j);
-                    LaneStrip laneStrip = new LaneStrip(strip, startLane, endLane); // Create a new lane strip connecting the start and end lanes
+                    LaneStrip laneStrip = new LaneStrip(startLane, endLane); // Create a new lane strip connecting the start and end lanes
                     strip.AddLaneStrip(laneStrip); // Add the lane strip to the road strip
                 }
             }
@@ -110,7 +110,7 @@ namespace TranSimCS
         public static void JoinLanesByIndices(RoadStrip strip, int startIdx, int endIdx, LaneSpec spec) {
             var startLane = strip.StartNode.GetLaneEnd(startIdx);
             var endLane = strip.EndNode.GetLaneEnd(endIdx);
-            LaneStrip laneStrip = new LaneStrip(strip, startLane, endLane); // Create a new lane strip connecting the start and end lanes
+            LaneStrip laneStrip = new LaneStrip(startLane, endLane); // Create a new lane strip connecting the start and end lanes
             laneStrip.Spec = spec;
             strip.AddLaneStrip(laneStrip); // Add the lane strip to the road strip
         }

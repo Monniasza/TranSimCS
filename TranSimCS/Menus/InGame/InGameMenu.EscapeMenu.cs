@@ -35,7 +35,7 @@ namespace TranSimCS.Menus.InGame {
             }
 
             public void ResetWorld() {
-                TSWorld.SetUpExampleWorld(parent.World);
+                WorldGenerator.SetUpExampleWorld(parent.World);
                 parent.Overlay = null;
             }
 

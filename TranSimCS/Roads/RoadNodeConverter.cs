@@ -12,16 +12,15 @@ namespace TranSimCS.Roads {
         }
 
         public override void WriteJson(JsonWriter writer, RoadNode value, JsonSerializer serializer) {
-            var node = (RoadNode)value;
             writer.WriteStartObject();
 
             // Serialize properties of the Node class
             writer.WritePropertyName("id");
-            writer.WriteValue(node.Guid);
+            writer.WriteValue(value.Guid);
             writer.WritePropertyName("pos");
-            serializer.Serialize(writer, node.PositionProp.Value);
+            serializer.Serialize(writer, value.PositionProp.Value);
             writer.WritePropertyName("lanes");
-            serializer.Serialize(writer, node.Lanes);
+            serializer.Serialize(writer, value.Lanes);
 
             writer.WriteEndObject();
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,12 +10,25 @@ using TranSimCS.Roads;
 
 namespace TranSimCS.Worlds {
     public partial class TSWorld {
-
-        /*public JObject SaveData() {
-            JObject mainTable = new JObject();
-            
-            
-            //
-        }*/
+        public JsonSerializer CreateSerializer() {
+            var settings = new JsonSerializerSettings();
+            settings.Converters.Add(new LaneConverter());
+            settings.Converters.Add(new RoadNodeConverter());
+            settings.Converters.Add(new LaneEndConverter(this));
+            settings.Converters.Add(new RoadNodeEndConverter(this));
+            settings.Converters.Add(new LaneStripConverter());
+            settings.Converters.Add(new RoadStripConverter());
+            settings.Converters.Add(new TSWorldConverter());
+            return JsonSerializer.Create(settings);
+        }
+        public void ReadFromFile(string filePath) {
+            using (var stream = File.OpenRead(filePath)) ReadFromStream(stream);
+        }
+        public void ReadFromStream(TextReader stream) => ReadFromJSON(new JsonTextReader(stream));
+        public void ReadFromStream(Stream stream) => ReadFromStream(new StreamReader(stream));
+        public void ReadFromJSON(JsonReader jsonReader) {
+            var serializer = CreateSerializer();
+            serializer.Deserialize(jsonReader, typeof(TSWorld));
+        }
     }
 }
