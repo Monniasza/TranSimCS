@@ -41,8 +41,10 @@ namespace TranSimCS.Menus.InGame {
                 TaskCompletionSource<string?> tcs = new();
                 dialog.OnSave += (file) => tcs.TrySetResult(file);
                 string filename = await tcs.Task;
-                if (filename == null) return false;
-
+                if (filename == null) {
+                    parent.Overlay = this;
+                    return false;
+                }
                 try {
                     InGameMenu newMenu = new InGameMenu(parent.Game);
                     newMenu.World.ReadFromFile(filename); //TODO handle errors in world loading so if the world load fails the game does not crash
@@ -57,13 +59,17 @@ namespace TranSimCS.Menus.InGame {
                 TaskCompletionSource<string?> tcs = new();
                 dialog.OnSave += (file) => tcs.TrySetResult(file);
                 string filename = await tcs.Task;
-                if (filename == null) return false;
+                if (filename == null) {
+                    parent.Overlay = this;
+                    return false;
+                }
                 try {
                     parent.World.SaveToFile(filename);
                 } catch (Exception e) {
                     OptionsDialog.FromError(parent, e).Show();
                     return false;
                 }
+                parent.Overlay = this;
                 return true;
             }
 
@@ -80,7 +86,7 @@ namespace TranSimCS.Menus.InGame {
                 var saveDialog = new SaveGameDialog(parent, Program.SaveRoot, false);
                 saveDialog.OnSave += (file) => {
                     if (file == null) parent.Overlay = this;
-                    parent.World.SaveToFile(file);
+                    else parent.World.SaveToFile(file);
                 };
                 parent.Overlay = saveDialog;
             }

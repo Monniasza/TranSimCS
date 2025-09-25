@@ -73,18 +73,18 @@ namespace TranSimCS.Menus.InGame {
                 if (isLoad) {
                     if (!fileExists) {
                         //Warn the user that file does not exist
-                        new OptionsDialog(menu, this, $"You are about to overwrite ${path}. Do you want to proceed?",
+                        new OptionsDialog(menu, this, $"The file ${path} does not exist.",
                             ("OK", Program.DoNothing)
                         ).Show();
-                    }
+                    } else Invoke(path);
                 } else {
                     if (fileExists) {
                         //Warn about overwriting a file
-                        new OptionsDialog(menu, this, $"You are about to overwrite ${path}. Do you want to proceed?",
+                        new OptionsDialog(menu, null, $"You are about to overwrite ${path}. Do you want to proceed?",
                             ("Yes", () => Invoke(path)),
-                            ("No", Program.DoNothing)
+                            ("No", () => menu.Overlay = this)
                         ).Show();
-                    }
+                    } else Invoke(path);
                 }
             }
 

@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Textures;
+using MLEM.Ui;
 using MLEM.Ui.Elements;
 using TranSimCS.Model;
 using TranSimCS.Roads;
@@ -64,6 +65,8 @@ namespace TranSimCS.Menus.InGame {
         public Panel RootPanel {  get; private set; } = null!;
         public Panel ToolPanel {  get; private set; } = null!;
         public Panel SettingsPanel { get; private set; } = null!;
+        public RootElement ToolPanelRoot { get; private set; } = null!;
+
         public Panel ToolDescPanel { get; private set; } = null!;
         public Panel KeyBindPanel { get; private set; } = null!;
         public Paragraph ToolName {  get; private set; } = null!;
@@ -125,7 +128,7 @@ namespace TranSimCS.Menus.InGame {
 
             //Set up the UI from below
             RootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 120));
-            UiSystem.Add("lower", RootPanel);
+            ToolPanelRoot = UiSystem.Add("lower", RootPanel);
 
             ToolPanel = new Panel(MLEM.Ui.Anchor.TopCenter, new(1f, 48));
             RootPanel.AddChild(ToolPanel);
@@ -198,9 +201,9 @@ namespace TranSimCS.Menus.InGame {
 
             //Check if mouse is over UI
             IsMouseOverUI = false;
-            foreach(var root in UiSystem.GetRootElements()) {
+            foreach (var root in UiSystem.GetRootElements()) {
                 var rect = root.Element.Area;
-                if(rect.Contains(mouseX, mouseY)) {
+                if (rect.Contains(mouseX, mouseY)) {
                     IsMouseOverUI = true;
                     break;
                 }
@@ -211,19 +214,29 @@ namespace TranSimCS.Menus.InGame {
 
             //Add road node selection meshes
             var meshes = new List<IRenderBin>();
-            if(CheckSegments.Checked) ForeachLane(World.RoadSegments, (lane) => {
+            if (CheckSegments.Checked) ForeachLane(World.RoadSegments, (lane) => {
                 meshes.Add(lane.GetMesh());
             });
             if (CheckNodes.Checked) foreach (var node in World.RoadNodes)
-                meshes.Add(node.GetMesh());
+                    meshes.Add(node.GetMesh());
 
             //Add tool selectors
             SelectorObjects.Clear();
             Tool?.AddSelectors(SelectorObjects);
-            foreach(var mesh in SelectorObjects.RenderBins.Values) 
+            foreach (var mesh in SelectorObjects.RenderBins.Values)
                 meshes.Add(mesh);
             meshes.Add(InvisibleSelectors);
 
+            //Remove focus from the toolbar
+            ToolPanelRoot.SelectElement(null);
+
+            if(!UiSystem.IsFocusedOnAny())
+                HandleInputs(time, keyboardState, secondsElapsed, ray, meshes);
+
+            UiSystem.Update(time);
+        }
+
+        private void HandleInputs(GameTime time, KeyboardState keyboardState, float secondsElapsed, Ray ray, List<IRenderBin> meshes) {
             //Selection logic
             float distance = float.MaxValue;
             object? selection = null;
@@ -232,7 +245,7 @@ namespace TranSimCS.Menus.InGame {
             if (selection is LaneStrip laneStrip) {
                 MouseOverRoad = new RoadSelection(laneStrip, distance, ray); // Create a new road selection with the lane tag and intersection distance
             }
-            if(selection is LaneEnd lane) {
+            if (selection is LaneEnd lane) {
                 MouseOverRoad = new RoadSelection(lane, distance, ray);
             }
             if (MouseOverRoad != null) SelectedObject = MouseOverRoad.hitObject;
@@ -282,8 +295,6 @@ namespace TranSimCS.Menus.InGame {
             newElevation = MathHelper.Clamp(newElevation, -MathF.PI / 2 + 0.01f, MathF.PI / 2 - 0.01f);
             camera.Azimuth = newAzimuth; // Update camera azimuth
             camera.Elevation = newElevation; // Update camera elevation
-
-            UiSystem.Update(time);
 
             //Run the world tool
             if (!IsMouseOverUI) {
