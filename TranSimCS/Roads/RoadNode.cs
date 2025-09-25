@@ -34,7 +34,7 @@ namespace TranSimCS.Roads {
         public IReadOnlyList<Lane> Lanes => _lanes.AsReadOnly(); // Expose the lanes as a read-only list
         public void AddLane(Lane lane) {
             if(lane == null) throw new ArgumentNullException(nameof(lane), "Lane cannot be null.");
-            if(lane.RoadNode != this) throw new ArgumentException("Lane does not belong to this road node.", nameof(lane));
+            lane.RoadNode = this;
             var middlePosition = (lane.LeftPosition + lane.RightPosition) / 2; // Calculate the middle position of the lane
             int index = _lanes.FindIndex(lane1 => lane1.MiddlePosition > middlePosition); // Find the index where the lane should be inserted
             if (index == -1) index = Lanes.Count;
@@ -48,7 +48,7 @@ namespace TranSimCS.Roads {
         }
         public void RemoveLane(Lane lane) {
             if(lane == null) throw new ArgumentNullException(nameof(lane), "Lane cannot be null.");
-            if(!_lanes.Remove(lane)) throw new ArgumentException("Lane does not belong to this road node.", nameof(lane));
+            lane.RoadNode = null;
             //Shift existing lanes to the left if necessary
             var lanesToShift = _lanes.Skip(lane.Index).ToList(); // Get the lanes that will be shifted
             foreach (var l in lanesToShift) 

@@ -7,8 +7,10 @@ using Newtonsoft.Json;
 
 namespace TranSimCS.Worlds {
     public class TSWorldConverter : JsonConverter<TSWorld> {
-        public override TSWorld ReadJson(JsonReader reader, Type objectType, TSWorld? existingValue, bool hasExistingValue, JsonSerializer serializer) {
-            throw new NotImplementedException();
+        public override TSWorld ReadJson(JsonReader reader, Type objectType, TSWorld existingValue, bool hasExistingValue, JsonSerializer serializer) {
+            var world = existingValue ?? new TSWorld();
+            world.ReadFromJSON(reader);
+            return world;
         }
 
         public override void WriteJson(JsonWriter writer, TSWorld? value, JsonSerializer serializer) {
