@@ -1,20 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 using MLEM.Ui.Elements;
 using MLEM.Ui.Style;
-using TranSimCS.Save;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Menus.InGame {
 
     //Escape menu part of the InGameMenu
     public partial class InGameMenu {
-        public class EscapeMenu : MLEM.Ui.Elements.Panel {
+        public class EscapeMenu: Panel {
             public readonly InGameMenu parent;
             private UiStyle buttonStyle;
 
@@ -23,49 +20,26 @@ namespace TranSimCS.Menus.InGame {
                 buttonStyle = new UiStyle(parent.UiSystem.Style);
                 buttonStyle.Font = parent.Game.Gsf;
                 NewOption("Back to game", () => parent.Overlay = null!);
-                NewOption("Reset", ResetWorldButton);
-                NewOption("Load", LoadSaveButton);
-                NewOption("Save", SaveGameButton);
-                NewOption("Exit to desktop", ExitButton);
+                NewOption("Reset", ResetWorld);
+                NewOption("Load", LoadSave);
+                NewOption("Save", SaveGame);
+                NewOption("Exit to desktop (!)", Exit);
             }
 
-            private void GoBack() => parent.Overlay = this;
-
-            public void LoadSaveButton() => ShowConfirmDialog(SaveGame, LoadSave, GoBack);
             public void LoadSave() {
 
             }
 
-            public void SaveGameButton() => SaveGame();
-            public bool SaveGame() {
-                var results = Dialogs.SaveDialog(null);
-                var result = results.Item2;
+            public void SaveGame() {
 
-                if (result != Eto.Forms.DialogResult.Ok) return false;
-
-                var dialog = results.Item1;
-                var filename = dialog.FileName;
-                dialog.Dispose();
-                var world = parent.World;
-                var serializer = world.CreateSerializer();
-                Program.SerializeToFile(filename, world, serializer);
-
-                return true;
             }
 
-            public void ResetWorldButton() {
+            public void ResetWorld() {
                 WorldGenerator.SetUpExampleWorld(parent.World);
                 parent.Overlay = null;
             }
 
-            public void ExitButton() {
-
-                 parent.Game.Exit();
-            }
-
-            private void ShowConfirmDialog(Func<bool> save, Action proceed, Action cancel) {
-
-            }
+            public void Exit() => parent.Game.Exit();
 
             private Button NewOption(String text, Action? action) {
                 Button result = new Button(MLEM.Ui.Anchor.AutoLeft, new(1, 40), text);
