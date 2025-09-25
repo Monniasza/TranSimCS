@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -11,6 +11,10 @@ namespace TranSimCS.Model {
         public List<VertexPositionColorTexture> Vertices { get; } = new List<VertexPositionColorTexture>();
         public List<int> Indices { get; } = new List<int>();
         public IDictionary<int, object> Tags { get; } = new Dictionary<int, object>();
+        private MeshBvh? bvh;
+
+        internal MeshBvh GetAccelerationStructure() => bvh ??= MeshBvh.Build(this);
+        internal void InvalidateAccelerationStructure() => bvh = null;
 
         public Mesh() { }
         public Mesh(IEnumerable<VertexPositionColorTexture> vertices, IEnumerable<int> indices) {
@@ -25,17 +29,20 @@ namespace TranSimCS.Model {
 
         int IRenderBin.AddVertex(VertexPositionColorTexture vertex) {
             Vertices.Add(vertex);
+            InvalidateAccelerationStructure();
             return Vertices.Count - 1; // Return the index of the newly added vertex
         }
 
         void IRenderBin.AddIndex(int index) {
             Indices.Add(index);
+            InvalidateAccelerationStructure();
         }
 
         public void Clear() {
             Vertices.Clear();
             Indices.Clear();
             Tags.Clear();
+            InvalidateAccelerationStructure();
         }
     }
 }
