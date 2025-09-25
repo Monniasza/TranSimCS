@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Arch.Core;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -12,10 +13,12 @@ using TranSimCS.Worlds.ECS;
 
 public class Program {
     public static string DataRoot { get; private set; }
+    public static string SaveRoot { get; private set; }
 
     private static void Main(string[] args) {
         var appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         DataRoot = Path.Combine(appdata, "TranSim");
+        SaveRoot = Path.Combine(DataRoot, "saves");
         Directory.CreateDirectory(DataRoot);
 
         LaneSpec laneSpec = LaneSpec.Default;
@@ -43,4 +46,10 @@ public class Program {
             writer.Flush();
         }
     }
+
+    public static T Await<T>(Task<T> task) {
+        return task.GetAwaiter().GetResult();
+    }
+
+    public static void DoNothing() { }
 }

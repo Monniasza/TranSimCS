@@ -27,11 +27,62 @@ namespace TranSimCS.Menus.InGame {
             }
 
             public void LoadSave() {
+                var saveDialog = new SaveGameDialog(parent, Program.SaveRoot, false);
+                var loadDialog = new SaveGameDialog(parent, Program.SaveRoot, true);
+                var dialog = new ConfirmLoseDialog(
+                    () => Program.Await(SaveToFile(saveDialog)),
+                    () => Program.Await(LoadSaveFromFile(saveDialog)),
+                    () => parent.Overlay = this, parent.Game
+                );
+            }
 
+            public async Task<bool> LoadSaveFromFile(SaveGameDialog dialog) {
+                parent.Overlay = dialog;
+                TaskCompletionSource<string?> tcs = new();
+                dialog.OnSave += (file) => tcs.TrySetResult(file);
+                string filename = await tcs.Task;
+                if (filename == null) return false;
+
+                try {
+                    InGameMenu newMenu = new InGameMenu(parent.Game);
+                    newMenu.World.ReadFromFile(filename); //TODO handle errors in world loading so if the world load fails the game does not crash
+                    parent.Game.Menu = newMenu;
+                } catch (Exception e) {
+                    OptionsDialog.FromError(parent, e).Show();
+                    return false;
+                }
+                return true;
+            }
+            public async Task<bool> SaveToFile(SaveGameDialog dialog) {
+                TaskCompletionSource<string?> tcs = new();
+                dialog.OnSave += (file) => tcs.TrySetResult(file);
+                string filename = await tcs.Task;
+                if (filename == null) return false;
+                try {
+                    parent.World.SaveToFile(filename);
+                } catch (Exception e) {
+                    OptionsDialog.FromError(parent, e).Show();
+                    return false;
+                }
+                return true;
+            }
+
+            public void CreateSaveConfirm(Action afterSaving) {
+                var saveDialog = new SaveGameDialog(parent, Program.SaveRoot, false);
+                var dialog = new ConfirmLoseDialog(
+                    () => Program.Await(LoadSaveFromFile(saveDialog)),
+                    () => parent.Overlay = null,
+                    () => parent.Overlay = this, parent.Game
+                );
             }
 
             public void SaveGame() {
-
+                var saveDialog = new SaveGameDialog(parent, Program.SaveRoot, false);
+                saveDialog.OnSave += (file) => {
+                    if (file == null) parent.Overlay = this;
+                    parent.World.SaveToFile(file);
+                };
+                parent.Overlay = saveDialog;
             }
 
             public void ResetWorld() {

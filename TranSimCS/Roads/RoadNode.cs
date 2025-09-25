@@ -60,6 +60,7 @@ namespace TranSimCS.Roads {
                 connection.Destroy();
             }
             lane.connections.Clear(); // Clear the connections of the lane being removed
+            _lanes.Remove(lane);
             if(Lanes.Count == 0) {
                 //Demolish the node
                 World.RoadNodes.Remove(this);

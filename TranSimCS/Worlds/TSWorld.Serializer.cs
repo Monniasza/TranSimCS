@@ -30,5 +30,16 @@ namespace TranSimCS.Worlds {
             var serializer = CreateSerializer();
             serializer.Deserialize(jsonReader, typeof(TSWorld));
         }
+
+        public static TSWorld Load(string filename) {
+            TSWorld world = new TSWorld();
+            world.ReadFromFile(filename);
+            return world;
+        }
+
+        public void SaveToFile(string filename) {
+            var serializer = CreateSerializer();
+            Program.SerializeToFile<TSWorld>(filename, this, serializer);
+        }
     }
 }
