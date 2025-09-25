@@ -26,6 +26,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Arch" Version="2.1.0-beta" />
+    <PackageReference Include="Eto.Forms" Version="2.10.1" />
+    <PackageReference Include="Eto.Platform.Gtk" Version="2.10.1" />
+    <PackageReference Include="Eto.Platform.Wpf" Version="2.10.1" />
     <PackageReference Include="Iesi.Collections" Version="4.1.1" />
     <PackageReference Include="Microsoft.WinForms.Designer.SDK" Version="1.6.0" />
     <PackageReference Include="MLEM" Version="8.0.0-ci.222" />
