@@ -38,9 +38,14 @@ namespace TranSimCS.Menus.InGame {
 
             public void SaveGameButton() => SaveGame();
             public bool SaveGame() {
-                Directory.CreateDirectory(Program.SaveDirectory);
-                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                var filename = Path.Combine(Program.SaveDirectory, $"save_{timestamp}.json");
+                var results = Dialogs.SaveDialog(null);
+                var result = results.Item2;
+
+                if (result != Eto.Forms.DialogResult.Ok) return false;
+
+                var dialog = results.Item1;
+                var filename = dialog.FileName;
+                dialog.Dispose();
                 var world = parent.World;
                 var serializer = world.CreateSerializer();
                 Program.SerializeToFile(filename, world, serializer);
@@ -59,18 +64,7 @@ namespace TranSimCS.Menus.InGame {
             }
 
             private void ShowConfirmDialog(Func<bool> save, Action proceed, Action cancel) {
-                parent.Overlay = new ConfirmLoseDialog(
-                    save,
-                    () => {
-                        parent.Overlay = null;
-                        proceed();
-                    },
-                    () => {
-                        parent.Overlay = this;
-                        cancel();
-                    },
-                    parent.Game
-                );
+
             }
 
             private Button NewOption(String text, Action? action) {
