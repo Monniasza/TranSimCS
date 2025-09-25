@@ -116,9 +116,14 @@ namespace TranSimCS.Menus.InGame {
                     directoryTextEntry.SetText(dir.FullName);
                     ChangePath(e);
                 };
+                contentsPanel.AddChild(button);
             }
             private void CreateFileButton(FileInfo file) {
-
+                var button = new Button(Anchor.AutoLeft, new(1, 20), file.Name);
+                button.OnPressed = (e) => {
+                    fileNameEntry.SetText(file.FullName);
+                };
+                contentsPanel.AddChild(button);
             }
 
             public async Task<string> WaitAndHandle(string filepath) {
