@@ -20,19 +20,27 @@ public class Program {
         DataRoot = Path.Combine(appdata, "TranSim");
         SaveRoot = Path.Combine(DataRoot, "saves");
         Directory.CreateDirectory(DataRoot);
+        Directory.CreateDirectory(SaveRoot);
 
-        LaneSpec laneSpec = LaneSpec.Default;
+        // Create default laneSpec.json only if it doesn't exist
         string laneSpecPath = Path.Combine(DataRoot, "laneSpec.json");
-        var laneSerializer = JsonSerializer.CreateDefault();
-        SerializeToFile<LaneSpec>(laneSpecPath, laneSpec, laneSerializer);
+        if (!File.Exists(laneSpecPath)) {
+            LaneSpec laneSpec = LaneSpec.Default;
+            var laneSerializer = JsonSerializer.CreateDefault();
+            SerializeToFile<LaneSpec>(laneSpecPath, laneSpec, laneSerializer);
+        }
 
         TSWorld exampleWorld = new TSWorld();
         var serializer = exampleWorld.CreateSerializer();
 
         WorldGenerator.SetUpExampleWorld(exampleWorld);
-        var node = exampleWorld.RoadNodes.First(roadNode => roadNode.Name.StartsWith("Fancy"));
+
+        // Create default roadNode.json only if it doesn't exist
         string roadNodePath = Path.Combine(DataRoot, "roadNode.json");
-        SerializeToFile<RoadNode>(roadNodePath, node, serializer);
+        if (!File.Exists(roadNodePath)) {
+            var node = exampleWorld.RoadNodes.First(roadNode => roadNode.Name.StartsWith("Fancy"));
+            SerializeToFile<RoadNode>(roadNodePath, node, serializer);
+        }
 
         using var game = new TranSimCS.Game1();
         game.Run();
@@ -40,11 +48,9 @@ public class Program {
 
     public static void SerializeToFile<T>(string path, T obj, JsonSerializer serializer) {
         Debug.Print("Saved the data to " + path);
-        using (var filestream = File.OpenWrite(path)) {
-            var writer = new StreamWriter(filestream);
-            serializer.Serialize(writer, obj, typeof(T));
-            writer.Flush();
-        }
+        using var stringWriter = new StringWriter();
+        serializer.Serialize(stringWriter, obj, typeof(T));
+        File.WriteAllText(path, stringWriter.ToString());
     }
 
     public static T Await<T>(Task<T> task) {
