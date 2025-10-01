@@ -18,7 +18,7 @@ namespace TranSimCS.Save {
                 if (reader.TokenType == JsonToken.PropertyName) {
                     //Hit a property
                     string? key = reader.Value?.ToString();
-                    Debug.Print($"Lane key #{count}: {key}");
+                    //Debug.Print($"Lane key #{count}: {key}");
                     count++;
                     reader.Read();
                     //Debug.Print($"Type: {reader.TokenType}, value: {reader.Value}");
@@ -26,7 +26,7 @@ namespace TranSimCS.Save {
                     reader.Read();
                 } else if (reader.TokenType != JsonToken.EndObject)
                     throw new JsonSerializationException("Not a property name: " + reader.TokenType);
-                Debug.Print($"Type: {reader.TokenType}, value: {reader.Value}");
+                //Debug.Print($"Type: {reader.TokenType}, value: {reader.Value}");
             } while(reader.TokenType != JsonToken.EndObject);
         }
 

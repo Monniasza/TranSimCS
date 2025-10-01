@@ -36,7 +36,7 @@ namespace TranSimCS.Roads {
 
         public override void WriteJson(JsonWriter writer, RoadNode? value, JsonSerializer serializer) {
             var node = value;
-            if (node is null) { writer.WriteNull(); return; }
+            if (node == null) { writer.WriteNull(); return; }
             writer.WriteStartObject();
 
             // Serialize properties of the Node class

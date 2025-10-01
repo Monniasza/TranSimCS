@@ -13,6 +13,7 @@ namespace TranSimCS.Worlds {
     public class TSWorldConverter : JsonConverter<TSWorld> {
         public override TSWorld ReadJson(JsonReader reader, Type objectType, TSWorld existingValue, bool hasExistingValue, JsonSerializer serializer) {
             var world = existingValue ?? new TSWorld();
+<<<<<<< HEAD
             Debug.Print($"Token type: {reader.TokenType}");
 
             // We need to store the segments JSON for later processing after nodes are loaded
@@ -41,6 +42,9 @@ namespace TranSimCS.Worlds {
                 }
             }
 
+=======
+            world.ReadFromJSON(reader);
+>>>>>>> db52fde38caa295a5f683f7ababdb431acad9c44
             return world;
         }
 

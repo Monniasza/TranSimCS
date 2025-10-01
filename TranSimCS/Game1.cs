@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Xml.Linq;
 using Microsoft.Xna.Framework;
@@ -8,15 +9,15 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Font;
 using MLEM.Input;
-using MLEM.Ui.Style;
-using TranSimCS.Menus;
-using TranSimCS.Menus.InGame;
-using TranSimCS.Roads;
-using SpriteFontPlus;
-using System.IO;
 using MLEM.Misc;
 using MLEM.Textures;
 using MLEM.Ui.Elements;
+using MLEM.Ui.Style;
+using Newtonsoft.Json.Linq;
+using SpriteFontPlus;
+using TranSimCS.Menus;
+using TranSimCS.Menus.InGame;
+using TranSimCS.Roads;
 
 namespace TranSimCS
 {
@@ -24,7 +25,7 @@ namespace TranSimCS
     {
         public GraphicsDeviceManager GraphicsDeviceManager { get; private set; }
         public SpriteBatch SpriteBatch { get; private set; } = null!;
-        private Menu? menu = null;
+        
         public readonly InputHandler ih;
         public UiStyle DefaultUiStyle { get; private set; } = null!;
 
@@ -41,12 +42,11 @@ namespace TranSimCS
         public KeyboardState KeyboardState { get; private set; }
         public KeyboardState KeyboardStateOld { get; private set; }
 
-        public Menu? Menu { get => menu; set {
-            ArgumentNullException.ThrowIfNull(value, nameof(value));
-            menu?.Destroy();
-            menu = value;
-            menu.LoadContent();
+        private Menu? menu = null;
+        private Menu? newMenu = null;
 
+        public Menu? Menu { get => menu; set {
+            newMenu = value;
         } }
 
         public Game1() {
@@ -133,6 +133,14 @@ namespace TranSimCS
             MouseState = Mouse.GetState();
             KeyboardStateOld = KeyboardState;
             KeyboardState = Keyboard.GetState();
+
+            //Menu changed
+            if(Menu != newMenu) {
+                Menu?.Destroy();
+                menu = newMenu;
+                Menu?.LoadContent();
+            }
+            
 
             ih.Update();
             Menu?.Update(gameTime);
