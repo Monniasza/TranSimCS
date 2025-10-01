@@ -8,13 +8,14 @@ using TranSimCS.Roads;
 using System.Collections.ObjectModel;
 using Arch.Core;
 using System.Diagnostics;
+using TranSimCS.Collections;
 
 namespace TranSimCS.Worlds
 {
     public partial class TSWorld{
         //The contents of the world
-        public ObservableCollection<RoadStrip> RoadSegments { get; } = new();
-        public ObservableCollection<RoadSection> RoadSections { get; } = new();
+        public ListenableObjContainer<RoadStrip> RoadSegments { get; } = new();
+        public ListenableObjContainer<RoadSection> RoadSections { get; } = new();
         public World ECS { get; private set; }
 
         public RoadStrip FindRoadStrip(RoadNodeEnd start, RoadNodeEnd end) {
@@ -49,18 +50,11 @@ namespace TranSimCS.Worlds
         }
 
         public TSWorld() {
-            RoadSegments.CollectionChanged += RoadSegments_CollectionChanged; // Subscribe to changes in the road segments collection
-            RoadNodes.CollectionChanged += RoadNodes_CollectionChanged; // Subscribe to changes in the road nodes collection
+            RoadSegments.ItemAdded += HandleAddRoadSegment;
+            RoadSegments.ItemRemoved += HandleRemoveRoadSegment;
+            RoadNodes.ItemAdded += HandleAddRoadNode;
+            RoadNodes.ItemRemoved += HandleRemoveRoadNode;
             ECS = World.Create();
-        }
-
-        private void RoadSegments_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) {
-            // Handle changes to the road segments collection if needed
-            // For example, you could log changes or update UI elements
-            foreach (var segment in e.NewItems?.OfType<RoadStrip>() ?? Enumerable.Empty<RoadStrip>())
-                HandleAddRoadSegment(segment); // Handle the addition of a new road segment
-            foreach (var segment in e.OldItems?.OfType<RoadStrip>() ?? Enumerable.Empty<RoadStrip>())
-                HandleRemoveRoadSegment(segment); // Handle the removal of a road segment
         }
         private void HandleAddRoadSegment(RoadStrip segment) {
             // Handle the addition of a new road segment

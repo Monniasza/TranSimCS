@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,7 +28,7 @@ namespace TranSimCS.Roads {
                     case "start": start = serializer.Deserialize<RoadNodeEnd>(reader); break;
                     case "end": end = serializer.Deserialize<RoadNodeEnd>(reader); break;
                     case "lanes": lanes = serializer.Deserialize<LaneStrip[]>(reader); break;
-                    case "guid": guid = serializer.Deserialize<Guid>(reader); break;
+                    case "guid": guid = serializer.Deserialize<Guid>(reader); Debug.Print($"Reading road strip {guid}"); break;
                 }
             });
 
