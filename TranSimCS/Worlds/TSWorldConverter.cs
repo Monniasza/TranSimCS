@@ -13,7 +13,38 @@ namespace TranSimCS.Worlds {
     public class TSWorldConverter : JsonConverter<TSWorld> {
         public override TSWorld ReadJson(JsonReader reader, Type objectType, TSWorld existingValue, bool hasExistingValue, JsonSerializer serializer) {
             var world = existingValue ?? new TSWorld();
+<<<<<<< HEAD
+            Debug.Print($"Token type: {reader.TokenType}");
+
+            // We need to store the segments JSON for later processing after nodes are loaded
+            Newtonsoft.Json.Linq.JObject? segmentsJson = null;
+
+            JsonProcessor.ReadJsonObjectProperties(reader, key => {
+                switch (key) {
+                    case "nodes":
+                        var nodes = serializer.Deserialize<RoadNode[]>(reader);
+                        world.RoadNodes.Clear();
+                        foreach(var node in nodes ?? []) world.RoadNodes.Add(node);
+                        break;
+                    case "segments":
+                        // Store the segments JSON for later processing
+                        segmentsJson = Newtonsoft.Json.Linq.JObject.Load(reader);
+                        break;
+                }
+            });
+
+            // Now that nodes are loaded, deserialize segments
+            if (segmentsJson != null) {
+                using (var segmentReader = segmentsJson.CreateReader()) {
+                    var segments = serializer.Deserialize<RoadStrip[]>(segmentReader);
+                    world.RoadSegments.Clear();
+                    foreach(var segment in segments ?? []) world.RoadSegments.Add(segment);
+                }
+            }
+
+=======
             world.ReadFromJSON(reader);
+>>>>>>> db52fde38caa295a5f683f7ababdb431acad9c44
             return world;
         }
 
