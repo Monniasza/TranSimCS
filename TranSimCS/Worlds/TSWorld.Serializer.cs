@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -28,7 +28,7 @@ namespace TranSimCS.Worlds {
         public void ReadFromStream(Stream stream) => ReadFromStream(new StreamReader(stream));
         public void ReadFromJSON(JsonReader jsonReader) {
             var serializer = CreateSerializer();
-            serializer.Deserialize(jsonReader, typeof(TSWorld));
+            serializer.Populate(jsonReader, this);
         }
 
         public static TSWorld Load(string filename) {

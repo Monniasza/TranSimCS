@@ -101,9 +101,16 @@ namespace TranSimCS.Menus.InGame {
             //unused
         }
 
-        public override void LoadContent() {
+        public void LoadWorldFromFile(string filename) {
             World = new TSWorld();
-            WorldGenerator.SetUpExampleWorld(World);
+            World.ReadFromFile(filename);
+        }
+
+        public override void LoadContent() {
+            if (World == null) {
+                World = new TSWorld();
+                WorldGenerator.SetUpExampleWorld(World);
+            }
 
             //Generate graphics stuff
             effect = new BasicEffect(Game.GraphicsDevice) {
@@ -193,8 +200,12 @@ namespace TranSimCS.Menus.InGame {
             float secondsElapsed = (float)time.ElapsedGameTime.TotalSeconds; // Get the elapsed time in seconds
 
             // Unproject screen coordinates to near and far points in 3D space
-            Vector3 nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), effect.Projection, effect.View, effect.World);
-            Vector3 farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), effect.Projection, effect.View, effect.World);
+            Vector3 nearPoint = Vector3.Zero;
+            Vector3 farPoint = Vector3.Zero;
+            if (effect != null) {
+                nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), effect.Projection, effect.View, effect.World);
+                farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), effect.Projection, effect.View, effect.World);
+            }
             Ray ray = new(nearPoint, Vector3.Normalize(farPoint - nearPoint));
             MouseRayOld = MouseRay;
             MouseRay = ray; // Store the ray for later use
@@ -214,11 +225,13 @@ namespace TranSimCS.Menus.InGame {
 
             //Add road node selection meshes
             var meshes = new List<IRenderBin>();
-            if (CheckSegments.Checked) ForeachLane(World.RoadSegments, (lane) => {
-                meshes.Add(lane.GetMesh());
-            });
-            if (CheckNodes.Checked) foreach (var node in World.RoadNodes)
-                    meshes.Add(node.GetMesh());
+            if (World != null) {
+                if (CheckSegments.Checked) ForeachLane(World.RoadSegments, (lane) => {
+                    meshes.Add(lane.GetMesh());
+                });
+                if (CheckNodes.Checked) foreach (var node in World.RoadNodes)
+                        meshes.Add(node.GetMesh());
+            }
 
             //Add tool selectors
             SelectorObjects.Clear();
@@ -228,7 +241,7 @@ namespace TranSimCS.Menus.InGame {
             meshes.Add(InvisibleSelectors);
 
             //Remove focus from the toolbar
-            ToolPanelRoot.SelectElement(null);
+            ToolPanelRoot?.SelectElement(null);
 
             if(!UiSystem.IsFocusedOnAny())
                 HandleInputs(time, keyboardState, secondsElapsed, ray, meshes);
@@ -259,7 +272,9 @@ namespace TranSimCS.Menus.InGame {
                 var zoomDelta = MathF.Pow(2f, mouseScrollDelta / -120f); // Adjust zoom factor based on scroll wheel delta
                 camera.Distance *= zoomDelta; // Update camera distance based on zoom factor
             }
-            effect.View = camera.GetViewMatrix(); // Update the view matrix of the effect with the camera's view matrix
+            if (effect != null) {
+                effect.View = camera.GetViewMatrix(); // Update the view matrix of the effect with the camera's view matrix
+            }
 
             //Handle camera movement with WASD keys
             float sideMotion = 0.0f; // Side motion for camera movement
