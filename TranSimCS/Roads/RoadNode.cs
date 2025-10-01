@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -32,54 +32,71 @@ namespace TranSimCS.Roads {
         //Lane structure
         private readonly List<Lane> _lanes = new List<Lane>(); // List to hold lanes associated with this road node
         public IReadOnlyList<Lane> Lanes => _lanes.AsReadOnly(); // Expose the lanes as a read-only list
+        // Adds a lane to this node while maintaining lane ordering and indices.
         public void AddLane(Lane lane) {
             if(lane == null) throw new ArgumentNullException(nameof(lane), "Lane cannot be null.");
+            var currentNode = lane.RoadNode;
+            if (currentNode != null) {
+                if (currentNode == this) {
+                    if (_lanes.Contains(lane)) throw new InvalidOperationException("Lane is already assigned to this road node.");
+                } else {
+                    currentNode.RemoveLane(lane);
+                }
+            }
             lane.RoadNode = this;
             var middlePosition = (lane.LeftPosition + lane.RightPosition) / 2; // Calculate the middle position of the lane
             int index = _lanes.FindIndex(lane1 => lane1.MiddlePosition > middlePosition); // Find the index where the lane should be inserted
             if (index == -1) index = Lanes.Count;
             //Shift existing lanes to the right if necessary
             var lanesToShift = _lanes.Skip(index).ToList(); // Get the lanes that will be shifted
-            foreach (var l in lanesToShift) 
+            foreach (var l in lanesToShift)
                 l.Index++; // Increment the index of each lane that will be shifted
             lane.Index = index; // Set the index of the new lane
             _lanes.Insert(index, lane);// Add the lane to the list
             InvalidateMesh();
         }
+        // Removes a lane from this node and clears related connections.
         public void RemoveLane(Lane lane) {
             if(lane == null) throw new ArgumentNullException(nameof(lane), "Lane cannot be null.");
-            lane.RoadNode = null;
-            //Shift existing lanes to the left if necessary
-            var lanesToShift = _lanes.Skip(lane.Index).ToList(); // Get the lanes that will be shifted
-            foreach (var l in lanesToShift) 
-                l.Index--; // Decrement the index of each lane that will be shifted
+            var index = _lanes.IndexOf(lane);
+            if (index < 0) throw new InvalidOperationException("Lane is not assigned to this road node.");
 
-            //Remove connected lanes from the connections
             var connections = lane.Connections.ToArray();
+            lane.RoadNode = null;
+
             foreach(var connection in connections) {
                 connection.Destroy();
             }
-            lane.connections.Clear(); // Clear the connections of the lane being removed
-            _lanes.Remove(lane);
+            lane.connections.Clear();
+
+            _lanes.RemoveAt(index);
+            lane.Index = -1;
+            for (int i = index; i < _lanes.Count; i++) {
+                _lanes[i].Index = i;
+            }
+
             if(Lanes.Count == 0) {
-                //Demolish the node
                 World.RoadNodes.Remove(this);
             }
             InvalidateMesh();
         }
+        // Clears all lanes by delegating to RemoveLane for each entry.
         public void ClearLanes() {
             var lanes = _lanes.ToArray();
             foreach(var lane in lanes) RemoveLane(lane);
         }
 
         //Node selection mesh
+        // Generates the mesh used for node selection rendering.
         protected override void GenerateMesh(Mesh mesh) {
             RoadRenderer.GenerateRoadNodeMesh(this, mesh, 0.001f);
         }
+        // Invalidates this node and its connected strips to trigger mesh rebuilding.
         private void InvalidateMeshes() {
             InvalidateMesh();
             foreach (var connection in Connections) connection.InvalidateMesh();
         }
+        // Clears cached data when the base mesh invalidation occurs.
         protected override void InvalidateMesh0(){
             _centerPos = null;
         }
@@ -87,12 +104,14 @@ namespace TranSimCS.Roads {
         //Halves of this road node
         public readonly RoadNodeEnd RearEnd;
         public readonly RoadNodeEnd FrontEnd;
+        // Retrieves the node end instance for the given direction.
         public RoadNodeEnd GetEnd(NodeEnd end) => end.GetConditional(RearEnd, FrontEnd);
 
         //Connections (maintained by the node ends)
         public IEnumerable<RoadStrip> Connections => RearEnd.ConnectionsOld.Union(FrontEnd.ConnectionsOld);
 
         //Center position
+        // Calculates and caches the node center based on lane positions.
         private void CalcCenterPos(){
             if (Lanes.Count == 0) {
                 _centerPos = PositionProp.Value.Position;
@@ -103,15 +122,16 @@ namespace TranSimCS.Roads {
             }
         }
         public Vector3? _centerPos;
+        // Returns the cached center position, computing it when necessary.
         public Vector3 CenterPosition { get {
             if (_centerPos == null) CalcCenterPos();
             return _centerPos.Value;
         } }
         public Vector3 CenterOffset { get; internal set; }
 
-        public Lane LastLane => Lanes[Lanes.Count - 1];
+        public Lane? LastLane => _lanes.Count > 0 ? _lanes[^1] : null;
 
-        
+
 
         // Constructor to initialize the RoadNode with a unique ID, name, position, and world
         public RoadNode(TSWorld world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) :

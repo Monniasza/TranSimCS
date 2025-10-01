@@ -21,6 +21,7 @@ public class Program {
         DataRoot = Path.Combine(appdata, "TranSim");
         SaveRoot = Path.Combine(DataRoot, "saves");
         Directory.CreateDirectory(DataRoot);
+        Directory.CreateDirectory(SaveRoot);
 
         //The guid bug
         var guidString = "a80b070f-9f9a-4049-b43b-5a2026b64c66";
@@ -36,11 +37,9 @@ public class Program {
 
     public static void SerializeToFile<T>(string path, T obj, JsonSerializer serializer) {
         Debug.Print("Saved the data to " + path);
-        using (var filestream = File.OpenWrite(path)) {
-            var writer = new StreamWriter(filestream);
-            serializer.Serialize(writer, obj, typeof(T));
-            writer.Flush();
-        }
+        using var stringWriter = new StringWriter();
+        serializer.Serialize(stringWriter, obj, typeof(T));
+        File.WriteAllText(path, stringWriter.ToString());
     }
 
     public static T Await<T>(Task<T> task) {

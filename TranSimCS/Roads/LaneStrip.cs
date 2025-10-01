@@ -108,9 +108,12 @@ namespace TranSimCS.Roads {
         }
 
         public void Destroy() {
-            StartLane = new LaneEnd(NodeEnd.Forward, null);
-            EndLane = new LaneEnd(NodeEnd.Forward, null);
-            road.RemoveLaneStrip(this);
+            var currentRoad = road;
+            var startEnd = startLane.end;
+            var endEnd = endLane.end;
+            StartLane = new LaneEnd(startEnd, null);
+            EndLane = new LaneEnd(endEnd, null);
+            currentRoad?.RemoveLaneStrip(this);
         }
 
         //Dragging
