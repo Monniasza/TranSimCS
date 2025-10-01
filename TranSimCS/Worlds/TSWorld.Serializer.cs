@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TranSimCS.Roads;
+using TranSimCS.Save;
 
 namespace TranSimCS.Worlds {
     public partial class TSWorld {
@@ -26,9 +29,25 @@ namespace TranSimCS.Worlds {
         }
         public void ReadFromStream(TextReader stream) => ReadFromJSON(new JsonTextReader(stream));
         public void ReadFromStream(Stream stream) => ReadFromStream(new StreamReader(stream));
-        public void ReadFromJSON(JsonReader jsonReader) {
+        public void ReadFromJSON(JsonReader reader) {
             var serializer = CreateSerializer();
-            serializer.Deserialize(jsonReader, typeof(TSWorld));
+            JsonProcessor.ReadJsonObjectProperties(reader, key => {
+                switch (key) {
+                    case "nodes":
+                        Debug.Print("Loading nodes");
+                        var nodes = serializer.Deserialize<RoadNode[]>(reader);
+                        RoadNodes.Clear();
+                        foreach (var node in nodes ?? []) RoadNodes.Add(node);
+                        break;
+                    case "segments":
+                        Debug.Print("Loading segments");
+                        var segments = serializer.Deserialize<RoadStrip[]>(reader);
+                        RoadSegments.Clear();
+                        foreach (var segment in segments ?? []) RoadSegments.Add(segment);
+                        break;
+                }
+            });
+            Debug.Print("World loaded successfully");
         }
 
         public static TSWorld Load(string filename) {

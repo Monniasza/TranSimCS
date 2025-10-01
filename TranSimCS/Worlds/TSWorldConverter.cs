@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TranSimCS.Roads;
 using TranSimCS.Save;
 
@@ -12,21 +13,7 @@ namespace TranSimCS.Worlds {
     public class TSWorldConverter : JsonConverter<TSWorld> {
         public override TSWorld ReadJson(JsonReader reader, Type objectType, TSWorld existingValue, bool hasExistingValue, JsonSerializer serializer) {
             var world = existingValue ?? new TSWorld();
-            Debug.Print($"Token type: {reader.TokenType}");
-            JsonProcessor.ReadJsonObjectProperties(reader, key => {
-                switch (key) {
-                    case "nodes":
-                        var nodes = serializer.Deserialize<RoadNode[]>(reader);
-                        world.RoadNodes.Clear();
-                        foreach(var node in nodes ?? []) world.RoadNodes.Add(node);
-                        break;
-                    case "segments":
-                        var segments = serializer.Deserialize<RoadStrip[]>(reader);
-                        world.RoadSegments.Clear();
-                        foreach(var segment in segments ?? []) world.RoadSegments.Add(segment);
-                        break;
-                }
-            });
+            world.ReadFromJSON(reader);
             return world;
         }
 
