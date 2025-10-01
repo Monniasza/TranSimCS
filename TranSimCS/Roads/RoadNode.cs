@@ -116,7 +116,8 @@ namespace TranSimCS.Roads {
         // Constructor to initialize the RoadNode with a unique ID, name, position, and world
         public RoadNode(TSWorld world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) :
             this(world, name, new ObjPos(position, azimuth, inclination, tilt)) { }
-        public RoadNode(TSWorld world, string name, ObjPos positionData) {
+        public RoadNode(TSWorld world, string name, ObjPos positionData, Guid? id = null) {
+            Guid = id ?? Guid.NewGuid();
             PositionProp = new(ObjPos.Zero, "Position", this);
             Name = name;
             PositionProp.Value = positionData;

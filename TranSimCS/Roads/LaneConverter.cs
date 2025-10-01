@@ -8,14 +8,14 @@ using TranSimCS.Save;
 
 namespace TranSimCS.Roads {
     public class LaneConverter : JsonConverter<Lane> {
-        public override Lane ReadJson(JsonReader reader, Type objectType, Lane existingValue, bool hasExistingValue, JsonSerializer serializer) {
+        public override Lane ReadJson(JsonReader reader, Type objectType, Lane? existingValue, bool hasExistingValue, JsonSerializer serializer) {
             float leftStart = existingValue?.LeftPosition ?? 0;
             float rightStart = existingValue?.RightPosition ?? 0;
             LaneSpec spec = existingValue?.Spec ?? LaneSpec.None;
             JsonProcessor.ReadJsonObjectProperties(reader, (name) => {
                 switch (name) {
-                    case "left": leftStart = reader.ReadAsFloat() ?? leftStart; break;
-                    case "right": rightStart = reader.ReadAsFloat() ?? rightStart; break;
+                    case "left": reader.Read(); leftStart = reader.ReadAsFloat() ?? leftStart; break;
+                    case "right": reader.Read(); rightStart = reader.ReadAsFloat() ?? rightStart; break;
                     case "spec": spec = serializer.Deserialize<LaneSpec>(reader); break;
                 }
             });

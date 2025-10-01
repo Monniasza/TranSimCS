@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 using TranSimCS.Roads;
 using System.Collections.ObjectModel;
 using Arch.Core;
+using System.Diagnostics;
 
 namespace TranSimCS.Worlds
 {
     public partial class TSWorld{
         //The contents of the world
         public ObservableCollection<RoadStrip> RoadSegments { get; } = new();
-        public ObservableCollection<RoadNode> RoadNodes { get; } = new();
         public ObservableCollection<RoadSection> RoadSections { get; } = new();
         public World ECS { get; private set; }
 
@@ -68,7 +68,15 @@ namespace TranSimCS.Worlds
             segment.OnLaneAdded += LaneAddedToRoad; // Subscribe to lane addition events in the road segment
             segment.StartNode.connectionsOld.Add(segment);
             segment.EndNode.connectionsOld.Add(segment);
+            AddIfAbsent(segment.StartNode.Node);
+            AddIfAbsent(segment.EndNode.Node);
         }
+
+        private void AddIfAbsent(RoadNode node) {
+            if(RoadNodes.Contains(node)) return;
+            RoadNodes.Add(node);
+        }
+
         private void HandleRemoveRoadSegment(RoadStrip segment) {
             // Handle the removal of a road segment
             segment.OnLaneAdded -= LaneAddedToRoad; // Unsubscribe from lane addition events in the road segment
@@ -89,37 +97,7 @@ namespace TranSimCS.Worlds
             //Handle the removal of a lane from a road segment
         }
 
-        //Road nodes
-        private void RoadNodes_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) {
-            // Handle changes to the road nodes collection if needed
-            // For example, you could log changes or update UI elements
-            foreach (var node in e.NewItems?.OfType<RoadNode>() ?? Enumerable.Empty<RoadNode>())
-                HandleAddRoadNode(node); // Handle the addition of a new road node
-            foreach (var node in e.OldItems?.OfType<RoadNode>() ?? Enumerable.Empty<RoadNode>())
-                HandleRemoveRoadNode(node); // Handle the removal of a road node
-        }
-        private Dictionary<Guid, RoadNode> roadNodeIndex = new Dictionary<Guid, RoadNode>();
-        public RoadNode FindRoadNode(Guid guid) => roadNodeIndex[guid];
-        private void HandleAddRoadNode(RoadNode node) {
-            // Handle the addition of a new road node
-            node.PositionProp.ValueChanged += RoadNodePositionChanged; // Subscribe to changes in the road node position
-        }
-        private void HandleRemoveRoadNode(RoadNode node) {
-            // Handle the removal of a road node
-            node.PositionProp.ValueChanged -= RoadNodePositionChanged; // Unsubscribe from changes in the road node position
-            foreach (var segment in node.Connections) {
-                segment.InvalidateMesh(); // Invalidate the mesh of the segment if the node is removed
-                RoadSegments.Remove(segment); // Remove the segment from the road segments collection
-            }
-        }
-
-        private void RoadNodePositionChanged(object sender, PropertyChangedEventArgs2<ObjPos> e) {
-            if(sender is RoadNode node) {
-                foreach(var segment in node.Connections) {
-                    segment.InvalidateMesh(); // Invalidate the mesh of the segment if the node position changes
-                }
-            }
-        }
+        
 
         public void Update(float deltaTime)
         {

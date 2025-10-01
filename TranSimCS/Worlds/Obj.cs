@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,18 @@ namespace TranSimCS.Worlds {
     /// </summary>
     public abstract class Obj: INotifyPropertyChanged, IEquatable<Obj?> {
         //PROPERTIES
-        public Guid Guid { get; init; } = Guid.NewGuid();
+        private Guid? guid;
+        public Guid Guid { get {
+                if (guid == null) guid = Guid.NewGuid();
+                return guid.Value;
+            } set {
+                if (guid != null) return;
+                Debug.Print($"GUID of node {value} set");
+                guid = value;
+            } 
+        }
+
+
         public Obj() {}
         public void FirePropertyEvent(object sender, PropertyChangedEventArgs eventArgs){
             PropertyChanged?.Invoke(sender, eventArgs);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -21,18 +22,13 @@ public class Program {
         SaveRoot = Path.Combine(DataRoot, "saves");
         Directory.CreateDirectory(DataRoot);
 
-        LaneSpec laneSpec = LaneSpec.Default;
-        string laneSpecPath = Path.Combine(DataRoot, "laneSpec.json");
-        var laneSerializer = JsonSerializer.CreateDefault();
-        SerializeToFile<LaneSpec>(laneSpecPath, laneSpec, laneSerializer);
-
-        TSWorld exampleWorld = new TSWorld();
-        var serializer = exampleWorld.CreateSerializer();
-
-        WorldGenerator.SetUpExampleWorld(exampleWorld);
-        var node = exampleWorld.RoadNodes.First(roadNode => roadNode.Name.StartsWith("Fancy"));
-        string roadNodePath = Path.Combine(DataRoot, "roadNode.json");
-        SerializeToFile<RoadNode>(roadNodePath, node, serializer);
+        //The guid bug
+        var guidString = "a80b070f-9f9a-4049-b43b-5a2026b64c66";
+        var guid = Guid.Parse(guidString);
+        var dictionary = new Dictionary<Guid, string>();
+        dictionary.Add(guid, "test");
+        var retrievedString = dictionary[guid];
+        Debug.Print(retrievedString);
 
         using var game = new TranSimCS.Game1();
         game.Run();

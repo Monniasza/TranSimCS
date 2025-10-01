@@ -28,7 +28,7 @@ namespace TranSimCS.Menus.InGame {
             private static readonly Vector2 buttonSize = new(Maths._1_3, 50);
 
             public ConfirmLoseDialog(Func<bool> save, Action ok, Action cancel, Game1 game)
-                : base(MLEM.Ui.Anchor.Center, new(200, 0.5f)){
+                : base(MLEM.Ui.Anchor.Center, new(0.5f, 200)){
                 this.game = game;
                 this.save = save;
                 this.ok = ok;
@@ -39,9 +39,9 @@ namespace TranSimCS.Menus.InGame {
                 AddChild(paragraph);
 
                 CreateButton(Anchor.BottomLeft, "Save", SaveClicked);
-                var dontSave = CreateButton(Anchor.BottomLeft, "Don't Save", DiscardClicked);
+                var dontSave = CreateButton(Anchor.BottomCenter, "Don't Save", DiscardClicked);
                 dontSave.NormalColor = Color.Red;
-                CreateButton(Anchor.BottomLeft, "Cancel", CancelClicked);
+                CreateButton(Anchor.BottomRight, "Cancel", CancelClicked);
             }
 
             private Button CreateButton(Anchor anchor, String name, GenericCallback callback) {

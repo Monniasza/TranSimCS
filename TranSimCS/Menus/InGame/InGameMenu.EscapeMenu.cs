@@ -28,12 +28,18 @@ namespace TranSimCS.Menus.InGame {
 
             public void LoadSave() {
                 var saveDialog = new SaveGameDialog(parent, Program.SaveRoot, false);
-                var loadDialog = new SaveGameDialog(parent, Program.SaveRoot, true);
                 var dialog = new ConfirmLoseDialog(
                     () => Program.Await(SaveToFile(saveDialog)),
-                    () => Program.Await(LoadSaveFromFile(saveDialog)),
+                    LoadSaveDialog,
                     () => parent.Overlay = this, parent.Game
                 );
+                parent.Overlay = dialog;
+            }
+
+            public void LoadSaveDialog() {
+                var loadDialog = new SaveGameDialog(parent, Program.SaveRoot, true);
+                parent.Overlay = loadDialog;
+                LoadSaveFromFile(loadDialog);
             }
 
             public async Task<bool> LoadSaveFromFile(SaveGameDialog dialog) {
@@ -47,6 +53,7 @@ namespace TranSimCS.Menus.InGame {
                 }
                 try {
                     InGameMenu newMenu = new InGameMenu(parent.Game);
+                    newMenu.LoadContent();
                     newMenu.World.ReadFromFile(filename); //TODO handle errors in world loading so if the world load fails the game does not crash
                     parent.Game.Menu = newMenu;
                 } catch (Exception e) {

@@ -13,7 +13,7 @@ namespace TranSimCS.Worlds {
         public JsonSerializer CreateSerializer() {
             var settings = new JsonSerializerSettings();
             settings.Converters.Add(new LaneConverter());
-            settings.Converters.Add(new RoadNodeConverter());
+            settings.Converters.Add(new RoadNodeConverter(this));
             settings.Converters.Add(new LaneEndConverter(this));
             settings.Converters.Add(new RoadNodeEndConverter(this));
             settings.Converters.Add(new LaneStripConverter());
