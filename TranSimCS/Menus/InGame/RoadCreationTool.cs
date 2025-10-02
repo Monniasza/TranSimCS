@@ -106,7 +106,7 @@ namespace TranSimCS.Menus.InGame {
 
         public LaneEnd? node { get; set; }
         public LaneStrip? SegmentAlreadyExists { get; private set; } = null;
-        public ObjPos? NewNodePosition { get; private set; }
+        public Worlds.ObjPos? NewNodePosition { get; private set; }
         public RoadMode Mode { get; set; } = new CircMode();
 
         public readonly InGameMenu menu;

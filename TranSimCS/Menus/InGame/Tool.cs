@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -91,7 +91,7 @@ namespace TranSimCS.Menus.InGame {
                     //Demolish just the lane strip
                     MouseOverRoad = null;
                     selectedLaneStrip.Destroy();
-                } 
+                }
             }
 
             game.MouseOverRoad = MouseOverRoad;
@@ -171,7 +171,7 @@ namespace TranSimCS.Menus.InGame {
                 var azimuthGizmo = new AzimuthGizmo(roadNode);
                 azimuthGizmo.CreateMesh(renderBin);
             }
-            
+
         }
 
         public (object[], string)[] PromptKeys() => [
@@ -235,7 +235,7 @@ namespace TranSimCS.Menus.InGame {
 
         public (object[], string)[] PromptKeys() {
             (object[], string) countPrompt = ([Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9], " to set number of lanes");
-            List<(object[], string)> keys = [countPrompt]; 
+            List<(object[], string)> keys = [countPrompt];
             if (Reference == null) {
                 keys.Add(([MouseButton.Left], "on a node to set direction from it"));
                 keys.Add(([MouseButton.Left], "elsewhere to set direction manually"));
@@ -251,9 +251,9 @@ namespace TranSimCS.Menus.InGame {
         /// </summary>
         public RoadNode NewlyCreatedNode { get; set; }
         public RoadNode Reference { get; set; }
-       
+
         //Preview variables
-        public ObjPos PrePosition { get; set; }
+        public Worlds.ObjPos PrePosition { get; set; }
         public int laneCount = 1;
 
         void ITool.Draw(GameTime gameTime) {

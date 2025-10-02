@@ -27,7 +27,7 @@ namespace TranSimCS.Roads {
 
         //Identifiers
         public string Name { get; set; }
-        public TSWorld World { get; init; }
+        public TSWorld World { get; internal set; }
 
         //Lane structure
         private readonly List<Lane> _lanes = new List<Lane>(); // List to hold lanes associated with this road node

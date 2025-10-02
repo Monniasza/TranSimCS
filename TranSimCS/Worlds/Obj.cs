@@ -90,16 +90,6 @@ namespace TranSimCS.Worlds {
     }
 
     //Component-interfaces for objects
-    public interface IPosition: IDraggableObj {
-        public Property<ObjPos> PositionProp { get; }
-        public ObjPos PositionData { get => PositionProp.Value; set => PositionProp.Value = value; }
-
-        void IDraggableObj.Drag(Vector3 vector, Vector3 dragFrom) {
-            var posdata = PositionData;
-            posdata.Position += vector;
-            PositionData = posdata;
-        }
-    }
     public interface IDraggableObj {
         /// <summary>
         /// Moves the object by the specified amount
