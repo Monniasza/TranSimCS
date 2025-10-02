@@ -5,11 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using NLog;
 using TranSimCS.Save;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads {
     internal class RoadStripConverter() : JsonConverter<RoadStrip> {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public override RoadStrip ReadJson(JsonReader reader, Type objectType, RoadStrip existingValue, bool hasExistingValue, JsonSerializer serializer) {
             RoadNodeEnd start = null;
             RoadNodeEnd end = null;
@@ -28,7 +31,7 @@ namespace TranSimCS.Roads {
                     case "start": start = serializer.Deserialize<RoadNodeEnd>(reader); break;
                     case "end": end = serializer.Deserialize<RoadNodeEnd>(reader); break;
                     case "lanes": lanes = serializer.Deserialize<LaneStrip[]>(reader); break;
-                    case "guid": guid = serializer.Deserialize<Guid>(reader); Debug.Print($"Reading road strip {guid}"); break;
+                    case "guid": guid = serializer.Deserialize<Guid>(reader); logger.Trace($"Reading road strip {guid}"); break;
                 }
             });
 

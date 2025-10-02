@@ -9,10 +9,13 @@ using System.Collections.ObjectModel;
 using Arch.Core;
 using System.Diagnostics;
 using TranSimCS.Collections;
+using NLog;
 
 namespace TranSimCS.Worlds
 {
     public partial class TSWorld{
+        private static Logger log = LogManager.GetCurrentClassLogger();
+
         //The contents of the world
         public ListenableObjContainer<RoadStrip> RoadSegments { get; } = new();
         public ListenableObjContainer<RoadSection> RoadSections { get; } = new();

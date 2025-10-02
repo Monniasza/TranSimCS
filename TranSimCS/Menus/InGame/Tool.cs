@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
+using NLog;
 using TranSimCS.Menus.Gizmo;
 using TranSimCS.Model;
 using TranSimCS.Roads;
@@ -33,6 +34,8 @@ namespace TranSimCS.Menus.InGame {
     }
 
     public class RoadDemolitionTool(InGameMenu game) : ITool {
+
+        private static Logger log = LogManager.GetCurrentClassLogger();
         string ITool.Name => "Road Demolition Tool";
 
         string ITool.Description => "Demolish objects and subcomponents";
@@ -68,7 +71,7 @@ namespace TranSimCS.Menus.InGame {
                     MouseOverRoad = null;
                     world.RoadNodes.Remove(selectedNode);
                 } else if (selectedRoad != null) {
-                    Debug.Print($"Demolishing road segment: {selectedRoad}");
+                    log.Trace($"Demolishing road segment: {selectedRoad}");
                     MouseOverRoad = null; // Reset the mouse over road selection
                     world.RoadSegments.Remove(selectedRoad); // Remove the selected road segment from the world
                 }

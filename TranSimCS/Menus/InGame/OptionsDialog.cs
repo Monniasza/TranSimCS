@@ -24,7 +24,7 @@ namespace TranSimCS.Menus.InGame {
             for (int i = 0; i < options.Length; i++) {
                 var option = options[i];
                 var j = i;
-                var button = new Button((i == 0) ? Anchor.AutoInlineBottom: Anchor.AutoInline, new(0.99f / options.Length), option);
+                var button = new Button((i == 0) ? Anchor.AutoInlineBottom: Anchor.AutoInline, new(0.99f / options.Length, 20), option);
                 GenericCallback callback = (e) => OptionSelected?.Invoke(j);
                 button.OnPressed += callback;
                 AddChild(button);

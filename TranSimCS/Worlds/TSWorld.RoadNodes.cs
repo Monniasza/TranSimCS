@@ -22,7 +22,7 @@ namespace TranSimCS.Worlds {
         private void HandleAddRoadNode(RoadNode node) {
             // Handle the addition of a new road node
             node.PositionProp.ValueChanged += RoadNodePositionChanged; // Subscribe to changes in the road node position
-            Debug.Print($"Road node id {node.Guid} name {node.Name} added");
+            log.Trace($"Road node id {node.Guid} name {node.Name} added");
         }
         private void HandleRemoveRoadNode(RoadNode node) {
             // Handle the removal of a road node
@@ -31,7 +31,7 @@ namespace TranSimCS.Worlds {
                 segment.InvalidateMesh(); // Invalidate the mesh of the segment if the node is removed
                 RoadSegments.Remove(segment); // Remove the segment from the road segments collection
             }
-            Debug.Print($"Road node id {node.Guid} name {node.Name} removed");
+            log.Trace($"Road node id {node.Guid} name {node.Name} removed");
         }
 
         private void RoadNodePositionChanged(object sender, PropertyChangedEventArgs2<ObjPos> e) {

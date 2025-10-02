@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MLEM.Ui.Elements;
 using MLEM.Ui.Style;
+using NLog;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Menus.InGame {
@@ -14,6 +15,7 @@ namespace TranSimCS.Menus.InGame {
         public class EscapeMenu: Panel {
             public readonly InGameMenu parent;
             private UiStyle buttonStyle;
+            private static Logger Logger = LogManager.GetCurrentClassLogger();
 
             internal EscapeMenu(InGameMenu parent) : base(MLEM.Ui.Anchor.Center, new(0.5f, 0.5f), false, true, true) {
                 this.parent = parent;
@@ -58,6 +60,7 @@ namespace TranSimCS.Menus.InGame {
                     parent.Game.Menu = newMenu;
                 } catch (Exception e) {
                     OptionsDialog.FromError(parent, e).Show();
+                    Logger.Error(e);
                     return false;
                 }
                 return true;

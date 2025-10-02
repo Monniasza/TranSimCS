@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using NLog;
 using TranSimCS.Model;
 
 namespace TranSimCS.Render {
@@ -72,6 +73,8 @@ namespace TranSimCS.Render {
     }
 
     public static class EarClipping {
+        private static Logger log = LogManager.GetCurrentClassLogger();
+
         public static void DrawEarClipping(IRenderBin mesh, params int[] indices) {
 
         }
@@ -104,7 +107,7 @@ namespace TranSimCS.Render {
                 var CtoN = prevPos - nextPos;
                 int negIfConcave = Geometry.CompareRotary(PtoC, CtoN, normal);
                 if(negIfConcave < 0) {
-                    Debug.Print($"Vertex {currVert.Item1} is concave");
+                    log.Trace($"Vertex {currVert.Item1} is concave");
                     isEar = false;
                 }
 
@@ -113,7 +116,7 @@ namespace TranSimCS.Render {
                     var checkPos = checkNode.val.Item2.Position;
                     var check = IsOnTriangle(prevPos, currPos, nextPos, checkPos);
                     if (check) {
-                        Debug.Print("Vertex is on the triangle");
+                        log.Trace("Vertex is on the triangle");
                         isEar = false;
                     }
                     checkNode = checkNode.Next;
