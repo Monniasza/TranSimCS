@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Iesi.Collections.Generic;
 using Microsoft.Xna.Framework;
+using NLog;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 
@@ -15,6 +16,8 @@ namespace TranSimCS.Worlds {
     /// An object placed in the world. Worlds themselves are objects
     /// </summary>
     public abstract class Obj: INotifyPropertyChanged, IEquatable<Obj?> {
+        private static Logger log = LogManager.GetCurrentClassLogger();
+
         //PROPERTIES
         private Guid? guid;
         public Guid Guid { get {
@@ -22,7 +25,7 @@ namespace TranSimCS.Worlds {
                 return guid.Value;
             } set {
                 if (guid != null) return;
-                Debug.Print($"GUID of node {value} set");
+                log.Trace($"GUID of node {value} set");
                 guid = value;
             } 
         }

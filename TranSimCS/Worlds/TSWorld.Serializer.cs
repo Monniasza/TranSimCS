@@ -29,29 +29,31 @@ namespace TranSimCS.Worlds {
         }
         public void ReadFromStream(TextReader stream) => ReadFromJSON(new JsonTextReader(stream));
         public void ReadFromStream(Stream stream) => ReadFromStream(new StreamReader(stream));
+
+        /// <summary>
+        /// Reads the world from a JSON stream. The first token must be already read in.
+        /// </summary>
+        /// <param name="reader"></param>
         public void ReadFromJSON(JsonReader reader) {
             var serializer = CreateSerializer();
-<<<<<<< HEAD
-            serializer.Populate(jsonReader, this);
-=======
+
             JsonProcessor.ReadJsonObjectProperties(reader, key => {
                 switch (key) {
                     case "nodes":
-                        Debug.Print("Loading nodes");
-                        var nodes = serializer.Deserialize<RoadNode[]>(reader);
+                        log.Trace("Loading nodes");
                         RoadNodes.Clear();
+                        var nodes = serializer.Deserialize<RoadNode[]>(reader);
                         foreach (var node in nodes ?? []) RoadNodes.Add(node);
                         break;
                     case "segments":
-                        Debug.Print("Loading segments");
+                        log.Trace("Loading segments");
                         var segments = serializer.Deserialize<RoadStrip[]>(reader);
                         RoadSegments.Clear();
                         foreach (var segment in segments ?? []) RoadSegments.Add(segment);
                         break;
                 }
             });
-            Debug.Print("World loaded successfully");
->>>>>>> db52fde38caa295a5f683f7ababdb431acad9c44
+            log.Info("World loaded successfully");
         }
 
         public static TSWorld Load(string filename) {

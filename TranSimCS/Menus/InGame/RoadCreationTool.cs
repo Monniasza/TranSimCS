@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using MLEM.Ui;
+using NLog;
 using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Spline;
@@ -79,6 +80,8 @@ namespace TranSimCS.Menus.InGame {
     }
 
     public class RoadCreationTool: ITool {
+        private static Logger log = LogManager.GetCurrentClassLogger();
+
         public static readonly ChainMode chained = ChainModeChained.value;
         public static readonly ChainMode custom = ChainModeCustom.value;
         static readonly Vector3 offset = new Vector3(0, 0.01f, 0);
@@ -134,7 +137,7 @@ namespace TranSimCS.Menus.InGame {
                 }
                 if (node == null) {
                     node = selectedNode;
-                    Debug.Print($"Selected node: {selectedNode}");
+                    log.Trace($"Selected node: {selectedNode}");
                 } else {
                     var world = node.Value.lane.RoadNode.World;
                     var spec = RoadTools.ChainMode.Value.ChainValues(menu);

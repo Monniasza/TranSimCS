@@ -5,11 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using NLog;
 using TranSimCS.Save;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads {
     public class RoadNodeConverter(TSWorld world) : JsonConverter<RoadNode> {
+        private static Logger log = LogManager.GetCurrentClassLogger();
+
         public override RoadNode ReadJson(JsonReader reader, Type objectType, RoadNode? existingValue, bool hasExistingValue, JsonSerializer serializer) {
             var guid = existingValue?.Guid;
             var pos = existingValue?.PositionProp?.Value;
@@ -17,10 +20,17 @@ namespace TranSimCS.Roads {
             var name = existingValue?.Name ?? "";
             JsonProcessor.ReadJsonObjectProperties(reader, key => {
                 switch (key) {
-                    case "id": guid = serializer.Deserialize<Guid>(reader); break;
-                    case "pos": pos = serializer.Deserialize<ObjPos>(reader); break;
+                    case "id":
+                        JsonProcessor.AssertType(reader, JsonToken.String);
+                        guid = serializer.Deserialize<Guid>(reader);
+                        log.Trace($"id: {guid}");
+                        break;
+                    case "pos":
+                        pos = serializer.Deserialize<ObjPos>(reader);
+                        reader.Read();
+                        break;
                     case "lanes":
-                        Debug.Print("Token type: ", reader.TokenType);
+                        log.Trace("Token type: ", reader.TokenType);
                         lanes = serializer.DeserializeArray<Lane>(reader);
                         break;
                     case "name": name = serializer.Deserialize<string>(reader); break;

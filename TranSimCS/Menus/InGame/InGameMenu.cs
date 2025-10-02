@@ -12,6 +12,7 @@ using Microsoft.Xna.Framework.Input;
 using MLEM.Textures;
 using MLEM.Ui;
 using MLEM.Ui.Elements;
+using NLog;
 using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Spline;
@@ -20,6 +21,8 @@ using TranSimCS.Worlds;
 namespace TranSimCS.Menus.InGame {
     public partial class InGameMenu : Menu {
         public static readonly Plane groundPlane = new Plane(0, 1, 0, -0.1f);
+
+        private static Logger log = LogManager.GetCurrentClassLogger();
 
         public TSWorld World { get; private set; } = null!;
 
@@ -268,7 +271,7 @@ namespace TranSimCS.Menus.InGame {
                 // Zoom in or out based on the scroll wheel value
                 int mouseScrollDelta = Game.MouseState.ScrollWheelValue - scrollWheelValue;
                 scrollWheelValue = Game.MouseState.ScrollWheelValue; // Update the scroll wheel value
-                Debug.Print($"Mouse scroll delta: {mouseScrollDelta}");
+                log.Trace($"Mouse scroll delta: {mouseScrollDelta}");
                 var zoomDelta = MathF.Pow(2f, mouseScrollDelta / -120f); // Adjust zoom factor based on scroll wheel delta
                 camera.Distance *= zoomDelta; // Update camera distance based on zoom factor
             }
@@ -473,8 +476,8 @@ namespace TranSimCS.Menus.InGame {
             var keybindsChanged = !Equality.DeepArrayEqualsWithNull(lastDescription, keybinds);
 
             if (keybindsChanged) {
-                Debug.WriteLine("Refreshing keybinds: ");
-                Debug.WriteLine(keybinds);
+                log.Trace("Refreshing keybinds: ");
+                log.Trace(keybinds);
                 //Keybinds changed
                 KeyBindPanel.RemoveChildren();
                 foreach(var keybind in keybinds ?? []) {
