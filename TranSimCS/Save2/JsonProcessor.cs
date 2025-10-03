@@ -11,8 +11,8 @@ namespace TranSimCS.Save2 {
 
     public static partial class JsonProcessor {
         public static void ReadJsonObjectProperties(ref Utf8JsonReader reader, JsonPropHandler action) {
+            AssertTokenType(ref reader, JsonTokenType.StartObject);
             while (true) {
-                AssertTokenType(ref reader, JsonTokenType.StartObject);
                 ForceRead(ref reader);
                 switch (reader.TokenType) {
                     case JsonTokenType.PropertyName:
@@ -45,7 +45,9 @@ namespace TranSimCS.Save2 {
             Fail(reader, $"Unxpected token: {reader.TokenType}, expected {concatString}");
         }
         public static void Fail(Utf8JsonReader reader, string message, Exception? innerException = null) {
-            throw new JsonException(message, null, reader.GetLineNumber(), reader.GetColumnNumber());
+            var ln = reader.GetLineNumber();
+            var cn = reader.GetColumnNumber();
+            throw new JsonException($"{message} @ ({ln}, {cn})", null, ln, cn);
         }
     }
 }

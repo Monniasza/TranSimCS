@@ -13,9 +13,7 @@ namespace TranSimCS.Save2 {
         }
 
         public override LaneEnd Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            if (reader.TokenType != JsonTokenType.StartArray) {
-                throw new JsonException("Expected StartArray token");
-            }
+            JsonProcessor.AssertTokenType(ref reader, JsonTokenType.StartArray);
 
             reader.Read();
             var roadNodeEndConverter = new RoadNodeEndConverter(_world);
@@ -23,17 +21,17 @@ namespace TranSimCS.Save2 {
 
             reader.Read();
             if (reader.TokenType != JsonTokenType.Number) {
-                throw new JsonException("Expected Number token for lane index");
+                JsonProcessor.Fail(reader, "Expected Number token for lane index");
             }
             int laneIndex = reader.GetInt32();
 
             reader.Read();
             if (reader.TokenType != JsonTokenType.EndArray) {
-                throw new JsonException("Expected EndArray token");
+                JsonProcessor.Fail(reader, "Expected EndArray token");
             }
 
             if (laneIndex < 0 || laneIndex >= roadNodeEnd.Node.Lanes.Count) {
-                throw new JsonException($"Invalid lane index {laneIndex} for node {roadNodeEnd.Node.Guid}");
+                JsonProcessor.Fail(reader, $"Invalid lane index {laneIndex} for node {roadNodeEnd.Node.Guid}");
             }
 
             return new LaneEnd(roadNodeEnd.End, roadNodeEnd.Node.Lanes[laneIndex]);

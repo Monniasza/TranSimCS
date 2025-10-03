@@ -14,7 +14,7 @@ namespace TranSimCS.Save2 {
 
         public override LaneStrip Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
             if (reader.TokenType != JsonTokenType.StartObject) {
-                throw new JsonException("Expected StartObject token");
+                JsonProcessor.Fail(reader, "Expected StartObject token");
             }
 
             LaneEnd? start = null;
@@ -26,8 +26,8 @@ namespace TranSimCS.Save2 {
 
             while (reader.Read()) {
                 if (reader.TokenType == JsonTokenType.EndObject) {
-                    if (start == null) throw new JsonException("Missing start property");
-                    if (end == null) throw new JsonException("Missing end property");
+                    if (start == null) JsonProcessor.Fail(reader, "Missing start property");
+                    if (end == null) JsonProcessor.Fail(reader, "Missing end property");
 
                     var laneStrip = new LaneStrip(start.Value, end.Value);
                     laneStrip.Spec = spec;
@@ -52,7 +52,8 @@ namespace TranSimCS.Save2 {
                 }
             }
 
-            throw new JsonException("Unexpected end of JSON");
+            JsonProcessor.Fail(reader, "Unexpected end of JSON");
+            return null;
         }
 
         public override void Write(Utf8JsonWriter writer, LaneStrip value, JsonSerializerOptions options) {

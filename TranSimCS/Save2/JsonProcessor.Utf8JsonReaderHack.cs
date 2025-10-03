@@ -20,13 +20,13 @@ namespace TranSimCS.Save2 {
             return getLineNumber(ref reader);
         }
         public static long GetColumnNumber(this Utf8JsonReader reader) {
-            if (getColumnNumber == null) throw new NotInitializedException("GetLineNumber not initialized");
+            if (getColumnNumber == null) throw new NotInitializedException("GetColumnNumber not initialized");
             return getColumnNumber(ref reader);
         }
 
         public static void Init() {
             if (getLineNumber == null) getLineNumber = CreateDelegate<long>("_lineNumber");
-            if (getColumnNumber == null) getLineNumber = CreateDelegate<long>("_bytePositionInLine");
+            if (getColumnNumber == null) getColumnNumber = CreateDelegate<long>("_bytePositionInLine");
         }
 
         private unsafe static JsonReaderFunction<T> CreateDelegate<T>(string name) {

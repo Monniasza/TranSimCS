@@ -6,44 +6,32 @@ using TranSimCS.Roads;
 namespace TranSimCS.Save2 {
     public class LaneConverter : JsonConverter<Lane> {
         public override Lane Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            if (reader.TokenType != JsonTokenType.StartObject) {
-                throw new JsonException("Expected StartObject token");
-            }
-
             float leftPosition = 0;
             float rightPosition = 0;
             LaneSpec spec = LaneSpec.None;
-
             var laneSpecConverter = new LaneSpecConverter();
 
-            while (reader.Read()) {
-                if (reader.TokenType == JsonTokenType.EndObject) {
-                    return new Lane() {
-                        LeftPosition = leftPosition,
-                        RightPosition = rightPosition,
-                        Spec = spec
-                    };
+            JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
+                reader0.Read();
+
+                switch (propertyName.ToLower()) {
+                    case "left":
+                        leftPosition = reader0.GetSingle();
+                        break;
+                    case "right":
+                        rightPosition = reader0.GetSingle();
+                        break;
+                    case "spec":
+                        spec = laneSpecConverter.Read(ref reader0, typeof(LaneSpec), options);
+                        break;
                 }
+            });
 
-                if (reader.TokenType == JsonTokenType.PropertyName) {
-                    string propertyName = reader.GetString()!;
-                    reader.Read();
-
-                    switch (propertyName.ToLower()) {
-                        case "left":
-                            leftPosition = reader.GetSingle();
-                            break;
-                        case "right":
-                            rightPosition = reader.GetSingle();
-                            break;
-                        case "spec":
-                            spec = laneSpecConverter.Read(ref reader, typeof(LaneSpec), options);
-                            break;
-                    }
-                }
-            }
-
-            throw new JsonException("Unexpected end of JSON");
+            return new Lane() {
+                LeftPosition = leftPosition,
+                RightPosition = rightPosition,
+                Spec = spec
+            };
         }
 
         public override void Write(Utf8JsonWriter writer, Lane value, JsonSerializerOptions options) {

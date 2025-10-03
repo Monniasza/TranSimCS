@@ -6,47 +6,39 @@ using Microsoft.Xna.Framework;
 namespace TranSimCS.Save2 {
     public class ColorConverter : JsonConverter<Color> {
         public override Color Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            if (reader.TokenType == JsonTokenType.String) {
-                // Support hex color format like "#RRGGBBAA"
+            var oldReader = reader;
+            JsonProcessor.ForceRead(ref reader);
+            if(reader.TokenType == JsonTokenType.String) {
                 string colorString = reader.GetString()!;
                 if (colorString.StartsWith("#")) {
-                    return ParseHexColor(colorString);
-                }
-            }
-
-            if (reader.TokenType != JsonTokenType.StartObject) {
-                throw new JsonException("Expected StartObject or String token");
-            }
-
-            byte r = 0, g = 0, b = 0, a = 255;
-
-            while (reader.Read()) {
-                if (reader.TokenType == JsonTokenType.EndObject) {
-                    return new Color(r, g, b, a);
-                }
-
-                if (reader.TokenType == JsonTokenType.PropertyName) {
-                    string propertyName = reader.GetString()!;
-                    reader.Read();
-
-                    switch (propertyName.ToLower()) {
-                        case "r":
-                            r = reader.GetByte();
-                            break;
-                        case "g":
-                            g = reader.GetByte();
-                            break;
-                        case "b":
-                            b = reader.GetByte();
-                            break;
-                        case "a":
-                            a = reader.GetByte();
-                            break;
+                    try {
+                        return ParseHexColor(colorString);
+                    } catch (Exception e) {
+                        JsonProcessor.Fail(reader, "Failed to parse color", e);
                     }
                 }
             }
+            reader = oldReader;
 
-            throw new JsonException("Unexpected end of JSON");
+            byte r = 0, g = 0, b = 0, a = 255;
+            JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, key) => {
+                reader0.Read();
+                switch (key.ToLower()) {
+                    case "r":
+                        r = reader0.GetByte();
+                        break;
+                    case "g":
+                        g = reader0.GetByte();
+                        break;
+                    case "b":
+                        b = reader0.GetByte();
+                        break;
+                    case "a":
+                        a = reader0.GetByte();
+                        break;
+                }
+            });
+            return new Color(r, g, b, a);
         }
 
         public override void Write(Utf8JsonWriter writer, Color value, JsonSerializerOptions options) {
@@ -72,7 +64,7 @@ namespace TranSimCS.Save2 {
                 return new Color(r, g, b, a);
             }
 
-            throw new JsonException($"Invalid hex color format: {hex}");
+            throw new FormatException($"Invalid hex color format: {hex}");
         }
     }
 }

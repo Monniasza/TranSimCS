@@ -7,7 +7,7 @@ namespace TranSimCS.Save2 {
     public class LaneSpecConverter : JsonConverter<LaneSpec> {
         public override LaneSpec Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
             if (reader.TokenType != JsonTokenType.StartObject) {
-                throw new JsonException("Expected StartObject token");
+                JsonProcessor.Fail(reader, "Expected StartObject token");
             }
 
             Microsoft.Xna.Framework.Color? color = null;
@@ -18,39 +18,34 @@ namespace TranSimCS.Save2 {
 
             var colorConverter = new ColorConverter();
 
-            while (reader.Read()) {
-                if (reader.TokenType == JsonTokenType.EndObject) {
-                    if (color == null) {
-                        throw new JsonException("Missing color property");
-                    }
-                    return new LaneSpec(color.Value, vehicleTypes, width, speedLimit, flags);
+            JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
+                switch (propertyName.ToLower()) {
+                    case "color":
+                        color = colorConverter.Read(ref reader0, typeof(Microsoft.Xna.Framework.Color), options);
+                        break;
+                    case "vehicletypes":
+                        reader0.Read();
+                        vehicleTypes = (VehicleTypes)reader0.GetInt32();
+                        break;
+                    case "flags":
+                        reader0.Read();
+                        flags = (LaneFlags)reader0.GetInt32();
+                        break;
+                    case "width":
+                        reader0.Read();
+                        width = reader0.GetSingle();
+                        break;
+                    case "speedlimit":
+                        reader0.Read();
+                        speedLimit = reader0.GetSingle();
+                        break;
                 }
+            });
 
-                if (reader.TokenType == JsonTokenType.PropertyName) {
-                    string propertyName = reader.GetString()!;
-                    reader.Read();
-
-                    switch (propertyName.ToLower()) {
-                        case "color":
-                            color = colorConverter.Read(ref reader, typeof(Microsoft.Xna.Framework.Color), options);
-                            break;
-                        case "vehicletypes":
-                            vehicleTypes = (VehicleTypes)reader.GetInt32();
-                            break;
-                        case "flags":
-                            flags = (LaneFlags)reader.GetInt32();
-                            break;
-                        case "width":
-                            width = reader.GetSingle();
-                            break;
-                        case "speedlimit":
-                            speedLimit = reader.GetSingle();
-                            break;
-                    }
-                }
+            if (color == null) {
+                JsonProcessor.Fail(reader, "Missing color property");
             }
-
-            throw new JsonException("Unexpected end of JSON");
+            return new LaneSpec(color.Value, vehicleTypes, width, speedLimit, flags);
         }
 
         public override void Write(Utf8JsonWriter writer, LaneSpec value, JsonSerializerOptions options) {
