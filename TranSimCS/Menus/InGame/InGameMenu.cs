@@ -98,8 +98,7 @@ namespace TranSimCS.Menus.InGame {
         }
 
         public void LoadWorldFromFile(string filename) {
-            World = new TSWorld();
-            World.ReadFromFile(filename);
+            World = TSWorld.Load(filename);
         }
 
         public override void LoadContent() {

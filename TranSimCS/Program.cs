@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -32,7 +32,7 @@ public class Program {
         //Set up logs
         //var target = new FileTarget(logPath);
         //target.Ar
-        
+
         NLog.LogManager.Setup().LoadConfiguration(builder => {
             builder.ForLogger().FilterMinLevel(LogLevel.Info).WriteToConsole();
             builder.ForLogger().FilterMinLevel(LogLevel.Trace).WriteToFile(
@@ -50,11 +50,55 @@ public class Program {
         Game1.Start();
     }
 
+    // ===== NEWTONSOFT.JSON (OLD METHODS) =====
     public static void SerializeToFile<T>(string path, T obj, JsonSerializer serializer) {
         log.Trace("Saved the data to " + path);
         using var stringWriter = new StringWriter();
         serializer.Serialize(stringWriter, obj, typeof(T));
         File.WriteAllText(path, stringWriter.ToString());
+    }
+
+    // ===== SYSTEM.TEXT.JSON (NEW METHODS) =====
+
+    /// <summary>
+    /// Serializes an object to a file using System.Text.Json
+    /// </summary>
+    public static void SerializeToFileJson<T>(string path, T obj, System.Text.Json.JsonSerializerOptions? options = null) {
+        log.Info($"Saving data to {path} using System.Text.Json");
+        try {
+            if (options == null) {
+                options = new System.Text.Json.JsonSerializerOptions {
+                    WriteIndented = true
+                };
+            }
+
+            string jsonString = System.Text.Json.JsonSerializer.Serialize(obj, options);
+            File.WriteAllText(path, jsonString);
+            log.Info($"Data saved successfully to {path}");
+        } catch (Exception ex) {
+            log.Error(ex, $"Failed to save data to {path}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Deserializes an object from a file using System.Text.Json
+    /// </summary>
+    public static T? DeserializeFromFileJson<T>(string path, System.Text.Json.JsonSerializerOptions? options = null) {
+        log.Info($"Loading data from {path} using System.Text.Json");
+        try {
+            if (!File.Exists(path)) {
+                throw new FileNotFoundException($"File not found: {path}");
+            }
+
+            string jsonString = File.ReadAllText(path);
+            var result = System.Text.Json.JsonSerializer.Deserialize<T>(jsonString, options);
+            log.Info($"Data loaded successfully from {path}");
+            return result;
+        } catch (Exception ex) {
+            log.Error(ex, $"Failed to load data from {path}");
+            throw;
+        }
     }
 
     public static T Await<T>(Task<T> task) {
