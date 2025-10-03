@@ -1,33 +1,36 @@
 using System;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Xna.Framework;
-using TranSimCS.Save;
+using TranSimCS.Save2;
 
 namespace TranSimCS.Roads {
     public class LaneSpecConverter : JsonConverter<LaneSpec> {
-        public override LaneSpec ReadJson(JsonReader reader, Type objectType, LaneSpec existingValue, bool hasExistingValue, JsonSerializer serializer) {
+        public override LaneSpec Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
             Color color = Color.Gray;
             VehicleTypes vehicleTypes = VehicleTypes.None;
             LaneFlags flags = LaneFlags.Forward;
             float width = 3.5f;
             float speedLimit = 50f;
 
-            JsonProcessor.ReadJsonObjectProperties(reader, key => {
+            var colorConverter = new ColorConverter();
+
+            JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, key) => {
                 switch (key) {
                     case "color":
-                        color = serializer.Deserialize<Color>(reader);
+                        color = colorConverter.Read(ref reader0, typeof(Color), options);
                         break;
                     case "vehicleTypes":
-                        vehicleTypes = (VehicleTypes)(reader.ReadAsInt32() ?? 0);
+                        vehicleTypes = (VehicleTypes)(reader0.GetInt32());
                         break;
                     case "flags":
-                        flags = (LaneFlags)(reader.ReadAsInt32() ?? 0);
+                        flags = (LaneFlags)(reader0.GetInt32());
                         break;
                     case "width":
-                        width = reader.ReadAsFloat() ?? 3.5f;
+                        width = reader0.GetSingle();
                         break;
                     case "speedLimit":
-                        speedLimit = reader.ReadAsFloat() ?? 50f;
+                        speedLimit = reader0.GetSingle();
                         break;
                 }
             });
@@ -35,24 +38,17 @@ namespace TranSimCS.Roads {
             return new LaneSpec(color, vehicleTypes, width, speedLimit, flags);
         }
 
-        public override void WriteJson(JsonWriter writer, LaneSpec value, JsonSerializer serializer) {
+        public override void Write(Utf8JsonWriter writer, LaneSpec value, JsonSerializerOptions options) {
             writer.WriteStartObject();
-            
+
+            var colorConverter = new ColorConverter();
             writer.WritePropertyName("color");
-            serializer.Serialize(writer, value.Color);
-            
-            writer.WritePropertyName("vehicleTypes");
-            writer.WriteValue((int)value.VehicleTypes);
-            
-            writer.WritePropertyName("flags");
-            writer.WriteValue((int)value.Flags);
-            
-            writer.WritePropertyName("width");
-            writer.WriteValue(value.Width);
-            
-            writer.WritePropertyName("speedLimit");
-            writer.WriteValue(value.SpeedLimit);
-            
+            colorConverter.Write(writer, value.Color, options);
+            writer.WriteNumber("vehicleTypes", (int)value.VehicleTypes);
+            writer.WriteNumber("flags", (int)value.Flags);
+            writer.WriteNumber("width", value.Width);
+            writer.WriteNumber("speedLimit", value.SpeedLimit);
+
             writer.WriteEndObject();
         }
     }

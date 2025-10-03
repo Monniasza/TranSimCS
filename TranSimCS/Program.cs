@@ -5,12 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Arch.Core;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NLog;
 using NLog.Targets;
 using TranSimCS;
 using TranSimCS.Roads;
+using TranSimCS.Save2;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.ECS;
 
@@ -27,11 +26,6 @@ public class Program {
         Directory.CreateDirectory(SaveRoot);
 
         var logPath = Path.Combine(DataRoot, "log.txt");
-        //
-
-        //Set up logs
-        //var target = new FileTarget(logPath);
-        //target.Ar
 
         NLog.LogManager.Setup().LoadConfiguration(builder => {
             builder.ForLogger().FilterMinLevel(LogLevel.Info).WriteToConsole();
@@ -47,15 +41,9 @@ public class Program {
         var retrievedString = dictionary[guid];
         log.Trace(retrievedString);
 
-        Game1.Start();
-    }
+        JsonProcessor.Init();
 
-    // ===== NEWTONSOFT.JSON (OLD METHODS) =====
-    public static void SerializeToFile<T>(string path, T obj, JsonSerializer serializer) {
-        log.Trace("Saved the data to " + path);
-        using var stringWriter = new StringWriter();
-        serializer.Serialize(stringWriter, obj, typeof(T));
-        File.WriteAllText(path, stringWriter.ToString());
+        Game1.Start();
     }
 
     // ===== SYSTEM.TEXT.JSON (NEW METHODS) =====

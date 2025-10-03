@@ -1,6 +1,5 @@
 using System;
 using Microsoft.Xna.Framework;
-using Newtonsoft.Json.Linq;
 
 namespace TranSimCS.Roads {
     public struct LaneSpec : IEquatable<LaneSpec> {

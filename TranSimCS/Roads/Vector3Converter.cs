@@ -1,45 +1,37 @@
 using System;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Xna.Framework;
-using TranSimCS.Save;
+using TranSimCS.Save2;
 
 namespace TranSimCS.Roads {
     public class Vector3Converter : JsonConverter<Vector3> {
-        public override Vector3 ReadJson(JsonReader reader, Type objectType, Vector3 existingValue, bool hasExistingValue, JsonSerializer serializer) {
-            float x = 0f, y = 0f, z = 0f;
-
-            JsonProcessor.ReadJsonObjectProperties(reader, key => {
+        public override Vector3 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+            Vector3 result = default(Vector3);
+            JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, key) => {
                 switch (key) {
                     case "x":
                     case "X":
-                        x = reader.ReadAsFloat() ?? 0f;
+                        result.X = reader0.GetSingle();
                         break;
                     case "y":
                     case "Y":
-                        y = reader.ReadAsFloat() ?? 0f;
+                        result.Y = reader0.GetSingle();
                         break;
                     case "z":
                     case "Z":
-                        z = reader.ReadAsFloat() ?? 0f;
+                        result.Z = reader0.GetSingle();
                         break;
                 }
             });
-
-            return new Vector3(x, y, z);
+            return result;
         }
 
-        public override void WriteJson(JsonWriter writer, Vector3 value, JsonSerializer serializer) {
+        public override void Write(Utf8JsonWriter writer, Vector3 value, JsonSerializerOptions options) {
             writer.WriteStartObject();
-            
-            writer.WritePropertyName("x");
-            writer.WriteValue(value.X);
-            
-            writer.WritePropertyName("y");
-            writer.WriteValue(value.Y);
-            
-            writer.WritePropertyName("z");
-            writer.WriteValue(value.Z);
-            
+            writer.WriteNumber("x", value.X);
+            writer.WriteNumber("y", value.Y);
+            writer.WriteNumber("z", value.Z);
             writer.WriteEndObject();
         }
     }
