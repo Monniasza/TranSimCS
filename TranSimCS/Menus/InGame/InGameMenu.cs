@@ -41,13 +41,6 @@ namespace TranSimCS.Menus.InGame {
         private BasicEffect effect = null!;
         public RenderHelper renderHelper { get; private set; } = null!; // Assuming you have a RenderHelper class for rendering
 
-        //Textures
-        public static Texture2D roadTexture { get; private set; } = null!; // Assuming you have a texture for the road
-        public static Texture2D testTexture { get; private set; } = null!;
-        public static Texture2D grassTexture {  get; private set; } = null!;
-        public static Texture2D addTexture { get; private set; } = null!;
-        public static Texture2D asphaltTexture { get; private set; } = null!;
-
         //Inputs
         public RoadSelection? MouseOverRoad { get; set; } = null; // Store the selected road selection
         public object? SelectedObject = null;
@@ -126,11 +119,6 @@ namespace TranSimCS.Menus.InGame {
             renderHelper = new RenderHelper(Game.GraphicsDevice, effect);
 
             //Load the road texture
-            roadTexture = Game.Content.Load<Texture2D>("laneTex");
-            testTexture = Game.Content.Load<Texture2D>("test");
-            grassTexture = Game.Content.Load<Texture2D>("seamlessTextures2/grass1");
-            addTexture = Game.Content.Load<Texture2D>("addTex");
-            asphaltTexture = Game.Content.Load<Texture2D>("seamlessTextures2/IMGP5511_seamless");
 
             //Set up meshes
             SelectorObjects = new MultiMesh();

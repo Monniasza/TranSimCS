@@ -30,26 +30,10 @@ namespace TranSimCS.Worlds {
             } 
         }
 
-
         public Obj() {}
         public void FirePropertyEvent(object sender, PropertyChangedEventArgs eventArgs){
             PropertyChanged?.Invoke(sender, eventArgs);
         }
-
-        //MESHING
-        private Mesh? mesh;
-        public Mesh GetMesh() {
-            if (mesh == null) {
-                mesh = new Mesh();
-                GenerateMesh(mesh);
-            }
-            return mesh;
-        }
-        public void InvalidateMesh() {
-            mesh = null;
-            InvalidateMesh0();
-        }
-        protected virtual void InvalidateMesh0() { }
 
         //CHILDREN & PARENT
         private Obj? _parent;
@@ -80,10 +64,6 @@ namespace TranSimCS.Worlds {
         public event Action<Obj, Obj>? AfterParentChanged;
         public event PropertyChangedEventHandler? PropertyChanged;
 
-
-        //ABSTRACT METHODS
-        protected abstract void GenerateMesh(Mesh mesh);
-
         public bool Equals(Obj? other) {
             return ReferenceEquals(this, other);
         }
@@ -109,4 +89,6 @@ namespace TranSimCS.Worlds {
         public void Drag(Vector3 vector, Vector3 dragFrom);
         public Plane DragPlane() => InGameMenu.groundPlane;
     }
+
+    
 }

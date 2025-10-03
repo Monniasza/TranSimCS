@@ -23,6 +23,14 @@ namespace TranSimCS
 {
     public class Game1 : Game
     {
+        private static Game1 instance;
+        public static Game1 Instance { get { return instance ?? throw new ApplicationException("Game has not been yet started"); } }
+        public static void Start() {
+            if (instance != null) return;
+            instance = new Game1();
+            instance.Run();
+        }
+
         public GraphicsDeviceManager GraphicsDeviceManager { get; private set; }
         public SpriteBatch SpriteBatch { get; private set; } = null!;
         

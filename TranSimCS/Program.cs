@@ -47,8 +47,7 @@ public class Program {
         var retrievedString = dictionary[guid];
         log.Trace(retrievedString);
 
-        using var game = new TranSimCS.Game1();
-        game.Run();
+        Game1.Start();
     }
 
     public static void SerializeToFile<T>(string path, T obj, JsonSerializer serializer) {

@@ -181,7 +181,9 @@ namespace TranSimCS.Roads {
             renderer.DrawStrip(strip);
         }
 
-        internal static void GenerateSectionMesh(RoadSection roadSection, IRenderBin mesh, int accuracy = 17) {
+        internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh, int accuracy = 17) {
+            var mesh = multimesh.GetOrCreateRenderBin(Game1.Instance.Content.Load<Texture2D>(Assets.Asphalt));
+
             //Rotate the list so the 1st main end lies on the index 0
             var endsPair = roadSection.MainSlopeNodes.Value;
             var start = endsPair.Start;
