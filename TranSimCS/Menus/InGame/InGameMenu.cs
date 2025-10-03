@@ -219,8 +219,9 @@ namespace TranSimCS.Menus.InGame {
                 if (CheckSegments.Checked) ForeachLane(World.RoadSegments, (lane) => {
                     meshes.Add(lane.GetMesh());
                 });
-                if (CheckNodes.Checked) foreach (var node in World.RoadNodes)
-                        meshes.Add(node.GetMesh());
+                if (CheckNodes.Checked)
+                    foreach (var node in World.RoadNodes)
+                        meshes.AddRange(node.Mesh.GetMesh().RenderBins.Values);
             }
 
             //Add tool selectors
@@ -357,22 +358,20 @@ namespace TranSimCS.Menus.InGame {
             //Clear the screen to a solid color and clear the render helper
             renderHelper.Clear();
 
-            Texture2D testTexture = Game.Content.Load<Texture2D>("test");
-            IRenderBin renderBin = renderHelper.GetOrCreateRenderBin(roadTexture);
+            IRenderBin renderBin = renderHelper.GetOrCreateRenderBin(Assets.Road);
 
             // Draw the asphalt texture for the road
             foreach (var roadSegment in World.RoadSegments) {
-                RoadRenderer.RenderRoadSegment(roadSegment, renderBin, 0.001f); // Render each road segment with a slight vertical offset
+                renderHelper.AddAll(roadSegment.Mesh.GetMesh());
             }
 
             //Draw road node meshes
             if(CheckNodes.Checked) foreach(var roadNode in World.RoadNodes)
-                renderBin.DrawModel(roadNode.GetMesh());
+                SelectorObjects.AddAll(roadNode.Mesh.GetMesh());
 
             //Draw road sections
-            IRenderBin asphaltBin = renderHelper.GetOrCreateRenderBin(asphaltTexture);
             foreach (var section in World.RoadSections) {
-                asphaltBin.DrawModel(section.GetMesh());
+                SelectorObjects.AddAll(section.Mesh.GetMesh());
             }
 
             //Draw the tool mesh
@@ -411,14 +410,14 @@ namespace TranSimCS.Menus.InGame {
             }
 
             //If the add lane button is selected, draw it
-            IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBin(addTexture);
+            IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBin(Assets.Add);
             if (SelectedObject is AddLaneSelection selection) 
                 RoadRenderer.CreateAddLane(selection, plusRenderBin, roadProperty.Value.Width, roadSegmentHighlightColor, 0.002f);
             
             //Render the ground (now just a flat plane)
             float r = 100000;
             float s = 10000;
-            IRenderBin grassBin = renderHelper.GetOrCreateRenderBin(grassTexture);
+            IRenderBin grassBin = renderHelper.GetOrCreateRenderBin(Assets.Grass);
             grassBin.DrawQuad(
                 new VertexPositionColorTexture(new(-r, 0,  r), Color.White, new(-s, -s)),
                 new VertexPositionColorTexture(new( r, 0,  r), Color.White, new( s, -s)),

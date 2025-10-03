@@ -40,10 +40,12 @@ namespace TranSimCS.Roads {
         public static Quad GenerateRoadNodeSelQuad(RoadNode node, Color color, float voffset = 0) {
             return GenerateLaneQuad(node, node.Lanes[0].LeftPosition, node.Lanes[node.Lanes.Count - 1].RightPosition, color, voffset);
         }
-        public static void GenerateRoadNodeMesh(RoadNode node, IRenderBin renderBin, float voffset = 0) {
+        public static void GenerateRoadNodeMesh(RoadNode node, MultiMesh renderBin, float voffset = 0) {
             foreach(var lane in node.Lanes) GenerateLaneMesh(lane, renderBin, voffset);
         }
-        public static void GenerateLaneMesh(Lane lane, IRenderBin renderBin, float voffset = 0) {
+        public static void GenerateLaneMesh(Lane lane, MultiMesh mesh, float voffset = 0) {
+            IRenderBin renderBin = mesh.GetOrCreateRenderBin(Assets.Road);
+
             var quads = GenerateLaneQuad(lane, voffset);
             renderBin.DrawQuad(quads.Front);
             renderBin.AddTagsToLastTriangles(2, lane.Front);
@@ -93,8 +95,11 @@ namespace TranSimCS.Roads {
         /// </summary>
         /// <param name="connection">road segment</param>
         /// <param name="renderHelper">render helper</param>
-        public static void GenerateRoadSegmentFullMesh(RoadStrip connection, IRenderBin renderHelper, float voffset = 0) {
-            
+        public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MultiMesh renderHelper, float voffset = 0) {
+            IRenderBin roadBin = renderHelper.GetOrCreateRenderBin(Assets.Road);
+            foreach(var lane in connection.Lanes) {
+                roadBin.DrawModel(lane.GetMesh());
+            }
         }
         public static void RenderRoadSegment(RoadStrip connection, IRenderBin renderHelper, float voffset = 0) {
             foreach(var lane in connection.Lanes) { // Iterate through each lane in the road segment
@@ -182,7 +187,7 @@ namespace TranSimCS.Roads {
         }
 
         internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh, int accuracy = 17) {
-            var mesh = multimesh.GetOrCreateRenderBin(Game1.Instance.Content.Load<Texture2D>(Assets.Asphalt));
+            var mesh = multimesh.GetOrCreateRenderBin(Assets.Asphalt);
 
             //Rotate the list so the 1st main end lies on the index 0
             var endsPair = roadSection.MainSlopeNodes.Value;

@@ -17,11 +17,10 @@ namespace TranSimCS {
 
 
         public static void ReadAssets() {
-            var content = Game1.Instance.Content;
-            Asphalt = content.Load<Texture2D>("seamlessTextures2/IMGP5511_seamless");
-            Road = content.Load<Texture2D>("laneTex");
+            Asphalt = Content.Load<Texture2D>("seamlessTextures2/IMGP5511_seamless");
+            Road = Content.Load<Texture2D>("laneTex");
             Grass = Content.Load<Texture2D>("seamlessTextures2/grass1");
-            Add = Game.Content.Load<Texture2D>("addTex");
+            Add = Content.Load<Texture2D>("addTex");
         }
     }
 }

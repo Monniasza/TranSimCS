@@ -15,8 +15,7 @@ namespace TranSimCS.Roads {
         Forward, Backward
     }
 
-    public class RoadNode: Obj, IPosition {
-
+    public class RoadNode: Obj, IPosition, IObjMesh<RoadNode> {
         public Property<ObjPos> PositionProp { get; private set; }
 
         //Example azimuth values
@@ -28,6 +27,21 @@ namespace TranSimCS.Roads {
         //Identifiers
         public string Name { get; set; }
         public TSWorld World { get; internal set; }
+
+        // Constructor to initialize the RoadNode with a unique ID, name, position, and world
+        public RoadNode(TSWorld world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) :
+            this(world, name, new ObjPos(position, azimuth, inclination, tilt)) { }
+        public RoadNode(TSWorld world, string name, ObjPos positionData, Guid? id = null) {
+            Guid = id ?? Guid.NewGuid();
+            PositionProp = new(ObjPos.Zero, "Position", this);
+            Name = name;
+            PositionProp.Value = positionData;
+            World = world;
+            RearEnd = new RoadNodeEnd(NodeEnd.Backward, this);
+            FrontEnd = new RoadNodeEnd(NodeEnd.Forward, this);
+            PositionProp.ValueChanged += (sender, e) => InvalidateMeshes();
+            Mesh = new MeshGenerator<RoadNode>(this, GenerateMesh);
+        }
 
         //Lane structure
         private readonly List<Lane> _lanes = new List<Lane>(); // List to hold lanes associated with this road node
@@ -53,7 +67,7 @@ namespace TranSimCS.Roads {
                 l.Index++; // Increment the index of each lane that will be shifted
             lane.Index = index; // Set the index of the new lane
             _lanes.Insert(index, lane);// Add the lane to the list
-            InvalidateMesh();
+            Mesh.Invalidate();
         }
         // Removes a lane from this node and clears related connections.
         public void RemoveLane(Lane lane) {
@@ -78,7 +92,7 @@ namespace TranSimCS.Roads {
             if(Lanes.Count == 0) {
                 World.RoadNodes.Remove(this);
             }
-            InvalidateMesh();
+            Mesh.Invalidate();
         }
         // Clears all lanes by delegating to RemoveLane for each entry.
         public void ClearLanes() {
@@ -87,18 +101,19 @@ namespace TranSimCS.Roads {
         }
 
         //Node selection mesh
+        public MeshGenerator<RoadNode> Mesh {  get; init; }
         // Generates the mesh used for node selection rendering.
-        protected override void GenerateMesh(Mesh mesh) {
-            RoadRenderer.GenerateRoadNodeMesh(this, mesh, 0.001f);
+        protected static void GenerateMesh(RoadNode node, MultiMesh mesh) {
+            RoadRenderer.GenerateRoadNodeMesh(node, mesh, 0.001f);
         }
         // Invalidates this node and its connected strips to trigger mesh rebuilding.
         private void InvalidateMeshes() {
-            InvalidateMesh();
-            foreach (var connection in Connections) connection.InvalidateMesh();
+            Mesh.Invalidate();
+            foreach (var connection in Connections) connection.Mesh.Invalidate();
         }
         // Clears cached data when the base mesh invalidation occurs.
-        protected override void InvalidateMesh0(){
-            _centerPos = null;
+        protected static void InvalidateMesh0(RoadNode node){
+            node._centerPos = null;
         }
 
         //Halves of this road node
@@ -133,18 +148,6 @@ namespace TranSimCS.Roads {
 
 
 
-        // Constructor to initialize the RoadNode with a unique ID, name, position, and world
-        public RoadNode(TSWorld world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) :
-            this(world, name, new ObjPos(position, azimuth, inclination, tilt)) { }
-        public RoadNode(TSWorld world, string name, ObjPos positionData, Guid? id = null) {
-            Guid = id ?? Guid.NewGuid();
-            PositionProp = new(ObjPos.Zero, "Position", this);
-            Name = name;
-            PositionProp.Value = positionData;
-            World = world;
-            RearEnd = new RoadNodeEnd(NodeEnd.Backward, this);
-            FrontEnd = new RoadNodeEnd(NodeEnd.Forward, this);
-            PositionProp.ValueChanged += (sender, e) => InvalidateMeshes();
-        }
+        
     }
 }

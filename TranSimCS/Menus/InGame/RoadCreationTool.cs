@@ -279,7 +279,7 @@ namespace TranSimCS.Menus.InGame {
                 var endDiff = (endLateral * endWidth) / 2;
                 Bezier3 lbound = Geometry.GenerateJoinSpline(startPos - startDiff, endPos - endDiff, startingTangent, -endTangent) + offset;
                 Bezier3 rbound = Geometry.GenerateJoinSpline(startPos + startDiff, endPos + endDiff, startingTangent, -endTangent) + offset;
-                IRenderBin renderBin = menu.renderHelper.GetOrCreateRenderBin(InGameMenu.roadTexture);
+                IRenderBin renderBin = menu.renderHelper.GetOrCreateRenderBin(Assets.Road);
                 RoadRenderer.DrawBezierStrip(lbound, rbound, renderBin, previewColor);
             }
         }

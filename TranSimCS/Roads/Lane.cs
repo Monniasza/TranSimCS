@@ -24,7 +24,7 @@ namespace TranSimCS.Roads {
         } set {
             if (value == _spec) return;
             _spec = value;
-            RoadNode?.InvalidateMesh();
+            RoadNode?.Mesh?.Invalidate();
             foreach(var connection in Connections) 
                 connection.InvalidateMesh();
         }} 

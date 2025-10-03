@@ -69,7 +69,7 @@ namespace TranSimCS.Roads {
 
 
         public void Regenerate() {
-            InvalidateMesh();
+            Mesh.Invalidate();
 
             if (nodes.Count == 0) return;
 

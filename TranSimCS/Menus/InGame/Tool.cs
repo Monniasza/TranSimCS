@@ -165,7 +165,7 @@ namespace TranSimCS.Menus.InGame {
 
         void ITool.AddSelectors(MultiMesh addTo) {
             //Add azimuth gizmos
-            var renderBin = addTo.GetOrCreateRenderBin(InGameMenu.addTexture);
+            var renderBin = addTo.GetOrCreateRenderBin(Assets.Add);
 
             foreach (var roadNode in game.World.RoadNodes) {
                 var azimuthGizmo = new AzimuthGizmo(roadNode);
@@ -281,7 +281,7 @@ namespace TranSimCS.Menus.InGame {
                 new VertexPositionColorTexture(startPoint2 + bw     , Color.Orange, new(1, 1)),
                 new VertexPositionColorTexture(startPoint2 - bw     , Color.Orange, new(0, 1))
             );
-            IRenderBin bin = menu.renderHelper.GetOrCreateRenderBin(InGameMenu.roadTexture);
+            IRenderBin bin = menu.renderHelper.GetOrCreateRenderBin(Assets.Road);
             bin.DrawQuad(quad); bin.DrawQuad(quad2);
         }
 

@@ -35,10 +35,17 @@ namespace TranSimCS.Roads {
     /// <remarks>A <see cref="RoadStrip"/> defines the relationship between two road nodes, specifying
     /// the lanes involved at each node and their respective indices. It also includes properties for lane
     /// specifications and rendering-related data, such as meshes for visualization.</remarks>
-    public class RoadStrip(RoadNodeEnd startNode, RoadNodeEnd endNode): Obj {
+    public class RoadStrip: Obj, IObjMesh<RoadStrip> {
         // Properties to hold the start and end nodes and their respective lane indices
-        public readonly RoadNodeEnd StartNode = startNode; // The starting road node of the connection
-        public readonly RoadNodeEnd EndNode = endNode;
+        public readonly RoadNodeEnd StartNode; // The starting road node of the connection
+        public readonly RoadNodeEnd EndNode;
+
+        public RoadStrip(RoadNodeEnd startNode, RoadNodeEnd endNode) {
+            StartNode = startNode;
+            EndNode = endNode;
+            Mesh = new MeshGenerator<RoadStrip>(this, GenerateMesh);
+            Mesh.OnRemoveMesh += InvalidateMesh0;
+        }
 
         public RoadNodeEnd GetHalf(SegmentHalf selectedRoadHalf) {
             if (selectedRoadHalf == SegmentHalf.Start) {
@@ -62,7 +69,7 @@ namespace TranSimCS.Roads {
             if(!removal) return false;
             laneStrip.road = null;
             OnLaneRemoved?.Invoke(this, new RoadStripEventArgs(laneStrip)); // Trigger the OnLaneRemoved event
-            InvalidateMesh(); // Invalidate the mesh for the lane strip to ensure it is regenerated
+            Mesh.Invalidate(); // Invalidate the mesh for the lane strip to ensure it is regenerated
             return true;
         }
         public bool MaybeAddLaneStrip(LaneStrip laneStrip) {
@@ -70,10 +77,13 @@ namespace TranSimCS.Roads {
             lanes.Add(laneStrip); // Add a new lane strip to the connection
             laneStrip.road = this;
             OnLaneAdded?.Invoke(this, new RoadStripEventArgs(laneStrip)); // Trigger the OnLaneAdded event
-            InvalidateMesh(); // Invalidate the mesh for the lane strip to ensure it is regenerated
+            Mesh.Invalidate(); // Invalidate the mesh for the lane strip to ensure it is regenerated
             return true;
         }
         public IReadOnlyCollection<LaneStrip> Lanes => lanes.AsReadOnly(); // Get the list of lane strips associated with this road connection
+
+        
+
         public event EventHandler<RoadStripEventArgs>? OnLaneAdded; // Event triggered when lanes are added or removed
         public event EventHandler<RoadStripEventArgs>? OnLaneRemoved; // Event triggered when lanes are removed
 
@@ -83,12 +93,13 @@ namespace TranSimCS.Roads {
         }
 
         //Meshes for the lane connection (can be used for rendering and cached)
-        protected override void InvalidateMesh0() {
-            foreach (var lane in lanes)
+        public MeshGenerator<RoadStrip> Mesh { get; init; }
+        protected static void InvalidateMesh0(RoadStrip strip) {
+            foreach (var lane in strip.lanes)
                 lane.InvalidateMesh(); // Invalidate the mesh for each lane strip
         }
-        protected override void GenerateMesh(Mesh mesh) {
-            RoadRenderer.GenerateRoadSegmentFullMesh(this, mesh); // Otherwise, render the road segment
+        protected static void GenerateMesh(RoadStrip segment, MultiMesh mesh) {
+            RoadRenderer.GenerateRoadSegmentFullMesh(segment, mesh); // Otherwise, render the road segment
         }
     }
 }

@@ -133,6 +133,8 @@ namespace TranSimCS
             MlemPlatform.Current = new MlemPlatform.DesktopGl<TextInputEventArgs>((w, c) => w.TextInput += c);
             Menu = new InGameMenu(this);
 
+            Assets.ReadAssets();
+
             KeyPromptMapper.SetUpKeyPrompts(Content);
         }
 
