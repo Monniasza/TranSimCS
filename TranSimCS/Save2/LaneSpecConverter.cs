@@ -6,10 +6,6 @@ using TranSimCS.Roads;
 namespace TranSimCS.Save2 {
     public class LaneSpecConverter : JsonConverter<LaneSpec> {
         public override LaneSpec Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            if (reader.TokenType != JsonTokenType.StartObject) {
-                JsonProcessor.Fail(reader, "Expected StartObject token");
-            }
-
             Microsoft.Xna.Framework.Color? color = null;
             VehicleTypes vehicleTypes = VehicleTypes.None;
             LaneFlags flags = LaneFlags.None;

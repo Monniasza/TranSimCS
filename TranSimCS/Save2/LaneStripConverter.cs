@@ -13,10 +13,6 @@ namespace TranSimCS.Save2 {
         }
 
         public override LaneStrip Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            if (reader.TokenType != JsonTokenType.StartObject) {
-                JsonProcessor.Fail(reader, "Expected StartObject token");
-            }
-
             LaneEnd? start = null;
             LaneEnd? end = null;
             LaneSpec spec = LaneSpec.Default;

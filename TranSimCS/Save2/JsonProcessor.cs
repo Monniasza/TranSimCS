@@ -11,8 +11,8 @@ namespace TranSimCS.Save2 {
     public delegate void JsonArrayHandler(ref Utf8JsonReader jsonReader, int idx);
 
     public static partial class JsonProcessor {
-        public static void ReadJsonObjectProperties(ref Utf8JsonReader reader, JsonPropHandler action) {
-            AssertTokenType(ref reader, JsonTokenType.StartObject);
+        public static void ReadJsonObjectProperties(ref Utf8JsonReader reader, JsonPropHandler action, bool lenient = true) {
+            AssertTokenType(ref reader, JsonTokenType.StartObject, lenient);
             while (true) {
                 ForceRead(ref reader);
                 switch (reader.TokenType) {
@@ -44,8 +44,8 @@ namespace TranSimCS.Save2 {
             if (!success)
                 Fail(reader, "Unexpected end of JSON");
         }
-        public static void AssertTokenType(ref Utf8JsonReader reader, JsonTokenType type) {
-            //if (reader.TokenType == type) return;
+        public static void AssertTokenType(ref Utf8JsonReader reader, JsonTokenType type, bool lenient = false) {
+            if (lenient && reader.TokenType == type) return;
             ForceRead(ref reader);
             if (type != reader.TokenType)
                 Fail(reader, $"Unxpected token: {reader.TokenType}, expected {type}");

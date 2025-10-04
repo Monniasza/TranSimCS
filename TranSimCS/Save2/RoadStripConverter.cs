@@ -14,10 +14,6 @@ namespace TranSimCS.Save2 {
         }
 
         public override RoadStrip Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            if (reader.TokenType != JsonTokenType.StartObject) {
-                throw new JsonException("Expected StartObject token");
-            }
-
             RoadNodeEnd? start = null;
             RoadNodeEnd? end = null;
             List<LaneStrip> lanes = new List<LaneStrip>();
@@ -26,46 +22,38 @@ namespace TranSimCS.Save2 {
             var roadNodeEndConverter = new RoadNodeEndConverter(_world);
             var laneStripConverter = new LaneStripConverter(_world);
 
-            while (reader.Read()) {
-                if (reader.TokenType == JsonTokenType.EndObject) {
-                    if (start == null) throw new JsonException("Missing start property");
-                    if (end == null) throw new JsonException("Missing end property");
-
-                    var roadStrip = new RoadStrip(start, end);
-                    foreach (var lane in lanes) {
-                        roadStrip.AddLaneStrip(lane);
-                    }
-                    return roadStrip;
+            JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
+                switch (propertyName.ToLower()) {
+                    case "guid":
+                        reader0.Read();
+                        guid = Guid.Parse(reader0.GetString()!);
+                        break;
+                    case "start":
+                        reader0.Read();
+                        start = roadNodeEndConverter.Read(ref reader0, typeof(RoadNodeEnd), options);
+                        break;
+                    case "end":
+                        reader0.Read();
+                        end = roadNodeEndConverter.Read(ref reader0, typeof(RoadNodeEnd), options);
+                        break;
+                    case "lanes":
+                        JsonProcessor.ReadJsonArrayProperties(ref reader0, (ref reader1, _) => { 
+                            var lane = laneStripConverter.Read(ref reader1, typeof(LaneStrip), options);
+                            lanes.Add(lane);
+                        });
+                        break;
                 }
+            });
 
-                if (reader.TokenType == JsonTokenType.PropertyName) {
-                    string propertyName = reader.GetString()!;
-                    reader.Read();
+            if (start == null) throw new JsonException("Missing start property");
+            if (end == null) throw new JsonException("Missing end property");
 
-                    switch (propertyName.ToLower()) {
-                        case "guid":
-                            guid = Guid.Parse(reader.GetString()!);
-                            break;
-                        case "start":
-                            start = roadNodeEndConverter.Read(ref reader, typeof(RoadNodeEnd), options);
-                            break;
-                        case "end":
-                            end = roadNodeEndConverter.Read(ref reader, typeof(RoadNodeEnd), options);
-                            break;
-                        case "lanes":
-                            if (reader.TokenType != JsonTokenType.StartArray) {
-                                throw new JsonException("Expected StartArray token for lanes");
-                            }
-                            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray) {
-                                var lane = laneStripConverter.Read(ref reader, typeof(LaneStrip), options);
-                                lanes.Add(lane);
-                            }
-                            break;
-                    }
-                }
+            var roadStrip = new RoadStrip(start, end);
+            foreach (var lane in lanes) {
+                roadStrip.AddLaneStrip(lane);
             }
-
-            throw new JsonException("Unexpected end of JSON");
+            return roadStrip; 
+            
         }
 
         public override void Write(Utf8JsonWriter writer, RoadStrip value, JsonSerializerOptions options) {

@@ -14,10 +14,6 @@ namespace TranSimCS.Save2 {
         }
 
         public override RoadNode Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            if (reader.TokenType != JsonTokenType.StartObject) {
-                throw new JsonException("Expected StartObject token");
-            }
-
             Guid? guid = null;
             ObjPos? pos = null;
             List<Lane> lanes = new List<Lane>();
@@ -42,6 +38,7 @@ namespace TranSimCS.Save2 {
                         });
                         break;
                     case "name":
+                        reader0.Read();
                         name = reader0.GetString() ?? "";
                         break;
                 }

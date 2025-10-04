@@ -15,41 +15,27 @@ namespace TranSimCS.Save2 {
             var roadNodeConverter = new RoadNodeConverter(world);
             var roadStripConverter = new RoadStripConverter(world);
 
-            while (reader.Read()) {
-                if (reader.TokenType == JsonTokenType.EndObject) {
-                    return world;
+
+            JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
+                switch (propertyName.ToLower()) {
+                    case "nodes":
+                        world.RoadNodes.Clear();
+                        JsonProcessor.ReadJsonArrayProperties(ref reader0, (ref reader1, idx) => {
+                            var node = roadNodeConverter.Read(ref reader1, typeof(Roads.RoadNode), options);
+                            world.RoadNodes.Add(node);
+                        });
+                        break;
+                    case "segments":
+                        world.RoadSegments.Clear();
+                        while (reader0.Read() && reader0.TokenType != JsonTokenType.EndArray) {
+                            var segment = roadStripConverter.Read(ref reader0, typeof(Roads.RoadStrip), options);
+                            world.RoadSegments.Add(segment);
+                        }
+                        break;
                 }
+            }, true);
 
-                if (reader.TokenType == JsonTokenType.PropertyName) {
-                    string propertyName = reader.GetString()!;
-                    reader.Read();
-
-                    switch (propertyName.ToLower()) {
-                        case "nodes":
-                            if (reader.TokenType != JsonTokenType.StartArray) {
-                                throw new JsonException("Expected StartArray token for nodes");
-                            }
-                            world.RoadNodes.Clear();
-                            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray) {
-                                var node = roadNodeConverter.Read(ref reader, typeof(Roads.RoadNode), options);
-                                world.RoadNodes.Add(node);
-                            }
-                            break;
-                        case "segments":
-                            if (reader.TokenType != JsonTokenType.StartArray) {
-                                throw new JsonException("Expected StartArray token for segments");
-                            }
-                            world.RoadSegments.Clear();
-                            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray) {
-                                var segment = roadStripConverter.Read(ref reader, typeof(Roads.RoadStrip), options);
-                                world.RoadSegments.Add(segment);
-                            }
-                            break;
-                    }
-                }
-            }
-
-            throw new JsonException("Unexpected end of JSON");
+            return world;
         }
 
         public override void Write(Utf8JsonWriter writer, TSWorld value, JsonSerializerOptions options) {

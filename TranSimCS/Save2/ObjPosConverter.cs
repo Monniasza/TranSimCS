@@ -6,10 +6,6 @@ using TranSimCS.Worlds;
 namespace TranSimCS.Save2 {
     public class ObjPosConverter : JsonConverter<ObjPos> {
         public override ObjPos Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            if (reader.TokenType != JsonTokenType.StartObject) {
-                throw new JsonException("Expected StartObject token");
-            }
-
             Microsoft.Xna.Framework.Vector3? position = null;
             int azimuth = 0;
             float inclination = 0f;
@@ -17,34 +13,27 @@ namespace TranSimCS.Save2 {
 
             var vector3Converter = new Vector3Converter();
 
-            while (reader.Read()) {
-                if (reader.TokenType == JsonTokenType.EndObject) {
-                    if (position == null) {
-                        throw new JsonException("Missing position property");
-                    }
-                    return new ObjPos(position.Value, azimuth, inclination, tilt);
+            JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
+                switch (propertyName.ToLower()) {
+                    case "position":
+                        position = vector3Converter.Read(ref reader0, typeof(Microsoft.Xna.Framework.Vector3), options);
+                        break;
+                    case "azimuth":
+                        reader0.Read();
+                        azimuth = reader0.GetInt32();
+                        break;
+                    case "inclination":
+                        reader0.Read();
+                        inclination = reader0.GetSingle();
+                        break;
+                    case "tilt":
+                        reader0.Read();
+                        tilt = reader0.GetSingle();
+                        break;
                 }
+            });
 
-                if (reader.TokenType == JsonTokenType.PropertyName) {
-                    string propertyName = reader.GetString()!;
-                    reader.Read();
-
-                    switch (propertyName.ToLower()) {
-                        case "position":
-                            position = vector3Converter.Read(ref reader, typeof(Microsoft.Xna.Framework.Vector3), options);
-                            break;
-                        case "azimuth":
-                            azimuth = reader.GetInt32();
-                            break;
-                        case "inclination":
-                            inclination = reader.GetSingle();
-                            break;
-                        case "tilt":
-                            tilt = reader.GetSingle();
-                            break;
-                    }
-                }
-            }
+            return new ObjPos(position.Value, azimuth, inclination, tilt);
 
             throw new JsonException("Unexpected end of JSON");
         }
