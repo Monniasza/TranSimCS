@@ -10,6 +10,10 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.Menus.InGame {
     public partial class InGameMenu {
+        public override void OnRequestClose() {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// A dialog with three buttons: Save, Don't Save, Cancel.
         /// <list type="bullet">

@@ -155,6 +155,7 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("moveTool", new MoveTool(this));
             SetUpToolPictureButton("bucket", new PaintTool(this));
             SetUpToolPictureButton("inspect", new InspectTool(this));
+            SetUpToolPictureButton("finish", new RoadFinishTool(this));
 
             //Set up the tool preview
             ToolDescPanel = new Panel(MLEM.Ui.Anchor.TopLeft, new(0.5f, 20), true);

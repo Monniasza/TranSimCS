@@ -21,10 +21,10 @@ namespace TranSimCS.Tools {
     public interface ITool {
         public string Name { get; }
         public string Description { get; }
-        public void OnClick(MouseButton button);
-        public void OnRelease(MouseButton button);
-        public void OnKeyDown(Keys key);
-        public void OnKeyUp(Keys key);
+        public void OnClick(MouseButton button) { }
+        public void OnRelease(MouseButton button) { }
+        public void OnKeyDown(Keys key) { }
+        public void OnKeyUp(Keys key) { }
         public void Update(GameTime gameTime);
         public void Draw(GameTime gameTime);
         public void Draw2D(GameTime gameTime);

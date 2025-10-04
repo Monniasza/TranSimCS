@@ -16,8 +16,8 @@ namespace TranSimCS.Menus {
         public abstract void Destroy();
         public abstract void Draw(GameTime time);
         public abstract void Draw2D(GameTime time);
-
         public abstract void LoadContentOverride();
+        public abstract void OnRequestClose();
 
         public bool IsLoaded {get; private set;}
         public void LoadContent() {
