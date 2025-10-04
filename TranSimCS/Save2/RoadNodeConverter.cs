@@ -26,46 +26,35 @@ namespace TranSimCS.Save2 {
             var objPosConverter = new ObjPosConverter();
             var laneConverter = new LaneConverter();
 
-            while (reader.Read()) {
-                if (reader.TokenType == JsonTokenType.EndObject) {
-                    if (guid == null) throw new JsonException("Missing id property");
-                    if (pos == null) throw new JsonException($"Missing pos property for node {guid}");
-
-                    RoadNode node = new RoadNode(_world, name, pos.Value, guid);
-                    foreach (var lane in lanes) {
-                        node.AddLane(lane);
-                    }
-                    return node;
+            JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
+                switch (propertyName.ToLower()) {
+                    case "id":
+                        reader0.Read();
+                        guid = Guid.Parse(reader0.GetString()!);
+                        break;
+                    case "pos":
+                        pos = objPosConverter.Read(ref reader0, typeof(ObjPos), options);
+                        break;
+                    case "lanes":
+                        JsonProcessor.ReadJsonArrayProperties(ref reader0, (ref reader1, _) => {
+                            var lane = laneConverter.Read(ref reader1, typeof(Lane), options);
+                            lanes.Add(lane);
+                        });
+                        break;
+                    case "name":
+                        name = reader0.GetString() ?? "";
+                        break;
                 }
+            });
 
-                if (reader.TokenType == JsonTokenType.PropertyName) {
-                    string propertyName = reader.GetString()!;
-                    reader.Read();
+            if (guid == null) throw new JsonException("Missing id property");
+            if (pos == null) throw new JsonException($"Missing pos property for node {guid}");
 
-                    switch (propertyName.ToLower()) {
-                        case "id":
-                            guid = Guid.Parse(reader.GetString()!);
-                            break;
-                        case "pos":
-                            pos = objPosConverter.Read(ref reader, typeof(ObjPos), options);
-                            break;
-                        case "lanes":
-                            if (reader.TokenType != JsonTokenType.StartArray) {
-                                throw new JsonException("Expected StartArray token for lanes");
-                            }
-                            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray) {
-                                var lane = laneConverter.Read(ref reader, typeof(Lane), options);
-                                lanes.Add(lane);
-                            }
-                            break;
-                        case "name":
-                            name = reader.GetString() ?? "";
-                            break;
-                    }
-                }
+            RoadNode node = new RoadNode(_world, name, pos.Value, guid);
+            foreach (var lane in lanes) {
+                node.AddLane(lane);
             }
-
-            throw new JsonException("Unexpected end of JSON");
+            return node;
         }
 
         public override void Write(Utf8JsonWriter writer, RoadNode value, JsonSerializerOptions options) {

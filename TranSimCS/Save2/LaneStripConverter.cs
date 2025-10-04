@@ -24,36 +24,26 @@ namespace TranSimCS.Save2 {
             var laneEndConverter = new LaneEndConverter(_world);
             var laneSpecConverter = new LaneSpecConverter();
 
-            while (reader.Read()) {
-                if (reader.TokenType == JsonTokenType.EndObject) {
-                    if (start == null) JsonProcessor.Fail(reader, "Missing start property");
-                    if (end == null) JsonProcessor.Fail(reader, "Missing end property");
-
-                    var laneStrip = new LaneStrip(start.Value, end.Value);
-                    laneStrip.Spec = spec;
-                    return laneStrip;
+            JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
+                switch (propertyName.ToLower()) {
+                    case "start":
+                        start = laneEndConverter.Read(ref reader0, typeof(LaneEnd), options);
+                        break;
+                    case "end":
+                        end = laneEndConverter.Read(ref reader0, typeof(LaneEnd), options);
+                        break;
+                    case "spec":
+                        spec = laneSpecConverter.Read(ref reader0, typeof(LaneSpec), options);
+                        break;
                 }
+            });
 
-                if (reader.TokenType == JsonTokenType.PropertyName) {
-                    string propertyName = reader.GetString()!;
-                    reader.Read();
+            if (start == null) JsonProcessor.Fail(reader, "Missing start property");
+            if (end == null) JsonProcessor.Fail(reader, "Missing end property");
 
-                    switch (propertyName.ToLower()) {
-                        case "start":
-                            start = laneEndConverter.Read(ref reader, typeof(LaneEnd), options);
-                            break;
-                        case "end":
-                            end = laneEndConverter.Read(ref reader, typeof(LaneEnd), options);
-                            break;
-                        case "spec":
-                            spec = laneSpecConverter.Read(ref reader, typeof(LaneSpec), options);
-                            break;
-                    }
-                }
-            }
-
-            JsonProcessor.Fail(reader, "Unexpected end of JSON");
-            return null;
+            var laneStrip = new LaneStrip(start.Value, end.Value);
+            laneStrip.Spec = spec;
+            return laneStrip;
         }
 
         public override void Write(Utf8JsonWriter writer, LaneStrip value, JsonSerializerOptions options) {

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace TranSimCS.Save2 {
     public delegate void JsonPropHandler(ref Utf8JsonReader jsonReader, string name);
+    public delegate void JsonArrayHandler(ref Utf8JsonReader jsonReader, int idx);
 
     public static partial class JsonProcessor {
         public static void ReadJsonObjectProperties(ref Utf8JsonReader reader, JsonPropHandler action) {
@@ -28,6 +29,15 @@ namespace TranSimCS.Save2 {
                 }
             }
         }
+        public static void ReadJsonArrayProperties(ref Utf8JsonReader reader, JsonArrayHandler action) {
+            int i = 0;
+            AssertTokenType(ref reader, JsonTokenType.StartArray);
+            while (true) {
+                ForceRead(ref reader);
+                if (reader.TokenType == JsonTokenType.EndArray) return;
+                action(ref reader, i++);
+            }
+        }
 
         public static void ForceRead(ref Utf8JsonReader reader) {
             var success = reader.Read();
@@ -35,7 +45,8 @@ namespace TranSimCS.Save2 {
                 Fail(reader, "Unexpected end of JSON");
         }
         public static void AssertTokenType(ref Utf8JsonReader reader, JsonTokenType type) {
-            
+            //if (reader.TokenType == type) return;
+            ForceRead(ref reader);
             if (type != reader.TokenType)
                 Fail(reader, $"Unxpected token: {reader.TokenType}, expected {type}");
         }
