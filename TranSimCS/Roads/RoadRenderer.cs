@@ -100,6 +100,54 @@ namespace TranSimCS.Roads {
             foreach(var lane in connection.Lanes) {
                 roadBin.DrawModel(lane.GetMesh());
             }
+
+            //Draw the road finish
+            var finish = connection.Finish;
+            var texture = finish.subsurface.GetTexture();
+            var height = finish.depth;
+            var breadth = finish.depth * MathF.Tan(finish.angle);
+
+            var splineFrame = connection.CalcSplineFrame();
+            var bounds = connection.Bounds;
+
+            var avgWidth = (bounds.rightStart - bounds.leftStart + bounds.rightEnd - bounds.leftEnd) / 2;
+
+            var leftStart = Vector3.UnitX * bounds.leftStart;
+            var rightStart = Vector3.UnitX * bounds.rightStart;
+            var leftEnd = Vector3.UnitX * bounds.leftEnd;
+            var rightEnd = Vector3.UnitX * bounds.rightEnd;
+            var bottomLeft = - Vector3.UnitY * height - Vector3.UnitX * breadth;
+            var bottomRight = - Vector3.UnitY * height + Vector3.UnitX * breadth;
+
+            var leftTop = splineFrame.CreateFromStartEnd(leftStart, leftEnd);
+            var rightTop = splineFrame.CreateFromStartEnd(rightStart, rightEnd);
+            var leftDown = splineFrame.CreateFromStartEnd(leftStart + bottomLeft, leftEnd + bottomLeft);
+            var rightDown = splineFrame.CreateFromStartEnd(rightStart + bottomRight, rightEnd + bottomRight);
+
+            var leftTopPoints = Geometry.GenerateSplinePoints(leftTop);
+            var rightTopPoints = Geometry.GenerateSplinePoints(rightTop);
+            var leftDownPoints = Geometry.GenerateSplinePoints(leftDown);
+            var rightDownPoints = Geometry.GenerateSplinePoints(rightDown);
+
+            var sideLen = new Vector2(height, breadth).Length();
+
+            var zeroFn = UniformTexturing.WithFixedU(0);
+            var sideLenFn = UniformTexturing.WithFixedU(sideLen);
+            var avgWidthFn = UniformTexturing.WithFixedU(avgWidth);
+
+            var leftPointsL = UniformTexturing.UniformTextured(leftDownPoints, zeroFn);
+            var leftPointsR = UniformTexturing.UniformTextured(leftTopPoints, sideLenFn);
+            var rightPointsL = UniformTexturing.UniformTextured(rightTopPoints, zeroFn);
+            var rightPointsR = UniformTexturing.UniformTextured(rightDownPoints, sideLenFn);
+            var bottomPointsL = UniformTexturing.UniformTextured(rightDownPoints, zeroFn);
+            var bottomPointsR = UniformTexturing.UniformTextured(leftDownPoints, avgWidthFn);
+
+            //Draw the strips
+            IRenderBin finishBin = renderHelper.GetOrCreateRenderBin(texture);
+            finishBin.DrawStrip(leftPointsL, leftPointsR);
+            finishBin.DrawStrip(rightPointsL, rightPointsR);
+            finishBin.DrawStrip(bottomPointsL, bottomPointsR);
+            
         }
         public static void RenderRoadSegment(RoadStrip connection, IRenderBin renderHelper, float voffset = 0) {
             foreach(var lane in connection.Lanes) { // Iterate through each lane in the road segment

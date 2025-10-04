@@ -40,11 +40,20 @@ namespace TranSimCS.Roads {
         public readonly RoadNodeEnd StartNode; // The starting road node of the connection
         public readonly RoadNodeEnd EndNode;
 
+        public readonly Property<RoadFinish> FinishProperty;
+        public RoadFinish Finish { get => FinishProperty.Value; set => FinishProperty.Value = value; }
+
         public RoadStrip(RoadNodeEnd startNode, RoadNodeEnd endNode) {
             StartNode = startNode;
             EndNode = endNode;
+            FinishProperty = new(RoadFinish.Embankment, "finish", this);
             Mesh = new MeshGenerator<RoadStrip>(this, GenerateMesh);
             Mesh.OnRemoveMesh += InvalidateMesh0;
+            PropertyChanged += RoadStrip_PropertyChanged;
+        }
+
+        private void RoadStrip_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) {
+            Mesh.Invalidate();
         }
 
         public RoadNodeEnd GetHalf(SegmentHalf selectedRoadHalf) {
@@ -82,8 +91,6 @@ namespace TranSimCS.Roads {
         }
         public IReadOnlyCollection<LaneStrip> Lanes => lanes.AsReadOnly(); // Get the list of lane strips associated with this road connection
 
-        
-
         public event EventHandler<RoadStripEventArgs>? OnLaneAdded; // Event triggered when lanes are added or removed
         public event EventHandler<RoadStripEventArgs>? OnLaneRemoved; // Event triggered when lanes are removed
 
@@ -98,8 +105,43 @@ namespace TranSimCS.Roads {
             foreach (var lane in strip.lanes)
                 lane.InvalidateMesh(); // Invalidate the mesh for each lane strip
         }
+
+        /// <summary>
+        /// Left start, right start, left end, right end
+        /// </summary>
+        public RoadBounds Bounds { get; private set; } 
         protected static void GenerateMesh(RoadStrip segment, MultiMesh mesh) {
+            //Generate bounds
+            segment.Bounds = new RoadBounds();
+            foreach (var lane in segment.Lanes) {
+                segment.UpdateBounds(lane.StartLane.lane.LeftPosition, lane.EndLane.lane.LeftPosition);
+                segment.UpdateBounds(lane.StartLane.lane.RightPosition, lane.EndLane.lane.RightPosition);
+            }
             RoadRenderer.GenerateRoadSegmentFullMesh(segment, mesh); // Otherwise, render the road segment
+        }
+        private void UpdateBounds(float s, float e) {
+            Bounds = Bounds.Update(s, e);
+        }
+
+        public SplineFrame CalcSplineFrame() {
+            var start = StartNode.PositionProp.Value.CalcReferenceFrame();
+            var end = EndNode.PositionProp.Value.CalcReferenceFrame();
+
+            var zeroSpline = Geometry.GenerateJoinSpline(start.O, end.O, start.Z, -end.Z);
+            var xSpline = Geometry.GenerateJoinSpline(start.O + start.X, end.O + end.X, start.Z, -end.Z);
+            var ySpline = Geometry.GenerateJoinSpline(start.O + start.Y, end.O + end.Y, start.Z, -end.Z);
+
+            return new SplineFrame(zeroSpline, xSpline - zeroSpline, ySpline - zeroSpline, new Spline.Bezier3());
+        }
+        public SplineFrame CalcSplineFrameFromBounds() {
+            var start = StartNode.PositionProp.Value.CalcReferenceFrame();
+            var end = EndNode.PositionProp.Value.CalcReferenceFrame();
+
+            var zeroSpline = Geometry.GenerateJoinSpline(start.O + start.X * Bounds.leftStart, end.O + end.X * Bounds.leftEnd, start.Z, end.Z);
+            var xSpline = Geometry.GenerateJoinSpline(start.O + start.X * Bounds.rightEnd, end.O + end.X * Bounds.rightEnd, start.Z, end.Z);
+            var ySpline = Geometry.GenerateJoinSpline(start.O + start.Y, end.O + end.Y, start.Z, end.Z);
+
+            return new SplineFrame(zeroSpline, xSpline - zeroSpline, ySpline - zeroSpline, new Spline.Bezier3());
         }
     }
 }

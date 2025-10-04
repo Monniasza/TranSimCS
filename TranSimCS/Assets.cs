@@ -13,6 +13,9 @@ namespace TranSimCS {
         public static Texture2D Road { get; private set; }
         public static Texture2D Grass { get; private set; }
         public static Texture2D Add { get; private set; }
+        public static Texture2D Concrete { get; private set; }
+        public static Texture2D Tiles { get; private set; }
+        public static Texture2D Cobble { get; private set; }
         public static ContentManager Content => Game1.Instance.Content;
 
 
@@ -21,6 +24,9 @@ namespace TranSimCS {
             Road = Content.Load<Texture2D>("laneTex");
             Grass = Content.Load<Texture2D>("seamlessTextures2/grass1");
             Add = Content.Load<Texture2D>("addTex");
+            Concrete = Content.Load<Texture2D>("seamlessTextures2/IMGP5514_seamless_2");
+            Cobble = Content.Load<Texture2D>("seamlessTextures2/rock02");
+            Tiles = Content.Load<Texture2D>("tile");
         }
     }
 }

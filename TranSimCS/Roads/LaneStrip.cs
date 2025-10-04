@@ -69,18 +69,15 @@ namespace TranSimCS.Roads {
 
         public LaneRange Tag => new LaneRange(road, StartLane.lane, StartLane.lane, StartLane.end, EndLane.lane, EndLane.lane, EndLane.end); // Create a LaneTag for the lane strip, which includes the road and the start and end lanes
 
-        public LaneEnd Start { get; }
-        public LaneEnd End { get; }
-
         public LaneStrip(LaneEnd startLane, LaneEnd endLane) {
-            this.StartLane = startLane; // Starting lane of the lane strip
-            this.EndLane = endLane; // Ending lane of the lane strip
+            this.StartLane = startLane!; // Starting lane of the lane strip
+            this.EndLane = endLane!; // Ending lane of the lane strip
             this.Spec = LaneSpec.Default; // Default specification for the lane strip
         }
 
         public LaneStrip(LaneEnd start, LaneEnd end, LaneSpec spec) {
-            Start = start;
-            End = end;
+            StartLane = start;
+            EndLane = end;
             Spec = spec;
         }
 
