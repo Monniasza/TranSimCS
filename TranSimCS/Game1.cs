@@ -154,6 +154,10 @@ namespace TranSimCS
             ih.Update();
             Menu?.Update(gameTime);
 
+            //Display FPS
+            var fps = 1000000 / gameTime.ElapsedGameTime.TotalMicroseconds;
+            Window.Title = $"TranSim - the fastest road builder game. Here's the proof: {fps} FPS";
+
             //Refresh the mouse state for the next frame
             base.Update(gameTime);
         }
