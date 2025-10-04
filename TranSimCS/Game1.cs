@@ -63,7 +63,7 @@ namespace TranSimCS
             ih = new InputHandler(this);
             Window.AllowUserResizing = true;
 
-            // Request 24-bit depth buffer for better precision and Z-fighting prevention
+            // Request 24-bit depth buffer for better precision and Z-fighting preventionw
             GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
         }
 

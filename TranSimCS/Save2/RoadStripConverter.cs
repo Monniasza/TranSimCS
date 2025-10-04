@@ -17,7 +17,8 @@ namespace TranSimCS.Save2 {
             RoadNodeEnd? start = null;
             RoadNodeEnd? end = null;
             List<LaneStrip> lanes = new List<LaneStrip>();
-            Guid guid = Guid.Empty;
+            Guid? guid = Guid.Empty;
+            RoadFinish finish = RoadFinish.Embankment;
 
             var roadNodeEndConverter = new RoadNodeEndConverter(_world);
             var laneStripConverter = new LaneStripConverter(_world);
@@ -42,6 +43,10 @@ namespace TranSimCS.Save2 {
                             lanes.Add(lane);
                         });
                         break;
+                    case "finish":
+                        var finishConverter = new RoadFinishConverter();
+                        finish = finishConverter.Read(ref reader0, typeof(RoadFinish), options);
+                        break;
                 }
             });
 
@@ -49,6 +54,9 @@ namespace TranSimCS.Save2 {
             if (end == null) throw new JsonException("Missing end property");
 
             var roadStrip = new RoadStrip(start, end);
+            roadStrip.Guid = guid ?? Guid.NewGuid();
+            roadStrip.Finish = finish;
+
             foreach (var lane in lanes) {
                 roadStrip.AddLaneStrip(lane);
             }
@@ -80,6 +88,10 @@ namespace TranSimCS.Save2 {
                 laneStripConverter.Write(writer, lane, options);
             }
             writer.WriteEndArray();
+
+            var finishConverter = new RoadFinishConverter();
+            writer.WritePropertyName("finish");
+            finishConverter.Write(writer, value.Finish, options);
             
             writer.WriteEndObject();
         }
