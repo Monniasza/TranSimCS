@@ -45,6 +45,10 @@ namespace TranSimCS.Model {
         public void Render() {
             int TriCount = 0;
             int VertCount = 0;
+
+            // Ensure depth testing is enabled to prevent Z-fighting and flickering
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+
             GraphicsDevice.SamplerStates[0] = SamplerState.PointWrap;
             foreach (var row in RenderBins) {
                 var renderBin = row.Value;

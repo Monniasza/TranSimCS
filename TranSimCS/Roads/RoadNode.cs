@@ -104,7 +104,8 @@ namespace TranSimCS.Roads {
         public MeshGenerator<RoadNode> Mesh {  get; init; }
         // Generates the mesh used for node selection rendering.
         protected static void GenerateMesh(RoadNode node, MultiMesh mesh) {
-            RoadRenderer.GenerateRoadNodeMesh(node, mesh, 0.001f);
+            // Use 0.4f offset to render nodes clearly above all other road elements (roads at 0.2f, intersections at 0.3f)
+            RoadRenderer.GenerateRoadNodeMesh(node, mesh, 0.4f);
         }
         // Invalidates this node and its connected strips to trigger mesh rebuilding.
         private void InvalidateMeshes() {
