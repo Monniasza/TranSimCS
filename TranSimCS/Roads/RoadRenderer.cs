@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -29,7 +29,7 @@ namespace TranSimCS.Roads {
             CreateAddLane(new AddLaneSelection(-1, leftLimit, nodeEnd.RearEnd), mesh, size, color, voffset);
             CreateAddLane(new AddLaneSelection(1, rightLimit, nodeEnd.RearEnd), mesh, size, color, voffset);
         }
-        public static Quad CreateAddLane(AddLaneSelection als, IRenderBin mesh, float size = 1, Color? color = null, float voffset = 0.001f) {
+        public static Quad CreateAddLane(AddLaneSelection als, IRenderBin mesh, float size = 1, Color? color = null, float voffset = 0.2f) {
             var zrange = Geometry.RoadEndToRange(als.nodeEnd.End) * size;
             var xrange = als.CalculateOffsets(size);
             Quad quad = GenerateLaneQuad(als.nodeEnd.Node, xrange.X, xrange.Y, color ?? SemiClearGray, voffset, zrange.X, zrange.Y);
@@ -95,7 +95,7 @@ namespace TranSimCS.Roads {
         /// </summary>
         /// <param name="connection">road segment</param>
         /// <param name="renderHelper">render helper</param>
-        public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MultiMesh renderHelper, float voffset = 0) {
+        public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MultiMesh renderHelper, float voffset = 0.2f) {
             IRenderBin roadBin = renderHelper.GetOrCreateRenderBin(Assets.Road);
             foreach(var lane in connection.Lanes) {
                 roadBin.DrawModel(lane.GetMesh());
@@ -106,7 +106,7 @@ namespace TranSimCS.Roads {
                 renderHelper.DrawModel(lane.GetMesh()); // Draw the mesh of the lane with the specified vertical offset
             }
         }
-        public static void GenerateLaneStripMesh(LaneStrip laneStrip, IRenderBin renderer, float voffset = 0) {
+        public static void GenerateLaneStripMesh(LaneStrip laneStrip, IRenderBin renderer, float voffset = 0.2f) {
             var tag = laneStrip.Tag;
             GenerateLaneRangeMesh(tag, renderer, laneStrip.Spec.Color, voffset, laneStrip); // Generate the lane tag mesh
         }
@@ -186,7 +186,7 @@ namespace TranSimCS.Roads {
             renderer.DrawStrip(strip);
         }
 
-        internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh, int accuracy = 17) {
+        internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh, int accuracy = 17, float voffset = 0.3f) {
             var mesh = multimesh.GetOrCreateRenderBin(Assets.Asphalt);
 
             //Rotate the list so the 1st main end lies on the index 0
@@ -218,17 +218,17 @@ namespace TranSimCS.Roads {
             }
             leftNodes.Add(leftNode.val);
 
-            //Generate the main strip
-            GenerateIntersectionStrip(mesh, start, end, accuracy);
+            //Generate the main strip with vertical offset to prevent Z-fighting
+            GenerateIntersectionStrip(mesh, start, end, accuracy, voffset);
 
             //Generate other vertices on the right
-            GenerateSubrangeVerts(mesh, rightNodes.ToArray(), 1, accuracy);
+            GenerateSubrangeVerts(mesh, rightNodes.ToArray(), 1, accuracy, voffset);
 
             //Generate other vertices on the left
-            GenerateSubrangeVerts(mesh, leftNodes.ToArray(), -1, accuracy);
+            GenerateSubrangeVerts(mesh, leftNodes.ToArray(), -1, accuracy, voffset);
         }
 
-        public static void GenerateSubrangeVerts(IRenderBin mesh, RoadNodeEnd[] nodes, int discriminant, int accuracy = 17) {
+        public static void GenerateSubrangeVerts(IRenderBin mesh, RoadNodeEnd[] nodes, int discriminant, int accuracy = 17, float voffset = 0f) {
             var lbound = 1;
             var ubound = nodes.Length - 2;
 
@@ -252,7 +252,7 @@ namespace TranSimCS.Roads {
                     var bounds = startNode.Bounds();
                     var lpos = Geometry.calcLineEnd(startNode, bounds.X).Position;
                     var rpos = Geometry.calcLineEnd(startNode, bounds.Y).Position;
-                    
+
                     //One node remaining
                     topSpline = prevSpline;
                     bottomSpline = new LineSegment(rpos, lpos);
@@ -271,14 +271,15 @@ namespace TranSimCS.Roads {
                     leftSpline = preToStartSpline;
                     rightSpline = nextToEndSpline;
 
-                    //Draw the road strip
-                    GenerateIntersectionStrip(mesh, startNode, endNode, accuracy);
-                    
+                    //Draw the road strip with vertical offset
+                    GenerateIntersectionStrip(mesh, startNode, endNode, accuracy, voffset);
+
                     prevSpline = innerSpline;
                 }
 
-                //Render the last-node or the inter-strip patch
-                RenderPatch.RenderCoonsPatch(mesh, bottomSpline, topSpline, leftSpline.Inverse(), rightSpline.Inverse(), (p, uv) => Geometry.CreateVertex(p, color), accuracy, accuracy);
+                //Render the last-node or the inter-strip patch with vertical offset
+                var offset = new Vector3(0, voffset, 0);
+                RenderPatch.RenderCoonsPatch(mesh, bottomSpline, topSpline, leftSpline.Inverse(), rightSpline.Inverse(), (p, uv) => Geometry.CreateVertex(p + offset, color), accuracy, accuracy);
 
                 lbound++;
                 ubound--;
@@ -298,7 +299,7 @@ namespace TranSimCS.Roads {
             return Geometry.GenerateJoinSpline(startPos.Ray, endPos.Ray);
         }
 
-        public static void GenerateIntersectionStrip(IRenderBin mesh, RoadNodeEnd start, RoadNodeEnd end, int accuracy = 17) {
+        public static void GenerateIntersectionStrip(IRenderBin mesh, RoadNodeEnd start, RoadNodeEnd end, int accuracy = 17, float voffset = 0f) {
             //Generate bounding edges
             var startLeft = Geometry.calcBoundingLineEndFaced(start, -1);
             var startRight = Geometry.calcBoundingLineEndFaced(start, 1);
@@ -308,7 +309,10 @@ namespace TranSimCS.Roads {
             var leftEdge = Geometry.GenerateSplinePoints(startLeft.Position, endRight.Position, startLeft.Tangential, endRight.Tangential, accuracy);
             var rightEdge = Geometry.GenerateSplinePoints(startRight.Position, endLeft.Position, startRight.Tangential, endLeft.Tangential, accuracy);
             var wovenStrip = WeaveStrip(leftEdge, rightEdge);
-            var stripVerts = wovenStrip.Select(Geometry.CreateVertex).ToArray();
+
+            // Apply vertical offset to prevent Z-fighting with ground
+            var offset = new Vector3(0, voffset, 0);
+            var stripVerts = wovenStrip.Select(p => Geometry.CreateVertex(p + offset)).ToArray();
 
             mesh.DrawStrip(stripVerts);
         }

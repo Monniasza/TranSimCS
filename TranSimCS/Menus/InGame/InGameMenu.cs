@@ -113,7 +113,10 @@ namespace TranSimCS.Menus.InGame {
                 TextureEnabled = true,
                 View = Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(new Vector3(0, 32, -64), Vector3.Zero, Vector3.Up),
                 World = Matrix.Identity,
-                Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, Game.GraphicsDevice.Viewport.AspectRatio, 1f, 1000000f),
+                // Optimized near/far plane for better depth buffer precision across all distances
+                // Near plane increased from 1f to 0.1f - this dramatically improves depth precision
+                // Far plane set to 10000f to balance view distance with precision
+                Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, Game.GraphicsDevice.Viewport.AspectRatio, 0.1f, 10000f),
             };
             renderHelper = new RenderHelper(Game.GraphicsDevice, effect);
 
@@ -272,6 +275,15 @@ namespace TranSimCS.Menus.InGame {
             }
             if (effect != null) {
                 effect.View = camera.GetViewMatrix(); // Update the view matrix of the effect with the camera's view matrix
+
+                // Use fixed near/far plane for stable rendering
+                // Dynamic adjustment was causing objects to disappear and flicker
+                effect.Projection = Matrix.CreatePerspectiveFieldOfView(
+                    MathHelper.PiOver4,
+                    Game.GraphicsDevice.Viewport.AspectRatio,
+                    0.1f,    // Fixed near plane
+                    10000f   // Fixed far plane
+                );
             }
 
             //Handle camera movement with WASD keys
@@ -364,6 +376,9 @@ namespace TranSimCS.Menus.InGame {
         public override void Draw(GameTime time) {
             //Clear the screen to a solid color and clear the render helper
             renderHelper.Clear();
+            // CRITICAL: Clear SelectorObjects to prevent geometry accumulation across frames
+            // Without this, meshes from previous frames accumulate causing Z-fighting and flickering
+            SelectorObjects.Clear();
 
             IRenderBin renderBin = renderHelper.GetOrCreateRenderBin(Assets.Road);
 
@@ -418,9 +433,9 @@ namespace TranSimCS.Menus.InGame {
 
             //If the add lane button is selected, draw it
             IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBin(Assets.Add);
-            if (SelectedObject is AddLaneSelection selection) 
-                RoadRenderer.CreateAddLane(selection, plusRenderBin, roadProperty.Value.Width, roadSegmentHighlightColor, 0.002f);
-            
+            if (SelectedObject is AddLaneSelection selection)
+                RoadRenderer.CreateAddLane(selection, plusRenderBin, roadProperty.Value.Width, roadSegmentHighlightColor, 0.5f);
+
             //Render the ground (now just a flat plane)
             float r = 100000;
             float s = 10000;

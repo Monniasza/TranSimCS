@@ -62,6 +62,9 @@ namespace TranSimCS
             IsMouseVisible = true;
             ih = new InputHandler(this);
             Window.AllowUserResizing = true;
+
+            // Request 24-bit depth buffer for better precision and Z-fighting prevention
+            GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
         }
 
         protected override void Initialize() {
@@ -164,7 +167,10 @@ namespace TranSimCS
 
 
         protected override void Draw(GameTime gameTime) {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            // Clear both color and depth buffer in one call to ensure proper rendering
+            // and prevent Z-fighting/flickering
+            GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1.0f, 0);
+            // Ensure depth stencil state is properly set before rendering
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             Menu?.Draw(gameTime);
             Menu?.Draw2D(gameTime);
