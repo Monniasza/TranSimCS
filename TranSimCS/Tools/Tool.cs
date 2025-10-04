@@ -9,13 +9,15 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using NLog;
+using TranSimCS.Menus;
 using TranSimCS.Menus.Gizmo;
+using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Worlds;
 using static MLEM.Ui.Elements.Paragraph;
 
-namespace TranSimCS.Menus.InGame {
+namespace TranSimCS.Tools {
     public interface ITool {
         public string Name { get; }
         public string Description { get; }
@@ -229,8 +231,8 @@ namespace TranSimCS.Menus.InGame {
     public class AddNodeTool(InGameMenu menu) : ITool {
         string ITool.Name => "Add road nodes";
 
-        string ITool.Description => (NewlyCreatedNode != null) ? "Click to set direction of the newly built node"
-            : (Reference == null) ? "Click on a node to set direction from it, click elsewhere to set direction manually"
+        string ITool.Description => NewlyCreatedNode != null ? "Click to set direction of the newly built node"
+            : Reference == null ? "Click on a node to set direction from it, click elsewhere to set direction manually"
             : "Click to place a node. The reference will not be reset after placement";
 
         public (object[], string)[] PromptKeys() {
@@ -253,7 +255,7 @@ namespace TranSimCS.Menus.InGame {
         public RoadNode Reference { get; set; }
 
         //Preview variables
-        public Worlds.ObjPos PrePosition { get; set; }
+        public ObjPos PrePosition { get; set; }
         public int laneCount = 1;
 
         void ITool.Draw(GameTime gameTime) {

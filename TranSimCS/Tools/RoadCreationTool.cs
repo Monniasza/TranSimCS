@@ -8,12 +8,13 @@ using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using MLEM.Ui;
 using NLog;
+using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
-namespace TranSimCS.Menus.InGame {
+namespace TranSimCS.Tools {
     public class RoadPlan {
         public Vector3 startTangent;
         public Vector3 startPos;
@@ -88,7 +89,7 @@ namespace TranSimCS.Menus.InGame {
 
         string ITool.Name => "Road creation tool";
 
-        string ITool.Description => (node == null) ? "Pick a lane"
+        string ITool.Description => node == null ? "Pick a lane"
             : "Creating a segment";
 
         public (object[], string)[] PromptKeys() {
@@ -106,7 +107,7 @@ namespace TranSimCS.Menus.InGame {
 
         public LaneEnd? node { get; set; }
         public LaneStrip? SegmentAlreadyExists { get; private set; } = null;
-        public Worlds.ObjPos? NewNodePosition { get; private set; }
+        public ObjPos? NewNodePosition { get; private set; }
         public RoadMode Mode { get; set; } = new CircMode();
 
         public readonly InGameMenu menu;
@@ -246,7 +247,7 @@ namespace TranSimCS.Menus.InGame {
                     startingTangent = plan.startTangent;
 
                     Vector3 endingLateral = new(endTangent.Z, endTangent.Y, -endTangent.X);
-                    var endLeftPos = endPos - (endingLateral * node.Value.lane.Width / 2);
+                    var endLeftPos = endPos - endingLateral * node.Value.lane.Width / 2;
                     var tilt = node.Value.lane.RoadNode.PositionProp.Value.Tilt;
 
                     //Flatten tilt or inclination
@@ -275,8 +276,8 @@ namespace TranSimCS.Menus.InGame {
                 Color previewColor = lane0.Spec.Color;
                 previewColor.A = 100;
                 if (SegmentAlreadyExists != null) previewColor = Color.Red;
-                var startDiff = (startingLateral * startWidth) / 2;
-                var endDiff = (endLateral * endWidth) / 2;
+                var startDiff = startingLateral * startWidth / 2;
+                var endDiff = endLateral * endWidth / 2;
                 Bezier3 lbound = Geometry.GenerateJoinSpline(startPos - startDiff, endPos - endDiff, startingTangent, -endTangent) + offset;
                 Bezier3 rbound = Geometry.GenerateJoinSpline(startPos + startDiff, endPos + endDiff, startingTangent, -endTangent) + offset;
                 IRenderBin renderBin = menu.renderHelper.GetOrCreateRenderBin(Assets.Road);

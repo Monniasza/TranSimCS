@@ -37,6 +37,7 @@
     <PackageReference Include="SpriteFontPlus.MonoGame" Version="0.7.0.22" />
     <PackageReference Include="System.Linq" Version="4.3.0" />
     <PackageReference Include="System.ObjectModel" Version="4.3.0" />
+    <PackageReference Include="TextCopy" Version="6.2.1" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Menus\MainMenu\" />

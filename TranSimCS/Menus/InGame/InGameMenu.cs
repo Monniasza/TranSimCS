@@ -16,6 +16,7 @@ using NLog;
 using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Spline;
+using TranSimCS.Tools;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Menus.InGame {
@@ -153,6 +154,7 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("eyedropper", new PickerTool(this));
             SetUpToolPictureButton("moveTool", new MoveTool(this));
             SetUpToolPictureButton("bucket", new PaintTool(this));
+            SetUpToolPictureButton("inspect", new InspectTool(this));
 
             //Set up the tool preview
             ToolDescPanel = new Panel(MLEM.Ui.Anchor.TopLeft, new(0.5f, 20), true);
@@ -490,6 +492,7 @@ namespace TranSimCS.Menus.InGame {
             Game.SpriteBatch.Begin();
             ToolName.Text = toolName;
             ToolDesc.Text = toolDesc;
+            ToolPanel.SetAreaDirty();
 
             //Handle keybinds
             var keylist = new List<(object[], string)>();

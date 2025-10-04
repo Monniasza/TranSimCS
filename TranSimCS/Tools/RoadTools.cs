@@ -5,9 +5,11 @@ using MLEM.Textures;
 using MLEM.Ui;
 using MLEM.Ui.Elements;
 using MLEM.Ui.Style;
+using TranSimCS.Menus;
+using TranSimCS.Menus.InGame;
 using TranSimCS.Worlds;
 
-namespace TranSimCS.Menus.InGame {
+namespace TranSimCS.Tools {
     public class RoadTools : Panel {
         public InGameMenu Game { get; private set; }
         public Checkbox flattenTilt { get; private set; }
@@ -59,11 +61,11 @@ namespace TranSimCS.Menus.InGame {
             HeightField = UI.SetUpFloatProp("Height [m]", this, Height);
         }
 
-        public Checkbox CreateCheck(String name, String icon, Color? checkColor = null, Color? uncheckColor = null) {
+        public Checkbox CreateCheck(string name, string icon, Color? checkColor = null, Color? uncheckColor = null) {
             return UI.CreateCheck(Game, this, name, icon, checkColor, uncheckColor);
         }
 
-        public RadioButton CreateModeButton(RoadMode mode, String icon) {
+        public RadioButton CreateModeButton(RoadMode mode, string icon) {
             RadioButton radio = new RadioButton(Anchor.AutoInline, new(21, 21), "", false, "mode");
             radio.Checkmark = LoadStyleProp(icon);
             radio.UncheckColor = Color.Gray;
