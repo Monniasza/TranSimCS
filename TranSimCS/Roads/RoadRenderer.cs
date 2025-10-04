@@ -20,7 +20,7 @@ namespace TranSimCS.Roads {
         public static Color SemiClearWhite => new Color(255, 255, 255, 128);
         public static Color SemiClearGray => new Color(128, 128, 128, 128);
 
-        public static void CreateAddLanes(RoadNode nodeEnd, IRenderBin mesh, float size = 1, Color? color = null, float voffset = 0.001f) {
+        public static void CreateAddLanes(RoadNode nodeEnd, IRenderBin mesh, float size = 1, Color? color = null, float voffset = 0.2f) {
             if (nodeEnd.Lanes.Count < 1) return;
             var leftLimit = nodeEnd.Lanes[0].LeftPosition;
             var rightLimit = nodeEnd.Lanes[nodeEnd.Lanes.Count - 1].RightPosition;
@@ -37,7 +37,7 @@ namespace TranSimCS.Roads {
             mesh.AddTagsToLastTriangles(2, als);
             return quad;
         }
-        public static Quad GenerateRoadNodeSelQuad(RoadNode node, Color color, float voffset = 0) {
+        public static Quad GenerateRoadNodeSelQuad(RoadNode node, Color color, float voffset = 0.2f) {
             return GenerateLaneQuad(node, node.Lanes[0].LeftPosition, node.Lanes[node.Lanes.Count - 1].RightPosition, color, voffset);
         }
         public static void GenerateRoadNodeMesh(RoadNode node, MultiMesh renderBin, float voffset = 0) {
@@ -52,12 +52,12 @@ namespace TranSimCS.Roads {
             renderBin.DrawQuad(quads.Back);
             renderBin.AddTagsToLastTriangles(2, lane.Rear);
         }
-        public static LaneQuadPair GenerateLaneQuad(Lane lane, float voffset = 0, Color? color = null) {
+        public static LaneQuadPair GenerateLaneQuad(Lane lane, float voffset = 0.2f, Color? color = null) {
             var altColor = lane.Spec.Color;
             altColor.A /= 2;
             return GenerateLaneQuads(lane.RoadNode, lane.LeftPosition, lane.RightPosition, color ?? altColor, voffset);
         }
-        public static Quad GenerateLaneQuad(LaneEnd lane, float voffset = 0, Color? color = null) {
+        public static Quad GenerateLaneQuad(LaneEnd lane, float voffset = 0.2f, Color? color = null) {
             var altColor = lane.lane.Spec.Color;
             altColor.A /= 2;
             var range = Geometry.RoadEndToRange(lane.end);
@@ -77,7 +77,7 @@ namespace TranSimCS.Roads {
             return new LaneQuadPair(front, back);
         }
 
-        public static Quad GenerateLaneQuad(RoadNode node, float lb, float rb, Color color, float voffset = 0, float minZ = -1, float maxZ = 1) {
+        public static Quad GenerateLaneQuad(RoadNode node, float lb, float rb, Color color, float voffset = 0.2f, float minZ = -1, float maxZ = 1) {
             Vector3 offset = new Vector3(0, voffset, 0);
             Transform3 transform = node.PositionProp.Value.CalcReferenceFrame();
             var vl = transform.O + lb * transform.X;
@@ -95,7 +95,7 @@ namespace TranSimCS.Roads {
         /// </summary>
         /// <param name="connection">road segment</param>
         /// <param name="renderHelper">render helper</param>
-        public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MultiMesh renderHelper, float voffset = 0.2f) {
+        public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MultiMesh renderHelper, float voffset = 0) {
             IRenderBin roadBin = renderHelper.GetOrCreateRenderBin(Assets.Road);
             foreach(var lane in connection.Lanes) {
                 roadBin.DrawModel(lane.GetMesh());
@@ -154,12 +154,12 @@ namespace TranSimCS.Roads {
                 renderHelper.DrawModel(lane.GetMesh()); // Draw the mesh of the lane with the specified vertical offset
             }
         }
-        public static void GenerateLaneStripMesh(LaneStrip laneStrip, IRenderBin renderer, float voffset = 0.2f) {
+        public static void GenerateLaneStripMesh(LaneStrip laneStrip, IRenderBin renderer, float voffset = 0) {
             var tag = laneStrip.Tag;
             GenerateLaneRangeMesh(tag, renderer, laneStrip.Spec.Color, voffset, laneStrip); // Generate the lane tag mesh
         }
 
-        public static void GenerateLaneRangeMesh(LaneRange range, IRenderBin renderer, Color color, float voffset = 0, object tag = null) {
+        public static void GenerateLaneRangeMesh(LaneRange range, IRenderBin renderer, Color color, float voffset = 0.3f, object tag = null) {
             var offset = new Vector3(0, voffset, 0); // Offset for the lane position
 
             var strips = GenerateSplines(range, voffset); // Generate the splines for the left and right lanes

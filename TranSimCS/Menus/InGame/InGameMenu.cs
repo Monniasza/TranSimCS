@@ -404,10 +404,9 @@ namespace TranSimCS.Menus.InGame {
             if (roadSelection?.SelectedLaneTag != null) {
                 // Draw the selected lane tag with a different color
                 var laneRange = roadSelection.SelectedLaneTag.Value;
-                RoadRenderer.GenerateLaneRangeMesh(laneRange, renderBin, laneHighlightColor, 0.005f);
-                RoadRenderer.GenerateLaneRangeMesh(laneRange.road.FullSizeTag(), renderBin, roadSegmentHighlightColor, 0.002f);
-                var splines = RoadRenderer.GenerateSplines(laneRange, 0.007f);
-                var offset = Vector3.Up * 0.007f; // Offset for the lane position
+                RoadRenderer.GenerateLaneRangeMesh(laneRange, renderBin, laneHighlightColor, 0.3f);
+                RoadRenderer.GenerateLaneRangeMesh(laneRange.road.FullSizeTag(), renderBin, roadSegmentHighlightColor, 0.2f);
+                var splines = RoadRenderer.GenerateSplines(laneRange, 0.4f);
                 Bezier3.TriSection(splines.Item1, minT, maxT, out Bezier3 leftSubBezier1, out Bezier3 leftSubBezier2, out Bezier3 leftSubBezier3);
                 Bezier3.TriSection(splines.Item2, minT, maxT, out Bezier3 rightSubBezier1, out Bezier3 rightSubBezier2, out Bezier3 rightSubBezier3);
 
@@ -425,8 +424,8 @@ namespace TranSimCS.Menus.InGame {
             if(roadSelection?.SelectedLaneEnd != null && roadSelection.SelectedLaneStrip == null) {
                 //Lane selected, road strip not
                 var lane = roadSelection.SelectedLaneEnd.Value;
-                var quad = RoadRenderer.GenerateLaneQuad(lane, 0.005f, Color.Yellow);
-                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(lane.lane.RoadNode, roadSegmentHighlightColor, 0.002f);
+                var quad = RoadRenderer.GenerateLaneQuad(lane, 0.4f, Color.Yellow);
+                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(lane.lane.RoadNode, roadSegmentHighlightColor, 0.3f);
                 renderBin.DrawQuad(quad);
                 renderBin.DrawQuad(nodeQuad);
             }
