@@ -433,18 +433,31 @@ namespace TranSimCS.Menus.InGame {
             //If the add lane button is selected, draw it
             IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBin(Assets.Add);
             if (SelectedObject is AddLaneSelection selection)
-                RoadRenderer.CreateAddLane(selection, plusRenderBin, roadProperty.Value.Width, roadSegmentHighlightColor, 0.5f);
+                RoadRenderer.CreateAddLane(selection, plusRenderBin, roadProperty.Value.Width, roadSegmentHighlightColor, 0.3f);
 
-            //Render the ground (now just a flat plane)
-            float r = 100000;
-            float s = 10000;
-            IRenderBin grassBin = renderHelper.GetOrCreateRenderBin(Assets.Grass);
-            grassBin.DrawQuad(
-                new VertexPositionColorTexture(new(-r, 0,  r), Color.White, new(-s, -s)),
-                new VertexPositionColorTexture(new( r, 0,  r), Color.White, new( s, -s)),
-                new VertexPositionColorTexture(new( r, 0, -r), Color.White, new( s,  s)),
-                new VertexPositionColorTexture(new(-r, 0, -r), Color.White, new(-s,  s))
-            );
+
+            //Render ground with multiple planes
+            var centerPos = camera.Position;
+            centerPos.Y = 0;
+            float scale = 1000;
+            for(int i = 0; i < 13; i++) {
+                var x = centerPos.X;
+                var z = centerPos.Z;
+
+                var dropY = (scale - 1000) / 1000;
+                var texscale = scale / 100;
+
+                
+                scale *= 2;
+                IRenderBin grassBin = renderHelper.GetOrCreateRenderBin(Assets.Grass);
+                grassBin.DrawQuad(
+                    GenerateGroundVertex(new(x-scale, -dropY, z+scale), texscale),
+                    GenerateGroundVertex(new(x+scale, -dropY, z+scale), texscale),
+                    GenerateGroundVertex(new(x+scale, -dropY, z-scale), texscale),
+                    GenerateGroundVertex(new(x-scale, -dropY, z-scale), texscale)
+                );
+            }
+            
 
             //Render road tool
             Tool?.Draw(time);
@@ -452,6 +465,11 @@ namespace TranSimCS.Menus.InGame {
             //Render the render helper
             renderHelper.Render();
         }
+
+        private VertexPositionColorTexture GenerateGroundVertex(Vector3 pos, float texscale) {
+            return new VertexPositionColorTexture(pos, Color.White, new(pos.X / texscale, pos.Z / texscale));
+        }
+
         private void ForeachLane(ICollection<RoadStrip> segments, Action<LaneStrip> action) {
             foreach (var segment in segments)
                 foreach (var lane in segment.Lanes)

@@ -71,6 +71,7 @@ namespace TranSimCS.Model {
                         _indexScratch, 0, renderBin.Indices.Count / 3);
                 }
             }
+            
         }
     }
 }
