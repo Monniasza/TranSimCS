@@ -237,6 +237,13 @@ namespace TranSimCS.Menus.InGame {
             if(!UiSystem.IsFocusedOnAny())
                 HandleInputs(time, keyboardState, secondsElapsed, ray, meshes);
 
+            // Update FPS counter if escape menu is displayed
+            if (Overlay == escapeMenu) {
+                // Use the previously computed secondsElapsed to calculate FPS safely
+                var fps = secondsElapsed > 0f ? 1.0f / secondsElapsed : 0f;
+                escapeMenu.FpsCounter.Text = $"FPS: {fps:F0}";
+            }
+
             UiSystem.Update(time);
         }
 

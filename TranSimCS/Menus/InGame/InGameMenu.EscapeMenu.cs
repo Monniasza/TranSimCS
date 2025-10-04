@@ -16,11 +16,18 @@ namespace TranSimCS.Menus.InGame {
             public readonly InGameMenu parent;
             private UiStyle buttonStyle;
             private static Logger Logger = LogManager.GetCurrentClassLogger();
+            public Paragraph FpsCounter { get; private set; }
 
             internal EscapeMenu(InGameMenu parent) : base(MLEM.Ui.Anchor.Center, new(0.5f, 0.5f), false, true, true) {
                 this.parent = parent;
                 buttonStyle = new UiStyle(parent.UiSystem.Style);
                 buttonStyle.Font = parent.Game.Gsf;
+
+                // Add FPS counter at the top
+                FpsCounter = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 1f, "FPS: 0");
+                FpsCounter.RegularFont = parent.Game.Gsf;
+                AddChild(FpsCounter);
+
                 NewOption("Back to game", () => parent.Overlay = null!);
                 NewOption("Reset", ResetWorld);
                 NewOption("Load", LoadSave);
