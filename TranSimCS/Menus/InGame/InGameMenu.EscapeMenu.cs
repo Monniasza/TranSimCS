@@ -59,7 +59,7 @@ namespace TranSimCS.Menus.InGame {
                     newMenu.LoadContent();
                     parent.Game.Menu = newMenu;
                 } catch (Exception e) {
-                    OptionsDialog.FromError(parent, e).Show();
+                    OptionsDialog.FromError(parent, e, this).Show();
                     Logger.Error(e);
                     return false;
                 }
@@ -76,7 +76,7 @@ namespace TranSimCS.Menus.InGame {
                 try {
                     parent.World.SaveToFile(filename);
                 } catch (Exception e) {
-                    OptionsDialog.FromError(parent, e).Show();
+                    OptionsDialog.FromError(parent, e, this).Show();
                     return false;
                 }
                 parent.Overlay = this;
