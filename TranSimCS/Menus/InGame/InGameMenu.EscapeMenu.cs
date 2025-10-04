@@ -56,7 +56,7 @@ namespace TranSimCS.Menus.InGame {
                 try {
                     InGameMenu newMenu = new InGameMenu(parent.Game);
                     newMenu.LoadWorldFromFile(filename);
-                    newMenu.LoadContent();
+                    //newMenu.LoadContent();
                     parent.Game.Menu = newMenu;
                 } catch (Exception e) {
                     OptionsDialog.FromError(parent, e, this).Show();

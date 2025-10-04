@@ -101,7 +101,7 @@ namespace TranSimCS.Menus.InGame {
             World = TSWorld.Load(filename);
         }
 
-        public override void LoadContent() {
+        public override void LoadContentOverride() {
             if (World == null) {
                 World = new TSWorld();
                 WorldGenerator.SetUpExampleWorld(World);

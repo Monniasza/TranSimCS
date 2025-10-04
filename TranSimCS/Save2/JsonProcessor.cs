@@ -39,6 +39,17 @@ namespace TranSimCS.Save2 {
             }
         }
 
+        public static void SkipToPropertyName(ref Utf8JsonReader reader) {
+            while (true) {
+                var oldReader = reader;
+                ForceRead(ref reader);
+                if(reader.TokenType == JsonTokenType.PropertyName) {
+                    reader = oldReader;
+                    return;
+                }
+            }
+        }
+
         public static void ForceRead(ref Utf8JsonReader reader) {
             var success = reader.Read();
             if (!success)
