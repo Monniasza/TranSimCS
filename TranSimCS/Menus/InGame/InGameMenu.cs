@@ -25,7 +25,7 @@ namespace TranSimCS.Menus.InGame {
     public partial class InGameMenu : Menu {
         public static readonly Plane groundPlane = new Plane(0, 1, 0, -0.1f);
 
-        private static Logger log = LogManager.GetCurrentClassLogger();
+        private static readonly Logger log = LogManager.GetCurrentClassLogger();
 
         public TSWorld World { get; private set; } = null!;
         public readonly Configuration configuration;
@@ -154,15 +154,16 @@ namespace TranSimCS.Menus.InGame {
             //Set up the tool preview
             ToolDescPanel = new Panel(MLEM.Ui.Anchor.TopLeft, new(0.5f, 20), true);
             UiSystem.Add("tooldesc", ToolDescPanel);
-
-            KeyBindPanel = new Panel(MLEM.Ui.Anchor.TopRight, new(0.5f, 40), true);
-            UiSystem.Add("keybinds", KeyBindPanel);
-
             ToolName = new Paragraph(MLEM.Ui.Anchor.AutoInline, 1, "");
             ToolName.RegularFont = Game.Gsf;
             ToolDescPanel.AddChild(ToolName);
             ToolDesc = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 1, "");
             ToolDescPanel.AddChild(ToolDesc);
+
+            KeyBindPanel = new Panel(MLEM.Ui.Anchor.TopRight, new(0.5f, 40), true);
+            UiSystem.Add("keybinds", KeyBindPanel);
+
+            
 
             //Set up the escape menu
             escapeMenu = new EscapeMenu(this);
