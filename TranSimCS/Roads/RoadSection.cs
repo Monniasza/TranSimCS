@@ -1,5 +1,4 @@
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -10,44 +9,7 @@ using TranSimCS.Model;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads {
-    public struct RoadNodeEndPair(RoadNodeEnd start, RoadNodeEnd end): IReadOnlyList<RoadNodeEnd> {
-        public RoadNodeEnd Start = start;
-        public RoadNodeEnd End = end;
-
-        //Conversion to collections
-        public (RoadNodeEnd, RoadNodeEnd) ToTuple => (Start, End);
-        public RoadNodeEnd[] ToArray => [Start, End];
-        public RoadNodeEnd GetElement(int index) {
-            if (index == 0) return Start;
-            if (index == 1) return End;
-            throw new IndexOutOfRangeException();
-        }
-        public RoadNodeEnd GetElement(SegmentHalf index) {
-            if (index == SegmentHalf.Start) return Start;
-            if (index == SegmentHalf.End) return End;
-            throw new IndexOutOfRangeException();
-        }
-
-        //Implementation of I(ReadOnly)List
-        public int Count => 2;
-
-        public IEnumerator<RoadNodeEnd> GetEnumerator() {
-            IEnumerable<RoadNodeEnd> e = ToArray;
-            return e.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() {
-            return GetEnumerator();
-        }
-
-        
-
-        public IEnumerable<RoadNodeEnd> this[int key] => [GetElement(key)];
-
-        RoadNodeEnd IReadOnlyList<RoadNodeEnd>.this[int index] => GetElement(index);
-    }
-
-    public class RoadSection : Obj{
+    public class RoadSection : Obj, IObjMesh<RoadSection>{
         //Added nodes, maintained by the 
         private List<RoadNodeEnd> nodes = new();
         public IList<RoadNodeEnd> Nodes => new ReadOnlyCollection<RoadNodeEnd>(nodes);
@@ -58,8 +20,11 @@ namespace TranSimCS.Roads {
         public Vector3 Center { get; private set; }
         public Vector3 Normal { get; private set; }
 
+        public MeshGenerator<RoadSection> Mesh { get; private set; }
+
         public RoadSection() {
             MainSlopeNodes = new Property<RoadNodeEndPair>(new(null, null), "slopeNodes", this);
+            Mesh = new MeshGenerator<RoadSection>(this, (rs, mesh) => RoadRenderer.GenerateSectionMesh(rs, mesh));
         }
         internal void OnConnect(RoadNodeEnd node) {
             nodes.Add(node);
@@ -112,7 +77,7 @@ namespace TranSimCS.Roads {
 
 
         public void Regenerate() {
-            InvalidateMesh();
+            Mesh.Invalidate();
 
             if (nodes.Count == 0) return;
 
@@ -132,10 +97,6 @@ namespace TranSimCS.Roads {
             //Sort the nodes clockwise
             Comparison<RoadNodeEnd> comparer = CompareNodes2;
             nodes.Sort(comparer);
-        }
-
-        protected override void GenerateMesh(Mesh mesh) {
-            RoadRenderer.GenerateSectionMesh(this, mesh);
         }
 
         public int CompareNodes(RoadNodeEnd n1, RoadNodeEnd n2) {

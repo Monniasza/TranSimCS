@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Xna.Framework;
 using MLEM.Ui;
 using MLEM.Ui.Elements;
@@ -127,7 +127,7 @@ namespace TranSimCS.Menus.InGame {
             });
 
 
-            var style = new UiStyle(menu.Game.defaultUiStyle);
+            var style = new UiStyle(menu.Game.DefaultUiStyle);
             var styleProp = new StyleProp<UiStyle>(style);
             indicator.Style = styleProp;
             UpdateValues(laneSpecProp.Value);

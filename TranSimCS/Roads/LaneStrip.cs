@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,10 +17,12 @@ namespace TranSimCS.Roads {
         }
     }
 
-    public class LaneStrip : IEquatable<LaneStrip>, IDraggableObj {
+    public class LaneStrip : IEquatable<LaneStrip?>, IDraggableObj {
         private LaneEnd startLane;
         private LaneEnd endLane;
-        public readonly RoadStrip road;
+        public RoadStrip road { get; internal set;}
+
+
         public LaneSpec _spec; // Specification of the lane strip, including properties like width, type, etc.
 
         public LaneSpec Spec {
@@ -67,11 +69,16 @@ namespace TranSimCS.Roads {
 
         public LaneRange Tag => new LaneRange(road, StartLane.lane, StartLane.lane, StartLane.end, EndLane.lane, EndLane.lane, EndLane.end); // Create a LaneTag for the lane strip, which includes the road and the start and end lanes
 
-        public LaneStrip(RoadStrip road, LaneEnd startLane, LaneEnd endLane) {
-            this.road = road; // Reference to the road this lane strip belongs to
-            this.StartLane = startLane; // Starting lane of the lane strip
-            this.EndLane = endLane; // Ending lane of the lane strip
+        public LaneStrip(LaneEnd startLane, LaneEnd endLane) {
+            this.StartLane = startLane!; // Starting lane of the lane strip
+            this.EndLane = endLane!; // Ending lane of the lane strip
             this.Spec = LaneSpec.Default; // Default specification for the lane strip
+        }
+
+        public LaneStrip(LaneEnd start, LaneEnd end, LaneSpec spec) {
+            StartLane = start;
+            EndLane = end;
+            Spec = spec;
         }
 
         //Mesh cache
@@ -98,9 +105,12 @@ namespace TranSimCS.Roads {
         }
 
         public void Destroy() {
-            StartLane = new LaneEnd(NodeEnd.Forward, null);
-            EndLane = new LaneEnd(NodeEnd.Forward, null);
-            road.RemoveLaneStrip(this);
+            var currentRoad = road;
+            var startEnd = startLane.end;
+            var endEnd = endLane.end;
+            StartLane = new LaneEnd(startEnd, null);
+            EndLane = new LaneEnd(endEnd, null);
+            currentRoad?.RemoveLaneStrip(this);
         }
 
         //Dragging
@@ -110,11 +120,11 @@ namespace TranSimCS.Roads {
         }
 
 
-        public override bool Equals(object obj) {
+        public override bool Equals(object? obj) {
             return Equals(obj as LaneStrip);
         }
 
-        public bool Equals(LaneStrip other) {
+        public bool Equals(LaneStrip? other) {
             return other is not null &&
                    EqualityComparer<LaneEnd>.Default.Equals(startLane, other.startLane) &&
                    EqualityComparer<LaneEnd>.Default.Equals(endLane, other.endLane) &&

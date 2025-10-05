@@ -17,7 +17,7 @@ namespace TranSimCS
             for (int i = 0; i < count; i++) {
                 var lposition = offset + i * (float)spec.Width; // Calculate the left position for the lane
                 var rposition = lposition + (float)spec.Width; // Calculate the right position for the lane
-                Lane lane = new Lane(node) {
+                Lane lane = new Lane() {
                     Spec = spec, // Set the lane specification
                     LeftPosition = lposition, // Set the left position
                     RightPosition = rposition, // Set the right position
@@ -98,7 +98,7 @@ namespace TranSimCS
                 for (int j = lendIdx; j < rendIdx; j++) {
                     var startLane = strip.StartNode.GetLaneEnd(i);
                     var endLane = strip.EndNode.GetLaneEnd(j);
-                    LaneStrip laneStrip = new LaneStrip(strip, startLane, endLane); // Create a new lane strip connecting the start and end lanes
+                    LaneStrip laneStrip = new LaneStrip(startLane, endLane); // Create a new lane strip connecting the start and end lanes
                     strip.AddLaneStrip(laneStrip); // Add the lane strip to the road strip
                 }
             }
@@ -110,7 +110,7 @@ namespace TranSimCS
         public static void JoinLanesByIndices(RoadStrip strip, int startIdx, int endIdx, LaneSpec spec) {
             var startLane = strip.StartNode.GetLaneEnd(startIdx);
             var endLane = strip.EndNode.GetLaneEnd(endIdx);
-            LaneStrip laneStrip = new LaneStrip(strip, startLane, endLane); // Create a new lane strip connecting the start and end lanes
+            LaneStrip laneStrip = new LaneStrip(startLane, endLane); // Create a new lane strip connecting the start and end lanes
             laneStrip.Spec = spec;
             strip.AddLaneStrip(laneStrip); // Add the lane strip to the road strip
         }

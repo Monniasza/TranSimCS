@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.Intrinsics.X86;
 using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 
 namespace TranSimCS.Spline
 {
@@ -206,7 +207,7 @@ namespace TranSimCS.Spline
             if(depth <= 0) {
                 return (lowerLimit + upperLimit) / 2f; // Return the average of the bounds if depth is exhausted
             }
-            var points = Geometry.GenerateSplinePoints(spline, pointsPerCycle, lowerLimit, upperLimit);
+            var points = GeometryUtils.GenerateSplinePoints(spline, pointsPerCycle, lowerLimit, upperLimit);
             int closestIndex = 0;
             float closestDistance = float.MaxValue;
             for (int i = 0; i < points.Length; i++) {

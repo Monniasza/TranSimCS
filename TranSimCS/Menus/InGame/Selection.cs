@@ -35,7 +35,7 @@ namespace TranSimCS.Menus.InGame {
         /// <param name="spec">lane spec to use</param>
         /// <returns>a new lane</returns>
         public LaneEnd NewLane(LaneSpec spec) {
-            Lane newLane = new Lane(nodeEnd.Node);
+            Lane newLane = new Lane();
             var positions = CalculateOffsets(spec.Width);
             newLane.LeftPosition = positions.X;
             newLane.RightPosition = positions.Y;

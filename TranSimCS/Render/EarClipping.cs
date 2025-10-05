@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using NLog;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 
 namespace TranSimCS.Render {
@@ -72,12 +74,14 @@ namespace TranSimCS.Render {
     }
 
     public static class EarClipping {
+        private static Logger log = LogManager.GetCurrentClassLogger();
+
         public static void DrawEarClipping(IRenderBin mesh, params int[] indices) {
 
         }
 
         public static void DrawEarClipping(IRenderBin mesh, params VertexPositionColorTexture[] verts) {
-            var normal = Geometry.NormalPoly(verts.Select(v => v.Position).ToArray());
+            var normal = GeometryUtils.NormalPoly(verts.Select(v => v.Position).ToArray());
             var addedVerts = verts.Select(v => (mesh.AddVertex(v), v)).ToArray();
             var length = verts.Length;
             var currentNode = DLNode<(int, VertexPositionColorTexture)>.CreateCircular(addedVerts);
@@ -102,9 +106,9 @@ namespace TranSimCS.Render {
                 //If the vertex is concave, it's not an ear. That means that prev->curr is counterclockwise of curr->next
                 var PtoC = currPos - prevPos;
                 var CtoN = prevPos - nextPos;
-                int negIfConcave = Geometry.CompareRotary(PtoC, CtoN, normal);
+                int negIfConcave = GeometryUtils.CompareRotary(PtoC, CtoN, normal);
                 if(negIfConcave < 0) {
-                    Debug.Print($"Vertex {currVert.Item1} is concave");
+                    log.Trace($"Vertex {currVert.Item1} is concave");
                     isEar = false;
                 }
 
@@ -113,7 +117,7 @@ namespace TranSimCS.Render {
                     var checkPos = checkNode.val.Item2.Position;
                     var check = IsOnTriangle(prevPos, currPos, nextPos, checkPos);
                     if (check) {
-                        Debug.Print("Vertex is on the triangle");
+                        log.Trace("Vertex is on the triangle");
                         isEar = false;
                     }
                     checkNode = checkNode.Next;
@@ -149,7 +153,7 @@ namespace TranSimCS.Render {
             normal.Normalize();
             float discard = 0;
             var ray = new Ray(v, normal);
-            return Geometry.RayIntersectsTriangle(ray, a, b, c, out discard, float.NegativeInfinity);
+            return GeometryUtils.RayIntersectsTriangle(ray, a, b, c, out discard, float.NegativeInfinity);
         }
     }
 }

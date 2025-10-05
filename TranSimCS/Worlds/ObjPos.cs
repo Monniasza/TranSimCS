@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 
 namespace TranSimCS.Worlds {
     public struct ObjPos: IEquatable<ObjPos> {
@@ -21,7 +22,7 @@ namespace TranSimCS.Worlds {
             Tilt = tilt;
         }
 
-        public override bool Equals(object obj) {
+        public override bool Equals(object? obj) {
             if (obj is ObjPos other) {
                 return Position.Equals(other.Position) &&
                        Azimuth == other.Azimuth &&
@@ -46,15 +47,15 @@ namespace TranSimCS.Worlds {
         }
 
         public Transform3 CalcReferenceFrame() {
-            Matrix matrix = Matrix.CreateFromYawPitchRoll(Geometry.FieldToRadians(Azimuth), -Inclination, Tilt) * Matrix.CreateTranslation(Position);
+            Matrix matrix = Matrix.CreateFromYawPitchRoll(GeometryUtils.FieldToRadians(Azimuth), -Inclination, Tilt) * Matrix.CreateTranslation(Position);
             return new Transform3(matrix);
         }
 
         public static ObjPos FromPosTangentTilt(Vector3 pos, Vector3 tangent, float tilt) {
-            var htangent = Geometry.hypot2(tangent.X, tangent.Z);
+            var htangent = GeometryUtils.hypot2(tangent.X, tangent.Z);
             var inclination = MathF.Atan2(tangent.Y, htangent);
             var azimuthRadians = MathF.Atan2(tangent.X, tangent.Z);
-            var azimuth = Geometry.RadiansToField(azimuthRadians);
+            var azimuth = GeometryUtils.RadiansToField(azimuthRadians);
             return new ObjPos(pos, azimuth, inclination, tilt);
         }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,69 +10,61 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Textures;
+using MLEM.Ui;
 using MLEM.Ui.Elements;
+using MonoGame.Extended.Collections;
+using NLog;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Spline;
+using TranSimCS.Tools;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Menus.InGame {
     public partial class InGameMenu : Menu {
         public static readonly Plane groundPlane = new Plane(0, 1, 0, -0.1f);
 
-        public TSWorld World { get; private set; }
+        private static readonly Logger log = LogManager.GetCurrentClassLogger();
 
-        private ITool _tool;
-        public ITool Tool {
-            get => _tool;
-            set {
-                var newTool = value;
-                _tool?.OnClose();
-                newTool?.OnOpen();
-                _tool = value;
-            }
-        }
+        public TSWorld World { get; private set; } = null!;
+        public readonly Configuration configuration;
+
 
         //Graphics
-        private BasicEffect effect;
-        public RenderHelper renderHelper { get; private set; } // Assuming you have a RenderHelper class for rendering
+        private BasicEffect effect = null!;
+        public RenderHelper renderHelper { get; private set; } = null!; // Assuming you have a RenderHelper class for rendering
 
-        //Textures
-        public static Texture2D roadTexture { get; private set; } // Assuming you have a texture for the road
-        public static Texture2D testTexture { get; private set; }
-        public static Texture2D grassTexture {  get; private set; }
-        public static Texture2D addTexture { get; private set; }
-        public static Texture2D asphaltTexture { get; private set; }
-
-        //Inputs      
+        //Inputs
         public RoadSelection? MouseOverRoad { get; set; } = null; // Store the selected road selection
-        public object SelectedObject;
+        public object? SelectedObject = null;
         public Vector3 IntersectWithGround(Ray ray) {
-            return Geometry.IntersectRayPlane(ray, groundPlane);
+            return GeometryUtils.IntersectRayPlane(ray, groundPlane);
         }
         public Vector3 GroundSelection => IntersectWithGround(MouseRay);
         public Vector3 GroundSelectionOld => IntersectWithGround(MouseRayOld);
 
         public Ray MouseRay { get; private set; } // Ray from the mouse position in the world
         public Ray MouseRayOld { get; private set; } // Ray from the mouse position in the world
-        public Camera camera = new Camera(new Vector3(0, 0, 0), 64, 0, 0.2f); // Initialize the camera
+
+
         public float MotionSpeed = 1f; // Speed of camera movement
         public float RotationSpeed = 1f; // Speed of camera rotation
         static int scrollWheelValue = 0; // Store the scroll wheel value
 
         //UI
-        public Panel RootPanel {  get; private set; }
-        public Panel ToolPanel {  get; private set; }
-        public Panel SettingsPanel { get; private set; }
-        public Panel ToolDescPanel { get; private set; }
-        public Panel KeyBindPanel { get; private set; }
-        public Paragraph ToolName {  get; private set; }
-        public Paragraph ToolDesc {  get; private set; }
+        public Panel RootPanel {  get; private set; } = null!;
+        public Panel ToolPanel {  get; private set; } = null!;
+        public Panel SettingsPanel { get; private set; } = null!;
+        public RootElement ToolPanelRoot { get; private set; } = null!;
+
+        public ToolDescriptionPanel ToolDescPanel { get; private set; } = null!;
+        public KeyBindPanel KeyBindPanel { get; private set; } = null!;
+
         public bool IsMouseOverUI { get; private set; }
-        public Checkbox CheckNodes { get; private set; }
-        public Checkbox CheckSegments { get; private set; }
-        public Checkbox CheckSections { get; private set; }
-        public Property<LaneSpec> roadProperty { get; private set; }
+        public Checkbox CheckNodes { get; private set; } = null!;
+        public Checkbox CheckSegments { get; private set; } = null!;
+        public Checkbox CheckSections { get; private set; } = null!;
 
         //Overlays
         public RoadConfigurator configurator { get; private set; }
@@ -91,33 +83,38 @@ namespace TranSimCS.Menus.InGame {
         public RoadCreationTool RoadCreationTool { get; private set; }
 
         internal InGameMenu(Game1 game): base(game) {
-            roadProperty = new Property<LaneSpec>(LaneSpec.Default, "lane spec");
+            configuration = new Configuration();
+            configuration.ToolProp.ValueChanged += ToolProp_ValueChanged;
+        }
+
+        private void ToolProp_ValueChanged(object? sender, PropertyChangedEventArgs2<ITool?> e) {
+            e.OldValue?.OnClose();
+            e.NewValue?.OnOpen();
         }
 
         public override void Destroy() {
             //unused
         }
 
-        public override void LoadContent() {
-            World = new TSWorld();
-            TSWorld.SetUpExampleWorld(World);
+        public void LoadWorldFromFile(string filename) {
+            World = TSWorld.Load(filename);
+        }
+
+        public override void LoadContentOverride() {
+            if (World == null) {
+                World = new TSWorld();
+                WorldGenerator.SetUpExampleWorld(World);
+            }
 
             //Generate graphics stuff
             effect = new BasicEffect(Game.GraphicsDevice) {
                 VertexColorEnabled = true,
-                TextureEnabled = true,
-                View = Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(new Vector3(0, 32, -64), Vector3.Zero, Vector3.Up),
-                World = Matrix.Identity,
-                Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, Game.GraphicsDevice.Viewport.AspectRatio, 1f, 1000000f),
+                TextureEnabled = true
             };
+            configuration.Camera.SetUpEffect(effect, this);
             renderHelper = new RenderHelper(Game.GraphicsDevice, effect);
 
             //Load the road texture
-            roadTexture = Game.Content.Load<Texture2D>("laneTex");
-            testTexture = Game.Content.Load<Texture2D>("test");
-            grassTexture = Game.Content.Load<Texture2D>("seamlessTextures2/grass1");
-            addTexture = Game.Content.Load<Texture2D>("addTex");
-            asphaltTexture = Game.Content.Load<Texture2D>("seamlessTextures2/IMGP5511_seamless");
 
             //Set up meshes
             SelectorObjects = new MultiMesh();
@@ -125,7 +122,7 @@ namespace TranSimCS.Menus.InGame {
 
             //Set up the UI from below
             RootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 120));
-            UiSystem.Add("lower", RootPanel);
+            ToolPanelRoot = UiSystem.Add("lower", RootPanel);
 
             ToolPanel = new Panel(MLEM.Ui.Anchor.TopCenter, new(1f, 48));
             RootPanel.AddChild(ToolPanel);
@@ -140,7 +137,7 @@ namespace TranSimCS.Menus.InGame {
             CheckSections = UI.CreateCheck(this, SettingsPanel, "Select sections and intersections", "ui/junction");
             CheckSections.Checked = true;
 
-            configurator = new RoadConfigurator(this, roadProperty, MLEM.Ui.Anchor.Center, new(0.5f, 0.5f));
+            configurator = new RoadConfigurator(this, configuration.LaneSpecProp, MLEM.Ui.Anchor.Center, new(0.5f, 0.5f));
 
             RoadCreationTool = new RoadCreationTool(this);
             SetUpToolPictureButton("noTool", null);
@@ -150,19 +147,17 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("eyedropper", new PickerTool(this));
             SetUpToolPictureButton("moveTool", new MoveTool(this));
             SetUpToolPictureButton("bucket", new PaintTool(this));
+            SetUpToolPictureButton("inspect", new InspectTool(this));
+            SetUpToolPictureButton("finish", new RoadFinishTool(this));
 
             //Set up the tool preview
-            ToolDescPanel = new Panel(MLEM.Ui.Anchor.TopLeft, new(0.5f, 20), true);
-            UiSystem.Add("tooldesc", ToolDescPanel);
+            ToolDescPanel = new ToolDescriptionPanel(this);
+            UiSystem.Add("toolDesc", ToolDescPanel);
 
-            KeyBindPanel = new Panel(MLEM.Ui.Anchor.TopRight, new(0.5f, 40), true);
+            KeyBindPanel = new KeyBindPanel(this);
             UiSystem.Add("keybinds", KeyBindPanel);
 
-            ToolName = new Paragraph(MLEM.Ui.Anchor.AutoInline, 1, "");
-            ToolName.RegularFont = Game.Gsf;
-            ToolDescPanel.AddChild(ToolName);
-            ToolDesc = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 1, "");
-            ToolDescPanel.AddChild(ToolDesc);
+            
 
             //Set up the escape menu
             escapeMenu = new EscapeMenu(this);
@@ -178,7 +173,7 @@ namespace TranSimCS.Menus.InGame {
             return button;
         }
         private (PictureButton, ITool) SetUpToolPictureButton(String texture, ITool tool) {
-            return (SetUpPictureButton(texture, () => Tool = tool), tool);
+            return (SetUpPictureButton(texture, () => configuration.Tool = tool), tool);
         }
 
         public override void Update(GameTime time) {
@@ -190,17 +185,21 @@ namespace TranSimCS.Menus.InGame {
             float secondsElapsed = (float)time.ElapsedGameTime.TotalSeconds; // Get the elapsed time in seconds
 
             // Unproject screen coordinates to near and far points in 3D space
-            Vector3 nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), effect.Projection, effect.View, effect.World);
-            Vector3 farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), effect.Projection, effect.View, effect.World);
+            Vector3 nearPoint = Vector3.Zero;
+            Vector3 farPoint = Vector3.Zero;
+            if (effect != null) {
+                nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), effect.Projection, effect.View, effect.World);
+                farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), effect.Projection, effect.View, effect.World);
+            }
             Ray ray = new(nearPoint, Vector3.Normalize(farPoint - nearPoint));
             MouseRayOld = MouseRay;
             MouseRay = ray; // Store the ray for later use
 
             //Check if mouse is over UI
             IsMouseOverUI = false;
-            foreach(var root in UiSystem.GetRootElements()) {
+            foreach (var root in UiSystem.GetRootElements()) {
                 var rect = root.Element.Area;
-                if(rect.Contains(mouseX, mouseY)) {
+                if (rect.Contains(mouseX, mouseY)) {
                     IsMouseOverUI = true;
                     break;
                 }
@@ -211,42 +210,65 @@ namespace TranSimCS.Menus.InGame {
 
             //Add road node selection meshes
             var meshes = new List<IRenderBin>();
-            if(CheckSegments.Checked) ForeachLane(World.RoadSegments, (lane) => {
-                meshes.Add(lane.GetMesh());
-            });
-            if (CheckNodes.Checked) foreach (var node in World.RoadNodes)
-                meshes.Add(node.GetMesh());
+            if (World != null) {
+                if (CheckSegments.Checked) ForeachLane(World.RoadSegments, (lane) => {
+                    meshes.Add(lane.GetMesh());
+                });
+                if (CheckNodes.Checked)
+                    foreach (var node in World.RoadNodes)
+                        meshes.AddRange(node.Mesh.GetMesh().RenderBins.Values);
+            }
 
             //Add tool selectors
             SelectorObjects.Clear();
-            Tool?.AddSelectors(SelectorObjects);
-            foreach(var mesh in SelectorObjects.RenderBins.Values) 
+            configuration.Tool?.AddSelectors(SelectorObjects);
+            foreach (var mesh in SelectorObjects.RenderBins.Values)
                 meshes.Add(mesh);
             meshes.Add(InvisibleSelectors);
 
+            //Remove focus from the toolbar
+            ToolPanelRoot?.SelectElement(null);
+
+            if(!UiSystem.IsFocusedOnAny())
+                HandleInputs(time, keyboardState, secondsElapsed, ray, meshes);
+
+            // Update FPS counter if escape menu is displayed
+            if (Overlay == escapeMenu) {
+                // Use the previously computed secondsElapsed to calculate FPS safely
+                var fps = secondsElapsed > 0f ? 1.0f / secondsElapsed : 0f;
+                escapeMenu.FpsCounter.Text = $"FPS: {fps:F0}";
+            }
+
+            UiSystem.Update(time);
+        }
+
+        private void HandleInputs(GameTime time, KeyboardState keyboardState, float secondsElapsed, Ray ray, List<IRenderBin> meshes) {
             //Selection logic
             float distance = float.MaxValue;
-            object selection = null;
+            object? selection = null;
             if (!IsMouseOverUI) selection = MeshUtil.RayIntersectMeshes(meshes, ray, out distance);
             SelectedObject = selection;
             if (selection is LaneStrip laneStrip) {
                 MouseOverRoad = new RoadSelection(laneStrip, distance, ray); // Create a new road selection with the lane tag and intersection distance
             }
-            if(selection is LaneEnd lane) {
+            if (selection is LaneEnd lane) {
                 MouseOverRoad = new RoadSelection(lane, distance, ray);
             }
             if (MouseOverRoad != null) SelectedObject = MouseOverRoad.hitObject;
 
             //Handle scroll wheel input for zooming in and out
+            var camera = configuration.Camera;
             if (Game.MouseState.ScrollWheelValue != scrollWheelValue) {
                 // Zoom in or out based on the scroll wheel value
                 int mouseScrollDelta = Game.MouseState.ScrollWheelValue - scrollWheelValue;
                 scrollWheelValue = Game.MouseState.ScrollWheelValue; // Update the scroll wheel value
-                Debug.Print($"Mouse scroll delta: {mouseScrollDelta}");
+                log.Trace($"Mouse scroll delta: {mouseScrollDelta}");
                 var zoomDelta = MathF.Pow(2f, mouseScrollDelta / -120f); // Adjust zoom factor based on scroll wheel delta
                 camera.Distance *= zoomDelta; // Update camera distance based on zoom factor
             }
-            effect.View = camera.GetViewMatrix(); // Update the view matrix of the effect with the camera's view matrix
+            if (effect != null) {
+                configuration.Camera.SetUpEffect(effect, this);
+            }
 
             //Handle camera movement with WASD keys
             float sideMotion = 0.0f; // Side motion for camera movement
@@ -282,10 +304,10 @@ namespace TranSimCS.Menus.InGame {
             newElevation = MathHelper.Clamp(newElevation, -MathF.PI / 2 + 0.01f, MathF.PI / 2 - 0.01f);
             camera.Azimuth = newAzimuth; // Update camera azimuth
             camera.Elevation = newElevation; // Update camera elevation
-
-            UiSystem.Update(time);
+            configuration.Camera = camera;
 
             //Run the world tool
+            var Tool = configuration.Tool;
             if (!IsMouseOverUI) {
                 if (Game.MouseState.LeftButton == ButtonState.Pressed && Game.MouseStateOld.LeftButton == ButtonState.Released) Tool?.OnClick(MLEM.Input.MouseButton.Left);
                 if (Game.MouseState.MiddleButton == ButtonState.Pressed && Game.MouseStateOld.MiddleButton == ButtonState.Released) Tool?.OnClick(MLEM.Input.MouseButton.Middle);
@@ -309,8 +331,8 @@ namespace TranSimCS.Menus.InGame {
             Tool?.Update(time);
         }
 
-        private Element _overlay;
-        public Element Overlay { get => _overlay; set{
+        private Element? _overlay;
+        public Element? Overlay { get => _overlay; set{
                 if (_overlay == value) return;
                 if(_overlay != null) {
                     UiSystem.Remove("configurator");
@@ -340,23 +362,24 @@ namespace TranSimCS.Menus.InGame {
         public override void Draw(GameTime time) {
             //Clear the screen to a solid color and clear the render helper
             renderHelper.Clear();
+            // CRITICAL: Clear SelectorObjects to prevent geometry accumulation across frames
+            // Without this, meshes from previous frames accumulate causing Z-fighting and flickering
+            SelectorObjects.Clear();
 
-            Texture2D testTexture = Game.Content.Load<Texture2D>("test");
-            IRenderBin renderBin = renderHelper.GetOrCreateRenderBin(roadTexture);
+            IRenderBin renderBin = renderHelper.GetOrCreateRenderBin(Assets.Road);
 
             // Draw the asphalt texture for the road
             foreach (var roadSegment in World.RoadSegments) {
-                RoadRenderer.RenderRoadSegment(roadSegment, renderBin, 0.001f); // Render each road segment with a slight vertical offset
+                renderHelper.AddAll(roadSegment.Mesh.GetMesh());
             }
 
             //Draw road node meshes
             if(CheckNodes.Checked) foreach(var roadNode in World.RoadNodes)
-                renderBin.DrawModel(roadNode.GetMesh());
+                SelectorObjects.AddAll(roadNode.Mesh.GetMesh());
 
             //Draw road sections
-            IRenderBin asphaltBin = renderHelper.GetOrCreateRenderBin(asphaltTexture);
             foreach (var section in World.RoadSections) {
-                asphaltBin.DrawModel(section.GetMesh());
+                SelectorObjects.AddAll(section.Mesh.GetMesh());
             }
 
             //Draw the tool mesh
@@ -367,10 +390,9 @@ namespace TranSimCS.Menus.InGame {
             if (roadSelection?.SelectedLaneTag != null) {
                 // Draw the selected lane tag with a different color
                 var laneRange = roadSelection.SelectedLaneTag.Value;
-                RoadRenderer.GenerateLaneRangeMesh(laneRange, renderBin, laneHighlightColor, 0.005f);
-                RoadRenderer.GenerateLaneRangeMesh(laneRange.road.FullSizeTag(), renderBin, roadSegmentHighlightColor, 0.002f);
-                var splines = RoadRenderer.GenerateSplines(laneRange, 0.007f);
-                var offset = Vector3.Up * 0.007f; // Offset for the lane position
+                RoadRenderer.GenerateLaneRangeMesh(laneRange, renderBin, laneHighlightColor, 0.3f);
+                RoadRenderer.GenerateLaneRangeMesh(laneRange.road.FullSizeTag(), renderBin, roadSegmentHighlightColor, 0.2f);
+                var splines = RoadRenderer.GenerateSplines(laneRange, 0.4f);
                 Bezier3.TriSection(splines.Item1, minT, maxT, out Bezier3 leftSubBezier1, out Bezier3 leftSubBezier2, out Bezier3 leftSubBezier3);
                 Bezier3.TriSection(splines.Item2, minT, maxT, out Bezier3 rightSubBezier1, out Bezier3 rightSubBezier2, out Bezier3 rightSubBezier3);
 
@@ -388,41 +410,59 @@ namespace TranSimCS.Menus.InGame {
             if(roadSelection?.SelectedLaneEnd != null && roadSelection.SelectedLaneStrip == null) {
                 //Lane selected, road strip not
                 var lane = roadSelection.SelectedLaneEnd.Value;
-                var quad = RoadRenderer.GenerateLaneQuad(lane, 0.005f, Color.Yellow);
-                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(lane.lane.RoadNode, roadSegmentHighlightColor, 0.002f);
+                var quad = RoadRenderer.GenerateLaneQuad(lane, 0.4f, Color.Yellow);
+                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(lane.lane.RoadNode, roadSegmentHighlightColor, 0.3f);
                 renderBin.DrawQuad(quad);
                 renderBin.DrawQuad(nodeQuad);
             }
 
             //If the add lane button is selected, draw it
-            IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBin(addTexture);
-            if (SelectedObject is AddLaneSelection selection) 
-                RoadRenderer.CreateAddLane(selection, plusRenderBin, roadProperty.Value.Width, roadSegmentHighlightColor, 0.002f);
+            IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBin(Assets.Add);
+            if (SelectedObject is AddLaneSelection selection)
+                RoadRenderer.CreateAddLane(selection, plusRenderBin, configuration.LaneSpec.Width, roadSegmentHighlightColor, 0.3f);
+
+
+            //Render ground with multiple planes
+            var centerPos = configuration.Camera.Position;
+            centerPos.Y = 0;
+            float scale = 1000;
+            for(int i = 0; i < 13; i++) {
+                var x = centerPos.X;
+                var z = centerPos.Z;
+
+                var dropY = (scale - 1000) / 1000;
+                var texscale = scale / 100;
+
+                
+                scale *= 2;
+                IRenderBin grassBin = renderHelper.GetOrCreateRenderBin(Assets.Grass);
+                grassBin.DrawQuad(
+                    GenerateGroundVertex(new(x-scale, -dropY, z+scale), texscale),
+                    GenerateGroundVertex(new(x+scale, -dropY, z+scale), texscale),
+                    GenerateGroundVertex(new(x+scale, -dropY, z-scale), texscale),
+                    GenerateGroundVertex(new(x-scale, -dropY, z-scale), texscale)
+                );
+            }
             
-            //Render the ground (now just a flat plane)
-            float r = 100000;
-            float s = 10000;
-            IRenderBin grassBin = renderHelper.GetOrCreateRenderBin(grassTexture);
-            grassBin.DrawQuad(
-                new VertexPositionColorTexture(new(-r, 0,  r), Color.White, new(-s, -s)),
-                new VertexPositionColorTexture(new( r, 0,  r), Color.White, new( s, -s)),
-                new VertexPositionColorTexture(new( r, 0, -r), Color.White, new( s,  s)),
-                new VertexPositionColorTexture(new(-r, 0, -r), Color.White, new(-s,  s))
-            );
 
             //Render road tool
-            Tool?.Draw(time);
+            configuration.Tool?.Draw(time);
 
             //Render the render helper
             renderHelper.Render();
         }
+
+        private VertexPositionColorTexture GenerateGroundVertex(Vector3 pos, float texscale) {
+            return new VertexPositionColorTexture(pos, Color.White, new(pos.X / texscale, pos.Z / texscale));
+        }
+
         private void ForeachLane(ICollection<RoadStrip> segments, Action<LaneStrip> action) {
             foreach (var segment in segments)
                 foreach (var lane in segment.Lanes)
                     action(lane);
         }
 
-        private (object[], string)[] PromptKeys() => [
+        public (object[], string)[] FixedKeys() => [
             ([Keys.Escape], "Pause menu"),
             ([Keys.W, Keys.A, Keys.S, Keys.D], "Move"),
             ([Keys.T], "Edit lane specs"),
@@ -431,15 +471,16 @@ namespace TranSimCS.Menus.InGame {
 
         private (object[], string)[] lastDescription;
         public override void Draw2D(GameTime time) {
-            string toolName = (Tool?.Name) ?? "no tool";
-            string toolDesc = (Tool?.Description) ?? "";
+            var Tool = configuration.Tool;
+            ToolDescPanel.Update();
+            KeyBindPanel.Update();
+
+
             Game.SpriteBatch.Begin();
-            ToolName.Text = toolName;
-            ToolDesc.Text = toolDesc;
 
             //Handle keybinds
             var keylist = new List<(object[], string)>();
-            keylist.AddRange(PromptKeys());
+            keylist.AddRange(FixedKeys());
             var k2 = Tool?.PromptKeys();
             if (k2 != null) keylist.AddRange(k2);
             var keybinds = keylist.ToArray();
@@ -447,26 +488,9 @@ namespace TranSimCS.Menus.InGame {
             var keybindsChanged = !Equality.DeepArrayEqualsWithNull(lastDescription, keybinds);
 
             if (keybindsChanged) {
-                Debug.WriteLine("Refreshing keybinds: ");
-                Debug.WriteLine(keybinds);
-                //Keybinds changed
-                KeyBindPanel.RemoveChildren();
-                foreach(var keybind in keybinds ?? []) {
-                    var keys = keybind.Item1;
-                    bool firstInLine = true;
-                    foreach(var key in keys) {
-                        var tex = KeyPromptMapper.GetPrompt(key);
-                        if (tex != null) {
-                            Image img = new Image(firstInLine ? MLEM.Ui.Anchor.AutoLeft : MLEM.Ui.Anchor.AutoInline, new(1, 1), tex, true);
-                            KeyBindPanel.AddChild(img);
-                            firstInLine = false;
-                        }
-                    }
-                    var desc = keybind.Item2;
-                    var paragraph = new Paragraph(MLEM.Ui.Anchor.AutoInline, 0.5f, desc ?? "", true);
-                    KeyBindPanel.AddChild(paragraph);
-                }
-                KeyBindPanel.SetAreaDirty();
+                log.Trace("Refreshing keybinds: ");
+                log.Trace(keybinds);
+                
             }
             lastDescription = keybinds;
 
