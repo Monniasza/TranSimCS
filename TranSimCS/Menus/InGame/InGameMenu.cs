@@ -58,10 +58,9 @@ namespace TranSimCS.Menus.InGame {
         public Panel SettingsPanel { get; private set; } = null!;
         public RootElement ToolPanelRoot { get; private set; } = null!;
 
-        public Panel ToolDescPanel { get; private set; } = null!;
-        public Panel KeyBindPanel { get; private set; } = null!;
-        public Paragraph ToolName {  get; private set; } = null!;
-        public Paragraph ToolDesc {  get; private set; } = null!;
+        public ToolDescriptionPanel ToolDescPanel { get; private set; } = null!;
+        public KeyBindPanel KeyBindPanel { get; private set; } = null!;
+
         public bool IsMouseOverUI { get; private set; }
         public Checkbox CheckNodes { get; private set; } = null!;
         public Checkbox CheckSegments { get; private set; } = null!;
@@ -152,15 +151,10 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("finish", new RoadFinishTool(this));
 
             //Set up the tool preview
-            ToolDescPanel = new Panel(MLEM.Ui.Anchor.TopLeft, new(0.5f, 20), true);
-            UiSystem.Add("tooldesc", ToolDescPanel);
-            ToolName = new Paragraph(MLEM.Ui.Anchor.AutoInline, 1, "");
-            ToolName.RegularFont = Game.Gsf;
-            ToolDescPanel.AddChild(ToolName);
-            ToolDesc = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 1, "");
-            ToolDescPanel.AddChild(ToolDesc);
+            ToolDescPanel = new ToolDescriptionPanel(this);
+            UiSystem.Add("toolDesc", ToolDescPanel);
 
-            KeyBindPanel = new Panel(MLEM.Ui.Anchor.TopRight, new(0.5f, 40), true);
+            KeyBindPanel = new KeyBindPanel(this);
             UiSystem.Add("keybinds", KeyBindPanel);
 
             
@@ -468,7 +462,7 @@ namespace TranSimCS.Menus.InGame {
                     action(lane);
         }
 
-        private (object[], string)[] PromptKeys() => [
+        public (object[], string)[] FixedKeys() => [
             ([Keys.Escape], "Pause menu"),
             ([Keys.W, Keys.A, Keys.S, Keys.D], "Move"),
             ([Keys.T], "Edit lane specs"),
@@ -478,16 +472,15 @@ namespace TranSimCS.Menus.InGame {
         private (object[], string)[] lastDescription;
         public override void Draw2D(GameTime time) {
             var Tool = configuration.Tool;
-            string toolName = (Tool?.Name) ?? "no tool";
-            string toolDesc = (Tool?.Description) ?? "";
+            ToolDescPanel.Update();
+            KeyBindPanel.Update();
+
+
             Game.SpriteBatch.Begin();
-            ToolName.Text = toolName;
-            ToolDesc.Text = toolDesc;
-            ToolPanel.SetAreaDirty();
 
             //Handle keybinds
             var keylist = new List<(object[], string)>();
-            keylist.AddRange(PromptKeys());
+            keylist.AddRange(FixedKeys());
             var k2 = Tool?.PromptKeys();
             if (k2 != null) keylist.AddRange(k2);
             var keybinds = keylist.ToArray();
@@ -497,24 +490,7 @@ namespace TranSimCS.Menus.InGame {
             if (keybindsChanged) {
                 log.Trace("Refreshing keybinds: ");
                 log.Trace(keybinds);
-                //Keybinds changed
-                KeyBindPanel.RemoveChildren();
-                foreach(var keybind in keybinds ?? []) {
-                    var keys = keybind.Item1;
-                    bool firstInLine = true;
-                    foreach(var key in keys) {
-                        var tex = KeyPromptMapper.GetPrompt(key);
-                        if (tex != null) {
-                            Image img = new Image(firstInLine ? MLEM.Ui.Anchor.AutoLeft : MLEM.Ui.Anchor.AutoInline, new(1, 1), tex, true);
-                            KeyBindPanel.AddChild(img);
-                            firstInLine = false;
-                        }
-                    }
-                    var desc = keybind.Item2;
-                    var paragraph = new Paragraph(MLEM.Ui.Anchor.AutoInline, 0.5f, desc ?? "", true);
-                    KeyBindPanel.AddChild(paragraph);
-                }
-                KeyBindPanel.SetAreaDirty();
+                
             }
             lastDescription = keybinds;
 
