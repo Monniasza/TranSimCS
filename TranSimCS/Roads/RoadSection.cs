@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -71,9 +71,10 @@ namespace TranSimCS.Roads {
             nodes.Remove(node);
             node.Node.PropertyChanged -= Node_PropertyChanged;
 
-            //If one of the main-slope road node ends was disconnected, select the closest one to the existing
+            // If one of the main-slope road node ends was disconnected, select the closest one to the existing other half
             SegmentHalf? affectedHalf = null;
             var pair = MainSlopeNodes.Value;
+
             if (pair.Start == node) affectedHalf = SegmentHalf.Start;
             if (pair.End == node) affectedHalf = SegmentHalf.End;
 
@@ -81,18 +82,25 @@ namespace TranSimCS.Roads {
                 RoadNodeEnd otherEnd = (affectedHalf == SegmentHalf.Start) ? pair.End : pair.Start;
                 var replacement = otherEnd;
                 var closestDistance = float.PositiveInfinity;
-                var currPosition = node.CenterPosition;
+
+                // Reference for nearest search should be the existing other half if present, otherwise the disconnected node's position
+                var referencePos = otherEnd?.CenterPosition ?? node.CenterPosition;
+
                 foreach (var candidate in nodes) {
-                    if(candidate == otherEnd) continue;
-                    var centerPosition = candidate.CenterPosition;
-                    var distance = Vector3.DistanceSquared(centerPosition, centerPosition);
+                    if (candidate == otherEnd) continue;
+                    var candidatePos = candidate.CenterPosition;
+                    var distance = Vector3.DistanceSquared(candidatePos, referencePos);
                     if (distance < closestDistance) {
                         replacement = candidate;
                         closestDistance = distance;
                     }
                 }
+
                 if (affectedHalf == SegmentHalf.Start) pair.Start = replacement;
                 if (affectedHalf == SegmentHalf.End) pair.End = replacement;
+
+                // Write back the updated pair to the property (struct copy)
+                MainSlopeNodes.Value = pair;
             }
 
             Regenerate();
@@ -110,6 +118,7 @@ namespace TranSimCS.Roads {
 
             //Find the center of mass and the normal
             Center = Vector3.Zero;
+            Normal = Vector3.Zero;
             foreach (var node in nodes) {
                 var frame = node.PositionProp.Value;
                 var mat = frame.CalcReferenceFrame();
@@ -117,7 +126,8 @@ namespace TranSimCS.Roads {
                 Center += node.CenterPosition;
             }
             Center /= nodes.Count;
-            Normal.Normalize();
+            if (Normal.LengthSquared() > 1e-6f) Normal.Normalize();
+            else Normal = Vector3.Up;
 
             //Sort the nodes clockwise
             Comparison<RoadNodeEnd> comparer = CompareNodes2;
