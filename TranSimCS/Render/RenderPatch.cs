@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Spline;
 
@@ -13,7 +14,7 @@ namespace TranSimCS.Render {
 
     public static class RenderPatch {
         public static void DrawDebugFence(IRenderBin mesh, ISpline<Vector3> spline, Vector3 height, Color color, int accuracy = 17) {
-            var points = Geometry.GenerateSplinePoints(spline, accuracy);
+            var points = GeometryUtils.GenerateSplinePoints(spline, accuracy);
             var strip = new VertexPositionColorTexture[accuracy * 2];
             for(int i = 0; i < accuracy; i++) {
                 var pos = points[i];
@@ -50,10 +51,10 @@ namespace TranSimCS.Render {
             int resC = 17,
             int resD = 17) {
 
-            var lutC0 = Geometry.GenerateSplinePoints(c0, resC);
-            var lutC1 = Geometry.GenerateSplinePoints(c1, resC);
-            var lutD0 = Geometry.GenerateSplinePoints(d0, resD);
-            var lutD1 = Geometry.GenerateSplinePoints(d1, resD);
+            var lutC0 = GeometryUtils.GenerateSplinePoints(c0, resC);
+            var lutC1 = GeometryUtils.GenerateSplinePoints(c1, resC);
+            var lutD0 = GeometryUtils.GenerateSplinePoints(d0, resD);
+            var lutD1 = GeometryUtils.GenerateSplinePoints(d1, resD);
 
             var results = new VertexPositionColorTexture[resC, resD];
 

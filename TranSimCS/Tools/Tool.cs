@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using NLog;
+using TranSimCS.Geometry;
 using TranSimCS.Menus;
 using TranSimCS.Menus.Gizmo;
 using TranSimCS.Menus.InGame;
@@ -207,7 +208,7 @@ namespace TranSimCS.Tools {
                 var nodeSpec = selection?.SelectedLane?.Spec;
                 var spec = nodeSpec ?? laneSpec;
                 if (spec == null) return;
-                game.roadProperty.Value = spec.Value;
+                game.configuration.LaneSpec = spec.Value;
             }
         }
 
@@ -260,8 +261,8 @@ namespace TranSimCS.Tools {
 
         void ITool.Draw(GameTime gameTime) {
             if (NewlyCreatedNode == null && Reference == null) return;
-            var laneWidth = menu.roadProperty.Value.Width;
-            var laneColor = menu.roadProperty.Value.Color;
+            var laneWidth = menu.configuration.LaneSpec.Width;
+            var laneColor = menu.configuration.LaneSpec.Color;
             var frame = PrePosition.CalcReferenceFrame();
             var length = frame.Z;
             var width = frame.X * laneWidth * laneCount;
@@ -310,7 +311,7 @@ namespace TranSimCS.Tools {
             } else {
                 //Ready to place: selected reference or newly created node
                 var n = NewlyCreatedNode ?? new RoadNode(menu.World, "", PrePosition);
-                Generator.GenerateLanes(laneCount, n, menu.roadProperty.Value);
+                Generator.GenerateLanes(laneCount, n, menu.configuration.LaneSpec   );
                 n.PositionProp.Value = PrePosition;
                 menu.World.RoadNodes.Add(n);
                 NewlyCreatedNode = null;
@@ -337,7 +338,7 @@ namespace TranSimCS.Tools {
                 var orientationVector = selectedPosition - pp.Position;
                 var yaw = MathF.Atan2(orientationVector.X, orientationVector.Z);
                 pp.Tilt = 0;
-                if(!float.IsNaN(yaw)) pp.Azimuth = Geometry.RadiansToField(yaw);
+                if(!float.IsNaN(yaw)) pp.Azimuth = GeometryUtils.RadiansToField(yaw);
                 pp.Inclination = 0;
                 PrePosition = pp;
             } else {
@@ -368,7 +369,7 @@ namespace TranSimCS.Tools {
 
         void ITool.OnClick(MouseButton button) {
             if(button == MouseButton.Left) {
-                var laneSpec = game.roadProperty.Value;
+                var laneSpec = game.configuration.LaneSpec;
                 var selection = game.MouseOverRoad;
                 var lane = selection?.SelectedLane;
                 if(lane != null) lane.Spec = laneSpec;

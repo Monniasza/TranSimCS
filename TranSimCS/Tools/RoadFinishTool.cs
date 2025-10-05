@@ -17,7 +17,7 @@ namespace TranSimCS.Tools {
         public RoadFinishTool(InGameMenu menu) {
             this.menu = menu;
             FinishProp = new Property<RoadFinish>(RoadFinish.Embankment, "finish");
-            tab = new RoadFinishTab(this);
+            tab = new RoadFinishTab(FinishProp);
         }
 
         public string Name => "Edit road finishes";
@@ -71,33 +71,35 @@ namespace TranSimCS.Tools {
     }
 
     public class RoadFinishTab: Panel{
-        private RoadFinishTool tool;
+        private Property<RoadFinish> Finish;
         private NumberField heightField;
         private NumberField angleField;
         private EnumDropdown<Surface> surfaceDropdown;
 
-        public RoadFinishTab(RoadFinishTool tool): base(MLEM.Ui.Anchor.CenterLeft, new (200, 0.25f), true) {
-            this.tool = tool;
+        public RoadFinishTab(Property<RoadFinish> finish): base(MLEM.Ui.Anchor.CenterLeft, new (200, 0.25f), true) {
+            this.Finish = finish;
 
             Paragraph heightParagraph = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 0.5f, "Height");
             AddChild(heightParagraph);
-            heightField = new NumberField(MLEM.Ui.Anchor.AutoInline, new(0.5f, 20), null, tool.Finish.depth);
+            heightField = new NumberField(MLEM.Ui.Anchor.AutoInline, new(0.5f, 20), null, Finish.Value.depth);
             heightField.ValueChanged += HeightField_ValueChanged;
             AddChild(heightField);
 
             Paragraph angleParagraph = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 0.5f, "Angle (degs)");
             AddChild(angleParagraph);
-            angleField = new NumberField(MLEM.Ui.Anchor.AutoInline, new(0.5f, 20), null, MathHelper.ToDegrees(tool.Finish.angle));
+            angleField = new NumberField(MLEM.Ui.Anchor.AutoInline, new(0.5f, 20), null, MathHelper.ToDegrees(Finish.Value.angle));
             angleField.ValueChanged += AngleField_ValueChanged;
             AddChild(angleField);
 
             Paragraph surfaceParagraph = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 0.5f, "Surface texture");
             AddChild(surfaceParagraph);
-            surfaceDropdown = new(MLEM.Ui.Anchor.AutoInline, new(0.5f, 20), tool.Finish.subsurface);
+            surfaceDropdown = new(MLEM.Ui.Anchor.AutoInline, new(0.5f, 20), Finish.Value.subsurface);
             surfaceDropdown.SelectedValueProp.ValueChanged += Surface_ValueChanged;
             AddChild(surfaceDropdown);
 
-            tool.FinishProp.ValueChanged += FinishProp_ValueChanged;
+
+
+            Finish.ValueChanged += FinishProp_ValueChanged;
         }
 
         private void FinishProp_ValueChanged(object? sender, PropertyChangedEventArgs2<RoadFinish> e) {
@@ -107,21 +109,21 @@ namespace TranSimCS.Tools {
         }
 
         private void Surface_ValueChanged(object? sender, PropertyChangedEventArgs2<Surface> e) {
-            var finish = tool.Finish;
+            var finish = Finish.Value;
             finish.subsurface = e.NewValue;
-            tool.Finish = finish;
+            Finish.Value = finish;
         }
 
         private void AngleField_ValueChanged(NumberField field, float value) {
-            var finish = tool.Finish;
+            var finish = Finish.Value;
             finish.angle = MathHelper.ToRadians(value);
-            tool.Finish = finish;
+            Finish.Value = finish;
         }
 
         private void HeightField_ValueChanged(NumberField field, float value) {
-            var finish = tool.Finish;
+            var finish = Finish.Value;
             finish.depth = value;
-            tool.Finish = finish;
+            Finish.Value = finish;
         }
     }
 }

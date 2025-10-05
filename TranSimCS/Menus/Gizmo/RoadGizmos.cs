@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Worlds;
@@ -39,7 +40,7 @@ namespace TranSimCS.Menus.Gizmo {
             var newRadius = newPoint - roadNode.CenterPosition;
             var newAzimuth = MathF.Atan2(newRadius.X, newRadius.Z);
             var rotation = newAzimuth - oldAzimuth;
-            var fieldRotation = Geometry.RadiansToField(rotation);
+            var fieldRotation = GeometryUtils.RadiansToField(rotation);
             var frame = roadNode.PositionProp.Value;
             frame.Azimuth += fieldRotation;
             roadNode.PositionProp.Value = frame;
@@ -55,17 +56,17 @@ namespace TranSimCS.Menus.Gizmo {
         public void CreateMesh(IRenderBin renderBin) {
             var refpos = roadNode.PositionProp.Value;
             var azimuth = refpos.Azimuth;
-            var radians = Geometry.FieldToRadians(azimuth);
+            var radians = GeometryUtils.FieldToRadians(azimuth);
             var lastLane = roadNode.LastLane;
             if (lastLane == null) return;
             var sideOffset = lastLane.RightPosition * 2;
             var rotMatrix = Matrix.CreateRotationY(radians);
-            var offsetMatrix = Matrix.CreateTranslation(refpos.Position + Vector3.Transform(new(sideOffset, 0, 0), rotMatrix));
+            var offsetMatrix = Matrix.CreateTranslation(refpos.Position + Vector3.Transform(new Vector3(sideOffset, 0, 0), rotMatrix));
             var frameMatrix = rotMatrix * offsetMatrix;
-            Vector3 p1 = Vector3.Transform(new(-1, 0,  1), frameMatrix);
-            Vector3 p2 = Vector3.Transform(new( 1, 0,  1), frameMatrix);
-            Vector3 p3 = Vector3.Transform(new( 1, 0, -1), frameMatrix);
-            Vector3 p4 = Vector3.Transform(new(-1, 0, -1), frameMatrix);
+            Vector3 p1 = Vector3.Transform(new Vector3(-1, 0,  1), frameMatrix);
+            Vector3 p2 = Vector3.Transform(new Vector3(1, 0, 1), frameMatrix);
+            Vector3 p3 = Vector3.Transform(new Vector3(1, 0, -1), frameMatrix);
+            Vector3 p4 = Vector3.Transform(new Vector3(-1, 0, -1), frameMatrix);
             renderBin.DrawQuad(p1, p2, p3, p4, Color.Red);
             renderBin.AddTagsToLastTriangles(2, this);
         }

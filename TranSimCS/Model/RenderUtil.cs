@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Geometry;
 
 namespace TranSimCS.Model {
     /// <summary>
@@ -82,7 +83,7 @@ namespace TranSimCS.Model {
         }
 
         public static void DrawStrip(this IRenderBin rb, VertexPositionColorTexture[] l, VertexPositionColorTexture[] r)
-            => DrawStrip(rb, Geometry.WeaveStrip(l, r));
+            => DrawStrip(rb, GeometryUtils.WeaveStrip(l, r));
 
         public static void DrawCenteredPoly(this IRenderBin rb, VertexPositionColorTexture center, params VertexPositionColorTexture[] perimeter) {
             var centerIdx = rb.AddVertex(center);

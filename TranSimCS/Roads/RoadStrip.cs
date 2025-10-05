@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Worlds;
 using static TranSimCS.Roads.Roads;
@@ -124,12 +125,12 @@ namespace TranSimCS.Roads {
         }
 
         public SplineFrame CalcSplineFrame() {
-            var start = StartNode.PositionProp.Value.CalcReferenceFrame();
-            var end = EndNode.PositionProp.Value.CalcReferenceFrame();
+            var start = StartNode.CalcReferenceFrame();
+            var end = EndNode.CalcReferenceFrame();
 
-            var zeroSpline = Geometry.GenerateJoinSpline(start.O, end.O, start.Z, -end.Z);
-            var xSpline = Geometry.GenerateJoinSpline(start.O + start.X, end.O + end.X, start.Z, -end.Z);
-            var ySpline = Geometry.GenerateJoinSpline(start.O + start.Y, end.O + end.Y, start.Z, -end.Z);
+            var zeroSpline = GeometryUtils.GenerateJoinSpline(start.O, end.O, start.Z, -end.Z);
+            var xSpline = GeometryUtils.GenerateJoinSpline(start.O + start.X, end.O + end.X, start.Z, -end.Z);
+            var ySpline = GeometryUtils.GenerateJoinSpline(start.O + start.Y, end.O + end.Y, start.Z, -end.Z);
 
             return new SplineFrame(zeroSpline, xSpline - zeroSpline, ySpline - zeroSpline, new Spline.Bezier3());
         }
@@ -137,9 +138,9 @@ namespace TranSimCS.Roads {
             var start = StartNode.PositionProp.Value.CalcReferenceFrame();
             var end = EndNode.PositionProp.Value.CalcReferenceFrame();
 
-            var zeroSpline = Geometry.GenerateJoinSpline(start.O + start.X * Bounds.leftStart, end.O + end.X * Bounds.leftEnd, start.Z, end.Z);
-            var xSpline = Geometry.GenerateJoinSpline(start.O + start.X * Bounds.rightEnd, end.O + end.X * Bounds.rightEnd, start.Z, end.Z);
-            var ySpline = Geometry.GenerateJoinSpline(start.O + start.Y, end.O + end.Y, start.Z, end.Z);
+            var zeroSpline = GeometryUtils.GenerateJoinSpline(start.O + start.X * Bounds.leftStart, end.O + end.X * Bounds.leftEnd, start.Z, end.Z);
+            var xSpline = GeometryUtils.GenerateJoinSpline(start.O + start.X * Bounds.rightEnd, end.O + end.X * Bounds.rightEnd, start.Z, end.Z);
+            var ySpline = GeometryUtils.GenerateJoinSpline(start.O + start.Y, end.O + end.Y, start.Z, end.Z);
 
             return new SplineFrame(zeroSpline, xSpline - zeroSpline, ySpline - zeroSpline, new Spline.Bezier3());
         }

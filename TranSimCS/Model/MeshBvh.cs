@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 
 namespace TranSimCS.Model {
     internal sealed class MeshBvh {
@@ -111,7 +112,7 @@ namespace TranSimCS.Model {
                 if (node.IsLeaf) {
                     for (int i = 0; i < node.Count; i++) {
                         var tri = triangles[node.Start + i];
-                        if (Geometry.RayIntersectsTriangle(ray,
+                        if (GeometryUtils.RayIntersectsTriangle(ray,
                             verts[indices[tri.BaseIndex]].Position,
                             verts[indices[tri.BaseIndex + 1]].Position,
                             verts[indices[tri.BaseIndex + 2]].Position,
