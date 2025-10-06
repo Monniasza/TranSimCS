@@ -1,14 +1,15 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Render;
 using TranSimCS.Spline;
-using static TranSimCS.Geometry;
+using static TranSimCS.Geometry.GeometryUtils;
 
 namespace TranSimCS.Roads {
     public struct LaneQuadPair(Quad front, Quad back) {
@@ -30,7 +31,7 @@ namespace TranSimCS.Roads {
             CreateAddLane(new AddLaneSelection(1, rightLimit, nodeEnd.RearEnd), mesh, size, color, voffset);
         }
         public static Quad CreateAddLane(AddLaneSelection als, IRenderBin mesh, float size = 1, Color? color = null, float voffset = 0.2f) {
-            var zrange = Geometry.RoadEndToRange(als.nodeEnd.End) * size;
+            var zrange = RoadEndToRange(als.nodeEnd.End) * size;
             var xrange = als.CalculateOffsets(size);
             Quad quad = GenerateLaneQuad(als.nodeEnd.Node, xrange.X, xrange.Y, color ?? SemiClearGray, voffset, zrange.X, zrange.Y);
             mesh.DrawQuad(quad);
@@ -60,7 +61,7 @@ namespace TranSimCS.Roads {
         public static Quad GenerateLaneQuad(LaneEnd lane, float voffset = 0.2f, Color? color = null) {
             var altColor = lane.lane.Spec.Color;
             altColor.A /= 2;
-            var range = Geometry.RoadEndToRange(lane.end);
+            var range = GeometryUtils.RoadEndToRange(lane.end);
             return GenerateLaneQuad(lane.lane.RoadNode, lane.lane.LeftPosition, lane.lane.RightPosition, color ?? altColor, voffset, range.X, range.Y);
         }
         public static LaneQuadPair GenerateLaneQuads(RoadNode node, float lb, float rb, Color color, float voffset = 0) {
@@ -91,15 +92,14 @@ namespace TranSimCS.Roads {
 
 
         /// <summary>
-        /// Generates the mesh for a road segment. Does not contain any lane meshes
+        /// Generates the mesh for a road segment.
         /// </summary>
         /// <param name="connection">road segment</param>
         /// <param name="renderHelper">render helper</param>
         public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MultiMesh renderHelper, float voffset = 0) {
             IRenderBin roadBin = renderHelper.GetOrCreateRenderBin(Assets.Road);
-            foreach(var lane in connection.Lanes) {
+            foreach(var lane in connection.Lanes) 
                 roadBin.DrawModel(lane.GetMesh());
-            }
 
             //Draw the road finish
             var finish = connection.Finish;
@@ -110,7 +110,9 @@ namespace TranSimCS.Roads {
             var splineFrame = connection.CalcSplineFrame();
             var bounds = connection.Bounds;
 
-            var avgWidth = (bounds.rightStart - bounds.leftStart + bounds.rightEnd - bounds.leftEnd) / 2;
+            var swidth = MathF.Abs(bounds.rightStart - bounds.leftStart);
+            var ewidth = MathF.Abs(bounds.rightEnd - bounds.leftEnd);
+            var avgWidth = (swidth + ewidth) / 2;
 
             var leftStart = Vector3.UnitX * bounds.leftStart;
             var rightStart = Vector3.UnitX * bounds.rightStart;
@@ -124,14 +126,15 @@ namespace TranSimCS.Roads {
             var leftDown = splineFrame.CreateFromStartEnd(leftStart + bottomLeft, leftEnd + bottomLeft);
             var rightDown = splineFrame.CreateFromStartEnd(rightStart + bottomRight, rightEnd + bottomRight);
 
-            var leftTopPoints = Geometry.GenerateSplinePoints(leftTop);
-            var rightTopPoints = Geometry.GenerateSplinePoints(rightTop);
-            var leftDownPoints = Geometry.GenerateSplinePoints(leftDown);
-            var rightDownPoints = Geometry.GenerateSplinePoints(rightDown);
+            var leftTopPoints = GenerateSplinePoints(leftTop);
+            var rightTopPoints = GenerateSplinePoints(rightTop);
+            var leftDownPoints = GenerateSplinePoints(leftDown);
+            var rightDownPoints = GenerateSplinePoints(rightDown);
 
             var sideLen = new Vector2(height, breadth).Length();
 
             var zeroFn = UniformTexturing.WithFixedU(0);
+
             var sideLenFn = UniformTexturing.WithFixedU(sideLen);
             var avgWidthFn = UniformTexturing.WithFixedU(avgWidth);
 
@@ -147,13 +150,30 @@ namespace TranSimCS.Roads {
             finishBin.DrawStrip(leftPointsL, leftPointsR);
             finishBin.DrawStrip(rightPointsL, rightPointsR);
             finishBin.DrawStrip(bottomPointsL, bottomPointsR);
-            
+
+            //Draw the endcaps
+            var leftUpStartPos = leftTopPoints[0];
+            var rightUpStartPos = rightTopPoints[0];
+            var rightDownStartPos = rightDownPoints[0];
+            var leftDownStartPos = leftDownPoints[0];
+            GenerateEndCap(leftUpStartPos, rightUpStartPos, rightDownStartPos, leftDownStartPos, swidth, height, breadth, finishBin);
+
+            var leftUpEndPos = leftTopPoints.Last();
+            var rightUpEndPos = rightTopPoints.Last();
+            var rightDownEndPos = rightDownPoints.Last();
+            var leftDownEndPos = leftDownPoints.Last();
+            GenerateEndCap(rightUpEndPos, leftUpEndPos, leftDownEndPos, rightDownEndPos, swidth, height, breadth, finishBin );
         }
-        public static void RenderRoadSegment(RoadStrip connection, IRenderBin renderHelper, float voffset = 0) {
-            foreach(var lane in connection.Lanes) { // Iterate through each lane in the road segment
-                renderHelper.DrawModel(lane.GetMesh()); // Draw the mesh of the lane with the specified vertical offset
-            }
+
+        public static void GenerateEndCap(Vector3 ul, Vector3 ur, Vector3 dr, Vector3 dl, float width, float height, float expand, IRenderBin mesh) {
+            var p1 = new VertexPositionColorTexture(ul, Color.White, new(0, 0));
+            var p2 = new VertexPositionColorTexture(ur, Color.White, new(width, 0));
+            var p3 = new VertexPositionColorTexture(dr, Color.White, new(width + expand, -height));
+            var p4 = new VertexPositionColorTexture(dl, Color.White, new(-expand, -height));
+            mesh.DrawQuad(p1, p2, p3, p4);
         }
+
+        public static void GenerateLaneStripMesh(LaneStrip laneStrip, IRenderBin renderer, float voffset = 0) {
         public static void GenerateLaneStripMesh(LaneStrip laneStrip, IRenderBin renderer, float voffset = 0.01f) {
             var tag = laneStrip.Tag;
             GenerateLaneRangeMesh(tag, renderer, laneStrip.Spec.Color, voffset, laneStrip); // Generate the lane tag mesh
@@ -163,8 +183,8 @@ namespace TranSimCS.Roads {
             var strips = GenerateSplines(range, voffset); // Generate the splines for the left and right lanes
 
             //Generate border curves
-            Vector3[] leftBorder = GenerateSplinePoints(strips.Item1, 10);
-            Vector3[] rightBorder = GenerateSplinePoints(strips.Item2, 10);
+            Vector3[] leftBorder = GenerateSplinePoints(strips.Item1);
+            Vector3[] rightBorder = GenerateSplinePoints(strips.Item2);
 
             var leftBorder2 = GeneratePositionsFromVectors(0, color, leftBorder);
             var rightBorder2 = GeneratePositionsFromVectors(1, color, rightBorder);
@@ -296,8 +316,8 @@ namespace TranSimCS.Roads {
 
                 if (lbound == ubound) {
                     var bounds = startNode.Bounds();
-                    var lpos = Geometry.calcLineEnd(startNode, bounds.X).Position;
-                    var rpos = Geometry.calcLineEnd(startNode, bounds.Y).Position;
+                    var lpos = calcLineEnd(startNode, bounds.X).Position;
+                    var rpos = calcLineEnd(startNode, bounds.Y).Position;
 
                     //One node remaining
                     topSpline = prevSpline;
@@ -325,7 +345,7 @@ namespace TranSimCS.Roads {
 
                 //Render the last-node or the inter-strip patch with vertical offset
                 var offset = new Vector3(0, voffset, 0);
-                RenderPatch.RenderCoonsPatch(mesh, bottomSpline, topSpline, leftSpline.Inverse(), rightSpline.Inverse(), (p, uv) => Geometry.CreateVertex(p + offset, color), accuracy, accuracy);
+                RenderPatch.RenderCoonsPatch(mesh, bottomSpline, topSpline, leftSpline.Inverse(), rightSpline.Inverse(), (PointGenerator)((p, uv) => CreateVertex(p + offset, color)), accuracy, accuracy);
 
                 lbound++;
                 ubound--;
@@ -340,25 +360,25 @@ namespace TranSimCS.Roads {
         /// <param name="discriminant">determines the sidea</param>
         /// <returns></returns>
         public static Bezier3 GenerateRoadEdge(RoadNodeEnd start, RoadNodeEnd end, int discriminant) {
-            LineEnd startPos = Geometry.calcBoundingLineEndFaced(start, discriminant);
-            LineEnd endPos = Geometry.calcBoundingLineEndFaced(end, -discriminant);            
-            return Geometry.GenerateJoinSpline(startPos.Ray, endPos.Ray);
+            LineEnd startPos = calcBoundingLineEndFaced(start, discriminant);
+            LineEnd endPos = calcBoundingLineEndFaced(end, -discriminant);            
+            return GenerateJoinSpline(startPos.Ray, endPos.Ray);
         }
 
         public static void GenerateIntersectionStrip(IRenderBin mesh, RoadNodeEnd start, RoadNodeEnd end, int accuracy = 17, float voffset = 0f) {
             //Generate bounding edges
-            var startLeft = Geometry.calcBoundingLineEndFaced(start, -1);
-            var startRight = Geometry.calcBoundingLineEndFaced(start, 1);
-            var endRight = Geometry.calcBoundingLineEndFaced(end, 1);
-            var endLeft = Geometry.calcBoundingLineEndFaced(end, -1);
+            var startLeft = calcBoundingLineEndFaced(start, -1);
+            var startRight = calcBoundingLineEndFaced(start, 1);
+            var endRight = calcBoundingLineEndFaced(end, 1);
+            var endLeft = calcBoundingLineEndFaced(end, -1);
 
-            var leftEdge = Geometry.GenerateSplinePoints(startLeft.Position, endRight.Position, startLeft.Tangential, endRight.Tangential, accuracy);
-            var rightEdge = Geometry.GenerateSplinePoints(startRight.Position, endLeft.Position, startRight.Tangential, endLeft.Tangential, accuracy);
+            var leftEdge = GenerateSplinePoints(startLeft.Position, endRight.Position, startLeft.Tangential, endRight.Tangential, accuracy);
+            var rightEdge = GenerateSplinePoints(startRight.Position, endLeft.Position, startRight.Tangential, endLeft.Tangential, accuracy);
             var wovenStrip = WeaveStrip(leftEdge, rightEdge);
 
             // Apply vertical offset to prevent Z-fighting with ground
             var offset = new Vector3(0, voffset, 0);
-            var stripVerts = wovenStrip.Select(p => Geometry.CreateVertex(p + offset)).ToArray();
+            var stripVerts = wovenStrip.Select(p => CreateVertex(p + offset)).ToArray();
 
             mesh.DrawStrip(stripVerts);
         }

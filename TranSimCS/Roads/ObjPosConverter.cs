@@ -2,6 +2,7 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 using TranSimCS.Save2;
 using TranSimCS.Worlds;
 
@@ -34,7 +35,7 @@ namespace TranSimCS.Roads {
             if (position == null) JsonProcessor.Fail(reader, "Missing 'position' property in ObjPos");
 
             // Convert azimuth from radians to field representation
-            int azimuthField = Geometry.RadiansToField(azimuthRadians);
+            int azimuthField = GeometryUtils.RadiansToField(azimuthRadians);
             return new ObjPos(position.Value, azimuthField, inclination, tilt);
         }
 
@@ -43,7 +44,7 @@ namespace TranSimCS.Roads {
             var vectorSerializer = new Vector3Converter();
             writer.WritePropertyName("position");
             vectorSerializer.Write(writer, value.Position, options);
-            writer.WriteNumber("azimuth", Geometry.FieldToRadians(value.Azimuth));
+            writer.WriteNumber("azimuth", GeometryUtils.FieldToRadians(value.Azimuth));
             writer.WriteNumber("inclination", value.Inclination);
             writer.WriteNumber("tilt", value.Tilt);
             writer.WriteEndObject();

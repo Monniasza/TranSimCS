@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Iesi.Collections.Generic;
 using Microsoft.Xna.Framework;
 using TranSimCS.Worlds;
@@ -44,6 +45,13 @@ namespace TranSimCS.Roads {
             float rbound = Node.Lanes[Node.Lanes.Count-1].RightPosition;
             if (End == NodeEnd.Backward) (lbound, rbound) = (rbound, lbound);
             return new Vector2(lbound, rbound);
+        }
+
+        public Transform3 CalcReferenceFrame() {
+            var frame = PositionProp.Value.CalcReferenceFrame();
+            return (End == NodeEnd.Backward) ? frame.Around() : frame;
+            //it's to be inverted
+            
         }
     }
 }

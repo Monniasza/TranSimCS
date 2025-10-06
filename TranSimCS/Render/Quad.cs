@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Geometry;
 
 namespace TranSimCS {
     public struct Quad {
@@ -31,18 +32,18 @@ namespace TranSimCS {
 
         public static Quad operator +(Quad quad, Vector3 offset) {
             return new Quad(
-                Geometry.OffsetVert(quad.a, offset),
-                Geometry.OffsetVert(quad.b, offset),
-                Geometry.OffsetVert(quad.c, offset),
-                Geometry.OffsetVert(quad.d, offset)
+                GeometryUtils.OffsetVert(quad.a, offset),
+                GeometryUtils.OffsetVert(quad.b, offset),
+                GeometryUtils.OffsetVert(quad.c, offset),
+                GeometryUtils.OffsetVert(quad.d, offset)
             );
         }
         public static Quad operator -(Quad quad, Vector3 offset) {
             return new Quad(
-                Geometry.SubVert(quad.a, offset),
-                Geometry.SubVert(quad.b, offset),
-                Geometry.SubVert(quad.c, offset),
-                Geometry.SubVert(quad.d, offset)
+                GeometryUtils.SubVert(quad.a, offset),
+                GeometryUtils.SubVert(quad.b, offset),
+                GeometryUtils.SubVert(quad.c, offset),
+                GeometryUtils.SubVert(quad.d, offset)
             );
         }
     }

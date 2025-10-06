@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TranSimCS.Tools;
 
 namespace TranSimCS {
     public static class Equality {
@@ -37,6 +38,10 @@ namespace TranSimCS {
         public static EqualityComparer<U> By<T, U>(Func<U, T> byFunc, EqualityComparer<T>? eq = null){
             var eq2 = eq ?? EqualityComparer<T>.Default;
             return EqualityComparer<U>.Create((a, b) => eq2.Equals(byFunc(a), byFunc(b)));
+        }
+
+        internal static IEqualityComparer<T> ReferenceEqualComparer<T>() {
+            return EqualityComparer<T>.Create((a, b) => Object.ReferenceEquals(a, b));
         }
     }
 }

@@ -11,9 +11,9 @@ using TranSimCS.Roads;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
-namespace TranSimCS
+namespace TranSimCS.Geometry
 {
-    internal static class Geometry
+    internal static class GeometryUtils
     {
         public static Vector3 FindNearest(Ray ray, Vector3 point, out float tt) {
             var direction = ray.Direction;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Worlds;
 
@@ -134,7 +135,7 @@ namespace TranSimCS.Roads {
             } else {
                 var leftPos = Lanes[0].LeftPosition;
                 var rightPos = Lanes[Lanes.Count - 1].RightPosition;
-                _centerPos = Geometry.calcLineEnd(FrontEnd, (leftPos + rightPos) / 2).Position;
+                _centerPos = GeometryUtils.calcLineEnd(FrontEnd, (leftPos + rightPos) / 2).Position;
             }
         }
         public Vector3? _centerPos;

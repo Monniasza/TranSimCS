@@ -4,9 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Menus.InGame;
 
 namespace TranSimCS {
-    public class Camera {
+    public struct Camera: IEquatable<Camera> {
+        public static Camera Default => new Camera(new Vector3(0, 0, 0), 64, 0, 0.2f);
+
         public Vector3 Position { get; set; } // Camera position in the world
         public float Distance { get; set; } // Camera zoom level
         public float Azimuth { get; set; } // Camera rotation in radians
@@ -41,6 +45,38 @@ namespace TranSimCS {
             FlipX(ref targetPosition);
             // Create the view matrix using the camera's position and target position
             return Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(eyePosition, targetPosition, Vector3.Up);
+        }
+
+        public void SetUpEffect(BasicEffect effect, InGameMenu game) => SetUpEffect(effect, game.Game.GraphicsDevice);
+        public void SetUpEffect(BasicEffect effect, GraphicsDevice gpu) {
+            effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, gpu.Viewport.AspectRatio, 0.1f, 10000f);
+            effect.World = Matrix.Identity;
+            // Optimized near/far plane for better depth buffer precision across all distances
+            // Near plane increased from 1f to 0.1f - this dramatically improves depth precision
+            // Far plane set to 10000f to balance view distance with precision
+            effect.View = GetViewMatrix();
+        }
+
+        //EQUALITY
+        public bool Equals(Camera other) {
+            return
+                other.Distance == Distance &&
+                other.Elevation == Elevation &&
+                other.Azimuth == Azimuth &&
+                other.Position == Position;
+
+        }
+        public override bool Equals(object? obj) {
+            return obj is Camera && Equals((Camera)obj);
+        }
+        public static bool operator ==(Camera left, Camera right) {
+            return left.Equals(right);
+        }
+        public static bool operator !=(Camera left, Camera right) {
+            return !(left == right);
+        }
+        public override int GetHashCode() {
+            return HashCode.Combine(Position, Distance, Azimuth, Elevation);
         }
     }
 }

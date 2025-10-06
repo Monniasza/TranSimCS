@@ -1,5 +1,6 @@
 ﻿
 
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -28,5 +29,7 @@ namespace TranSimCS {
         public readonly Quad Transform(Quad quad) {
             return new Quad(Transform(quad.a), Transform(quad.b), Transform(quad.c), Transform(quad.d));
         }
+
+        public Transform3 Around() => new Transform3(-X, Y, -Z, O);
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -12,7 +12,9 @@ using Microsoft.Xna.Framework.Input;
 using MLEM.Textures;
 using MLEM.Ui;
 using MLEM.Ui.Elements;
+using MonoGame.Extended.Collections;
 using NLog;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Spline;
@@ -23,20 +25,11 @@ namespace TranSimCS.Menus.InGame {
     public partial class InGameMenu : Menu {
         public static readonly Plane groundPlane = new Plane(0, 1, 0, -0.1f);
 
-        private static Logger log = LogManager.GetCurrentClassLogger();
+        private static readonly Logger log = LogManager.GetCurrentClassLogger();
 
         public TSWorld World { get; private set; } = null!;
+        public readonly Configuration configuration;
 
-        private ITool? _tool;
-        public ITool? Tool {
-            get => _tool;
-            set {
-                var newTool = value;
-                _tool?.OnClose();
-                newTool?.OnOpen();
-                _tool = value;
-            }
-        }
 
         //Graphics
         private BasicEffect effect = null!;
@@ -46,14 +39,15 @@ namespace TranSimCS.Menus.InGame {
         public RoadSelection? MouseOverRoad { get; set; } = null; // Store the selected road selection
         public object? SelectedObject = null;
         public Vector3 IntersectWithGround(Ray ray) {
-            return Geometry.IntersectRayPlane(ray, groundPlane);
+            return GeometryUtils.IntersectRayPlane(ray, groundPlane);
         }
         public Vector3 GroundSelection => IntersectWithGround(MouseRay);
         public Vector3 GroundSelectionOld => IntersectWithGround(MouseRayOld);
 
         public Ray MouseRay { get; private set; } // Ray from the mouse position in the world
         public Ray MouseRayOld { get; private set; } // Ray from the mouse position in the world
-        public Camera camera = new Camera(new Vector3(0, 0, 0), 64, 0, 0.2f); // Initialize the camera
+
+
         public float MotionSpeed = 1f; // Speed of camera movement
         public float RotationSpeed = 1f; // Speed of camera rotation
         static int scrollWheelValue = 0; // Store the scroll wheel value
@@ -64,15 +58,13 @@ namespace TranSimCS.Menus.InGame {
         public Panel SettingsPanel { get; private set; } = null!;
         public RootElement ToolPanelRoot { get; private set; } = null!;
 
-        public Panel ToolDescPanel { get; private set; } = null!;
-        public Panel KeyBindPanel { get; private set; } = null!;
-        public Paragraph ToolName {  get; private set; } = null!;
-        public Paragraph ToolDesc {  get; private set; } = null!;
+        public ToolDescriptionPanel ToolDescPanel { get; private set; } = null!;
+        public KeyBindPanel KeyBindPanel { get; private set; } = null!;
+
         public bool IsMouseOverUI { get; private set; }
         public Checkbox CheckNodes { get; private set; } = null!;
         public Checkbox CheckSegments { get; private set; } = null!;
         public Checkbox CheckSections { get; private set; } = null!;
-        public Property<LaneSpec> roadProperty { get; private set; }
 
         //Overlays
         public RoadConfigurator configurator { get; private set; }
@@ -91,7 +83,13 @@ namespace TranSimCS.Menus.InGame {
         public RoadCreationTool RoadCreationTool { get; private set; }
 
         internal InGameMenu(Game1 game): base(game) {
-            roadProperty = new Property<LaneSpec>(LaneSpec.Default, "lane spec");
+            configuration = new Configuration();
+            configuration.ToolProp.ValueChanged += ToolProp_ValueChanged;
+        }
+
+        private void ToolProp_ValueChanged(object? sender, PropertyChangedEventArgs2<ITool?> e) {
+            e.OldValue?.OnClose();
+            e.NewValue?.OnOpen();
         }
 
         public override void Destroy() {
@@ -111,14 +109,9 @@ namespace TranSimCS.Menus.InGame {
             //Generate graphics stuff
             effect = new BasicEffect(Game.GraphicsDevice) {
                 VertexColorEnabled = true,
-                TextureEnabled = true,
-                View = Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(new Vector3(0, 32, -64), Vector3.Zero, Vector3.Up),
-                World = Matrix.Identity,
-                // Optimized near/far plane for better depth buffer precision across all distances
-                // Near plane increased from 1f to 0.1f - this dramatically improves depth precision
-                // Far plane set to 10000f to balance view distance with precision
-                Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, Game.GraphicsDevice.Viewport.AspectRatio, 0.1f, 10000f),
+                TextureEnabled = true
             };
+            configuration.Camera.SetUpEffect(effect, this);
             renderHelper = new RenderHelper(Game.GraphicsDevice, effect);
 
             //Load the road texture
@@ -144,7 +137,7 @@ namespace TranSimCS.Menus.InGame {
             CheckSections = UI.CreateCheck(this, SettingsPanel, "Select sections and intersections", "ui/junction");
             CheckSections.Checked = true;
 
-            configurator = new RoadConfigurator(this, roadProperty, MLEM.Ui.Anchor.Center, new(0.5f, 0.5f));
+            configurator = new RoadConfigurator(this, configuration.LaneSpecProp, MLEM.Ui.Anchor.Center, new(0.5f, 0.5f));
 
             RoadCreationTool = new RoadCreationTool(this);
             SetUpToolPictureButton("noTool", null);
@@ -158,17 +151,13 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("finish", new RoadFinishTool(this));
 
             //Set up the tool preview
-            ToolDescPanel = new Panel(MLEM.Ui.Anchor.TopLeft, new(0.5f, 20), true);
-            UiSystem.Add("tooldesc", ToolDescPanel);
+            ToolDescPanel = new ToolDescriptionPanel(this);
+            UiSystem.Add("toolDesc", ToolDescPanel);
 
-            KeyBindPanel = new Panel(MLEM.Ui.Anchor.TopRight, new(0.5f, 40), true);
+            KeyBindPanel = new KeyBindPanel(this);
             UiSystem.Add("keybinds", KeyBindPanel);
 
-            ToolName = new Paragraph(MLEM.Ui.Anchor.AutoInline, 1, "");
-            ToolName.RegularFont = Game.Gsf;
-            ToolDescPanel.AddChild(ToolName);
-            ToolDesc = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 1, "");
-            ToolDescPanel.AddChild(ToolDesc);
+            
 
             //Set up the escape menu
             escapeMenu = new EscapeMenu(this);
@@ -184,7 +173,7 @@ namespace TranSimCS.Menus.InGame {
             return button;
         }
         private (PictureButton, ITool) SetUpToolPictureButton(String texture, ITool tool) {
-            return (SetUpPictureButton(texture, () => Tool = tool), tool);
+            return (SetUpPictureButton(texture, () => configuration.Tool = tool), tool);
         }
 
         public override void Update(GameTime time) {
@@ -270,6 +259,7 @@ namespace TranSimCS.Menus.InGame {
             if (MouseOverRoad != null) SelectedObject = MouseOverRoad.hitObject;
 
             //Handle scroll wheel input for zooming in and out
+            var camera = configuration.Camera;
             if (Game.MouseState.ScrollWheelValue != scrollWheelValue) {
                 // Zoom in or out based on the scroll wheel value
                 int mouseScrollDelta = Game.MouseState.ScrollWheelValue - scrollWheelValue;
@@ -279,16 +269,7 @@ namespace TranSimCS.Menus.InGame {
                 camera.Distance *= zoomDelta; // Update camera distance based on zoom factor
             }
             if (effect != null) {
-                effect.View = camera.GetViewMatrix(); // Update the view matrix of the effect with the camera's view matrix
-
-                // Use fixed near/far plane for stable rendering
-                // Dynamic adjustment was causing objects to disappear and flicker
-                effect.Projection = Matrix.CreatePerspectiveFieldOfView(
-                    MathHelper.PiOver4,
-                    Game.GraphicsDevice.Viewport.AspectRatio,
-                    0.1f,    // Fixed near plane
-                    10000f   // Fixed far plane
-                );
+                configuration.Camera.SetUpEffect(effect, this);
             }
 
             //Handle camera movement with WASD keys
@@ -325,8 +306,10 @@ namespace TranSimCS.Menus.InGame {
             newElevation = MathHelper.Clamp(newElevation, -MathF.PI / 2 + 0.01f, MathF.PI / 2 - 0.01f);
             camera.Azimuth = newAzimuth; // Update camera azimuth
             camera.Elevation = newElevation; // Update camera elevation
+            configuration.Camera = camera;
 
             //Run the world tool
+            var Tool = configuration.Tool;
             if (!IsMouseOverUI) {
                 if (Game.MouseState.LeftButton == ButtonState.Pressed && Game.MouseStateOld.LeftButton == ButtonState.Released) Tool?.OnClick(MLEM.Input.MouseButton.Left);
                 if (Game.MouseState.MiddleButton == ButtonState.Pressed && Game.MouseStateOld.MiddleButton == ButtonState.Released) Tool?.OnClick(MLEM.Input.MouseButton.Middle);
@@ -445,7 +428,7 @@ namespace TranSimCS.Menus.InGame {
 
 
             //Render ground with multiple planes
-            var centerPos = camera.Position;
+            var centerPos = configuration.Camera.Position;
             centerPos.Y = 0;
             float scale = 1000;
             for(int i = 0; i < 13; i++) {
@@ -468,7 +451,7 @@ namespace TranSimCS.Menus.InGame {
 
 
             //Render road tool
-            Tool?.Draw(time);
+            configuration.Tool?.Draw(time);
 
             //Render the render helper
             renderHelper.Render();
@@ -484,7 +467,7 @@ namespace TranSimCS.Menus.InGame {
                     action(lane);
         }
 
-        private (object[], string)[] PromptKeys() => [
+        public (object[], string)[] FixedKeys() => [
             ([Keys.Escape], "Pause menu"),
             ([Keys.W, Keys.A, Keys.S, Keys.D], "Move"),
             ([Keys.T], "Edit lane specs"),
@@ -493,48 +476,10 @@ namespace TranSimCS.Menus.InGame {
 
         private (object[], string)[] lastDescription;
         public override void Draw2D(GameTime time) {
-            string toolName = (Tool?.Name) ?? "no tool";
-            string toolDesc = (Tool?.Description) ?? "";
-            Game.SpriteBatch.Begin();
-            ToolName.Text = toolName;
-            ToolDesc.Text = toolDesc;
-            ToolPanel.SetAreaDirty();
+            var Tool = configuration.Tool;
+            ToolDescPanel.Update();
+            KeyBindPanel.Update();
 
-            //Handle keybinds
-            var keylist = new List<(object[], string)>();
-            keylist.AddRange(PromptKeys());
-            var k2 = Tool?.PromptKeys();
-            if (k2 != null) keylist.AddRange(k2);
-            var keybinds = keylist.ToArray();
-
-            var keybindsChanged = !Equality.DeepArrayEqualsWithNull(lastDescription, keybinds);
-
-            if (keybindsChanged) {
-                log.Trace("Refreshing keybinds: ");
-                log.Trace(keybinds);
-                //Keybinds changed
-                KeyBindPanel.RemoveChildren();
-                foreach(var keybind in keybinds ?? []) {
-                    var keys = keybind.Item1;
-                    bool firstInLine = true;
-                    foreach(var key in keys) {
-                        var tex = KeyPromptMapper.GetPrompt(key);
-                        if (tex != null) {
-                            Image img = new Image(firstInLine ? MLEM.Ui.Anchor.AutoLeft : MLEM.Ui.Anchor.AutoInline, new(1, 1), tex, true);
-                            KeyBindPanel.AddChild(img);
-                            firstInLine = false;
-                        }
-                    }
-                    var desc = keybind.Item2;
-                    var paragraph = new Paragraph(MLEM.Ui.Anchor.AutoInline, 0.5f, desc ?? "", true);
-                    KeyBindPanel.AddChild(paragraph);
-                }
-                KeyBindPanel.SetAreaDirty();
-            }
-            lastDescription = keybinds;
-
-            ToolDescPanel.SetAreaDirty();
-            Game.SpriteBatch.End();
             Tool?.Draw2D(time);
 
             UiSystem.Draw(time, Game.SpriteBatch);

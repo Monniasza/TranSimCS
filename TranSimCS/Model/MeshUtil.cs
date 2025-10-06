@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 
 namespace TranSimCS.Model {
     public static class MeshUtil {
@@ -26,7 +27,7 @@ namespace TranSimCS.Model {
                 var v0 = mesh.Vertices[mesh.Indices[i]].Position;
                 var v1 = mesh.Vertices[mesh.Indices[i + 1]].Position;
                 var v2 = mesh.Vertices[mesh.Indices[i + 2]].Position;
-                if (Geometry.RayIntersectsTriangle(ray, v0, v1, v2, out float thisIntersectionDistance, 1e-6f, intersectionDistance0)) {
+                if (GeometryUtils.RayIntersectsTriangle(ray, v0, v1, v2, out float thisIntersectionDistance, 1e-6f, intersectionDistance0)) {
                     object? potentialTag = mesh.Tags.ContainsKey(i / 3) ? mesh.Tags[i / 3] : null;
                     if (thisIntersectionDistance < intersectionDistance0) {
                         intersectionDistance0 = thisIntersectionDistance;

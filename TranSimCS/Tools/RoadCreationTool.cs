@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using MLEM.Ui;
 using NLog;
+using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads;
@@ -35,7 +36,7 @@ namespace TranSimCS.Tools {
             plan.endLateral = plan.startLateral;
             plan.endTangent = plan.startTangent;
             Ray ray = new Ray(plan.startPos, plan.startTangent);
-            var endPos = Geometry.FindNearest(ray, plan.endPos, out var _);
+            var endPos = GeometryUtils.FindNearest(ray, plan.endPos, out var _);
             plan.endPos = endPos;
         }
     }
@@ -53,8 +54,8 @@ namespace TranSimCS.Tools {
             var reflectionVector = plan.endPos - plan.startPos;
             reflectionVector = new(reflectionVector.Z, reflectionVector.Y, -reflectionVector.X);
             reflectionVector.Normalize();
-            plan.endTangent = Geometry.ReflectVectorByNormal(plan.startTangent, reflectionVector);
-            plan.endLateral = -Geometry.ReflectVectorByNormal(plan.startLateral, reflectionVector);
+            plan.endTangent = GeometryUtils.ReflectVectorByNormal(plan.startTangent, reflectionVector);
+            plan.endLateral = -GeometryUtils.ReflectVectorByNormal(plan.startLateral, reflectionVector);
         }
     }
 
@@ -131,7 +132,7 @@ namespace TranSimCS.Tools {
                 var selectedNode = GetLaneEnd();
                 if (menu.SelectedObject is AddLaneSelection als) {
                     //The user wants to create a new lane
-                    var newLaneEnd = als.NewLane(menu.roadProperty.Value);
+                    var newLaneEnd = als.NewLane(menu.configuration.LaneSpec);
                     var spec = RoadTools.ChainMode.Value.ChainValues(menu);
                     selectedNode = newLaneEnd;
                     newLaneEnd.lane.Spec = spec;
@@ -194,7 +195,7 @@ namespace TranSimCS.Tools {
                 var node0 = node.Value;
                 var lane0 = node0.lane;
 
-                var startingPosition0 = Geometry.calcLineEnd(node0.RoadNodeEnd, lane0.MiddlePosition);
+                var startingPosition0 = GeometryUtils.calcLineEnd(node0.RoadNodeEnd, lane0.MiddlePosition);
                 var startingTangent = startingPosition0.Tangential;
                 var startingLateral = startingPosition0.Lateral;
                 var startPos = startingPosition0.Position;
@@ -213,9 +214,9 @@ namespace TranSimCS.Tools {
                 if (menu.SelectedObject is AddLaneSelection als) {
                     //The user wants to create a new lane
                     var mouseOverNodeEnd = als.nodeEnd;
-                    endWidth = menu.roadProperty.Value.Width;
+                    endWidth = menu.configuration.LaneSpec.Width;
                     var range = als.CalculateOffset(endWidth/2);
-                    var end = Geometry.calcLineEnd(mouseOverNodeEnd, range);
+                    var end = GeometryUtils.calcLineEnd(mouseOverNodeEnd, range);
                     endTangent = end.Tangential;
                     endPos = end.Position;
                     endLateral = end.Lateral;
@@ -225,7 +226,7 @@ namespace TranSimCS.Tools {
                     //Create a synthetic end
                     SegmentAlreadyExists = null;
                     Plane selectionPlane = new Plane(Vector3.UnitY * RoadTools.Height.Value, Vector3.UnitY);
-                    endPos = Geometry.IntersectRayPlane(menu.MouseRay, selectionPlane);
+                    endPos = GeometryUtils.IntersectRayPlane(menu.MouseRay, selectionPlane);
 
                     RoadPlan plan = new RoadPlan {
                         startLateral = startingLateral,
@@ -246,15 +247,18 @@ namespace TranSimCS.Tools {
                     startPos = plan.startPos;
                     startingTangent = plan.startTangent;
 
-                    Vector3 endingLateral = new(endTangent.Z, endTangent.Y, -endTangent.X);
+                    Vector3 endingLateral = endLateral; //new(endTangent.Z, endTangent.Y, -endTangent.X);
                     var endLeftPos = endPos - endingLateral * node.Value.lane.Width / 2;
                     var tilt = node.Value.lane.RoadNode.PositionProp.Value.Tilt;
+
+                    if (RoadTools.flattenTilt.Checked) endingLateral = Vector3.Normalize(new Vector3(endingLateral.X, 0, endingLateral.Z));
+                    if (RoadTools.flattenIncline.Checked) endTangent = Vector3.Normalize(new Vector3(endTangent.X, 0, endTangent.Z));
 
                     //Flatten tilt or inclination
                     //Calculate the NodePosition
                     var newNodePosition = ObjPos.FromPosTangentTilt(endLeftPos, endTangent, tilt);
-                    if (RoadTools.flattenTilt.Checked) newNodePosition.Tilt = 0;
-                    if (RoadTools.flattenIncline.Checked) newNodePosition.Inclination = 0;
+                    //if (RoadTools.flattenTilt.Checked) newNodePosition.Tilt = 0;
+                    //if (RoadTools.flattenIncline.Checked) newNodePosition.Inclination = 0;
                     NewNodePosition = newNodePosition;
                     var frame = newNodePosition.CalcReferenceFrame();
                     endTangent = frame.Z;
@@ -263,7 +267,7 @@ namespace TranSimCS.Tools {
                 } else {
                     //Take an existing end
                     var mouseOverNodeEnd = mouseOverLaneEnd.Value.RoadNodeEnd;
-                    var end = Geometry.calcLineEnd(mouseOverNodeEnd, mouseOverLane.MiddlePosition);
+                    var end = GeometryUtils.calcLineEnd(mouseOverNodeEnd, mouseOverLane.MiddlePosition);
                     endTangent = end.Tangential;
                     endLateral = end.Lateral;
                     endPos = end.Position;
@@ -278,8 +282,8 @@ namespace TranSimCS.Tools {
                 if (SegmentAlreadyExists != null) previewColor = Color.Red;
                 var startDiff = startingLateral * startWidth / 2;
                 var endDiff = endLateral * endWidth / 2;
-                Bezier3 lbound = Geometry.GenerateJoinSpline(startPos - startDiff, endPos - endDiff, startingTangent, -endTangent) + offset;
-                Bezier3 rbound = Geometry.GenerateJoinSpline(startPos + startDiff, endPos + endDiff, startingTangent, -endTangent) + offset;
+                Bezier3 lbound = GeometryUtils.GenerateJoinSpline(startPos - startDiff, endPos - endDiff, startingTangent, -endTangent) + offset;
+                Bezier3 rbound = GeometryUtils.GenerateJoinSpline(startPos + startDiff, endPos + endDiff, startingTangent, -endTangent) + offset;
                 IRenderBin renderBin = menu.renderHelper.GetOrCreateRenderBin(Assets.Road);
                 RoadRenderer.DrawBezierStrip(lbound, rbound, renderBin, previewColor);
             }
