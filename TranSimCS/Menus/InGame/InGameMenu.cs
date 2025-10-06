@@ -80,7 +80,7 @@ namespace TranSimCS.Menus.InGame {
 
         //In-world UI
         public MultiMesh SelectorObjects { get; private set; }
-        public Mesh InvisibleSelectors { get; private set; }
+        public MultiMesh InvisibleSelectors { get; private set; }
 
         //Colors
         private Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
@@ -125,7 +125,7 @@ namespace TranSimCS.Menus.InGame {
 
             //Set up meshes
             SelectorObjects = new MultiMesh();
-            InvisibleSelectors = new Mesh();
+            InvisibleSelectors = new MultiMesh();
 
             //Set up the UI from below
             RootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 120));
@@ -228,14 +228,16 @@ namespace TranSimCS.Menus.InGame {
                 if (CheckNodes.Checked)
                     foreach (var node in World.RoadNodes)
                         meshes.AddRange(node.Mesh.GetMesh().RenderBins.Values);
+                if (CheckSections.Checked)
+                    foreach (var section in World.RoadSections)
+                        meshes.AddRange(section.Mesh.GetMesh().RenderBins.Values);
             }
 
-            //Add tool selectors
-            SelectorObjects.Clear();
-            Tool?.AddSelectors(SelectorObjects);
-            foreach (var mesh in SelectorObjects.RenderBins.Values)
+            //Add tool selectors for collision detection
+            InvisibleSelectors.Clear();
+            Tool?.AddSelectors(InvisibleSelectors);
+            foreach (var mesh in InvisibleSelectors.RenderBins.Values)
                 meshes.Add(mesh);
-            meshes.Add(InvisibleSelectors);
 
             //Remove focus from the toolbar
             ToolPanelRoot?.SelectElement(null);
@@ -395,9 +397,12 @@ namespace TranSimCS.Menus.InGame {
                 SelectorObjects.AddAll(roadNode.Mesh.GetMesh());
 
             //Draw road sections
-            foreach (var section in World.RoadSections) {
+            if(CheckSections.Checked) foreach (var section in World.RoadSections) {
                 SelectorObjects.AddAll(section.Mesh.GetMesh());
             }
+
+            //Add tool selectors for rendering
+            Tool?.AddSelectors(SelectorObjects);
 
             //Draw the tool mesh
             renderHelper.AddAll(SelectorObjects);
@@ -407,9 +412,9 @@ namespace TranSimCS.Menus.InGame {
             if (roadSelection?.SelectedLaneTag != null) {
                 // Draw the selected lane tag with a different color
                 var laneRange = roadSelection.SelectedLaneTag.Value;
-                RoadRenderer.GenerateLaneRangeMesh(laneRange, renderBin, laneHighlightColor, 0.3f);
-                RoadRenderer.GenerateLaneRangeMesh(laneRange.road.FullSizeTag(), renderBin, roadSegmentHighlightColor, 0.2f);
-                var splines = RoadRenderer.GenerateSplines(laneRange, 0.4f);
+                RoadRenderer.GenerateLaneRangeMesh(laneRange, renderBin, laneHighlightColor, 0.5f);
+                RoadRenderer.GenerateLaneRangeMesh(laneRange.road.FullSizeTag(), renderBin, roadSegmentHighlightColor, 0.45f);
+                var splines = RoadRenderer.GenerateSplines(laneRange, 0.55f);
                 Bezier3.TriSection(splines.Item1, minT, maxT, out Bezier3 leftSubBezier1, out Bezier3 leftSubBezier2, out Bezier3 leftSubBezier3);
                 Bezier3.TriSection(splines.Item2, minT, maxT, out Bezier3 rightSubBezier1, out Bezier3 rightSubBezier2, out Bezier3 rightSubBezier3);
 
@@ -427,8 +432,8 @@ namespace TranSimCS.Menus.InGame {
             if(roadSelection?.SelectedLaneEnd != null && roadSelection.SelectedLaneStrip == null) {
                 //Lane selected, road strip not
                 var lane = roadSelection.SelectedLaneEnd.Value;
-                var quad = RoadRenderer.GenerateLaneQuad(lane, 0.4f, Color.Yellow);
-                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(lane.lane.RoadNode, roadSegmentHighlightColor, 0.3f);
+                var quad = RoadRenderer.GenerateLaneQuad(lane, 0.5f, Color.Yellow);
+                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(lane.lane.RoadNode, roadSegmentHighlightColor, 0.45f);
                 renderBin.DrawQuad(quad);
                 renderBin.DrawQuad(nodeQuad);
             }
@@ -436,7 +441,7 @@ namespace TranSimCS.Menus.InGame {
             //If the add lane button is selected, draw it
             IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBin(Assets.Add);
             if (SelectedObject is AddLaneSelection selection)
-                RoadRenderer.CreateAddLane(selection, plusRenderBin, roadProperty.Value.Width, roadSegmentHighlightColor, 0.3f);
+                RoadRenderer.CreateAddLane(selection, plusRenderBin, roadProperty.Value.Width, roadSegmentHighlightColor, 0.5f);
 
 
             //Render ground with multiple planes
@@ -450,7 +455,7 @@ namespace TranSimCS.Menus.InGame {
                 var dropY = (scale - 1000) / 1000;
                 var texscale = scale / 100;
 
-                
+
                 scale *= 2;
                 IRenderBin grassBin = renderHelper.GetOrCreateRenderBin(Assets.Grass);
                 grassBin.DrawQuad(
@@ -460,7 +465,7 @@ namespace TranSimCS.Menus.InGame {
                     GenerateGroundVertex(new(x-scale, -dropY, z-scale), texscale)
                 );
             }
-            
+
 
             //Render road tool
             Tool?.Draw(time);

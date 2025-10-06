@@ -154,14 +154,12 @@ namespace TranSimCS.Roads {
                 renderHelper.DrawModel(lane.GetMesh()); // Draw the mesh of the lane with the specified vertical offset
             }
         }
-        public static void GenerateLaneStripMesh(LaneStrip laneStrip, IRenderBin renderer, float voffset = 0) {
+        public static void GenerateLaneStripMesh(LaneStrip laneStrip, IRenderBin renderer, float voffset = 0.01f) {
             var tag = laneStrip.Tag;
             GenerateLaneRangeMesh(tag, renderer, laneStrip.Spec.Color, voffset, laneStrip); // Generate the lane tag mesh
         }
 
         public static void GenerateLaneRangeMesh(LaneRange range, IRenderBin renderer, Color color, float voffset = 0.3f, object tag = null) {
-            var offset = new Vector3(0, voffset, 0); // Offset for the lane position
-
             var strips = GenerateSplines(range, voffset); // Generate the splines for the left and right lanes
 
             //Generate border curves
