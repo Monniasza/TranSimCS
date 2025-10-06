@@ -48,7 +48,8 @@ namespace TranSimCS.Roads {
         }
 
         public Transform3 CalcReferenceFrame() {
-            return PositionProp.Value.CalcReferenceFrame();
+            var frame = PositionProp.Value.CalcReferenceFrame();
+            return (End == NodeEnd.Backward) ? frame.Around() : frame;
             //it's to be inverted
             
         }

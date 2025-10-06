@@ -98,9 +98,8 @@ namespace TranSimCS.Roads {
         /// <param name="renderHelper">render helper</param>
         public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MultiMesh renderHelper, float voffset = 0) {
             IRenderBin roadBin = renderHelper.GetOrCreateRenderBin(Assets.Road);
-            foreach(var lane in connection.Lanes) {
+            foreach(var lane in connection.Lanes) 
                 roadBin.DrawModel(lane.GetMesh());
-            }
 
             //Draw the road finish
             var finish = connection.Finish;
@@ -111,7 +110,9 @@ namespace TranSimCS.Roads {
             var splineFrame = connection.CalcSplineFrame();
             var bounds = connection.Bounds;
 
-            var avgWidth = (bounds.rightStart - bounds.leftStart + bounds.rightEnd - bounds.leftEnd) / 2;
+            var swidth = MathF.Abs(bounds.rightStart - bounds.leftStart);
+            var ewidth = MathF.Abs(bounds.rightEnd - bounds.leftEnd);
+            var avgWidth = (swidth + ewidth) / 2;
 
             var leftStart = Vector3.UnitX * bounds.leftStart;
             var rightStart = Vector3.UnitX * bounds.rightStart;
@@ -133,6 +134,7 @@ namespace TranSimCS.Roads {
             var sideLen = new Vector2(height, breadth).Length();
 
             var zeroFn = UniformTexturing.WithFixedU(0);
+
             var sideLenFn = UniformTexturing.WithFixedU(sideLen);
             var avgWidthFn = UniformTexturing.WithFixedU(avgWidth);
 
@@ -148,13 +150,29 @@ namespace TranSimCS.Roads {
             finishBin.DrawStrip(leftPointsL, leftPointsR);
             finishBin.DrawStrip(rightPointsL, rightPointsR);
             finishBin.DrawStrip(bottomPointsL, bottomPointsR);
-            
+
+            //Draw the endcaps
+            var leftUpStartPos = leftTopPoints[0];
+            var rightUpStartPos = rightTopPoints[0];
+            var rightDownStartPos = rightDownPoints[0];
+            var leftDownStartPos = leftDownPoints[0];
+            GenerateEndCap(leftUpStartPos, rightUpStartPos, rightDownStartPos, leftDownStartPos, swidth, height, breadth, finishBin);
+
+            var leftUpEndPos = leftTopPoints.Last();
+            var rightUpEndPos = rightTopPoints.Last();
+            var rightDownEndPos = rightDownPoints.Last();
+            var leftDownEndPos = leftDownPoints.Last();
+            GenerateEndCap(rightUpEndPos, leftUpEndPos, leftDownEndPos, rightDownEndPos, swidth, height, breadth, finishBin );
         }
-        public static void RenderRoadSegment(RoadStrip connection, IRenderBin renderHelper, float voffset = 0) {
-            foreach(var lane in connection.Lanes) { // Iterate through each lane in the road segment
-                renderHelper.DrawModel(lane.GetMesh()); // Draw the mesh of the lane with the specified vertical offset
-            }
+
+        public static void GenerateEndCap(Vector3 ul, Vector3 ur, Vector3 dr, Vector3 dl, float width, float height, float expand, IRenderBin mesh) {
+            var p1 = new VertexPositionColorTexture(ul, Color.White, new(0, 0));
+            var p2 = new VertexPositionColorTexture(ur, Color.White, new(width, 0));
+            var p3 = new VertexPositionColorTexture(dr, Color.White, new(width + expand, -height));
+            var p4 = new VertexPositionColorTexture(dl, Color.White, new(-expand, -height));
+            mesh.DrawQuad(p1, p2, p3, p4);
         }
+
         public static void GenerateLaneStripMesh(LaneStrip laneStrip, IRenderBin renderer, float voffset = 0) {
             var tag = laneStrip.Tag;
             GenerateLaneRangeMesh(tag, renderer, laneStrip.Spec.Color, voffset, laneStrip); // Generate the lane tag mesh
@@ -166,8 +184,8 @@ namespace TranSimCS.Roads {
             var strips = GenerateSplines(range, voffset); // Generate the splines for the left and right lanes
 
             //Generate border curves
-            Vector3[] leftBorder = GenerateSplinePoints(strips.Item1, 10);
-            Vector3[] rightBorder = GenerateSplinePoints(strips.Item2, 10);
+            Vector3[] leftBorder = GenerateSplinePoints(strips.Item1);
+            Vector3[] rightBorder = GenerateSplinePoints(strips.Item2);
 
             var leftBorder2 = GeneratePositionsFromVectors(0, color, leftBorder);
             var rightBorder2 = GeneratePositionsFromVectors(1, color, rightBorder);

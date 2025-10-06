@@ -475,27 +475,6 @@ namespace TranSimCS.Menus.InGame {
             ToolDescPanel.Update();
             KeyBindPanel.Update();
 
-
-            Game.SpriteBatch.Begin();
-
-            //Handle keybinds
-            var keylist = new List<(object[], string)>();
-            keylist.AddRange(FixedKeys());
-            var k2 = Tool?.PromptKeys();
-            if (k2 != null) keylist.AddRange(k2);
-            var keybinds = keylist.ToArray();
-
-            var keybindsChanged = !Equality.DeepArrayEqualsWithNull(lastDescription, keybinds);
-
-            if (keybindsChanged) {
-                log.Trace("Refreshing keybinds: ");
-                log.Trace(keybinds);
-                
-            }
-            lastDescription = keybinds;
-
-            ToolDescPanel.SetAreaDirty();
-            Game.SpriteBatch.End();
             Tool?.Draw2D(time);
 
             UiSystem.Draw(time, Game.SpriteBatch);

@@ -16,7 +16,7 @@ namespace TranSimCS.Tools {
         private InGameMenu menu;
         public RoadFinishTool(InGameMenu menu) {
             this.menu = menu;
-            FinishProp = new Property<RoadFinish>(RoadFinish.Embankment, "finish");
+            FinishProp = menu.configuration.RoadFinishProp;
             tab = new RoadFinishTab(FinishProp);
         }
 
