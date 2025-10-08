@@ -15,8 +15,8 @@ namespace TranSimCS.Tools {
         public Checkbox flattenTilt { get; private set; }
         public Checkbox flattenIncline { get; private set; }
         public Checkbox anarchyCheck { get; private set; }
-        public TextField heightStepField { get; private set; }
-        public TextField HeightField { get; private set; }
+        public NumberField heightStepField { get; private set; }
+        public NumberField HeightField { get; private set; }
         public Property<float> HeightStep { get; private set; }
         public Property<float> Height {  get; private set; }
         public Property<ChainMode> ChainMode { get; private set; }

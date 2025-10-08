@@ -52,10 +52,10 @@ namespace TranSimCS.Tools {
         public string Name => "Circular arc";
         public void CreateValues(RoadPlan plan) {
             var reflectionVector = plan.endPos - plan.startPos;
-            reflectionVector = new(reflectionVector.Z, reflectionVector.Y, -reflectionVector.X);
+            var latReflectionVector = new Vector3(reflectionVector.Z, reflectionVector.Y, -reflectionVector.X);
             reflectionVector.Normalize();
-            plan.endTangent = GeometryUtils.ReflectVectorByNormal(plan.startTangent, reflectionVector);
-            plan.endLateral = -GeometryUtils.ReflectVectorByNormal(plan.startLateral, reflectionVector);
+            plan.endTangent = -GeometryUtils.ReflectVectorByNormal(plan.startTangent, reflectionVector);
+            plan.endLateral = -GeometryUtils.ReflectVectorByNormal(plan.startLateral, latReflectionVector);
         }
     }
 

@@ -46,17 +46,27 @@ namespace TranSimCS.Menus {
 
         public static TextField SetUpProp<T>(string title, Panel panel, Property<T> prop, Func<T, string> getter, Func<string, T> setter){
             var textfieldSize = new Vector2(0.5f, 20);
-            Paragraph label = new Paragraph(Anchor.AutoLeft, 0.5f, title);
-            panel.AddChild(label);
             TextField textfield = new TextField(Anchor.AutoInline, textfieldSize, null, null, getter(prop.Value));
-            panel.AddChild(textfield);
             textfield.OnTextChange = (field, str) => setter(str);
             EventHandler<PropertyChangedEventArgs2<T>> handler = (sender, e) => textfield.SetText(getter(prop.Value));
             prop.ValueChanged += handler;
+            SetUpProp(title, panel, textfield);
             return textfield;
         }
-        public static TextField SetUpFloatProp(string title, Panel panel, Property<float> prop) {
-            var textfield = SetUpProp<float>(title, panel, prop, f => f.ToString(), s => RoadConfigurator.GetNewFloat(s, prop.Value));
+        public static void SetUpProp(string title, Panel panel, Element component) {
+            var textfieldSize = new Vector2(0.5f, 20);
+            Paragraph label = new Paragraph(Anchor.AutoLeft, 0.5f, title);
+            panel.AddChild(label);
+            component.Anchor = Anchor.AutoInline;
+            component.Size = textfieldSize;
+            panel.AddChild(component);
+        }
+        public static NumberField SetUpFloatProp(string title, Panel panel, Property<float> prop) {
+            var textfieldSize = new Vector2(0.5f, 20);
+            var textfield = new NumberField(Anchor.AutoInline, textfieldSize, null, prop.Value);
+            textfield.ValueChanged += (c, v) => prop.Value = v;
+            prop.ValueChanged += (s, e) => textfield.Value = e.NewValue;
+            SetUpProp(title, panel, textfield);
             return textfield;
         }
     }
