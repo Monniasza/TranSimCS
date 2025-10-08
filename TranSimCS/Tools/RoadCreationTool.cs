@@ -247,22 +247,14 @@ namespace TranSimCS.Tools {
                     startPos = plan.startPos;
                     startingTangent = plan.startTangent;
 
-                    Vector3 endingLateral = endLateral; //new(endTangent.Z, endTangent.Y, -endTangent.X);
-                    var endLeftPos = endPos - endingLateral * node.Value.lane.Width / 2;
-                    var tilt = node.Value.lane.RoadNode.PositionProp.Value.Tilt;
-
-                    if (RoadTools.flattenTilt.Checked) endingLateral = Vector3.Normalize(new Vector3(endingLateral.X, 0, endingLateral.Z));
+                    if (RoadTools.flattenTilt.Checked) endLateral = Vector3.Normalize(new Vector3(endLateral.X, 0, endLateral.Z));
                     if (RoadTools.flattenIncline.Checked) endTangent = Vector3.Normalize(new Vector3(endTangent.X, 0, endTangent.Z));
+                    var endLeftPos = endPos - endLateral * node.Value.lane.Width / 2;
 
                     //Flatten tilt or inclination
                     //Calculate the NodePosition
-                    var newNodePosition = ObjPos.FromPosTangentTilt(endLeftPos, endTangent, tilt);
-                    //if (RoadTools.flattenTilt.Checked) newNodePosition.Tilt = 0;
-                    //if (RoadTools.flattenIncline.Checked) newNodePosition.Inclination = 0;
+                    var newNodePosition = ObjPos.FromPosTangentLateral(endLeftPos, endTangent, endLateral);
                     NewNodePosition = newNodePosition;
-                    var frame = newNodePosition.CalcReferenceFrame();
-                    endTangent = frame.Z;
-                    endLateral = frame.X;
 
                 } else {
                     //Take an existing end

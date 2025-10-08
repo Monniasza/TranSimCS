@@ -58,6 +58,13 @@ namespace TranSimCS.Worlds {
             var azimuth = GeometryUtils.RadiansToField(azimuthRadians);
             return new ObjPos(pos, azimuth, inclination, tilt);
         }
+        public static ObjPos FromPosTangentLateral(Vector3 pos, Vector3 tangent, Vector3 lateral) {
+            var nrm = Vector3.Cross(lateral, tangent);
+            nrm.Normalize();
+            var ypr = Transform3.ToYawPitchRoll(lateral, nrm, tangent);
+
+            return new ObjPos(pos, GeometryUtils.RadiansToField(ypr.X), ypr.Y, ypr.Z);
+        }
 
         public bool Equals(ObjPos other) {
             return Position.Equals(other.Position)
