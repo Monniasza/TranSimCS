@@ -38,7 +38,7 @@ namespace TranSimCS {
         }
 
         public static Vector3 ToYawPitchRoll(Vector3 lateral, Vector3 nrm, Vector3 tangent) {
-            var pitch = MathF.Atan2(-tangent.Y, GeometryUtils.hypot2(tangent.X, tangent.Z));
+            var pitch = MathF.Atan2(tangent.Y, GeometryUtils.hypot2(tangent.X, tangent.Z));
             var yaw = MathF.Atan2(tangent.X, tangent.Z);
             var y = Vector3.UnitY;
             var noTiltLateral = Vector3.Cross(y, tangent);

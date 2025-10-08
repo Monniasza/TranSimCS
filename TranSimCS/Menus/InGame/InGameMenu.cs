@@ -224,7 +224,7 @@ namespace TranSimCS.Menus.InGame {
 
             //Add tool selectors for collision detection
             InvisibleSelectors.Clear();
-            Tool?.AddSelectors(InvisibleSelectors);
+            configuration.Tool?.AddSelectors(InvisibleSelectors);
             foreach (var mesh in InvisibleSelectors.RenderBins.Values)
                 meshes.Add(mesh);
 
@@ -362,6 +362,8 @@ namespace TranSimCS.Menus.InGame {
         public const float minT = 0.3f;
         public const float maxT = 0.7f;
         public override void Draw(GameTime time) {
+            var Tool = configuration.Tool;
+
             //Clear the screen to a solid color and clear the render helper
             renderHelper.Clear();
             // CRITICAL: Clear SelectorObjects to prevent geometry accumulation across frames
@@ -424,7 +426,7 @@ namespace TranSimCS.Menus.InGame {
             //If the add lane button is selected, draw it
             IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBin(Assets.Add);
             if (SelectedObject is AddLaneSelection selection)
-                RoadRenderer.CreateAddLane(selection, plusRenderBin, roadProperty.Value.Width, roadSegmentHighlightColor, 0.5f);
+                RoadRenderer.CreateAddLane(selection, plusRenderBin, configuration.LaneSpec.Width, roadSegmentHighlightColor, 0.5f);
 
 
             //Render ground with multiple planes

@@ -173,7 +173,6 @@ namespace TranSimCS.Roads {
             mesh.DrawQuad(p1, p2, p3, p4);
         }
 
-        public static void GenerateLaneStripMesh(LaneStrip laneStrip, IRenderBin renderer, float voffset = 0) {
         public static void GenerateLaneStripMesh(LaneStrip laneStrip, IRenderBin renderer, float voffset = 0.01f) {
             var tag = laneStrip.Tag;
             GenerateLaneRangeMesh(tag, renderer, laneStrip.Spec.Color, voffset, laneStrip); // Generate the lane tag mesh
