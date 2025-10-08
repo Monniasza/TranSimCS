@@ -195,10 +195,10 @@ namespace TranSimCS.Tools {
                 var node0 = node.Value;
                 var lane0 = node0.lane;
 
-                var startingPosition0 = GeometryUtils.calcLineEnd(node0.RoadNodeEnd, lane0.MiddlePosition);
-                var startingTangent = startingPosition0.Tangential;
-                var startingLateral = startingPosition0.Lateral;
-                var startPos = startingPosition0.Position;
+                var startingPositionRef = GeometryUtils.calcLineEnd(node0.RoadNodeEnd, lane0.MiddlePosition);
+                var startTangent = startingPositionRef.Tangential;
+                var startLateral = startingPositionRef.Lateral;
+                var startPos = startingPositionRef.Position;
                 var startWidth = lane0.Width;
 
                 //Initial placeholders for new values
@@ -229,11 +229,11 @@ namespace TranSimCS.Tools {
                     endPos = GeometryUtils.IntersectRayPlane(menu.MouseRay, selectionPlane);
 
                     RoadPlan plan = new RoadPlan {
-                        startLateral = startingLateral,
+                        startLateral = startLateral,
                         endLateral = endLateral,
                         startPos = startPos,
                         endPos = endPos,
-                        startTangent = startingTangent,
+                        startTangent = startTangent,
                         endTangent = endTangent,
                     };
 
@@ -243,9 +243,9 @@ namespace TranSimCS.Tools {
                     endTangent = plan.endTangent;
                     endLateral = plan.endLateral;
                     endPos = plan.endPos;
-                    startingLateral = plan.startLateral;
+                    startLateral = plan.startLateral;
                     startPos = plan.startPos;
-                    startingTangent = plan.startTangent;
+                    startTangent = plan.startTangent;
 
                     if (RoadTools.flattenTilt.Checked) endLateral = Vector3.Normalize(new Vector3(endLateral.X, 0, endLateral.Z));
                     if (RoadTools.flattenIncline.Checked) endTangent = Vector3.Normalize(new Vector3(endTangent.X, 0, endTangent.Z));
@@ -255,6 +255,8 @@ namespace TranSimCS.Tools {
                     //Calculate the NodePosition
                     var newNodePosition = ObjPos.FromPosTangentLateral(endLeftPos, endTangent, endLateral);
                     NewNodePosition = newNodePosition;
+                    if (RoadTools.flattenTilt.Checked) newNodePosition.Tilt = 0;
+                    if (RoadTools.flattenIncline.Checked) newNodePosition.Inclination = 0;
 
                 } else {
                     //Take an existing end
@@ -272,10 +274,10 @@ namespace TranSimCS.Tools {
                 Color previewColor = lane0.Spec.Color;
                 previewColor.A = 100;
                 if (SegmentAlreadyExists != null) previewColor = Color.Red;
-                var startDiff = startingLateral * startWidth / 2;
+                var startDiff = startLateral * startWidth / 2;
                 var endDiff = endLateral * endWidth / 2;
-                Bezier3 lbound = GeometryUtils.GenerateJoinSpline(startPos - startDiff, endPos - endDiff, startingTangent, -endTangent) + offset;
-                Bezier3 rbound = GeometryUtils.GenerateJoinSpline(startPos + startDiff, endPos + endDiff, startingTangent, -endTangent) + offset;
+                Bezier3 lbound = GeometryUtils.GenerateJoinSpline(startPos - startDiff, endPos - endDiff, startTangent, -endTangent) + offset;
+                Bezier3 rbound = GeometryUtils.GenerateJoinSpline(startPos + startDiff, endPos + endDiff, startTangent, -endTangent) + offset;
                 IRenderBin renderBin = menu.renderHelper.GetOrCreateRenderBin(Assets.Road);
                 RoadRenderer.DrawBezierStrip(lbound, rbound, renderBin, previewColor);
             }
