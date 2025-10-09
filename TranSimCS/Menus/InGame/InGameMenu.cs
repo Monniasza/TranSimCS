@@ -418,7 +418,7 @@ namespace TranSimCS.Menus.InGame {
             //Render road tool
             configuration.Tool?.Draw(time);
 
-            Mark(MouseRay);
+            //Mark(MouseRay);
 
             //Render the render helper
             renderHelper.Render();
