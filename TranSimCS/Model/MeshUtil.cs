@@ -1,19 +1,23 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 
 namespace TranSimCS.Model {
     public static class MeshUtil {
+        const bool allowBVH = false;
         public static object? RayIntersectMesh(IRenderBin mesh, Ray ray, out float intersectionDistance) {
             object? tag = null;
             float closest = float.MaxValue;
-            if (mesh is Mesh concrete) {
+            if (allowBVH && mesh is Mesh concrete) {
+                Debug.Print("Using BVH");
                 var bvh = concrete.GetAccelerationStructure();
                 if (bvh.RayIntersect(ray, out var triId, out var hitDist)) {
                     closest = hitDist;
                     tag = concrete.Tags.TryGetValue(triId, out var obj) ? obj : null;
                 }
             } else {
+                Debug.Print("Using linear search");
                 tag = RayIntersectMeshLinear(mesh, ray, ref closest);
             }
             intersectionDistance = closest;
@@ -43,6 +47,7 @@ namespace TranSimCS.Model {
             float intersectionDistance0 = float.MaxValue;
             foreach (IRenderBin mesh in meshes) {
                 object? tag1 = RayIntersectMesh(mesh, ray, out var intersectionDistance1);
+                Debug.Print($"Partial result: {tag1} @ {intersectionDistance1}");
                 if (intersectionDistance1 < intersectionDistance0) {
                     intersectionDistance0 = intersectionDistance1;
                     tag = tag1;

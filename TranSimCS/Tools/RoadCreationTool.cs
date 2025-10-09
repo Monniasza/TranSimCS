@@ -287,7 +287,7 @@ namespace TranSimCS.Tools {
             //unused
         }
 
-        void ITool.AddSelectors(MultiMesh addTo) {
+        void ITool.AddSelectors(MultiMesh addTo, MultiMesh visibleSelectors) {
             SelectionUtils.AddAddLaneSelectors(menu);
         }
 

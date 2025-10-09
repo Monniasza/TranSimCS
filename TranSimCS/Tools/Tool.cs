@@ -29,7 +29,7 @@ namespace TranSimCS.Tools {
         public void Update(GameTime gameTime);
         public void Draw(GameTime gameTime);
         public void Draw2D(GameTime gameTime);
-        public void AddSelectors(MultiMesh addTo) { }
+        public void AddSelectors(MultiMesh invisibleSelectors, MultiMesh visibleSelectors) { }
         public (object[], string)[] PromptKeys();
 
         public void OnOpen() { }
@@ -166,7 +166,7 @@ namespace TranSimCS.Tools {
             }
         }
 
-        void ITool.AddSelectors(MultiMesh addTo) {
+        void ITool.AddSelectors(MultiMesh addTo, MultiMesh visibleSelectors) {
             //Add azimuth gizmos
             var renderBin = addTo.GetOrCreateRenderBin(Assets.Add);
 

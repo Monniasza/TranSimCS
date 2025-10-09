@@ -56,7 +56,7 @@ namespace TranSimCS.Menus.InGame {
         public float SelectedLaneT = 0.5f; // T value for the selected lane tag, if any
         public Bezier3? selectedLaneBezier; // Bezier curve for the selected lane tag
         public SegmentHalf? SelectedRoadHalf; // The road half that the selected lane tag belongs to
-        public LaneStrip SelectedLaneStrip; // The lane strip that the selected lane tag belongs to
+        public LaneStrip? SelectedLaneStrip; // The lane strip that the selected lane tag belongs to
         public NodeEnd? SelectedNodeSide;
         public LaneEnd? SelectedLaneEnd;
         public Lane SelectedLane;
