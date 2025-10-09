@@ -178,7 +178,7 @@ namespace TranSimCS.Roads {
             GenerateLaneRangeMesh(tag, renderer, laneStrip.Spec.Color, voffset, laneStrip); // Generate the lane tag mesh
         }
 
-        public static void GenerateLaneRangeMesh(LaneRange range, IRenderBin renderer, Color color, float voffset = 0.3f, object tag = null) {
+        public static void GenerateLaneRangeMesh(LaneRange range, IRenderBin renderer, Color color, float voffset = 0.3f, object? tag = null) {
             var strips = GenerateSplines(range, voffset); // Generate the splines for the left and right lanes
 
             //Generate border curves

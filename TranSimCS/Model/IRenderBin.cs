@@ -32,7 +32,7 @@ namespace TranSimCS.Model {
             if (value == null) return;
             ArgumentOutOfRangeException.ThrowIfNegative(count, nameof(count));
             if (count == 0) return;
-            int startIndex = Indices.Count / 3 - count; // Each triangle has 3 indices
+            int startIndex = (Indices.Count / 3) - count; // Each triangle has 3 indices
             for (int i = 0; i < count; i++) {
                 Tags[startIndex + i] = value;
             }
@@ -49,18 +49,26 @@ namespace TranSimCS.Model {
         /// </summary>
         /// <param name="vertices">List of vertices</param>
         /// <param name="indices">List of indices</param>
-        public void DrawModel(IList<VertexPositionColorTexture> vertices, IList<int> indices) {
+        public void DrawModel(IList<VertexPositionColorTexture> vertices, IList<int> indices, IEnumerable<KeyValuePair<int, object>>? tags = null) {
             ArgumentNullException.ThrowIfNull(vertices);
             ArgumentNullException.ThrowIfNull(indices);
             int[] newVertexIds = new int[vertices.Count];
+            int startingIndex = Indices.Count;
+            int startingTriCount = startingIndex / 3;
             for (int i = 0; i < vertices.Count; i++)
                 newVertexIds[i] = AddVertex(vertices[i]);
             foreach (var index in indices)
                 AddIndex(newVertexIds[index]);
+            foreach(var kv in tags ?? []) {
+                var newTriId = startingTriCount + kv.Key;
+                Tags.Add(newTriId, kv.Value);
+            }
+
         }
         public void DrawModel(Mesh mesh) {
             ArgumentNullException.ThrowIfNull(mesh);
-            DrawModel(mesh.Vertices, mesh.Indices);
+            DrawModel(mesh.Vertices, mesh.Indices, mesh.Tags);
+
         }
     }
 }

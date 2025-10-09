@@ -81,7 +81,6 @@ namespace TranSimCS.Worlds {
                     }
 
                     log.Info($"World loaded successfully from {filename}");
-                    Debug.Print("World loaded successfully using System.Text.Json");
                 } else {
                     throw new InvalidOperationException("Deserialization returned null");
                 }

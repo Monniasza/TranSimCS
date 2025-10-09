@@ -5,9 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Arch.Core;
+using Microsoft.Xna.Framework;
 using NLog;
 using NLog.Targets;
 using TranSimCS;
+using TranSimCS.Geometry;
 using TranSimCS.Roads;
 using TranSimCS.Save2;
 using TranSimCS.Worlds;
@@ -33,13 +35,17 @@ public class Program {
                 fileName: logPath);
         });
 
-        //The guid bug
-        var guidString = "a80b070f-9f9a-4049-b43b-5a2026b64c66";
-        var guid = Guid.Parse(guidString);
-        var dictionary = new Dictionary<Guid, string>();
-        dictionary.Add(guid, "test");
-        var retrievedString = dictionary[guid];
-        log.Trace(retrievedString);
+        //MeshIntersectTriangle bug
+        Vector3 ptA = new(0, 2, 0);
+        Vector3 ptB = new(2, -2, 0);
+        Vector3 ptC = new(-2, -2, 0);
+        Vector3 rayOrigin = new(0, 0, -4);
+        Vector3 rayDirection = Vector3.UnitZ;
+        Ray testRay = new Ray(rayOrigin, rayDirection);
+        var intersects = GeometryUtils.RayIntersectsTriangle(testRay, ptA, ptB, ptC, out var dist);
+        var point = testRay.Position + dist * testRay.Direction;
+        log.Warn($"Test intersection: intersects={intersects}, point={point}, t={dist}");
+        //Test intersection: intersects=true, point=(0, 0, 0), t=4
 
         JsonProcessor.Init();
 

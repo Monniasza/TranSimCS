@@ -187,10 +187,6 @@ namespace TranSimCS.Menus.InGame {
             MouseRayOld = MouseRay;
             MouseRay = ray; // Store the ray for later use
 
-            //Show a point 10m away 
-            var point10m = ray.Position + ray.Direction * 10;
-            //Debug.Print($"Point: {point10m}");
-
             //Check if mouse is over UI
             foreach (var root in UiSystem.GetRootElements()) {
                 var rect = root.Element.Area;
@@ -225,10 +221,8 @@ namespace TranSimCS.Menus.InGame {
             if (!IsMouseOverUI) {
                 var meshes = InvisibleSelectors.RenderBins.Values;
                 var tricount = meshes.Select(x => x.Indices.Count).Sum(x => x);
-                Debug.Print($"Evaluating selection, {tricount} tris");
                 selection = MeshUtil.RayIntersectMeshes(meshes, ray, out distance); //this is bad
             }
-            Debug.Print($"Selected object: {selection}");
             SelectedObject = selection;
             if (selection is LaneStrip laneStrip) {
                 MouseOverRoad = new RoadSelection(laneStrip, distance, ray); // Create a new road selection with the lane tag and intersection distance
@@ -421,6 +415,12 @@ namespace TranSimCS.Menus.InGame {
             //Mark(MouseRay);
 
             //Render the render helper
+            var tris = 0;
+            var verts = 0;
+            foreach (var bin in renderHelper.RenderBins.Values) {
+                tris += (bin.Indices.Count) / 3;
+                verts += bin.Vertices.Count;
+            }
             renderHelper.Render();
         }
 
