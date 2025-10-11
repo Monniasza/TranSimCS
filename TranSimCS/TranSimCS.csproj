@@ -27,6 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Arch" Version="2.1.0-beta" />
+    <PackageReference Include="Clipper2" Version="1.5.4" />
     <PackageReference Include="Iesi.Collections" Version="4.1.1" />
     <PackageReference Include="MLEM" Version="8.0.0-ci.222" />
     <PackageReference Include="MLEM.Ui" Version="8.0.0-ci.222" />

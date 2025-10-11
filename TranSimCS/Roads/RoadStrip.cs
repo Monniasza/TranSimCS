@@ -132,8 +132,7 @@ namespace TranSimCS.Roads {
                 (bounds.leftEnd, bounds.rightEnd) = (-bounds.rightEnd, -bounds.leftEnd);
             }
             segment.Bounds = bounds;
-
-            RoadRenderer.GenerateRoadSegmentFullMesh(segment, mesh); // Otherwise, render the road segment
+            SegmentRenderer.GenerateRoadSegmentFullMesh(segment, mesh); // Otherwise, render the road segment
         }
 
         public SplineFrame CalcSplineFrame() {
