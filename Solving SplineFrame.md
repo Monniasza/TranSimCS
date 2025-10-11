@@ -52,6 +52,14 @@ Transposing the polynomial:
       (-3*O.a -3*X.a*x -3*Y.a*y +3*O.b +3*X.b*x +3*Y.b*y) * z +
       (O.a + X.a*x + Y.a*y)
 ```
+After splitting the coefficients out, they become as follows. Not that these coefficients are vectors:
+```
+  coe0 = (O.a + X.a*x + Y.a*y)
+  coe1 = (-3*O.a -3*X.a*x -3*Y.a*y +3*O.b +3*X.b*x +3*Y.b*y)
+  coe2 = (3*O.a + 3*X.a*x + 3*Y.a*y - 6*O.b - 6*X.b*x - 6*Y.b*y + 3*O.c + 3*X.c*x + 3*Y.c*y)
+  coe3 = (-O.a - X.a*x - Y.a*y + 3*O.b + 3*X.b*x + 3*Y.b*x - 3*O.c - 3*X.c*x - 3*Y.c*y + O.d + X.d*x + Y.d*y)
+  P = coe3 * z^3 + coe2 * z^2 + coe1 * z + coe0
+```
 
 With matrices, it becomes:
 ```

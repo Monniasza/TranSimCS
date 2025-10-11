@@ -6,6 +6,7 @@ using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Clipper2Lib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -16,6 +17,7 @@ using MonoGame.Extended.Collections;
 using NLog;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
+using TranSimCS.Polygons;
 using TranSimCS.Roads;
 using TranSimCS.Spline;
 using TranSimCS.Tools;
@@ -413,6 +415,56 @@ namespace TranSimCS.Menus.InGame {
             configuration.Tool?.Draw(time);
 
             //Mark(MouseRay);
+
+            //Test the DrawLine method
+            renderBin.DrawLine(new(-100, 0.1f, -60), new(0, 0.1f, -60), Vector3.UnitY, Color.Yellow);
+
+            var a = -10;
+            var b = 10;
+            var c = -11;
+            var d = -9;
+            var e = 9;
+            var f = 11;
+
+            //Debug Polygon.SubtractMore
+            var path1 = Clipper.MakePath(new double[] {a,a, b,a, b,b, a,b});
+            var path2 = Clipper.MakePath(new double[] {c,c, d,c, d,d, c,d});
+            var path3 = Clipper.MakePath(new double[] {e,e, f,e, f,f, e,f});
+            //var path1 = Clipper.MakePath(new double[] {a,a, a,b, b,b, b,a});
+            //var path2 = Clipper.MakePath(new double[] {c,c, c,d, d,d, d,c});
+            //var path3 = Clipper.MakePath(new double[] {e,e, e,f, f,f, f,e});
+            var poly1 = new Polygon(path1, FillRule.NonZero);
+            var poly2 = new Polygon(path2, FillRule.NonZero);
+            var poly3 = new Polygon(path3, FillRule.NonZero);
+            
+
+            var datetime = DateTime.Now;
+            var remainder = datetime.Second % 2;
+
+            //Debug.Print($"Areas: {poly1.Area()}, {poly2.Area()}, {poly3.Area()}");
+
+            if(remainder == 0) {
+                //Debug components
+                SegmentRenderer.DebugPolygon(renderHelper, poly1, Color.Lime, 1);
+                SegmentRenderer.DebugPolygon(renderHelper, poly2, Color.Red, 1);
+                SegmentRenderer.DebugPolygon(renderHelper, poly3, Color.Orange, 1);
+            } else {
+                //Debug the result
+                var result = poly1.SubtractMore([poly2, poly3]);
+                SegmentRenderer.DebugPolygon(renderHelper, result, Color.Blue, 1);
+
+                var altResult = poly1 - poly2;
+                SegmentRenderer.DebugPolygon(renderHelper, altResult, Color.Cyan, 1);
+            }
+
+            //Code from an example
+            PathsD subj = new PathsD();
+            PathsD clip = new PathsD();
+            subj.Add(Clipper.MakePath(new double[] { 100, 50, 10, 79, 65, 2, 65, 98, 10, 21 }));
+            clip.Add(Clipper.MakePath(new double[] { 98, 63, 4, 68, 77, 8, 52, 100, 19, 12 }));
+            PathsD solution = Clipper.Intersect(subj, clip, FillRule.NonZero);
+            Polygon solutionPolygon = new Polygon(solution, FillRule.NonZero);
+            SegmentRenderer.DebugPolygon(renderHelper, solutionPolygon, Color.Magenta, 1);
 
             //Render the render helper
             var tris = 0;

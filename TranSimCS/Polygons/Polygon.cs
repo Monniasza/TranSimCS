@@ -68,12 +68,18 @@ namespace TranSimCS.Polygons {
             clipper.Execute(ClipType.Intersection, rule, path);
             return new Polygon(path, rule);
         }
+        public Polygon SubtractMore(IEnumerable<Polygon> subtractends) {
+            var result = this;
+            foreach (var polygon in subtractends)
+                result -= polygon;
+            return result;
+        }
         public static Polygon MultiSubtract(FillRule rule, IEnumerable<Polygon> addends, IEnumerable<Polygon> subtractends) {
             var path = new PathsD();
             var clipper = new ClipperD();
             foreach (var polygon in addends) clipper.AddSubject(polygon.path);
-            foreach (var polygon in subtractends) clipper.AddSubject(polygon.path);
-            clipper.Execute(ClipType.Intersection, rule, path);
+            foreach (var polygon in subtractends) clipper.AddClip(polygon.path);
+            clipper.Execute(ClipType.Difference, rule, path);
             return new Polygon(path, rule);
         }
         public Polygon Offset(double expand, JoinType joinType = JoinType.Miter, EndType endType = EndType.Polygon, int miterLimit = 2, int precision = 2, double arcTolerance = 0) {

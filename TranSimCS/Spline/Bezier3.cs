@@ -46,6 +46,14 @@ namespace TranSimCS.Spline
             }
         }
 
+        public Vector3 Tangential(float t) {
+            var d0 = b - a;
+            var d1 = c - b;
+            var d2 = d - c;
+            var u = 1 - t;
+            return (3 * u * u * d0) + (6 * t * u * d1) + (3 * t * t * d2);
+        }
+
         public static Vector3 Interpolate(Vector3 a, Vector3 b, Vector3 c, Vector3 d, int t) {
             float u = 1 - t;
             float tt = t * t;

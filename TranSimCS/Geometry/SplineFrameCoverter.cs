@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TranSimCS.Model;
+using TranSimCS.Roads;
 
 namespace TranSimCS.Geometry {
     public class SplineFrameCoverter {
@@ -12,5 +14,15 @@ namespace TranSimCS.Geometry {
          * 
          */
 
+        public readonly WorkingPlane plane;
+        public readonly Mesh lookupMesh;
+        private SplineFrameCoverter(WorkingPlane plane, Mesh lookupMesh) {
+            this.plane = plane;
+            this.lookupMesh = lookupMesh;
+        }
+
+        public static SplineFrameCoverter ConstructFrom(RoadStrip strip) {
+            throw new NotImplementedException();
+        }
     }
 }

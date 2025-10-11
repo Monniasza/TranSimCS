@@ -82,6 +82,31 @@ namespace TranSimCS.Model {
             }
         }
 
+        public static void DrawLine(this IRenderBin rb, Vector3 start, Vector3 end, Vector3 normal, Color c, float width = 0.2f) {
+            var len = end - start;
+            var cross = Vector3.Cross(normal, len);
+            cross.Normalize();
+            cross *= width / 2;
+
+            var p1 = end - cross;
+            var p2 = end + cross;
+            var p3 = start + cross;
+            var p4 = start - cross;
+            rb.DrawQuad(
+                new VertexPositionColorTexture(p1, c, new(0, 0)),
+                new VertexPositionColorTexture(p2, c, new(1, 0)),
+                new VertexPositionColorTexture(p3, c, new(1, 1)),
+                new VertexPositionColorTexture(p4, c, new(0, 1))
+           );
+        }
+
+        public static void DrawClosedStrip(this IRenderBin rb, VertexPositionColorTexture[] l, VertexPositionColorTexture[] r) {
+            var woven = GeometryUtils.WeaveStrip(l, r).ToList();
+            woven.Add(l[0]);
+            woven.Add(r[0]);
+            DrawStrip(rb, woven.ToArray());
+        }
+
         public static void DrawStrip(this IRenderBin rb, VertexPositionColorTexture[] l, VertexPositionColorTexture[] r)
             => DrawStrip(rb, GeometryUtils.WeaveStrip(l, r));
 

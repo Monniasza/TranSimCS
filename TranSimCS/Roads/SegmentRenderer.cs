@@ -1,8 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Clipper2Lib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
+using TranSimCS.Polygons;
 using static TranSimCS.Geometry.GeometryUtils;
 
 namespace TranSimCS.Roads {
@@ -80,12 +85,93 @@ namespace TranSimCS.Roads {
             var leftDownEndPos = leftDownPoints.Last();
             GenerateEndCap(rightUpEndPos, leftUpEndPos, leftDownEndPos, rightDownEndPos, swidth, height, breadth, finishBin);
 
-            //Fill in unused areas
+            //Find fill polygons for lane strips
+            var laneRanges = new List<LaneRange>();
+            laneRanges.Add(connection.FullSizeTag());
+            laneRanges.AddRange(connection.Lanes.Select(lane => lane.Tag));
+
+            List<Polygon> polygons = [];
             
-            //To check intersections, 
-            
+            int i = -1;
+            foreach(var lane in laneRanges) {
+                i++;
+                var strip = RoadRenderer.GenerateSplines(lane);
+                var leftSpline = strip.Item1;
+                var rightSpline = strip.Item2.Inverse();
+                var leftPoints = GeometryUtils.GenerateSplinePoints(leftSpline);
+                var rightPoints = GeometryUtils.GenerateSplinePoints(rightSpline);
+                var mergedPoints = leftPoints.Concat(rightPoints);
+                var mergedPoint = mergedPoints.First();
+                Debug.Print($"Point: {mergedPoint}");
+                var unraveledPoints = mergedPoints.Select(pt => splineFrame.UnTransform(pt));
+                var unraveledCoords = unraveledPoints.SelectMany(pt => new double[]{ pt.X, pt.Z });
+                var path = Clipper.MakePath(unraveledCoords.ToArray());
+                path.Reverse();
+                var polygon = new Polygon(path, FillRule.EvenOdd);
+                polygons.Add(polygon);
+
+                //Visualise for debugging purposes
+                //DebugPolygon(renderHelper, polygon, (i == 0) ? Color.Lime : Color.Red);
+
+                //if(i == 0) DebugPolygon(renderHelper, polygon, Color.Lime);
+            }
+
+            //Create the global polygon
+            var globalPolygon = polygons[0];
+            var lanePolygons = polygons.Skip(1).ToArray();
+            Debug.Print($"{lanePolygons.Length} lane polygons");
+            //Slightly enlarge the lane polygons to prevent degeneration
+            lanePolygons = lanePolygons.Select(poly => poly.Offset(0.000001)).ToArray();
+
+            //Perform the separation logic
+            var islandsPoly = globalPolygon.SubtractMore(lanePolygons);
+            //var islandsPoly = globalPolygon;
+            Debug.Print($"Island: {islandsPoly.path.Count}");
+
+            DebugPolygon(renderHelper, islandsPoly, Color.Orange);
+            //Back-transform the paths
+            foreach(var path in islandsPoly.path) {
+                DrawIsland(Surface.Tiles, Surface.Concrete, renderHelper, splineFrame, path, 0.5f);
+            }
+
+        }
+        public static void DebugPolygon(MultiMesh mesh, Polygon polygon, Color c, float stretch = 50) {
+            //Debug.Print("DebugPolygon");
+            var renderBin = mesh.GetOrCreateRenderBin(Assets.Road);
+            foreach (var loop in polygon.path) {
+                //Debug.Print("DebugPolygon loop");
+                for (int i = 0; i < loop.Count; i++) {   
+                    var prev = loop[i];
+                    var next = loop[(i + 1) % loop.Count];
+                    var p1 = UnmapPolyPoint(prev, stretch);
+                    var p2 = UnmapPolyPoint(next, stretch);
+                    //Debug.Print($"DebugPolygon vert {i} @ {p1}");
+                    renderBin.DrawLine(p1, p2, Vector3.UnitY, c);
+                }
+            }
+        }
+        public static Vector3 UnmapPolyPoint(PointD p, float stretch = 50) {
+            float x = (float)p.x - 200;
+            float y = 0.1f;
+            float z = (float)p.y;
+            return new Vector3(x, y, (z * stretch) - 60);
         }
 
+        public static void DrawIsland(Surface surface, Surface sideSurface, MultiMesh mesh, SplineFrame frm, PathD path, float h) {
+            var retransformedPoints = Retransform(frm, path, 0);
+            var retransformedPointsUp = Retransform(frm, path, h);
+            retransformedPoints = retransformedPoints.Append(retransformedPoints.First());
+            retransformedPointsUp = retransformedPointsUp.Append(retransformedPointsUp.First());
+            var texturedStrip = UniformTexturing.UniformTexturedTwin(retransformedPointsUp.ToArray(), retransformedPoints.ToArray(), UniformTexturing.PairStrip());
+            var sideRenderBin = mesh.GetOrCreateRenderBin(sideSurface.GetTexture());
+            sideRenderBin.DrawStrip(texturedStrip.Item1, texturedStrip.Item2);
+
+            //Triangulate the top
+
+        }
+        public static IEnumerable<Vector3> Retransform(SplineFrame frame, IEnumerable<PointD> pts, float z = 0) {
+            return pts.Select(pt => frame.Transform(new((float)pt.x, z, (float)pt.y)));
+        }
 
         public static void GenerateEndCap(Vector3 ul, Vector3 ur, Vector3 dr, Vector3 dl, float width, float height, float expand, IRenderBin mesh) {
             var p1 = new VertexPositionColorTexture(ul, Color.White, new(0, 0));
