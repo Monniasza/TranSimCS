@@ -106,7 +106,6 @@ namespace TranSimCS.Roads {
                 var unraveledPoints = mergedPoints.Select(pt => splineFrame.UnTransform(pt));
                 var unraveledCoords = unraveledPoints.SelectMany(pt => new double[]{ pt.X, pt.Z });
                 var path = Clipper.MakePath(unraveledCoords.ToArray());
-                path.Reverse();
                 var polygon = new Polygon(path, FillRule.EvenOdd);
                 polygons.Add(polygon);
 
@@ -160,14 +159,16 @@ namespace TranSimCS.Roads {
         public static void DrawIsland(Surface surface, Surface sideSurface, MultiMesh mesh, SplineFrame frm, PathD path, float h) {
             var retransformedPoints = Retransform(frm, path, 0);
             var retransformedPointsUp = Retransform(frm, path, h);
-            retransformedPoints = retransformedPoints.Append(retransformedPoints.First());
-            retransformedPointsUp = retransformedPointsUp.Append(retransformedPointsUp.First());
-            var texturedStrip = UniformTexturing.UniformTexturedTwin(retransformedPointsUp.ToArray(), retransformedPoints.ToArray(), UniformTexturing.PairStrip());
+            var retransformedPointsCyclic = retransformedPoints.Append(retransformedPoints.First()).ToArray();
+            var retransformedPointsUpCyclic = retransformedPointsUp.Append(retransformedPointsUp.First()).ToArray();
+            var texturedStrip = UniformTexturing.UniformTexturedTwin(retransformedPointsCyclic, retransformedPointsUpCyclic, UniformTexturing.PairStrip());
             var sideRenderBin = mesh.GetOrCreateRenderBin(sideSurface.GetTexture());
-            sideRenderBin.DrawStrip(texturedStrip.Item1, texturedStrip.Item2);
+            sideRenderBin.DrawStrip(texturedStrip.Item2, texturedStrip.Item1);
 
-            //Triangulate the top
-
+            //Fill the top
+            var topPoints = retransformedPointsUp.Select(GeometryUtils.CreateVertex).Reverse().ToArray();
+            var topRenderBin = mesh.GetOrCreateRenderBin(surface.GetTexture());
+            topRenderBin.DrawConcave(topPoints);
         }
         public static IEnumerable<Vector3> Retransform(SplineFrame frame, IEnumerable<PointD> pts, float z = 0) {
             return pts.Select(pt => frame.Transform(new((float)pt.x, z, (float)pt.y)));
