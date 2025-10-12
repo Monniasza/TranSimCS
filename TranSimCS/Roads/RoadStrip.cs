@@ -95,8 +95,31 @@ namespace TranSimCS.Roads {
         public event EventHandler<RoadStripEventArgs>? OnLaneAdded; // Event triggered when lanes are added or removed
         public event EventHandler<RoadStripEventArgs>? OnLaneRemoved; // Event triggered when lanes are removed
 
-        public LaneRange FullSizeTag() {
+        public LaneRange? FullSizeTag() {
             int maxIdx = lanes.Count - 1; // Get the maximum index of the lanes
+
+            int ls = int.MaxValue, rs = int.MinValue, le = int.MaxValue, re = int.MinValue;
+            foreach (LaneStrip laneStrip in lanes) {
+                var startIdx = laneStrip.StartLane.lane.Index;
+                var endIdx = laneStrip.EndLane.lane.Index;
+
+                if (laneStrip.StartLane.RoadNodeEnd == EndNode)
+                    (startIdx, endIdx) = (endIdx, startIdx);
+
+                if (startIdx < ls) ls = startIdx;
+                if(startIdx > rs) rs = startIdx;
+                if(endIdx < le) le = endIdx;
+                if(endIdx > re) re = endIdx;
+            }
+
+            if (ls > rs || le > re) {
+                Debug.Print("Empty lane strip");
+                return null;
+            }
+            return new LaneRange(this,
+                StartNode.GetLaneEnd(ls).lane, StartNode.GetLaneEnd(rs).lane, StartNode.End,
+                EndNode.GetLaneEnd(le).lane, EndNode.GetLaneEnd(re).lane, EndNode.End);
+
             return new LaneRange(this, lanes[0].StartLane.lane, lanes[maxIdx].StartLane.lane, StartNode.End, lanes[0].EndLane.lane, lanes[maxIdx].EndLane.lane, EndNode.End); // Create a LaneTag with the full size of the connection
         }
 

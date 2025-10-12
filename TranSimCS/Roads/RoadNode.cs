@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
@@ -63,11 +64,8 @@ namespace TranSimCS.Roads {
             int index = _lanes.FindIndex(lane1 => lane1.MiddlePosition > middlePosition); // Find the index where the lane should be inserted
             if (index == -1) index = Lanes.Count;
             //Shift existing lanes to the right if necessary
-            var lanesToShift = _lanes.Skip(index).ToList(); // Get the lanes that will be shifted
-            foreach (var l in lanesToShift)
-                l.Index++; // Increment the index of each lane that will be shifted
-            lane.Index = index; // Set the index of the new lane
             _lanes.Insert(index, lane);// Add the lane to the list
+            ReIndex();
             Mesh.Invalidate();
         }
         // Removes a lane from this node and clears related connections.
@@ -86,15 +84,20 @@ namespace TranSimCS.Roads {
 
             _lanes.RemoveAt(index);
             lane.Index = -1;
-            for (int i = index; i < _lanes.Count; i++) {
-                _lanes[i].Index = i;
-            }
+            ReIndex();
 
             if(Lanes.Count == 0) {
                 World.RoadNodes.Remove(this);
             }
             Mesh.Invalidate();
         }
+
+        private void ReIndex() {
+            for (int i = 0; i < _lanes.Count; i++) {
+                _lanes[i].Index = i;
+            }
+        }
+
         // Clears all lanes by delegating to RemoveLane for each entry.
         public void ClearLanes() {
             var lanes = _lanes.ToArray();

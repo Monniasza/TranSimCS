@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Clipper2Lib;
+using EarClipperLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Geometry;
@@ -87,7 +88,9 @@ namespace TranSimCS.Roads {
 
             //Find fill polygons for lane strips
             var laneRanges = new List<LaneRange>();
-            laneRanges.Add(connection.FullSizeTag());
+            var fstag = connection.FullSizeTag();
+            if (fstag == null) return;
+            laneRanges.Add(fstag.Value);
             laneRanges.AddRange(connection.Lanes.Select(lane => lane.Tag));
 
             List<Polygon> polygons = [];
@@ -165,10 +168,26 @@ namespace TranSimCS.Roads {
             var sideRenderBin = mesh.GetOrCreateRenderBin(sideSurface.GetTexture());
             sideRenderBin.DrawStrip(texturedStrip.Item2, texturedStrip.Item1);
 
+            //Triangulate first in 2D
+            var points = path.Select(VectorConversions.FromPoint).ToList();
+            var lookup = new Dictionary<Vector3m, int>();
+            for (int i = 0; i < points.Count; i++) {
+                var point = points[i];
+                lookup[point] = i;
+            }
+            var triangulator = new EarClipping();
+            triangulator.SetPoints(points);
+            triangulator.Triangulate();
+            var result = triangulator.Result;
+            var offsets = result.Select(x => lookup[x]);
+
             //Fill the top
-            var topPoints = retransformedPointsUp.Select(GeometryUtils.CreateVertex).Reverse().ToArray();
-            var topRenderBin = mesh.GetOrCreateRenderBin(surface.GetTexture());
-            topRenderBin.DrawConcave(topPoints);
+            IRenderBin topRenderBin = mesh.GetOrCreateRenderBin(surface.GetTexture());
+            var vertices = retransformedPointsUp.Select(GeometryUtils.CreateVertex).ToArray();
+            var indices = offsets.ToArray();
+            RenderUtil.InvertNormals(indices);
+            topRenderBin.DrawModel(vertices, indices);
+            
         }
         public static IEnumerable<Vector3> Retransform(SplineFrame frame, IEnumerable<PointD> pts, float z = 0) {
             return pts.Select(pt => frame.Transform(new((float)pt.x, z, (float)pt.y)));
