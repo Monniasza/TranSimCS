@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TranSimCS.Model;
 using TranSimCS.SceneGraph;
 
 namespace TranSimCS.Worlds {
@@ -26,6 +27,10 @@ namespace TranSimCS.Worlds {
         /// <summary>
         /// Scene graph for Add Lane Selection components
         /// </summary>
-        public readonly SceneTree ALSGraph;
+        public readonly SceneLeaf TempSelectors;
+        /// <summary>
+        /// Mesh property for temporary selectors
+        /// </summary>
+        public Property<MultiMesh> TempSelectorsMesh;
     }
 }

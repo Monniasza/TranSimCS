@@ -10,6 +10,8 @@ using Arch.Core;
 using System.Diagnostics;
 using TranSimCS.Collections;
 using NLog;
+using TranSimCS.Model;
+using TranSimCS.SceneGraph;
 
 namespace TranSimCS.Worlds
 {
@@ -63,11 +65,12 @@ namespace TranSimCS.Worlds
             SectionsGraph = new SceneGraph.SceneTree();
             NodesGraph = new SceneGraph.SceneTree();
             SegmentsGraph = new SceneGraph.SceneTree();
-            ALSGraph = new SceneGraph.SceneTree();
+            TempSelectorsMesh = new Property<Model.MultiMesh>(new Model.MultiMesh(), "selectors", null, Equality.ReferenceEqualComparer<MultiMesh>());
+            TempSelectors = new SceneGraph.SceneLeaf(new MeshProperty(TempSelectorsMesh));
             RootGraph.Add(SectionsGraph);
             RootGraph.Add(NodesGraph);
             RootGraph.Add(SegmentsGraph);
-            RootGraph.Add(ALSGraph);
+            RootGraph.Add(TempSelectors);
             
             ECS = World.Create();
         }

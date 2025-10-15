@@ -18,30 +18,24 @@ namespace TranSimCS.Menus.InGame {
         public Vector3 GroundSelection => IntersectWithGround(MouseRay);
         public Vector3 GroundSelectionOld => IntersectWithGround(MouseRayOld);
 
-        //In-world UI
         public MultiMesh SelectorObjects { get; private set; }
-        public MultiMesh InvisibleSelectors { get; private set; }
 
         private void CreateSelectors() {
             // CRITICAL: Clear SelectorObjects and InvisibleSelectors to prevent geometry accumulation across frames
             // Without this, meshes from previous frames accumulate causing Z-fighting and flickering
-            SelectorObjects.Clear();            
-            InvisibleSelectors.Clear();
-            
-            if (CheckSegments.Checked)
-                foreach (var road in World.RoadSegments)
-                    InvisibleSelectors.AddAll(road.Mesh.GetMesh());
-            if (CheckNodes.Checked)
-                foreach (var node in World.RoadNodes)
-                    SelectorObjects.AddAll(node.Mesh.GetMesh());
-            if (CheckSections.Checked)
-                foreach (var section in World.RoadSections)
-                    InvisibleSelectors.AddAll(section.Mesh.GetMesh());
+            SelectorObjects.Clear();
+
+            World.SectionsGraph.Active = CheckSections.Checked;
+            World.SegmentsGraph.Active = CheckSegments.Checked;
+            World.NodesGraph.Active = CheckNodes.Checked;
 
             //Add tool selectors for collision detection
-            configuration.Tool?.AddSelectors(InvisibleSelectors, SelectorObjects);
+            var tempSelectors = new MultiMesh();
+            configuration.Tool?.AddSelectors(tempSelectors, SelectorObjects);
 
-            InvisibleSelectors.AddAll(SelectorObjects);
+            tempSelectors.AddAll(SelectorObjects);
+
+            World.TempSelectorsMesh.Value = tempSelectors;
         }
     }
 }

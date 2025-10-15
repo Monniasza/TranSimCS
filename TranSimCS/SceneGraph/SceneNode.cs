@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using TranSimCS.Model;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.SceneGraph {
@@ -108,5 +109,11 @@ namespace TranSimCS.SceneGraph {
             tag = null;
             return false;
         }
+
+        public static BoundingBox FromMany(IEnumerable<IRenderBin> meshes) {
+            var boundingBoxes = meshes.Select(MeshUtil.BoundingBox);
+            return AggregateBounds(boundingBoxes);
+        }
+        public static BoundingBox AggregateBounds(IEnumerable<BoundingBox> boxes) => boxes.AggregateOrDefault(new BoundingBox(), BoundingBox.CreateMerged);
     }
 }

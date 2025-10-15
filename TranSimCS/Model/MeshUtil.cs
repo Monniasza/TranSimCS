@@ -8,7 +8,7 @@ namespace TranSimCS.Model {
     public static class MeshUtil {
         const bool allowBVH = true;
 
-        public static BoundingBox BoundingBox(this Mesh mesh) {
+        public static BoundingBox BoundingBox(this IRenderBin mesh) {
             if(allowBVH && mesh is Mesh concrete) {
                 return concrete.GetAccelerationStructure().Bounds;
             } else {

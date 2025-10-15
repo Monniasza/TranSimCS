@@ -22,7 +22,7 @@ namespace TranSimCS.SceneGraph {
         }
 
         protected override BoundingBox CalcBounds() {
-            return meshGenerator.GetMesh().RenderBins.Values.Select(x => MeshUtil.BoundingBox(x)).Aggregate(BoundingBox.CreateMerged);
+            return SceneNode.FromMany(meshGenerator.GetMesh().RenderBins.Values);
         }
 
         protected override bool FindInternal(Ray ray, out SceneNode? node, out float dist, out object? tag) {

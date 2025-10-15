@@ -110,7 +110,6 @@ namespace TranSimCS.Menus.InGame {
 
             //Set up meshes
             SelectorObjects = new MultiMesh();
-            InvisibleSelectors = new MultiMesh();
 
             //Set up the UI from below
             RootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 120));
@@ -220,9 +219,9 @@ namespace TranSimCS.Menus.InGame {
             float distance = float.MaxValue;
             object? selection = null;
             if (!IsMouseOverUI) {
-                var meshes = InvisibleSelectors.RenderBins.Values;
-                var tricount = meshes.Select(x => x.Indices.Count).Sum(x => x);
-                selection = MeshUtil.RayIntersectMeshes(meshes, ray, out distance); //this is bad
+                var meshes = World.RootGraph;
+                var hovering = meshes.Find(MouseRay, out var selectedNode, out distance, out selection);
+                //selection = MeshUtil.RayIntersectMeshes(meshes, ray, out distance); //this is bad
             }
             SelectedObject = selection;
             if (selection is LaneStrip laneStrip) {
@@ -349,9 +348,6 @@ namespace TranSimCS.Menus.InGame {
             //Draw road sections
             foreach (var section in World.RoadSections) renderHelper.AddAll(section.Mesh.GetMesh());
 
-            //Draw the tool mesh
-            renderHelper.AddAll(SelectorObjects);
-
             //If a road segment is selected, draw the selection
             var roadSelection = MouseOverRoad;
             if (roadSelection?.SelectedLaneTag != null) {
@@ -374,8 +370,16 @@ namespace TranSimCS.Menus.InGame {
                 }
             }
 
+            //Draw node selectors
+            if (CheckNodes.Checked)
+                foreach (var node in World.RoadNodes)
+                    renderHelper.AddAll(node.Mesh.GetMesh());
+
+            //Draw SelectorObjects
+            renderHelper.AddAll(SelectorObjects);
+
             //Draw the selected road node
-            if(roadSelection?.SelectedLaneEnd != null && roadSelection.SelectedLaneStrip == null) {
+            if (roadSelection?.SelectedLaneEnd != null && roadSelection.SelectedLaneStrip == null) {
                 //Lane selected, road strip not
                 var lane = roadSelection.SelectedLaneEnd.Value;
                 var quad = RoadRenderer.GenerateLaneQuad(lane, 0.5f, Color.Yellow);
@@ -410,11 +414,8 @@ namespace TranSimCS.Menus.InGame {
                 );
             }
 
-
             //Render road tool
             configuration.Tool?.Draw(time);
-
-            //Mark(MouseRay);
 
             //Test the DrawLine method
             renderBin.DrawLine(new(-100, 0.1f, -60), new(0, 0.1f, -60), Vector3.UnitY, Color.Yellow);
@@ -440,8 +441,6 @@ namespace TranSimCS.Menus.InGame {
 
             var datetime = DateTime.Now;
             var remainder = datetime.Second % 2;
-
-            //Debug.Print($"Areas: {poly1.Area()}, {poly2.Area()}, {poly3.Area()}");
 
             if(remainder == 0) {
                 //Debug components
