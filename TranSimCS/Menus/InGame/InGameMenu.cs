@@ -209,8 +209,7 @@ namespace TranSimCS.Menus.InGame {
             // Update FPS counter if escape menu is displayed
             if (Overlay == escapeMenu) {
                 // Use the previously computed secondsElapsed to calculate FPS safely
-                var fps = secondsElapsed > 0f ? 1.0f / secondsElapsed : 0f;
-                escapeMenu.FpsCounter.Text = $"FPS: {fps:F0}";
+                escapeMenu.FpsCounter.Text = $"FPS: {Game.fps.FrameRate:F0} | TPS: {Game.tps.FrameRate}";
             }
 
             UiSystem.Update(time);

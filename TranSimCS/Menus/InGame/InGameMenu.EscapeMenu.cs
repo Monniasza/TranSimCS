@@ -24,7 +24,7 @@ namespace TranSimCS.Menus.InGame {
                 buttonStyle.Font = parent.Game.Gsf;
 
                 // Add FPS counter at the top
-                FpsCounter = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 1f, "FPS: 0");
+                FpsCounter = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 1f, "FPS: 0 | TPS: 0");
                 FpsCounter.RegularFont = parent.Game.Gsf;
                 AddChild(FpsCounter);
 

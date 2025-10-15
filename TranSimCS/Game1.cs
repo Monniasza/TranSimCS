@@ -13,6 +13,7 @@ using MLEM.Misc;
 using MLEM.Textures;
 using MLEM.Ui.Elements;
 using MLEM.Ui.Style;
+using MonoGame.Extended;
 using SpriteFontPlus;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
@@ -22,6 +23,10 @@ namespace TranSimCS
 {
     public class Game1 : Game
     {
+        public FPS fps;
+        public FPS tps;
+
+
         private static Game1 instance;
         public static Game1 Instance { get { return instance ?? throw new ApplicationException("Game has not been yet started"); } }
         public static void Start() {
@@ -62,6 +67,8 @@ namespace TranSimCS
             IsMouseVisible = true;
             ih = new InputHandler(this);
             Window.AllowUserResizing = true;
+            fps = new();
+            tps = new();
 
             // Request 24-bit depth buffer for better precision and Z-fighting preventionw
             GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
@@ -141,6 +148,9 @@ namespace TranSimCS
         }
 
         protected override void Update(GameTime gameTime) {
+            tps.Count++;
+
+
             MouseStateOld = MouseState;
             MouseState = Mouse.GetState();
             KeyboardStateOld = KeyboardState;
@@ -158,8 +168,7 @@ namespace TranSimCS
             Menu?.Update(gameTime);
 
             //Display FPS
-            var fps = 1000000 / gameTime.ElapsedGameTime.TotalMicroseconds;
-            Window.Title = $"TranSim - the fastest road builder game. Here's the proof: {fps} FPS";
+            Window.Title = $"TranSim - the fastest road builder game. Here's the proof: {fps.FrameRate} FPS, {tps.FrameRate} TPS";
 
             //Refresh the mouse state for the next frame
             base.Update(gameTime);
@@ -167,6 +176,7 @@ namespace TranSimCS
 
 
         protected override void Draw(GameTime gameTime) {
+            fps.Count++;
             // Clear both color and depth buffer in one call to ensure proper rendering
             // and prevent Z-fighting/flickering
             GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1.0f, 0);

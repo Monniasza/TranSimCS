@@ -11,9 +11,21 @@ namespace TranSimCS.Worlds {
         /// Root scene graph. Contains at least <see cref="NodesGraph"/>, <see cref="SectionsGraph"/> and <see cref="SegmentsGraph"/>
         /// </summary>
         public readonly SceneTree RootGraph;
+        /// <summary>
+        /// Scene graph for road nodes
+        /// </summary>
         public readonly SceneTree NodesGraph;
+        /// <summary>
+        /// Scene graph for road sections
+        /// </summary>
         public readonly SceneTree SectionsGraph;
+        /// <summary>
+        /// Scene graph for road segments
+        /// </summary>
         public readonly SceneTree SegmentsGraph;
+        /// <summary>
+        /// Scene graph for Add Lane Selection components
+        /// </summary>
         public readonly SceneTree ALSGraph;
     }
 }
