@@ -8,16 +8,16 @@ using TranSimCS.Model;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.SceneGraph {
-    public class SceneLeaf<T>: SceneNode where T: Obj, IObjMesh<T> {
+    public class SceneLeaf: SceneNode{
 
-        public readonly MeshGenerator<T> meshGenerator;
+        public readonly IMeshSource meshGenerator;
 
-        public SceneLeaf(MeshGenerator<T> meshGenerator) {
+        public SceneLeaf(IMeshSource meshGenerator) {
             this.meshGenerator = meshGenerator;
-            meshGenerator.OnRemoveMesh += MeshGenerator_OnRemoveMesh;
+            meshGenerator.OnMeshInvalidated += MeshGenerator_OnRemoveMesh;
         }
 
-        private void MeshGenerator_OnRemoveMesh(T obj) {
+        private void MeshGenerator_OnRemoveMesh() {
             Invalidate();
         }
 

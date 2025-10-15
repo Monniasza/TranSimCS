@@ -50,7 +50,7 @@ namespace TranSimCS.Roads {
             EndNode = endNode;
             FinishProperty = new(RoadFinish.Embankment, "finish", this);
             Mesh = new MeshGenerator<RoadStrip>(this, GenerateMesh);
-            Mesh.OnRemoveMesh += InvalidateMesh0;
+            Mesh.OnMeshInvalidated += () => InvalidateMesh0(this);
             PropertyChanged += RoadStrip_PropertyChanged;
         }
 

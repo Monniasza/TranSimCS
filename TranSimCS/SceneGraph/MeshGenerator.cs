@@ -8,17 +8,17 @@ namespace TranSimCS.SceneGraph {
     /// </summary>
     /// <param name="obj">object to assign this mesh generator to</param>
     /// <param name="func">mesh generating function</param>
-    public class MeshGenerator<T>
+    public class MeshGenerator<T>: IMeshSource
         where T : Obj, IObjMesh<T> {
-        public event Action<T, MultiMesh>? OnMeshGenerated;
-        public event Action<T>? OnRemoveMesh;
+        public event Action<MultiMesh>? OnMeshGenerated;
+        public event Action? OnMeshInvalidated;
         private MultiMesh? mesh;
-        public readonly SceneLeaf<T> Leaf;
+        public readonly SceneLeaf Leaf;
         public readonly T obj;
         public readonly Action<T, MultiMesh> func;
 
         public MeshGenerator(T obj, Action<T, MultiMesh> func) {
-            Leaf = new SceneLeaf<T>(this);
+            Leaf = new SceneLeaf(this);
             this.obj = obj;
             this.func = func;
         }
@@ -27,13 +27,13 @@ namespace TranSimCS.SceneGraph {
             if (mesh == null) {
                 mesh = new MultiMesh();
                 func(obj, mesh);
-                OnMeshGenerated?.Invoke(obj, mesh);
+                OnMeshGenerated?.Invoke(mesh);
             }
             return mesh;
         }
         public void Invalidate() {
             mesh = null;
-            OnRemoveMesh?.Invoke(obj);
+            OnMeshInvalidated?.Invoke();
         }
     }
 }
