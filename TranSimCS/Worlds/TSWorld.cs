@@ -57,6 +57,16 @@ namespace TranSimCS.Worlds
             RoadSegments.ItemRemoved += HandleRemoveRoadSegment;
             RoadNodes.ItemAdded += HandleAddRoadNode;
             RoadNodes.ItemRemoved += HandleRemoveRoadNode;
+
+            //Spatial indexing
+            RootGraph = new SceneGraph.SceneTree();
+            SectionsGraph = new SceneGraph.SceneTree();
+            NodesGraph = new SceneGraph.SceneTree();
+            SegmentsGraph = new SceneGraph.SceneTree();
+            RootGraph.Add(SectionsGraph);
+            RootGraph.Add(NodesGraph);
+            RootGraph.Add(SegmentsGraph);
+            
             ECS = World.Create();
         }
         private void HandleAddRoadSegment(RoadStrip segment) {
@@ -67,6 +77,8 @@ namespace TranSimCS.Worlds
             segment.EndNode.connectionsOld.Add(segment);
             AddIfAbsent(segment.StartNode.Node);
             AddIfAbsent(segment.EndNode.Node);
+
+            SegmentsGraph.Add(segment.Mesh.Leaf);
         }
 
         private void AddIfAbsent(RoadNode node) {
@@ -86,6 +98,8 @@ namespace TranSimCS.Worlds
             foreach(var lane in lanes){
                 lane.Destroy();
             };
+
+            SegmentsGraph.Remove(segment.Mesh.Leaf);
         }
         private void LaneAddedToRoad(object sender, RoadStripEventArgs e) {
             //Handle the addition of a new lane to a road segment

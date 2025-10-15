@@ -5,6 +5,7 @@ using System.Reflection;
 using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
+using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads {

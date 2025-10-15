@@ -19,8 +19,6 @@ namespace TranSimCS.Geometry {
         public static Vector3m FromPoint(PointD point) {
             return new Vector3m(ToRational(-point.x), ToRational(point.y), 0);
         }
-
-
         public static Vector3 FromRational(Vector3m vector) {
             return new(FromRational(vector.X), FromRational(vector.Y), FromRational(vector.Z));
         }
