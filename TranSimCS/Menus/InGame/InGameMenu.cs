@@ -140,6 +140,7 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("bucket", new PaintTool(this));
             SetUpToolPictureButton("inspect", new InspectTool(this));
             SetUpToolPictureButton("finish", new RoadFinishTool(this));
+            SetUpToolPictureButton("trashdump", new DumpingTool(this));
 
             //Set up the tool preview
             ToolDescPanel = new ToolDescriptionPanel(this);

@@ -2,7 +2,7 @@
 using TranSimCS.Roads;
 
 namespace TranSimCS.Worlds {
-    internal static class WorldGenerator {
+    public static class WorldGenerator {
 
         public static void SetUpExampleWorld(TSWorld world) {
             //Reset the world
