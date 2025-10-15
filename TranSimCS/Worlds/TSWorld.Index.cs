@@ -14,5 +14,6 @@ namespace TranSimCS.Worlds {
         public readonly SceneTree NodesGraph;
         public readonly SceneTree SectionsGraph;
         public readonly SceneTree SegmentsGraph;
+        public readonly SceneTree ALSGraph;
     }
 }

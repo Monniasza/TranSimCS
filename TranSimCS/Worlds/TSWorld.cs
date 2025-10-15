@@ -63,9 +63,11 @@ namespace TranSimCS.Worlds
             SectionsGraph = new SceneGraph.SceneTree();
             NodesGraph = new SceneGraph.SceneTree();
             SegmentsGraph = new SceneGraph.SceneTree();
+            ALSGraph = new SceneGraph.SceneTree();
             RootGraph.Add(SectionsGraph);
             RootGraph.Add(NodesGraph);
             RootGraph.Add(SegmentsGraph);
+            RootGraph.Add(ALSGraph);
             
             ECS = World.Create();
         }
