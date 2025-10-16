@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using EarClipperLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Geometry;
@@ -121,44 +118,6 @@ namespace TranSimCS.Model {
                 var idx2 = perimeterIndexes[(i + 1) % perimeterIndexes.Length];
                 var idx0 = centerIdx;
                 rb.DrawTriangle(idx0, idx1, idx2);
-            }
-        }
-        public static void DrawConcave(this IRenderBin rb, params VertexPositionColorTexture[] perimeter) {
-            var convertedPerimeter = perimeter.Select(v => VectorConversions.ToRational(v.Position)).ToList();
-            var indices = perimeter.Select(p => rb.AddVertex(p)).ToArray();
-
-            var points = convertedPerimeter.ToList();
-            EarClipping earClipping = new EarClipping();
-            points = EarClipping.GetCoplanarMapping(points, out var reverseMapping);
-
-            var lookup = new Dictionary<Vector3m, int>();
-            for(int i = 0; i < points.Count; i++) {
-                var point = points[i];
-                lookup[point] = i;
-            }
-
-            earClipping.SetPoints(points);
-            earClipping.Triangulate();
-            var res = earClipping.Result;
-            res = EarClipping.RevertCoplanarityMapping(res, reverseMapping);
-            foreach (var v in res) {
-                var closestIdx = lookup[v];
-                /*var coords = VectorConversions.FromRational(v);
-                var closestPoint = perimeter[0];
-                var closestDist = float.PositiveInfinity;
-                var closestIdx = 0;
-                for(int i = 1; i < convertedPerimeter.Count; i++) {
-                    var v1 = perimeter[i];
-                    var vpos = v1.Position;
-                    var dist = Vector3.DistanceSquared(vpos, coords);
-                    if (dist < closestDist) {
-                        closestDist = dist;
-                        closestPoint = v1;
-                        closestIdx = i;
-                    }
-                }*/
-                var idx = indices[closestIdx];
-                rb.AddIndex(idx);
             }
         }
 

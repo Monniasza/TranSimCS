@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Clipper2Lib;
-using EarClipperLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Geometry;
@@ -165,17 +164,8 @@ namespace TranSimCS.Roads {
             sideRenderBin.DrawStrip(texturedStrip.Item2, texturedStrip.Item1);
 
             //Triangulate first in 2D
-            var points = path.Select(VectorConversions.FromPoint).ToList();
-            var lookup = new Dictionary<Vector3m, int>();
-            for (int i = 0; i < points.Count; i++) {
-                var point = points[i];
-                lookup[point] = i;
-            }
-            var triangulator = new EarClipping();
-            triangulator.SetPoints(points);
-            triangulator.Triangulate();
-            var result = triangulator.Result;
-            var offsets = result.Select(x => lookup[x]);
+            var result = Triangulate2D.TriangulatePolygon(path);
+            var offsets = result;
 
             //Fill the top
             IRenderBin topRenderBin = mesh.GetOrCreateRenderBin(surface.GetTexture());

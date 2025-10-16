@@ -28,8 +28,8 @@
   <ItemGroup>
     <PackageReference Include="Arch" Version="2.1.0-beta" />
     <PackageReference Include="Clipper2" Version="1.5.4" />
-    <PackageReference Include="EarClipper" Version="1.2.2" />
     <PackageReference Include="Iesi.Collections" Version="4.1.1" />
+    <PackageReference Include="MadWorldNL.EarCut" Version="1.1.0" />
     <PackageReference Include="MLEM" Version="8.0.0-ci.222" />
     <PackageReference Include="MLEM.Ui" Version="8.0.0-ci.222" />
     <PackageReference Include="MonoGame.Extended" Version="5.0.2" />
