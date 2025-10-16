@@ -86,6 +86,9 @@ namespace TranSimCS.Roads {
             var leftDownEndPos = leftDownPoints.Last();
             GenerateEndCap(rightUpEndPos, leftUpEndPos, leftDownEndPos, rightDownEndPos, swidth, height, breadth, finishBin);
 
+            //If the road is only 1 lane, do not render the islands
+            if (connection.Lanes.Count < 2) return;
+
             //Find fill polygons for lane strips
             var laneRanges = new List<LaneRange>();
             var fstag = connection.FullSizeTag();
@@ -111,11 +114,6 @@ namespace TranSimCS.Roads {
                 var path = Clipper.MakePath(unraveledCoords.ToArray());
                 var polygon = new Polygon(path, FillRule.EvenOdd);
                 polygons.Add(polygon);
-
-                //Visualise for debugging purposes
-                //DebugPolygon(renderHelper, polygon, (i == 0) ? Color.Lime : Color.Red);
-
-                //if(i == 0) DebugPolygon(renderHelper, polygon, Color.Lime);
             }
 
             //Create the global polygon
@@ -127,10 +125,8 @@ namespace TranSimCS.Roads {
 
             //Perform the separation logic
             var islandsPoly = globalPolygon.SubtractMore(lanePolygons);
-            //var islandsPoly = globalPolygon;
             Debug.Print($"Island: {islandsPoly.path.Count}");
 
-            DebugPolygon(renderHelper, islandsPoly, Color.Orange);
             //Back-transform the paths
             foreach(var path in islandsPoly.path) {
                 DrawIsland(Surface.Tiles, Surface.Concrete, renderHelper, splineFrame, path, 0.5f);
