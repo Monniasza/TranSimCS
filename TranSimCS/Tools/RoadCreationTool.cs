@@ -195,7 +195,7 @@ namespace TranSimCS.Tools {
                 var node0 = node.Value;
                 var lane0 = node0.lane;
 
-                var startingPositionRef = GeometryUtils.calcLineEnd(node0.RoadNodeEnd, lane0.MiddlePosition);
+                var startingPositionRef = LineEnd.calcLineEnd(node0.RoadNodeEnd, lane0.MiddlePosition);
                 var startTangent = startingPositionRef.Tangential;
                 var startLateral = startingPositionRef.Lateral;
                 var startPos = startingPositionRef.Position;
@@ -216,7 +216,7 @@ namespace TranSimCS.Tools {
                     var mouseOverNodeEnd = als.nodeEnd;
                     endWidth = menu.configuration.LaneSpec.Width;
                     var range = als.CalculateOffset(endWidth/2);
-                    var end = GeometryUtils.calcLineEnd(mouseOverNodeEnd, range);
+                    var end = LineEnd.calcLineEnd(mouseOverNodeEnd, range);
                     endTangent = end.Tangential;
                     endPos = end.Position;
                     endLateral = end.Lateral;
@@ -261,7 +261,7 @@ namespace TranSimCS.Tools {
                 } else {
                     //Take an existing end
                     var mouseOverNodeEnd = mouseOverLaneEnd.Value.RoadNodeEnd;
-                    var end = GeometryUtils.calcLineEnd(mouseOverNodeEnd, mouseOverLane.MiddlePosition);
+                    var end = LineEnd.calcLineEnd(mouseOverNodeEnd, mouseOverLane.MiddlePosition);
                     endTangent = end.Tangential;
                     endLateral = end.Lateral;
                     endPos = end.Position;

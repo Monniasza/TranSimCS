@@ -139,7 +139,7 @@ namespace TranSimCS.Roads {
             } else {
                 var leftPos = Lanes[0].LeftPosition;
                 var rightPos = Lanes[Lanes.Count - 1].RightPosition;
-                _centerPos = GeometryUtils.calcLineEnd(FrontEnd, (leftPos + rightPos) / 2).Position;
+                _centerPos = LineEnd.calcLineEnd(FrontEnd, (leftPos + rightPos) / 2).Position;
             }
         }
         public Vector3? _centerPos;

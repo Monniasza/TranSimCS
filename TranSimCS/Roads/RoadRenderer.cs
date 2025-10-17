@@ -10,6 +10,7 @@ using TranSimCS.Model;
 using TranSimCS.Render;
 using TranSimCS.Spline;
 using static TranSimCS.Geometry.GeometryUtils;
+using static TranSimCS.Geometry.LineEnd;
 
 namespace TranSimCS.Roads {
     public struct LaneQuadPair(Quad front, Quad back) {
