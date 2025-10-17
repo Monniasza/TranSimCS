@@ -120,8 +120,6 @@ namespace TranSimCS.Roads {
             return new LaneRange(this,
                 StartNode.GetLaneEnd(ls).lane, StartNode.GetLaneEnd(rs).lane, StartNode.End,
                 EndNode.GetLaneEnd(le).lane, EndNode.GetLaneEnd(re).lane, EndNode.End);
-
-            return new LaneRange(this, lanes[0].StartLane.lane, lanes[maxIdx].StartLane.lane, StartNode.End, lanes[0].EndLane.lane, lanes[maxIdx].EndLane.lane, EndNode.End); // Create a LaneTag with the full size of the connection
         }
 
         //Meshes for the lane connection (can be used for rendering and cached)

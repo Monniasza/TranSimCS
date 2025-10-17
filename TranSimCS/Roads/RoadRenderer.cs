@@ -46,7 +46,7 @@ namespace TranSimCS.Roads {
             foreach(var lane in node.Lanes) GenerateLaneMesh(lane, renderBin, voffset);
         }
         public static void GenerateLaneMesh(Lane lane, MultiMesh mesh, float voffset = 0) {
-            IRenderBin renderBin = mesh.GetOrCreateRenderBin(Assets.Road);
+            IRenderBin renderBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
 
             var quads = GenerateLaneQuad(lane, voffset);
             renderBin.DrawQuad(quads.Front);
@@ -170,7 +170,7 @@ namespace TranSimCS.Roads {
         }
 
         internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh, int accuracy = 17, float voffset = 0.3f) {
-            var mesh = multimesh.GetOrCreateRenderBin(Assets.Asphalt);
+            var mesh = multimesh.GetOrCreateRenderBinForced(Assets.Asphalt);
 
             //Rotate the list so the 1st main end lies on the index 0
             var endsPair = roadSection.MainSlopeNodes.Value;

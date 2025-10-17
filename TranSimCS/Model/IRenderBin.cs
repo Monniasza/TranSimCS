@@ -50,8 +50,8 @@ namespace TranSimCS.Model {
         /// <param name="vertices">List of vertices</param>
         /// <param name="indices">List of indices</param>
         public void DrawModel(IList<VertexPositionColorTexture> vertices, IList<int> indices, IEnumerable<KeyValuePair<int, object>>? tags = null) {
-            ArgumentNullException.ThrowIfNull(vertices);
-            ArgumentNullException.ThrowIfNull(indices);
+            ArgumentNullException.ThrowIfNull(vertices, nameof(vertices));
+            ArgumentNullException.ThrowIfNull(indices, nameof(indices));
             int[] newVertexIds = new int[vertices.Count];
             int startingIndex = Indices.Count;
             int startingTriCount = startingIndex / 3;

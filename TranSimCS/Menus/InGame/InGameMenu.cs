@@ -341,7 +341,7 @@ namespace TranSimCS.Menus.InGame {
             //Clear the screen to a solid color and clear the render helper
             renderHelper.Clear();
             
-            IRenderBin renderBin = renderHelper.GetOrCreateRenderBin(Assets.Road);
+            IRenderBin renderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
 
             // Draw the asphalt texture for the road
             foreach (var roadSegment in World.RoadSegments) renderHelper.AddAll(roadSegment.Mesh.GetMesh());
@@ -390,7 +390,7 @@ namespace TranSimCS.Menus.InGame {
             }
 
             //If the add lane button is selected, draw it
-            IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBin(Assets.Add);
+            IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Add);
             if (SelectedObject is AddLaneSelection selection)
                 RoadRenderer.CreateAddLane(selection, plusRenderBin, configuration.LaneSpec.Width, roadSegmentHighlightColor, 0.5f);
 
@@ -406,7 +406,7 @@ namespace TranSimCS.Menus.InGame {
                 var texscale = scale / 100;
 
                 scale *= 2;
-                IRenderBin grassBin = renderHelper.GetOrCreateRenderBin(Assets.Grass);
+                IRenderBin grassBin = renderHelper.GetOrCreateRenderBinForced(Assets.Grass);
                 grassBin.DrawQuad(
                     GenerateGroundVertex(new(x-scale, -dropY, z+scale), texscale),
                     GenerateGroundVertex(new(x+scale, -dropY, z+scale), texscale),
@@ -438,7 +438,7 @@ namespace TranSimCS.Menus.InGame {
             Mark(p0, Color.Red); Mark(p1, Color.Green);
         }
         private void Mark(Vector3 p, Color c) {
-            var bin = renderHelper.GetOrCreateRenderBin(Assets.Cobble);
+            var bin = renderHelper.GetOrCreateRenderBinForced(Assets.Cobble);
             bin.DrawQuad(p + new Vector3(-1, 1, 0), p + new Vector3(1, 1, 0), p + new Vector3(1, -1, 0), p + new Vector3(-1, -1, 0), c);
         }
 

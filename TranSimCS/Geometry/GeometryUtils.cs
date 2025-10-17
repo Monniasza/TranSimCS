@@ -12,8 +12,7 @@ using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Geometry
-{
-    internal static partial class GeometryUtils
+{    public static partial class GeometryUtils
     {
         public static Vector3 FindNearest(Ray ray, Vector3 point, out float tt) {
             var direction = ray.Direction;
@@ -63,6 +62,16 @@ namespace TranSimCS.Geometry
         public static Vector3[] GenerateSplinePoints(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent, int numPoints = 32)
         {
             return GenerateSplinePoints(GenerateJoinSpline(startPos, endPos, startTangent, endTangent), numPoints);
+        }
+
+        public static float CountLength(Vector3[] points) {
+            float length = 0;
+            for (int i = 1; i < points.Length; i++) {
+                var prev = points[i - 1];
+                var next = points[i];
+                length += Vector3.Distance(prev, next);
+            }
+            return length;
         }
 
         public static VertexPositionColorTexture[] GeneratePositionsFromVectors(float xPos, Color color, params Vector3[] vectors)
@@ -128,7 +137,6 @@ namespace TranSimCS.Geometry
         }
         public static Vector3 ReflectVectorByNormal(Vector3 src, Vector3 normal) => src - 2 * Vector3.Dot(src, normal) * normal;
 
-
         public static VertexPositionColorTexture OffsetVert(VertexPositionColorTexture vert, Vector3 offset) {
             return new VertexPositionColorTexture(vert.Position + offset, vert.Color, vert.TextureCoordinate);
         }
@@ -155,7 +163,6 @@ namespace TranSimCS.Geometry
             if(end == NodeEnd.Backward) return new(-1, 0);
             throw new ArgumentException("Invalid node end");
         }
-
         public static float hypot2(float x, float z) {
             return MathF.Sqrt(x * x + z * z);
         }

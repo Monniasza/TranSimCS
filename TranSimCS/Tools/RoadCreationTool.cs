@@ -278,7 +278,7 @@ namespace TranSimCS.Tools {
                 var endDiff = endLateral * endWidth / 2;
                 Bezier3 lbound = GeometryUtils.GenerateJoinSpline(startPos - startDiff, endPos - endDiff, startTangent, -endTangent) + offset;
                 Bezier3 rbound = GeometryUtils.GenerateJoinSpline(startPos + startDiff, endPos + endDiff, startTangent, -endTangent) + offset;
-                IRenderBin renderBin = menu.renderHelper.GetOrCreateRenderBin(Assets.Road);
+                IRenderBin renderBin = menu.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
                 RoadRenderer.DrawBezierStrip(lbound, rbound, renderBin, previewColor);
             }
         }

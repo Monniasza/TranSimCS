@@ -5,6 +5,7 @@ using System.Linq;
 using Clipper2Lib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Debugging;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Polygons;
@@ -18,7 +19,7 @@ namespace TranSimCS.Roads {
         /// <param name="connection">road segment</param>
         /// <param name="renderHelper">render helper</param>
         public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MultiMesh renderHelper, float voffset = 0) {
-            IRenderBin roadBin = renderHelper.GetOrCreateRenderBin(Assets.Road);
+            IRenderBin roadBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
             foreach (var lane in connection.Lanes)
                 roadBin.DrawModel(lane.GetMesh());
 
@@ -67,7 +68,7 @@ namespace TranSimCS.Roads {
             var bottomPointsR = UniformTexturing.UniformTextured(leftDownPoints, avgWidthFn);
 
             //Draw the strips
-            IRenderBin finishBin = renderHelper.GetOrCreateRenderBin(texture);
+            IRenderBin finishBin = renderHelper.GetOrCreateRenderBinForced(texture);
             finishBin.DrawStrip(leftPointsL, leftPointsR);
             finishBin.DrawStrip(rightPointsL, rightPointsR);
             finishBin.DrawStrip(bottomPointsL, bottomPointsR);
@@ -126,15 +127,20 @@ namespace TranSimCS.Roads {
             var islandsPoly = globalPolygon.SubtractMore(lanePolygons);
             Debug.Print($"Island: {islandsPoly.path.Count}");
 
+            //Calculate length of the road
+            var lengthL = GeometryUtils.CountLength(leftTopPoints);
+            var lengthR = GeometryUtils.CountLength(rightTopPoints);
+            var length = lengthL + lengthR;
+
             //Back-transform the paths
             foreach(var path in islandsPoly.path) {
-                DrawIsland(Surface.Tiles, Surface.Concrete, renderHelper, splineFrame, path, 0.5f);
+                DrawIsland(Surface.Tiles, Surface.Concrete, renderHelper, splineFrame, path, 0.5f, length);
             }
 
         }
-        public static void DebugPolygon(MultiMesh mesh, Polygon polygon, Color c, float stretch = 50) {
+        public static void DebugPolygon(MultiMesh mesh, Polygon polygon, Color c, Vector3 position, float stretch = 50) {
             //Debug.Print("DebugPolygon");
-            var renderBin = mesh.GetOrCreateRenderBin(Assets.Road);
+            var renderBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
             foreach (var loop in polygon.path) {
                 //Debug.Print("DebugPolygon loop");
                 for (int i = 0; i < loop.Count; i++) {   
@@ -154,26 +160,44 @@ namespace TranSimCS.Roads {
             return new Vector3(x, y, (z * stretch) - 60);
         }
 
-        public static void DrawIsland(Surface surface, Surface sideSurface, MultiMesh mesh, SplineFrame frm, PathD path, float h) {
-            var retransformedPoints = Retransform(frm, path, 0);
+        public static void DrawIsland(Surface surface, Surface sideSurface, MultiMesh mesh, SplineFrame frm, PathD path, float h, float stretch) {
+            if (Clipper.Area(path) < 0) path.Reverse();
             var retransformedPointsUp = Retransform(frm, path, h);
-            var retransformedPointsCyclic = retransformedPoints.Append(retransformedPoints.First()).ToArray();
-            var retransformedPointsUpCyclic = retransformedPointsUp.Append(retransformedPointsUp.First()).ToArray();
-            var texturedStrip = UniformTexturing.UniformTexturedTwin(retransformedPointsCyclic, retransformedPointsUpCyclic, UniformTexturing.PairStrip());
-            var sideRenderBin = mesh.GetOrCreateRenderBin(sideSurface.GetTexture());
-            sideRenderBin.DrawStrip(texturedStrip.Item2, texturedStrip.Item1);
 
-            //Triangulate first in 2D
-            var result = Triangulate2D.TriangulatePolygon(path);
-            var offsets = result;
+            if (DebugOptions.DebugIslands) {
+                var retransformedPointsHighUp = Retransform(frm, path, h * 2).ToArray();
+                var roadBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
+                for (int i = 0; i < retransformedPointsHighUp.Length; i++) {
+                    var prev = retransformedPointsHighUp[i];
+                    var next = retransformedPointsHighUp[(i + 1) % retransformedPointsHighUp.Length];
+                    roadBin.DrawLine(prev, next, Vector3.UnitY, Color.Red);
+                }
+            }
 
-            //Fill the top
-            IRenderBin topRenderBin = mesh.GetOrCreateRenderBin(surface.GetTexture());
-            var vertices = retransformedPointsUp.Select(GeometryUtils.CreateVertex).ToArray();
-            var indices = offsets.ToArray();
-            RenderUtil.InvertNormals(indices);
-            topRenderBin.DrawModel(vertices, indices);
-            
+            var averagePosition = retransformedPointsUp.Aggregate((x, y) => x + y);
+
+            if(mesh.TryGetOrCreateRenderBin(sideSurface.GetTexture(), out var sideRenderBin)) {
+                var retransformedPoints = Retransform(frm, path, 0);
+                var retransformedPointsCyclic = retransformedPoints.Append(retransformedPoints.First()).ToArray();
+                var retransformedPointsUpCyclic = retransformedPointsUp.Append(retransformedPointsUp.First()).ToArray();
+                var texturedStrip = UniformTexturing.UniformTexturedTwin(retransformedPointsCyclic, retransformedPointsUpCyclic, UniformTexturing.PairStrip());
+                sideRenderBin.DrawStrip(texturedStrip.Item2, texturedStrip.Item1);
+            }
+            if(mesh.TryGetOrCreateRenderBin(surface.GetTexture(), out var topRenderBin)) {
+                //Triangulate first in 2D
+                var transformedPath = path.Select(p => new PointD(p.x, p.y * stretch)).ToArray();
+                //transformedPath.Reverse();
+                //var triangulation = Triangulate2D.TriangulatePolygon(transformedPath).ToArray();
+                var triangulation = Triangulate2D.LongitudinalTriangulate(transformedPath);
+                var requiredTriCount = (path.Count - 2) * 3;
+                Debug.Print($"Requested idx count: {requiredTriCount} triangulation: {triangulation.Length}");
+                
+
+                //Fill the top
+                var vertices = retransformedPointsUp.Select(GeometryUtils.CreateVertex).ToArray();
+                RenderUtil.InvertNormals(triangulation);
+                ((IRenderBin)topRenderBin).DrawModel(vertices, triangulation);
+            }
         }
         public static IEnumerable<Vector3> Retransform(SplineFrame frame, IEnumerable<PointD> pts, float z = 0) {
             return pts.Select(pt => frame.Transform(new((float)pt.x, z, (float)pt.y)));
