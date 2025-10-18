@@ -1,0 +1,36 @@
+Point: {X:0 Y:0,1 Z:0}
+Point: {X:0 Y:0,1 Z:0}
+Point: {X:3,5 Y:0,1 Z:0}
+2 lane polygons
+Island: 0
+---- DEBUG ASSERTION FAILED ----
+---- Assert Short Message ----
+
+---- Assert Long Message ----
+
+   at TranSimCS.Spatial.RTree`1.ChooseSubtree(BoundingBox bbox, Node node, Int32 level, List`1 path) in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Spatial\RTree.cs:line 223
+   at TranSimCS.Spatial.RTree`1.Insert(Node item, Int32 level) in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Spatial\RTree.cs:line 179
+   at TranSimCS.Spatial.RTree`1.Insert(Node item) in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Spatial\RTree.cs:line 173
+   at TranSimCS.Spatial.RTree`1.Insert(T data, BoundingBox box) in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Spatial\RTree.cs:line 174
+   at TranSimCS.SceneGraph.SceneTree.NodeAdded(SceneNode node) in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\SceneGraph\SceneTree.cs:line 56
+   at TranSimCS.SceneGraph.SceneNode.GetBounds() in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\SceneGraph\SceneNode.cs:line 66
+   at TranSimCS.SceneGraph.SceneTree.NodeInvalidated(SceneNode node, BoundingBox box) in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\SceneGraph\SceneTree.cs:line 54
+   at TranSimCS.SceneGraph.SceneNode.Invalidate() in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\SceneGraph\SceneNode.cs:line 56
+   at TranSimCS.SceneGraph.SceneLeaf.MeshGenerator_OnRemoveMesh() in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\SceneGraph\SceneLeaf.cs:line 21
+   at TranSimCS.SceneGraph.MeshGenerator`1.Invalidate() in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\SceneGraph\MeshGenerator.cs:line 36
+   at TranSimCS.Roads.RoadStrip.RemoveLaneStrip(LaneStrip laneStrip) in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Roads\RoadStrip.cs:line 83
+   at TranSimCS.Roads.LaneStrip.Destroy() in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Roads\LaneStrip.cs:line 118
+   at TranSimCS.Worlds.TSWorld.HandleRemoveRoadSegment(RoadStrip segment) in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Worlds\TSWorld.cs:line 104
+   at TranSimCS.Collections.ListenableObjContainer`1.Remove(T item) in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Collections\ListenableObjContainer.cs:line 79
+   at TranSimCS.Worlds.TSWorld.HandleRemoveRoadNode(RoadNode node) in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Worlds\TSWorld.RoadNodes.cs:line 33
+   at TranSimCS.Collections.ListenableObjContainer`1.Remove(T item) in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Collections\ListenableObjContainer.cs:line 79
+   at TranSimCS.Tools.RoadDemolitionTool.TranSimCS.Tools.ITool.OnClick(MouseButton button) in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Tools\Tool.cs:line 73
+   at TranSimCS.Menus.InGame.InGameMenu.HandleInputs(GameTime time, KeyboardState keyboardState, Single secondsElapsed, Ray ray) in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Menus\InGame\InGameMenu.cs:line 289
+   at TranSimCS.Menus.InGame.InGameMenu.Update(GameTime time) in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Menus\InGame\InGameMenu.cs:line 207
+   at TranSimCS.Game1.Update(GameTime gameTime) in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Game1.cs:line 168
+   at Microsoft.Xna.Framework.Game.DoUpdate(GameTime gameTime)
+   at Microsoft.Xna.Framework.Game.Tick()
+   at Microsoft.Xna.Framework.SdlGamePlatform.RunLoop()
+   at Microsoft.Xna.Framework.Game.Run(GameRunBehavior runBehavior)
+   at TranSimCS.Game1.Start() in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Game1.cs:line 35
+   at Program.Main(String[] args) in C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Program.cs:line 52

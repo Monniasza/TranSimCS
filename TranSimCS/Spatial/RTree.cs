@@ -20,20 +20,23 @@ namespace TranSimCS.Spatial {
         private static readonly Comparer<Node> zComparer = RTreeCalcs.CreateNodeComparer<T>(a => a.Z);
         private Node root;
 
+        private Dictionary<T, Node> lookup = [];
+        public readonly IDictionary<T, Node> Lookup;
+
         //Per-bucket
         private readonly int maxEntries;
         private readonly int minEntries;
 
-        private Dictionary<T, Node> children = [];
-        public readonly IDictionary<T, Node> Children;
-
         public RTree(int maxEntries = 9) {
+            Lookup = new ReadOnlyDictionary<T, Node>(lookup);
             this.maxEntries = maxEntries;
             this.minEntries = (int)Math.Max(2, Math.Ceiling(this.maxEntries * 0.4));
             Clear();
         }
 
-        //PUBLIC METHODS
+        public BoundingBox Bounds() {
+            return root.BoundingBox;
+        }
         public void Load(List<Node> nodes) {
             if(nodes.Count < minEntries) {
                 foreach (var n in nodes) Insert(n);
@@ -62,7 +65,7 @@ namespace TranSimCS.Spatial {
             var N = items.Count;
             var M = maxEntries;
             if(N <= M) {
-                node = new Node { IsLeaf = true, Height = 1 };
+                node = new Node();
                 node.Children.AddRange(items);
             } else {
                 if(level == 0) {
@@ -165,12 +168,17 @@ namespace TranSimCS.Spatial {
         }
 
         public void Clear() {
-            root = new Node { IsLeaf = true, Height = 1 };
+            root = new Node();
         }
 
-        public void Insert(Node item) => Insert(item, root.Height - 1);
-        public void Insert(T data, BoundingBox box) => Insert(new Node(data, box));
-        public void Insert(Node item, int level) {
+        public bool Insert(Node item) => Insert(item, root.Height - 1);
+        public bool Insert(T data, BoundingBox box) => Insert(new Node(data, box));
+        public bool Insert(Node item, int level) {
+            if(lookup.ContainsKey(item.Data)) return false;
+
+            Debug.Print($"Bounding box: {item.BoundingBox}");
+            if (!item.BoundingBox.IsValid()) throw new ArgumentException("The bounding box contains NaN values");
+
             var box = item.BoundingBox;
             var insertPath = new List<Node>();
             // find the best node for accommodating the item, saving all nodes along the path too
@@ -190,6 +198,9 @@ namespace TranSimCS.Spatial {
 
             // adjust bboxes along the insertion path
             AdjutsParentBounds(box, insertPath, level);
+
+            lookup.Add(item.Data, node);
+            return true;
         }
 
         private Node ChooseSubtree(BoundingBox bbox, Node node, int level, List<Node> path) {
@@ -202,12 +213,14 @@ namespace TranSimCS.Spatial {
                 for(int i = 0; i < node.Children.Count; i++) {
                     var child = node.Children[i];
                     var volume = child.BoundingBox.Volume();
-                    var enlargement = RTreeCalcs.CombinedVolume(bbox, child.BoundingBox) - minVolume;
+                    var combovolume = RTreeCalcs.CombinedVolume(bbox, child.BoundingBox);
+                    var enlargement = combovolume - volume;
+                    Debug.Print($"Enlargement: {enlargement}, combined volume: {combovolume}, volume: {volume} curr min: {minEnlargement}");
 
                     // choose entry with the least area enlargement
                     if (enlargement < minEnlargement) {
                         minEnlargement = enlargement;
-                        minVolume = volume < minVolume ? volume : minVolume;
+                        minVolume = MathF.Min(minVolume, volume);
                         targetNode = child;
 
                     } else if (enlargement == minEnlargement) {
@@ -236,8 +249,6 @@ namespace TranSimCS.Spatial {
             newNode.Children.AddRange(node.Children.GetRange(splitIndex, node.Children.Count - splitIndex));
             node.Children.RemoveRange(splitIndex, node.Children.Count - splitIndex);
 
-            if (node.IsLeaf) newNode.IsLeaf = true;
-
             RefreshEnvelope(node);
             RefreshEnvelope(newNode);
 
@@ -261,7 +272,7 @@ namespace TranSimCS.Spatial {
                 var bbox1 = SumChildBounds(node, 0, i);
                 var bbox2 = SumChildBounds(node, i, totalCount);
                 var overlap = RTreeCalcs.IntersectionVolume(bbox1, bbox2);
-                var volume = bbox1.Volume + bbox2.Volume;
+                var volume = bbox1.Volume() + bbox2.Volume();
 
                 // choose distribution with minimum overlap
                 if (overlap < minOverlap) {
@@ -279,7 +290,14 @@ namespace TranSimCS.Spatial {
             return index;
         }
 
-        public void Remove(T item, BoundingBox boundingBox) {
+        public bool Remove(T item) {
+            if(lookup.TryGetValue(item, out var node)) {
+                var isRemoved = Remove(item, node.BoundingBox);
+                return isRemoved;
+            }
+            return false;
+        }
+        public bool Remove(T item, BoundingBox boundingBox) {
             var node = root;
             var itemBox = boundingBox;
             var path = new Stack<Node>();
@@ -304,7 +322,8 @@ namespace TranSimCS.Spatial {
                         node.Children.RemoveAt(index);
                         path.Push(node);
                         CondenseNodes(path.ToArray());
-                        return;
+                        lookup.Remove(item);
+                        return true;
                     }
                 }
                 if (!goingUp && !node.IsLeaf && node.BoundingBox.Contains(itemBox) == ContainmentType.Contains) {
@@ -327,6 +346,7 @@ namespace TranSimCS.Spatial {
 
                 } else node = null; // nothing found
             }
+            return false;
         }
 
         private void CondenseNodes(IList<Node> path) {
@@ -440,5 +460,8 @@ namespace TranSimCS.Spatial {
         public static T TryPeek<T>(this Stack<T> stack) {
             return stack.Count == 0 ? default(T) : stack.Peek();
         }
+
+        public static bool IsValid(this BoundingBox box) => box.Max.IsValid() && box.Min.IsValid();
+        public static bool IsValid(this Vector3 v) => float.IsRealNumber(v.X) && float.IsRealNumber(v.Y) && float.IsRealNumber(v.Z);
     }
 }

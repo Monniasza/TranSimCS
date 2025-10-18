@@ -15,12 +15,13 @@ namespace TranSimCS.Spatial {
             internal Node() : this(default(T), default(BoundingBox)) { }
 
             public Node(T data, BoundingBox boundingBox) {
+                Height = 1;
                 Data = data;
                 BoundingBox = boundingBox;
                 children = new Lazy<List<Node>>(() => new List<Node>(), System.Threading.LazyThreadSafetyMode.None);
             }
 
-            internal bool IsLeaf { get; set; }
+            internal bool IsLeaf => Children.Count == 0;
             internal int Height { get; set; }
             internal List<Node> Children => children.Value;
         }

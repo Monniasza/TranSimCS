@@ -39,19 +39,21 @@ namespace TranSimCS.SceneGraph {
         /// <summary>
         /// Called when the node is invalidated by <see cref="GetBounds"/>
         /// </summary>
-        public event Action? OnInvalidate;
+        public event Action<SceneNode, BoundingBox>? OnInvalidate;
         /// <summary>
         /// Called when the node is rebuilt after invalidation <see cref="Invalidate"/> by the <see cref="GetBounds"/>
         /// </summary>
-        public event Action? OnRebuild;
+        public event Action<SceneNode>? OnRebuild;
 
         /// <summary>
         /// Invalides the current scene node and all of its ancestors
         /// </summary>
         public void Invalidate() {
+            if (Bounds == null) return;
+            var oldBounds = Bounds ?? default;
             Bounds = null;
             Parent?.Invalidate();
-            OnInvalidate?.Invoke();
+            OnInvalidate?.Invoke(this, oldBounds);
         }
         private BoundingBox? Bounds;
         /// <summary>
@@ -61,7 +63,7 @@ namespace TranSimCS.SceneGraph {
         public BoundingBox GetBounds() {
             if (Bounds == null) {
                 Bounds = CalcBounds();
-                OnRebuild?.Invoke();
+                OnRebuild?.Invoke(this);
             }
             return Bounds.Value;
         }
