@@ -40,10 +40,7 @@ namespace TranSimCS.Spline
         }
 
         public Vector3 this[float t] {
-            get {
-                float u = 1 - t;
-                return u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d;
-            }
+            get => Interpolate(a, b, c, d, t);
         }
 
         public Vector3 Tangential(float t) {
@@ -54,13 +51,13 @@ namespace TranSimCS.Spline
             return (3 * u * u * d0) + (6 * t * u * d1) + (3 * t * t * d2);
         }
 
-        public static Vector3 Interpolate(Vector3 a, Vector3 b, Vector3 c, Vector3 d, int t) {
+        public static Vector3 Interpolate(Vector3 a, Vector3 b, Vector3 c, Vector3 d, float t) {
             float u = 1 - t;
             float tt = t * t;
             float uu = u * u;
             return uu * u * a + 3 * uu * t * b + 3 * u * tt * c + t * tt * d;
         }
-        public static Vector4 BasisFunctions(int t) {
+        public static Vector4 BasisFunctions(float t) {
             float u = 1 - t;
             float tt = t * t;
             float uu = u * u;

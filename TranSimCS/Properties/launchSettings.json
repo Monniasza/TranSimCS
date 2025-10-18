@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TranSimCS": {
+      "commandName": "Project",
+      "hotReloadEnabled": false
+    }
+  }
+}

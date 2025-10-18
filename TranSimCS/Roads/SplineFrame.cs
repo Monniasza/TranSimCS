@@ -32,12 +32,12 @@ namespace TranSimCS.Roads {
         public Bezier3 CreateFromPosition(Vector3 position) => CreateFromStartEnd(position, position);
 
         public Vector3 UnTransform(Vector3 position, float minT = 0, float maxT = 1, int depth = 24, float tolerance = 1e-3f) {
-            Vector3 pO, vX, vY;
+            Vector3 pO = Vector3.Zero, vX = Vector3.Zero, vY = Vector3.Zero;
 
             //Describe the solution as finding a plane that intersects a point, then find X and Y.
-            float candidatePos = 0;
+            float midpoint = 0;
             for (int i = 0; i < depth; i++) {
-                var midpoint = (minT + maxT) / 2;
+                midpoint = (minT + maxT) / 2;
                 pO = CenterSpline[midpoint];
                 vX = XPlusSpline[midpoint];
                 vY = YPlusSpline[midpoint];
@@ -45,7 +45,6 @@ namespace TranSimCS.Roads {
                 var dist = SignedDistance(pO, tangential, position);
                 if (MathF.Abs(dist) < tolerance) {
                     //Satisfactory tolerance
-                    candidatePos = midpoint;
                     break;
                 }
                 if(dist > 0) {
@@ -57,15 +56,12 @@ namespace TranSimCS.Roads {
                 }
             }
 
-            pO = CenterSpline[candidatePos];
-            vX = XPlusSpline[candidatePos];
             vX.Normalize();
-            vY = YPlusSpline[candidatePos];
             vY.Normalize();
             var d = position - pO;
             var x = Vector3.Dot(d, vX);
             var y = Vector3.Dot(d, vY);
-            return new Vector3(x, y, candidatePos);
+            return new Vector3(x, y, midpoint);
         }
         public Vector3 Transform(Vector3 input) {
             var pO = CenterSpline[input.Z];

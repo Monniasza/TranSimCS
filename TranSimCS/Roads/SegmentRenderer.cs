@@ -110,8 +110,7 @@ namespace TranSimCS.Roads {
                 var mergedPoint = mergedPoints.First();
                 Debug.Print($"Point: {mergedPoint}");
                 var unraveledPoints = mergedPoints.Select(pt => splineFrame.UnTransform(pt));
-                var unraveledCoords = unraveledPoints.SelectMany(pt => new double[]{ pt.X, pt.Z });
-                var path = Clipper.MakePath(unraveledCoords.ToArray());
+                var path = FlattenPath(unraveledPoints);
                 var polygon = new Polygon(path, FillRule.EvenOdd);
                 polygons.Add(polygon);
             }
@@ -138,6 +137,9 @@ namespace TranSimCS.Roads {
             }
 
         }
+
+        public static PathD FlattenPath(IEnumerable<Vector3> points) => new PathD(points.Select(v => new PointD(v.X, v.Z)));
+
         public static void DebugPolygon(MultiMesh mesh, Polygon polygon, Color c, Vector3 position, float stretch = 50) {
             //Debug.Print("DebugPolygon");
             var renderBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
