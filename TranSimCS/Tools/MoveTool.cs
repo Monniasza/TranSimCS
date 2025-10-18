@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using TranSimCS.Geometry;
 using TranSimCS.Menus;
-using TranSimCS.Menus.Gizmo;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Worlds;
