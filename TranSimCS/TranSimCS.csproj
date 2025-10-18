@@ -42,6 +42,7 @@
     <PackageReference Include="TextCopy" Version="6.2.1" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Menus\Gizmo\" />
     <Folder Include="Menus\MainMenu\" />
   </ItemGroup>
   <ItemGroup>

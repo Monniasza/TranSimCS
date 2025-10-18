@@ -85,14 +85,7 @@ namespace TranSimCS.Tools {
         }
 
         void ITool.AddSelectors(MultiMesh addTo, MultiMesh visibleSelectors) {
-            //Add azimuth gizmos
-            var renderBin = visibleSelectors.GetOrCreateRenderBinForced(Assets.Add);
-
-            /*foreach (var roadNode in game.World.RoadNodes) {
-                var azimuthGizmo = new AzimuthGizmo(roadNode);
-                azimuthGizmo.CreateMesh(renderBin);
-            }*/
-
+            //Unused
         }
 
         public (object[], string)[] PromptKeys() => [
