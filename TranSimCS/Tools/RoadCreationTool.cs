@@ -9,6 +9,7 @@ using MLEM.Input;
 using MLEM.Ui;
 using NLog;
 using TranSimCS.Geometry;
+using TranSimCS.Menus.Gizmo;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads;
