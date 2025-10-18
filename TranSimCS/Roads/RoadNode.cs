@@ -142,6 +142,7 @@ namespace TranSimCS.Roads {
                 _centerPos = LineEnd.calcLineEnd(FrontEnd, (leftPos + rightPos) / 2).Position;
             }
         }
+
         public Vector3? _centerPos;
         // Returns the cached center position, computing it when necessary.
         public Vector3 CenterPosition { get {

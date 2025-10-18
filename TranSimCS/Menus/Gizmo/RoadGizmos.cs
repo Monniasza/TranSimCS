@@ -21,6 +21,11 @@ namespace TranSimCS.Menus.Gizmo {
         public void Drag(Vector3 vector, Vector3 dragFrom) {
             throw new NotImplementedException();
         }
+
+        public void Rotate(int fieldAzimuth, float pitch, float tilt) {
+            //unused
+        }
+
         // Supplies the plane used to constrain dragging interactions for tilt adjustments.
         Plane IDraggableObj.DragPlane() {
             var frame = roadNode.PositionProp.Value.CalcReferenceFrame();
@@ -69,6 +74,14 @@ namespace TranSimCS.Menus.Gizmo {
             Vector3 p4 = Vector3.Transform(new Vector3(-1, 0, -1), frameMatrix);
             renderBin.DrawQuad(p1, p2, p3, p4, Color.Red);
             renderBin.AddTagsToLastTriangles(2, this);
+        }
+
+        public void Rotate(int fieldAzimuth, float pitch, float tilt) {
+            /*var tilt = GeometryUtils.FieldToRadians(fieldAzimuth);
+            var pos = roadNode.PositionProp.Value;
+            pos.Tilt += tilt;
+            pos.Inclination += pitch;
+            roadNode.PositionProp.Value = pos;*/
         }
     }
 }

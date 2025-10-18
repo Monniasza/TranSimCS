@@ -11,9 +11,14 @@ namespace TranSimCS.Roads {
     public struct LaneStripEnd(LaneStrip strip, SegmentHalf half) : IDraggableObj {
         public LaneStrip strip = strip;
         public SegmentHalf half = half;
+        public LaneEnd LaneEnd => strip.GetHalf(half);
 
         public void Drag(Vector3 vector, Vector3 dragFrom) {
-            strip.GetHalf(half).Drag(vector, dragFrom);
+            LaneEnd.Drag(vector, dragFrom);
+        }
+
+        public void Rotate(int fieldAzimuth, float pitch, float tilt) {
+            LaneEnd.Rotate(fieldAzimuth, pitch, tilt);
         }
     }
 
@@ -140,7 +145,9 @@ namespace TranSimCS.Roads {
             return (start == StartLane && end == EndLane) || (start == EndLane && end == StartLane);
         }
 
-        
+        public void Rotate(int fieldAzimuth, float pitch, float tilt) {
+            //unused
+        }
 
         public static bool operator ==(LaneStrip left, LaneStrip right) {
             return EqualityComparer<LaneStrip>.Default.Equals(left, right);

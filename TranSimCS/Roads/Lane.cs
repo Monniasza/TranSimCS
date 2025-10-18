@@ -53,5 +53,6 @@ namespace TranSimCS.Roads {
 
         //Dragging
         public void Drag(Vector3 vector, Vector3 dragFrom) => ((IDraggableObj)RoadNode).Drag(vector, dragFrom);
+        public void Rotate(int azimuth, float incline, float tilt) => ((IDraggableObj)RoadNode).Rotate(azimuth, incline, tilt);
     }
 }

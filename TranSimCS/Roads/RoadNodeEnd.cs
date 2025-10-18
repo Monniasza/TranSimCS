@@ -53,5 +53,9 @@ namespace TranSimCS.Roads {
             //it's to be inverted
             
         }
+
+        public void Rotate(int fieldAzimuth, float pitch, float tilt) {
+            ((IDraggableObj)Node).Rotate(fieldAzimuth, pitch, tilt);
+        }
     }
 }

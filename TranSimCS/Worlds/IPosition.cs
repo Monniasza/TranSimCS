@@ -17,5 +17,13 @@ namespace TranSimCS.Worlds {
             posdata.Position += vector;
             PositionData = posdata;
         }
+
+        void IDraggableObj.Rotate(int fieldAzimuth, float pitch, float tilt) {
+            var pos = PositionData;
+            pos.Azimuth += fieldAzimuth;
+            pos.Inclination += pitch;
+            pos.Tilt += tilt;
+            PositionData = pos;
+        }
     }
 }

@@ -37,6 +37,10 @@ namespace TranSimCS.Roads {
             return HashCode.Combine(end, lane);
         }
 
+        public void Rotate(int fieldAzimuth, float pitch, float tilt) {
+            lane.Rotate(fieldAzimuth, pitch, tilt);
+        }
+
         public static bool operator ==(LaneEnd left, LaneEnd right) {
             return left.Equals(right);
         }

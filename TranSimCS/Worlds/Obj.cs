@@ -78,6 +78,8 @@ namespace TranSimCS.Worlds {
         /// <param name="dragFrom"></param>
         public void Drag(Vector3 vector, Vector3 dragFrom);
         public Plane DragPlane() => InGameMenu.groundPlane;
+
+        public void Rotate(int fieldAzimuth, float pitch, float tilt);
     }
 
     
