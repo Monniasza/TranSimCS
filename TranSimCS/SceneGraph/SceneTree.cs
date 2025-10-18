@@ -33,8 +33,9 @@ namespace TranSimCS.SceneGraph {
             Invalidate();
             return true;
         }
-
         public ISet<SceneNode> Nodes => new ReadOnlySet<SceneNode>(nodes);
+
+
         protected override bool FindInternal(Ray ray, out SceneNode? node, out float dist, out object? tag) {
             var currDist = float.MaxValue;
             object? currTag = null;
