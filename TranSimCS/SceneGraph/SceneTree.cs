@@ -12,21 +12,16 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.SceneGraph {
     public class SceneTree : SceneNode {
+        public SceneTree() {
+            OnInvalidate += SceneTree_OnInvalidate;
+        }
+        private void SceneTree_OnInvalidate(SceneNode arg1, BoundingBox arg2) {
+            index = null;
+        }
+
         protected override BoundingBox CalcBounds() {
-            /*var bounds = new BoundingBox();
-            foreach(var child in nodes) {
-                bounds = BoundingBox.CreateMerged(bounds, child.GetBounds());
-            }
-            return bounds;*/
-            foreach(var removal in removals) {
-                index.Remove(removal.node, removal.box);
-            }
-            foreach (var addition in additions) {
-                index.Insert(addition, addition.GetBounds());
-            }
-            additions.Clear();
-            removals.Clear();
-            return index.Bounds();
+            //Rebuild the index
+            return GetIndex().Bounds;
         }
 
         //CONTENTS
@@ -35,9 +30,6 @@ namespace TranSimCS.SceneGraph {
             var added = nodes.Add(node);
             if (!added) return false;
             node.Parent = this;
-            node.OnRebuild += NodeAdded;
-            node.OnInvalidate += NodeInvalidated;
-            NodeAdded(node);
             Invalidate();
             return true;
         }
@@ -45,24 +37,16 @@ namespace TranSimCS.SceneGraph {
             var removed = nodes.Remove(node);
             if (!removed) return false;
             node.Parent = null;
-            node.OnRebuild -= NodeAdded;
-            node.OnInvalidate -= NodeInvalidated;
-            NodeRemoved(node);
             Invalidate();
             return true;
         }
         public ISet<SceneNode> Nodes => new ReadOnlySet<SceneNode>(nodes);
 
         //INDEX
-        private readonly HashSet<SceneNode> additions = [];
-        private readonly HashSet<SceneContainer> removals = [];
-
-        private readonly RTreeBroken<SceneNode> index = new RTreeBroken<SceneNode>();
-        private void NodeRemoved(SceneNode node) => removals.Add(new(node, node.GetBounds()));
-        private void NodeAdded(SceneNode node) => additions.Add(node);
-        private void NodeInvalidated(SceneNode node, BoundingBox box) {
-            removals.Add(new(node, box));
-            additions.Add(node);
+        private ElementBVH<SceneNode>? index;
+        public ElementBVH<SceneNode> GetIndex() {
+            index ??= new ElementBVH<SceneNode>(Nodes.ToList());
+            return index;
         }
 
         protected override bool FindInternal(Ray ray, out SceneNode? node, out float dist, out object? tag) {

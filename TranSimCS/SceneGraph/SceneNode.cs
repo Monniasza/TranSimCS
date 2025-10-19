@@ -5,13 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using TranSimCS.Model;
+using TranSimCS.Spatial;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.SceneGraph {
     /// <summary>
     /// An element of a scene graphs. There are two types of nodes: leaf nodes which attach to mesh generators and branches which combine several subnodes together.
     /// </summary>
-    public abstract class SceneNode {
+    public abstract class SceneNode: IBVHElement {
         /// <summary>
         /// Abstract constructor called by subclasses of this class
         /// </summary>
@@ -117,6 +118,8 @@ namespace TranSimCS.SceneGraph {
             return AggregateBounds(boundingBoxes);
         }
         public static BoundingBox AggregateBounds(IEnumerable<BoundingBox> boxes) => boxes.AggregateOrDefault(new BoundingBox(), BoundingBox.CreateMerged);
+
+        public bool ComputeIntersection(Ray ray, out float distance, out object tag) => Find(ray, out var ignore1, out distance, out tag);
     }
 
     public struct SceneContainer(SceneNode node, BoundingBox box) {
