@@ -71,6 +71,7 @@ namespace TranSimCS.Tools {
                     if (rmb & !lmb) {
                         //Azimuth
                         ObjToDrag?.Rotate(GeometryUtils.RadiansToField(angles.X), 0, 0);
+                        ObjToDrag?.Drag(Vector3.UnitY * mousedelta.Y / -100, dragFrom);
                     }
                     if(lmb & rmb) {
                         //Tilt/inclination
@@ -89,7 +90,7 @@ namespace TranSimCS.Tools {
 
         public (object[], string)[] PromptKeys() => [
             ([MouseButton.Left, SpecialKey.MouseMove], "to move the object"),
-            ([MouseButton.Right, SpecialKey.MouseMove], "to yaw the object"),
+            ([MouseButton.Right, SpecialKey.MouseMove], "to yaw/elevate the object"),
             ([MouseButton.Left, MouseButton.Right, SpecialKey.MouseMove], "to roll/pitch the object"),
         ];
     }
