@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace TranSimCS.Spatial {
 
     //Objects that can be intersection-checked with bounding boxes
-    internal interface ICollider {
+    public interface ICollider {
+        public bool
     }
 }

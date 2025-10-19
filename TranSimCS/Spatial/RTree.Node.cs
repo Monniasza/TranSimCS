@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 namespace TranSimCS.Spatial {
-    public partial class RTree<T> {
+    public partial class RTreeBroken<T> {
         /// <summary>
         /// R-tree node. Ported from https://github.com/marchello2000/RTree/blob/master/src/RTree/RTreeNode.cs#L10
         /// </summary>

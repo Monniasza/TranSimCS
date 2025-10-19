@@ -13,7 +13,7 @@ namespace TranSimCS.Spatial {
     /// R-tree. Ported from https://github.com/marchello2000/RTree/blob/master/src/RTree/RTree.cs#L175
     /// </summary>
     /// <typeparam name="T">type of data values</typeparam>
-    public partial class RTree<T> {
+    public partial class RTreeBroken<T> {
         private static readonly EqualityComparer<T> Comparer = EqualityComparer<T>.Default;
         private static readonly Comparer<Node> xComparer = RTreeCalcs.CreateNodeComparer<T>(a => a.X);
         private static readonly Comparer<Node> yComparer = RTreeCalcs.CreateNodeComparer<T>(a => a.Y);
@@ -24,7 +24,7 @@ namespace TranSimCS.Spatial {
         private readonly int maxEntries;
         private readonly int minEntries;
 
-        public RTree(int maxEntries = 9) {
+        public RTreeBroken(int maxEntries = 9) {
             this.maxEntries = maxEntries;
             this.minEntries = (int)Math.Max(2, Math.Ceiling(this.maxEntries * 0.4));
             Clear();
@@ -203,12 +203,13 @@ namespace TranSimCS.Spatial {
                 var minVolume = float.PositiveInfinity;
                 var minEnlargement = float.PositiveInfinity;
                 Node targetNode = null;
+                Debug.Print("Scanning nodes");
                 for(int i = 0; i < node.Children.Count; i++) {
                     var child = node.Children[i];
                     var volume = child.BoundingBox.Volume();
                     var combovolume = RTreeCalcs.CombinedVolume(bbox, child.BoundingBox);
                     var enlargement = combovolume - volume;
-                    //Debug.Print($"Enlargement: {enlargement}, combined volume: {combovolume}, volume: {volume} curr min: {minEnlargement}");
+                    Debug.Print($"Enlargement: {enlargement}, combined volume: {combovolume}, volume: {volume} curr min: {minEnlargement}");
 
                     // choose entry with the least volume enlargement
                     if (enlargement < minEnlargement) {
@@ -412,8 +413,8 @@ namespace TranSimCS.Spatial {
     }
 
     public static class RTreeCalcs {
-        public static Comparer<RTree<T>.Node> CreateNodeComparer<T>(Func<Vector3, float> axisFn) {
-            return Comparer<RTree<T>.Node>.Create((x, y) => {
+        public static Comparer<RTreeBroken<T>.Node> CreateNodeComparer<T>(Func<Vector3, float> axisFn) {
+            return Comparer<RTreeBroken<T>.Node>.Create((x, y) => {
                 var pos1 = x.BoundingBox.Min;
                 var pos2 = y.BoundingBox.Min;
                 var num1 = axisFn(pos1);

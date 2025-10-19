@@ -57,7 +57,7 @@ namespace TranSimCS.SceneGraph {
         private readonly HashSet<SceneNode> additions = [];
         private readonly HashSet<SceneContainer> removals = [];
 
-        private readonly RTree<SceneNode> index = new RTree<SceneNode>();
+        private readonly RTreeBroken<SceneNode> index = new RTreeBroken<SceneNode>();
         private void NodeRemoved(SceneNode node) => removals.Add(new(node, node.GetBounds()));
         private void NodeAdded(SceneNode node) => additions.Add(node);
         private void NodeInvalidated(SceneNode node, BoundingBox box) {
