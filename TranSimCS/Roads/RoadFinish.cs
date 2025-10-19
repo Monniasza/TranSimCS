@@ -47,8 +47,8 @@ namespace TranSimCS.Roads {
         }
 
         public static readonly RoadFinish None = new RoadFinish(Surface.None, 0, 0);
-        public static readonly RoadFinish Embankment = new RoadFinish(Surface.Dirt, MathF.PI / 4, 1000);
+        public static readonly RoadFinish Embankment = new RoadFinish(Surface.Dirt, MathF.PI / 4, 10);
         public static readonly RoadFinish Deck = new RoadFinish(Surface.Concrete, MathF.PI / 2, 1);
-        public static readonly RoadFinish Wall = new RoadFinish(Surface.Concrete, MathF.PI / 2, 1000);
+        public static readonly RoadFinish Wall = new RoadFinish(Surface.Concrete, MathF.PI / 2, 10);
     }
 }
