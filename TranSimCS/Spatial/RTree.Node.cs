@@ -21,7 +21,7 @@ namespace TranSimCS.Spatial {
                 children = new Lazy<List<Node>>(() => new List<Node>(), System.Threading.LazyThreadSafetyMode.None);
             }
 
-            internal bool IsLeaf => Children.Count == 0;
+            internal bool IsLeaf { get; set; }
             internal int Height { get; set; }
             internal List<Node> Children => children.Value;
         }

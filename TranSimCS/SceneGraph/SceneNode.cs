@@ -118,4 +118,9 @@ namespace TranSimCS.SceneGraph {
         }
         public static BoundingBox AggregateBounds(IEnumerable<BoundingBox> boxes) => boxes.AggregateOrDefault(new BoundingBox(), BoundingBox.CreateMerged);
     }
+
+    public struct SceneContainer(SceneNode node, BoundingBox box) {
+        public SceneNode node = node;
+        public BoundingBox box = box;
+    }
 }

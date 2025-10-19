@@ -18,12 +18,14 @@ namespace TranSimCS.SceneGraph {
                 bounds = BoundingBox.CreateMerged(bounds, child.GetBounds());
             }
             return bounds;*/
-            foreach(var removal in diff.removals) {
-                index.Remove(removal);
+            foreach(var removal in removals) {
+                index.Remove(removal.node, removal.box);
             }
-            foreach (var addition in diff.additions) {
+            foreach (var addition in additions) {
                 index.Insert(addition, addition.GetBounds());
             }
+            additions.Clear();
+            removals.Clear();
             return index.Bounds();
         }
 
@@ -34,6 +36,7 @@ namespace TranSimCS.SceneGraph {
             if (!added) return false;
             node.Parent = this;
             node.OnRebuild += NodeAdded;
+            node.OnInvalidate += NodeInvalidated;
             NodeAdded(node);
             Invalidate();
             return true;
@@ -43,6 +46,7 @@ namespace TranSimCS.SceneGraph {
             if (!removed) return false;
             node.Parent = null;
             node.OnRebuild -= NodeAdded;
+            node.OnInvalidate -= NodeInvalidated;
             NodeRemoved(node);
             Invalidate();
             return true;
@@ -50,10 +54,16 @@ namespace TranSimCS.SceneGraph {
         public ISet<SceneNode> Nodes => new ReadOnlySet<SceneNode>(nodes);
 
         //INDEX
-        private readonly Diff<SceneNode> diff = new Diff<SceneNode>();
+        private readonly HashSet<SceneNode> additions = [];
+        private readonly HashSet<SceneContainer> removals = [];
+
         private readonly RTree<SceneNode> index = new RTree<SceneNode>();
-        private void NodeRemoved(SceneNode node) => diff.Remove(node);
-        private void NodeAdded(SceneNode node) => diff.Add(node);
+        private void NodeRemoved(SceneNode node) => removals.Add(new(node, node.GetBounds()));
+        private void NodeAdded(SceneNode node) => additions.Add(node);
+        private void NodeInvalidated(SceneNode node, BoundingBox box) {
+            removals.Add(new(node, box));
+            additions.Add(node);
+        }
 
         protected override bool FindInternal(Ray ray, out SceneNode? node, out float dist, out object? tag) {
             var currDist = float.MaxValue;

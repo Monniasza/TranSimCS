@@ -20,15 +20,11 @@ namespace TranSimCS.Spatial {
         private static readonly Comparer<Node> zComparer = RTreeCalcs.CreateNodeComparer<T>(a => a.Z);
         private Node root;
 
-        private Dictionary<T, Node> lookup = [];
-        public readonly IDictionary<T, Node> Lookup;
-
         //Per-bucket
         private readonly int maxEntries;
         private readonly int minEntries;
 
         public RTree(int maxEntries = 9) {
-            Lookup = new ReadOnlyDictionary<T, Node>(lookup);
             this.maxEntries = maxEntries;
             this.minEntries = (int)Math.Max(2, Math.Ceiling(this.maxEntries * 0.4));
             Clear();
@@ -65,7 +61,7 @@ namespace TranSimCS.Spatial {
             var N = items.Count;
             var M = maxEntries;
             if(N <= M) {
-                node = new Node();
+                node = new Node { IsLeaf = true, Height = 1 };
                 node.Children.AddRange(items);
             } else {
                 if(level == 0) {
@@ -113,7 +109,7 @@ namespace TranSimCS.Spatial {
             var nodesToSearch = new Stack<Node>();
 
             while(node != null) {
-                for(var i = 0;i < node.Children.Count; i++) {
+                for(var i = 0; i < node.Children.Count; i++) {
                     var child = node.Children[i];
                     var childBox = child.BoundingBox;
                     if (collider.Intersects(childBox)) {
@@ -168,15 +164,13 @@ namespace TranSimCS.Spatial {
         }
 
         public void Clear() {
-            root = new Node();
+            root = new Node { IsLeaf = true, Height = 1 };
         }
 
         public bool Insert(Node item) => Insert(item, root.Height - 1);
         public bool Insert(T data, BoundingBox box) => Insert(new Node(data, box));
         public bool Insert(Node item, int level) {
-            if(lookup.ContainsKey(item.Data)) return false;
-
-            Debug.Print($"Bounding box: {item.BoundingBox}");
+            //Debug.Print($"Bounding box: {item.BoundingBox}");
             if (!item.BoundingBox.IsValid()) throw new ArgumentException("The bounding box contains NaN values");
 
             var box = item.BoundingBox;
@@ -199,7 +193,6 @@ namespace TranSimCS.Spatial {
             // adjust bboxes along the insertion path
             AdjutsParentBounds(box, insertPath, level);
 
-            lookup.Add(item.Data, node);
             return true;
         }
 
@@ -215,16 +208,16 @@ namespace TranSimCS.Spatial {
                     var volume = child.BoundingBox.Volume();
                     var combovolume = RTreeCalcs.CombinedVolume(bbox, child.BoundingBox);
                     var enlargement = combovolume - volume;
-                    Debug.Print($"Enlargement: {enlargement}, combined volume: {combovolume}, volume: {volume} curr min: {minEnlargement}");
+                    //Debug.Print($"Enlargement: {enlargement}, combined volume: {combovolume}, volume: {volume} curr min: {minEnlargement}");
 
-                    // choose entry with the least area enlargement
+                    // choose entry with the least volume enlargement
                     if (enlargement < minEnlargement) {
                         minEnlargement = enlargement;
                         minVolume = MathF.Min(minVolume, volume);
                         targetNode = child;
 
                     } else if (enlargement == minEnlargement) {
-                        // otherwise choose one with the smallest area
+                        // otherwise choose one with the smallest volume
                         if (volume < minVolume) {
                             minVolume = volume;
                             targetNode = child;
@@ -248,6 +241,8 @@ namespace TranSimCS.Spatial {
 
             newNode.Children.AddRange(node.Children.GetRange(splitIndex, node.Children.Count - splitIndex));
             node.Children.RemoveRange(splitIndex, node.Children.Count - splitIndex);
+
+            if(node.IsLeaf) newNode.IsLeaf = true;
 
             RefreshEnvelope(node);
             RefreshEnvelope(newNode);
@@ -280,7 +275,7 @@ namespace TranSimCS.Spatial {
                     index = i;
                     minVolume = volume < minVolume ? volume : minVolume;
                 } else if (overlap == minOverlap) {
-                    // otherwise choose distribution with minimum area
+                    // otherwise choose distribution with minimum volume
                     if (volume < minVolume) {
                         minVolume = volume;
                         index = i;
@@ -290,13 +285,6 @@ namespace TranSimCS.Spatial {
             return index;
         }
 
-        public bool Remove(T item) {
-            if(lookup.TryGetValue(item, out var node)) {
-                var isRemoved = Remove(item, node.BoundingBox);
-                return isRemoved;
-            }
-            return false;
-        }
         public bool Remove(T item, BoundingBox boundingBox) {
             var node = root;
             var itemBox = boundingBox;
@@ -322,7 +310,6 @@ namespace TranSimCS.Spatial {
                         node.Children.RemoveAt(index);
                         path.Push(node);
                         CondenseNodes(path.ToArray());
-                        lookup.Remove(item);
                         return true;
                     }
                 }
