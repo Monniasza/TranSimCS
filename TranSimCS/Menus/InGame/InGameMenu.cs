@@ -349,6 +349,9 @@ namespace TranSimCS.Menus.InGame {
             //Draw road sections
             foreach (var section in World.RoadSections) renderHelper.AddAll(section.Mesh.GetMesh());
 
+            //Draw buildings
+            foreach (var building in World.Buildings) renderHelper.AddAll(building.Mesh.GetMesh());
+
             //If a road segment is selected, draw the selection
             var roadSelection = MouseOverRoad;
             if (roadSelection?.SelectedLaneTag != null) {

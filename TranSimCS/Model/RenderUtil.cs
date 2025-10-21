@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MLEM.Maths;
 using TranSimCS.Geometry;
 
 namespace TranSimCS.Model {
@@ -29,17 +30,32 @@ namespace TranSimCS.Model {
                 rb.AddIndex(indexDataQuad[index]);
             }
         }
-        public static void DrawQuad(this IRenderBin rb, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color) {
+        public static void DrawQuad(this IRenderBin rb, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, RectangleF rect) {
+            var minU = rect.Left;
+            var minV = rect.Top;
+            var maxU = rect.Right;
+            var maxV = rect.Bottom;
+
             rb.DrawQuad(
-                new VertexPositionColorTexture(a, color, new(0, 0)),
-                new VertexPositionColorTexture(b, color, new(1, 0)),
-                new VertexPositionColorTexture(c, color, new(1, 1)),
-                new VertexPositionColorTexture(d, color, new(0, 1)));
+                new VertexPositionColorTexture(a, color, new(minU, minV)),
+                new VertexPositionColorTexture(b, color, new(maxU, minV)),
+                new VertexPositionColorTexture(c, color, new(maxU, maxV)),
+                new VertexPositionColorTexture(d, color, new(minU, maxV)));
+        }
+        public static void DrawQuad(this IRenderBin rb, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color) {
+            rb.DrawQuad(a, b, c, d, color, new RectangleF(0, 0, 1, 1));
         }
         public static void DrawQuad(this IRenderBin rb, Quad q) => rb.DrawQuad(q.a, q.b, q.c, q.d);
         public static void DrawQuad(this IRenderBin rb, int a, int b, int c, int d) {
             int[] indexDataQuad = [a, b, c, d];
             foreach (var index in indexDataQuadLookup) rb.AddIndex(indexDataQuad[index]);
+        }
+
+        public static void DrawParallelogram(this IRenderBin rb, Vector3 origin, Vector3 plusX, Vector3 plusY, Color c) {
+            rb.DrawQuad(origin + plusY, origin + plusX + plusY, origin + plusX, origin, c);
+        }
+        public static void DrawParallelogram(this IRenderBin rb, Vector3 origin, Vector3 plusX, Vector3 plusY, Color c, RectangleF rect) {
+            rb.DrawQuad(origin + plusY, origin + plusX + plusY, origin + plusX, origin, c, rect);
         }
 
         /// <summary>
@@ -104,6 +120,12 @@ namespace TranSimCS.Model {
             woven.Add(r[0]);
             DrawStrip(rb, woven.ToArray());
         }
+        public static void DrawClosedStrip(this IRenderBin rb, VertexPositionColorTexture[] lr) {
+            var woven = lr.ToList();
+            woven.Add(lr[0]);
+            woven.Add(lr[1]);
+            DrawStrip(rb, woven.ToArray());
+        }
 
         public static void DrawStrip(this IRenderBin rb, VertexPositionColorTexture[] l, VertexPositionColorTexture[] r)
             => DrawStrip(rb, GeometryUtils.WeaveStrip(l, r));
@@ -153,6 +175,16 @@ namespace TranSimCS.Model {
             for(int i = 0; i < indices.Length; i += 3) {
                 (indices[i + 1], indices[i])
               = (indices[i], indices[i + 1]);
+            }
+        }
+
+        public static void AddTagsToLastTriangles(this IRenderBin rb, int count, object value) {
+            if (value == null) return;
+            ArgumentOutOfRangeException.ThrowIfNegative(count, nameof(count));
+            if (count == 0) return;
+            int startIndex = (rb.Indices.Count / 3) - count; // Each triangle has 3 indices
+            for (int i = 0; i < count; i++) {
+                rb.Tags[startIndex + i] = value;
             }
         }
     }

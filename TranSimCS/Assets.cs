@@ -16,6 +16,9 @@ namespace TranSimCS {
         public static Texture2D Concrete { get; private set; }
         public static Texture2D Tiles { get; private set; }
         public static Texture2D Cobble { get; private set; }
+        public static Texture2D BuildingBricks { get; private set; }
+        public static Texture2D BuildingWindows { get; private set; }
+
         public static ContentManager Content => Game1.Instance.Content;
 
 
@@ -27,6 +30,8 @@ namespace TranSimCS {
             Concrete = Content.Load<Texture2D>("seamlessTextures2/IMGP5514_seamless_2");
             Cobble = Content.Load<Texture2D>("seamlessTextures2/rock02");
             Tiles = Content.Load<Texture2D>("tile");
+            BuildingBricks = Content.Load<Texture2D>("brickwall");
+            BuildingWindows  = Content.Load<Texture2D>("brickwindow");
         }
     }
 }

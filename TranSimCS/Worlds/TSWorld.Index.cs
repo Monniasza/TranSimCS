@@ -25,6 +25,10 @@ namespace TranSimCS.Worlds {
         /// </summary>
         public readonly SceneTree SegmentsGraph;
         /// <summary>
+        /// Scene graph for buildings
+        /// </summary>
+        public readonly SceneTree BuildingsGraph;
+        /// <summary>
         /// Scene graph for Add Lane Selection components
         /// </summary>
         public readonly SceneLeaf TempSelectors;

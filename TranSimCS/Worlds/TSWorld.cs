@@ -12,6 +12,7 @@ using TranSimCS.Collections;
 using NLog;
 using TranSimCS.Model;
 using TranSimCS.SceneGraph;
+using TranSimCS.Worlds.Building;
 
 namespace TranSimCS.Worlds
 {
@@ -21,6 +22,7 @@ namespace TranSimCS.Worlds
         //The contents of the world
         public ListenableObjContainer<RoadStrip> RoadSegments { get; } = new();
         public ListenableObjContainer<RoadSection> RoadSections { get; } = new();
+        public ListenableObjContainer<BuildingUnit> Buildings { get; } = new();
         public World ECS { get; private set; }
 
         public RoadStrip FindRoadStrip(RoadNodeEnd start, RoadNodeEnd end) {
@@ -59,6 +61,8 @@ namespace TranSimCS.Worlds
             RoadSegments.ItemRemoved += HandleRemoveRoadSegment;
             RoadNodes.ItemAdded += HandleAddRoadNode;
             RoadNodes.ItemRemoved += HandleRemoveRoadNode;
+            Buildings.ItemAdded += Buildings_ItemAdded;
+            Buildings.ItemRemoved += Buildings_ItemRemoved;
 
             //Spatial indexing
             RootGraph = new SceneGraph.SceneTree();
@@ -67,13 +71,24 @@ namespace TranSimCS.Worlds
             SegmentsGraph = new SceneGraph.SceneTree();
             TempSelectorsMesh = new Property<Model.MultiMesh>(new Model.MultiMesh(), "selectors", null, Equality.ReferenceEqualComparer<MultiMesh>());
             TempSelectors = new SceneGraph.SceneLeaf(new MeshProperty(TempSelectorsMesh));
+            BuildingsGraph = new SceneGraph.SceneTree();
             RootGraph.Add(SectionsGraph);
             RootGraph.Add(NodesGraph);
             RootGraph.Add(SegmentsGraph);
             RootGraph.Add(TempSelectors);
+            RootGraph.Add(BuildingsGraph);
             
             ECS = World.Create();
         }
+
+        private void Buildings_ItemRemoved(BuildingUnit obj) {
+            BuildingsGraph.Remove(obj.Mesh.Leaf);
+        }
+
+        private void Buildings_ItemAdded(BuildingUnit obj) {
+            BuildingsGraph.Add(obj.Mesh.Leaf);
+        }
+
         private void HandleAddRoadSegment(RoadStrip segment) {
             // Handle the addition of a new road segment
             segment.OnLaneRemoved += LaneRemovedFromRoad; // Subscribe to lane removal events in the road segment

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using TranSimCS.Roads;
+using TranSimCS.Worlds.Building;
 
 namespace TranSimCS.Worlds {
     public static class WorldGenerator {
@@ -122,6 +123,16 @@ namespace TranSimCS.Worlds {
             n13b.ConnectedSection.Value = section;
             section.MainSlopeNodes.Value = new RoadNodeEndPair(n11b, n13b);
             world.RoadSections.Add(section);
+
+            //Set up an array of buildings
+            for(int x = -512; x < -256; x += 64) {
+                for(int z = -128; z < 256; z += 64) {
+                    var pos = new ObjPos(new(x, 0, z), 0);
+                    BuildingUnit building = new BuildingUnit();
+                    building.PositionProp.Value = pos;
+                    world.Buildings.Add(building);
+                }
+            }
         }
     }
 }

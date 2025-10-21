@@ -1,9 +1,13 @@
 ﻿
 
 using System;
+using System.Linq;
+using System.Security.Cryptography;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Collections;
 using TranSimCS.Geometry;
+using TranSimCS.Model;
 
 namespace TranSimCS {
     public struct Transform3 {
@@ -48,6 +52,15 @@ namespace TranSimCS {
             var roll = MathF.Atan2(yComp, xComp);
             return new Vector3(yaw, pitch, roll);
         }
-
+        public void TransformOutOfPlace(IRenderBin src, IRenderBin dst) {
+            if (dst == null) dst = src;
+            var count = src.Vertices.Count;
+            var transformedVertices = src.Vertices.Select(Transform).ToArray();
+            dst.DrawModel(transformedVertices, src.Indices, src.Tags);
+        }
+        public void TransformInPlace(IRenderBin mesh) => mesh.Vertices.TransformInPlace(Transform);
+        public void TransformInPlace(MultiMesh mesh) {
+            foreach(var submesh in mesh.RenderBins) TransformInPlace(submesh.Value);
+        }
     }
 }

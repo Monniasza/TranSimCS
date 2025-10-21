@@ -28,15 +28,7 @@ namespace TranSimCS.Model {
         public int AddVertex(VertexPositionColorTexture vertex);
         public void AddIndex(int index);
         public void Clear();
-        public void AddTagsToLastTriangles(int count, object value) {
-            if (value == null) return;
-            ArgumentOutOfRangeException.ThrowIfNegative(count, nameof(count));
-            if (count == 0) return;
-            int startIndex = (Indices.Count / 3) - count; // Each triangle has 3 indices
-            for (int i = 0; i < count; i++) {
-                Tags[startIndex + i] = value;
-            }
-        }
+        
 
         public void DrawTriangle(int a, int b, int c) {
             AddIndex(a);
