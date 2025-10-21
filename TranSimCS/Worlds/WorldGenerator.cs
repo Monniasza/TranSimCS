@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 using TranSimCS.Roads;
 using TranSimCS.Worlds.Building;
 
@@ -129,14 +131,17 @@ namespace TranSimCS.Worlds {
             int countX = 100;
             int countZ = 100;
             Vector3 startPos = new(-256, 0, pitchZ * countZ * -0.5f);
+            var random = new Random();
 
             //Set up an array of buildings
             for(int x = 0; x < countX; x++) {
                 for(int z = 0; z < countZ; z++) {
                     var pos = startPos + new Vector3(x * pitchX, 0, z * pitchZ);
+                    var dims = new Vector3i(16, random.Next(10, 20), 4);
                     var trpos = new ObjPos(pos, 0);
                     BuildingUnit building = new BuildingUnit();
                     building.PositionProp.Value = trpos;
+                    building.UnitSizeProp.Value = dims;
                     world.Buildings.Add(building);
                 }
             }
