@@ -103,7 +103,10 @@ namespace TranSimCS.Menus.InGame {
                 var saveDialog = new SaveGameDialog(parent, Program.SaveRoot, false);
                 saveDialog.OnSave += (file) => {
                     if (file == null) parent.Overlay = this;
-                    else parent.World.SaveToFile(file);
+                    else {
+                        parent.World.SaveToFile(file);
+                        parent.Overlay = this;
+                    }
                 };
                 parent.Overlay = saveDialog;
             }
