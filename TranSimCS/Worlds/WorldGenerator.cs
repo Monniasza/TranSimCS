@@ -124,12 +124,19 @@ namespace TranSimCS.Worlds {
             section.MainSlopeNodes.Value = new RoadNodeEndPair(n11b, n13b);
             world.RoadSections.Add(section);
 
+            float pitchX = -64;
+            float pitchZ = -64;
+            int countX = 100;
+            int countZ = 100;
+            Vector3 startPos = new(-256, 0, pitchZ * countZ * -0.5f);
+
             //Set up an array of buildings
-            for(int x = -512; x < -256; x += 64) {
-                for(int z = -128; z < 256; z += 64) {
-                    var pos = new ObjPos(new(x, 0, z), 0);
+            for(int x = 0; x < countX; x++) {
+                for(int z = 0; z < countZ; z++) {
+                    var pos = startPos + new Vector3(x * pitchX, 0, z * pitchZ);
+                    var trpos = new ObjPos(pos, 0);
                     BuildingUnit building = new BuildingUnit();
-                    building.PositionProp.Value = pos;
+                    building.PositionProp.Value = trpos;
                     world.Buildings.Add(building);
                 }
             }
