@@ -397,26 +397,36 @@ namespace TranSimCS.Menus.InGame {
             if (SelectedObject is AddLaneSelection selection)
                 RoadRenderer.CreateAddLane(selection, plusRenderBin, configuration.LaneSpec.Width, roadSegmentHighlightColor, 0.5f);
 
+            var groundPlaneColors = new Color[] {
+                Color.White,
+                new(255, 0, 0), new(255, 128, 0), new(255, 255, 0), new(200, 255, 0),
+                new(0, 255, 0), new(0, 255, 128), new(0, 255, 255), new(0, 200, 255),
+                new(0, 0, 255), new(128, 0, 255), new(255, 0, 255), new(255, 0, 128)
+            };
+
             //Render ground with multiple planes
             var centerPos = configuration.Camera.Position;
-            centerPos.Y = 0;
+            /*centerPos.Y = 0;
             float scale = 1000;
             for(int i = 0; i < 13; i++) {
                 var x = centerPos.X;
                 var z = centerPos.Z;
+                var c = groundPlaneColors[i];
 
-                var dropY = (scale - 1000) / 1000;
+                var dropY = (scale - 1000) / 10;
                 var texscale = scale / 100;
 
                 scale *= 2;
-                IRenderBin grassBin = renderHelper.GetOrCreateRenderBinForced(Assets.Grass);
+                
                 grassBin.DrawQuad(
-                    GenerateGroundVertex(new(x-scale, -dropY, z+scale), texscale),
-                    GenerateGroundVertex(new(x+scale, -dropY, z+scale), texscale),
-                    GenerateGroundVertex(new(x+scale, -dropY, z-scale), texscale),
-                    GenerateGroundVertex(new(x-scale, -dropY, z-scale), texscale)
+                    GenerateGroundVertex(new(x-scale, -dropY, z+scale), texscale, c),
+                    GenerateGroundVertex(new(x+scale, -dropY, z+scale), texscale, c),
+                    GenerateGroundVertex(new(x+scale, -dropY, z-scale), texscale, c),
+                    GenerateGroundVertex(new(x-scale, -dropY, z-scale), texscale, c)
                 );
-            }
+            }*/
+            IRenderBin grassBin = renderHelper.GetOrCreateRenderBinForced(Assets.Grass);
+            RenderGround(centerPos, grassBin);
 
             //Render road tool
             configuration.Tool?.Draw(time);
@@ -431,8 +441,47 @@ namespace TranSimCS.Menus.InGame {
             renderHelper.Render();
         }
 
-        private VertexPositionColorTexture GenerateGroundVertex(Vector3 pos, float texscale) {
-            return new VertexPositionColorTexture(pos, Color.White, new(pos.X / texscale, pos.Z / texscale));
+        private void RenderGround(Vector3 posoffset, IRenderBin renderBin) {
+            posoffset.Y = 0;
+
+            //Render the center
+            GroundParallelogram(renderBin, posoffset, new(-1, 0, -1), Vector3.UnitX * 2, Vector3.UnitZ * 2, 1000);
+
+            //Render concentric rings, each 2 times bigger
+            float scale = 1000;
+            Vector3[] basisVectors = new Vector3[] {
+                Vector3.UnitX, Vector3.UnitZ, -Vector3.UnitX, -Vector3.UnitZ, Vector3.UnitX
+            };
+
+            for (int i = 0; i < 6; i++) {
+                for (int j = 0; j < 4; j++) {
+                    var prevVector = basisVectors[j];
+                    var nextVector = basisVectors[j + 1];
+                    GroundParallelogram(renderBin, posoffset, -(nextVector+(prevVector*2)), prevVector, nextVector * 3, scale);
+                }
+                scale *= 2;
+            }
+        }
+        private void GroundParallelogram(IRenderBin renderBin, Vector3 initialpos, Vector3 basepos, Vector3 xplus, Vector3 yplus, float scale) {
+            var a = (initialpos + basepos * scale);
+            var s = scale / 100;
+            var C = Color.White;
+            var xmul = xplus * scale;
+            var ymul = yplus * scale;
+            var b = a + ymul;
+            var c = b + xmul;
+            var d = a + xmul;
+            renderBin.DrawQuad(
+                GenerateGroundVertex(a, s, C),
+                GenerateGroundVertex(b, s, C),
+                GenerateGroundVertex(c, s, C),
+                GenerateGroundVertex(d, s, C)
+            );
+        }
+
+        private VertexPositionColorTexture GenerateGroundVertex(Vector3 pos, float texscale, Color? color = null) {
+            var c = color ?? Color.White;
+            return new VertexPositionColorTexture(pos, c, new(pos.X / texscale, pos.Z / texscale));
         }
 
         private void Mark(Ray ray) {
