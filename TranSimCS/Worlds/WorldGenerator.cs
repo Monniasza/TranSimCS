@@ -126,25 +126,19 @@ namespace TranSimCS.Worlds {
             section.MainSlopeNodes.Value = new RoadNodeEndPair(n11b, n13b);
             world.RoadSections.Add(section);
 
-            float pitchX = -64;
-            float pitchZ = -64;
-            int countX = 100;
-            int countZ = 100;
-            Vector3 startPos = new(-256, 0, pitchZ * countZ * -0.5f);
-            var random = new Random();
-
-            //Set up an array of buildings
-            for(int x = 0; x < countX; x++) {
-                for(int z = 0; z < countZ; z++) {
-                    var pos = startPos + new Vector3(x * pitchX, 0, z * pitchZ);
-                    var dims = new Vector3i(16, random.Next(10, 20), 4);
-                    var trpos = new ObjPos(pos, 0);
-                    BuildingUnit building = new BuildingUnit();
-                    building.PositionProp.Value = trpos;
-                    building.UnitSizeProp.Value = dims;
-                    world.Buildings.Add(building);
-                }
+            //Another array of buildings
+            for(int i = 0; i < 128; i++) {
+                BuildingUnit building = new BuildingUnit();
+                building.PositionProp.Value = new(new(-1024, 0, i * 128), RoadNode.AZIMUTH_SOUTH);
+                building.UnitSizeProp.Value = new(128, 256, 4);
+                world.Buildings.Add(building);
             }
+
+            //One collosal building
+            BuildingUnit building2 = new BuildingUnit();
+            building2.PositionProp.Value = new ObjPos(new(-512, 0, 2000), 0);
+            building2.UnitSizeProp.Value = new(128, 256, 128) ;
+            world.Buildings.Add(building2);
         }
     }
 }
