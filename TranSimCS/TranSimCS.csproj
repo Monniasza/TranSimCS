@@ -12,6 +12,8 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
     <LangVersion>preview</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <SignAssembly>False</SignAssembly>
+    <DelaySign>False</DelaySign>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Icon.ico" />
