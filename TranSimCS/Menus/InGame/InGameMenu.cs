@@ -37,8 +37,6 @@ namespace TranSimCS.Menus.InGame {
         private BasicEffect effect = null!;
         public RenderHelper renderHelper { get; private set; } = null!; // Assuming you have a RenderHelper class for rendering
 
-        
-
         public Ray MouseRay { get; private set; } // Ray from the mouse position in the world
         public Ray MouseRayOld { get; private set; } // Ray from the mouse position in the world
 
@@ -406,25 +404,6 @@ namespace TranSimCS.Menus.InGame {
 
             //Render ground with multiple planes
             var centerPos = configuration.Camera.Position;
-            /*centerPos.Y = 0;
-            float scale = 1000;
-            for(int i = 0; i < 13; i++) {
-                var x = centerPos.X;
-                var z = centerPos.Z;
-                var c = groundPlaneColors[i];
-
-                var dropY = (scale - 1000) / 10;
-                var texscale = scale / 100;
-
-                scale *= 2;
-                
-                grassBin.DrawQuad(
-                    GenerateGroundVertex(new(x-scale, -dropY, z+scale), texscale, c),
-                    GenerateGroundVertex(new(x+scale, -dropY, z+scale), texscale, c),
-                    GenerateGroundVertex(new(x+scale, -dropY, z-scale), texscale, c),
-                    GenerateGroundVertex(new(x-scale, -dropY, z-scale), texscale, c)
-                );
-            }*/
             IRenderBin grassBin = renderHelper.GetOrCreateRenderBinForced(Assets.Grass);
             RenderGround(centerPos, grassBin);
 
