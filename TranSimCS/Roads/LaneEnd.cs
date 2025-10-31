@@ -7,7 +7,9 @@ namespace TranSimCS.Roads {
     public struct LaneEnd(NodeEnd End, Lane Lane) : IEquatable<LaneEnd>, IDraggableObj {
         //DRAGGING
         public void Drag(Vector3 vector, Vector3 dragFrom) => lane.Drag(vector, dragFrom);
-
+        public void Rotate(int fieldAzimuth, float pitch, float tilt) => lane.Rotate(fieldAzimuth, pitch, tilt);
+        
+        //DATA
         public NodeEnd end = End;
         public Lane lane = Lane;
 
@@ -24,29 +26,14 @@ namespace TranSimCS.Roads {
 
 
         //EQUALITY
-        public override bool Equals(object? obj) {
-            return obj is LaneEnd end && Equals(end);
-        }
+        public override bool Equals(object? obj) =>
+            obj is LaneEnd end && Equals(end);
+        public bool Equals(LaneEnd other) =>
+            end == other.end &&
+            lane == other.lane;
+        public override int GetHashCode() => HashCode.Combine(end, lane);
+        public static bool operator ==(LaneEnd left, LaneEnd right) => left.Equals(right);
+        public static bool operator !=(LaneEnd left, LaneEnd right) => !left.Equals(right);
 
-        public bool Equals(LaneEnd other) {
-            return end == other.end &&
-                   EqualityComparer<Lane>.Default.Equals(lane, other.lane);
-        }
-
-        public override int GetHashCode() {
-            return HashCode.Combine(end, lane);
-        }
-
-        public void Rotate(int fieldAzimuth, float pitch, float tilt) {
-            lane.Rotate(fieldAzimuth, pitch, tilt);
-        }
-
-        public static bool operator ==(LaneEnd left, LaneEnd right) {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(LaneEnd left, LaneEnd right) {
-            return !(left == right);
-        }
     }
 }
