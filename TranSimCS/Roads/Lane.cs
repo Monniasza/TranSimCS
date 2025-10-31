@@ -7,7 +7,9 @@ using Microsoft.Xna.Framework;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads {
-
+    /// <summary>
+    /// A lane defines where vehicles can ride through and in which direction.
+    /// </summary>
     public class Lane: IDraggableObj {
         /// <summary>
         /// The parent <see cref="RoadNode"/>
@@ -42,7 +44,6 @@ namespace TranSimCS.Roads {
             LeftPosition = pos - t * width;
             RightPosition = LeftPosition + width;
         }
-
         public LaneEnd GetEnd(NodeEnd end) {
             return end.GetConditional(Rear, Front);
         }
