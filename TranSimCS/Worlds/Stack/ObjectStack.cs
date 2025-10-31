@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using TranSimCS.Collections;
+using TranSimCS.Save2;
 using TranSimCS.SceneGraph;
 
 namespace TranSimCS.Worlds.Stack {
@@ -33,13 +35,16 @@ namespace TranSimCS.Worlds.Stack {
             this.World = world;
 
             data = new ListenableObjContainer<TObj>();
-            data.ItemAdded += ElementRemoved;
-            data.ItemRemoved += ElementAdded;
+            data.ItemAdded += ElementAdded;
+            data.ItemRemoved += ElementRemoved;
 
             var that = (TStack)this;
             stackTrackers = new();
             stackTrackers.ElementRemoved += (e => e.OnThisRemoved(that));
-            stackTrackers.ElementAdded += (e => e.OnThisAdded(that));
+            stackTrackers.ElementAdded += (e => {
+                Debug.Print("Added a tracker");
+                e.OnThisAdded(that);
+            });
         }
 
         //LISTENERS
@@ -64,8 +69,22 @@ namespace TranSimCS.Worlds.Stack {
 
 
         //ABSTRACT METHODS
-        public abstract TObj LoadFromJson(ref Utf8JsonReader reader);
-        public abstract void SaveToJson(Utf8JsonWriter writer);
+        public abstract TObj ReadElementFromJson(ref Utf8JsonReader reader, JsonSerializerOptions options);
+        public abstract void SaveElementToJson(Utf8JsonWriter writer, TObj obj, JsonSerializerOptions options);
+
+        //SERIALIZATION
+        public void ReadFromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
+            JsonProcessor.ReadJsonArrayProperties(ref reader, (ref Utf8JsonReader reader0, int idx) => {
+                ReadElementFromJson(ref reader0, options);
+            });
+        }
+        public void SaveToJson(Utf8JsonWriter writer, JsonSerializerOptions options) {
+            writer.WriteStartArray();
+            foreach(var element in data) {
+                SaveElementToJson(writer, element, options);
+            }
+            writer.WriteEndArray();
+        }
     }
 
     public static class ObjectStackMethods {
