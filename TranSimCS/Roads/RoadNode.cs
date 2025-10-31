@@ -14,10 +14,6 @@ namespace TranSimCS.Roads {
         public ObjPos NewPosition { get; } = newPosition;
     }
 
-    public enum NodeEnd {
-        Forward, Backward
-    }
-
     public class RoadNode: Obj, IPosition, IObjMesh<RoadNode> {
         public Property<ObjPos> PositionProp { get; private set; }
 
