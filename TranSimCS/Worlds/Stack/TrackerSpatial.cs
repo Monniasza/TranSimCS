@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,6 +30,7 @@ namespace TranSimCS.Worlds.Stack {
         }
 
         public void OnThisAdded(TStack stack) {
+            Debug.Print("Added to the stack");
             stack.World.RootGraph.Add(sceneTree);
         }
 
