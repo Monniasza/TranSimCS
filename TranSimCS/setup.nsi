@@ -26,6 +26,7 @@
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
 
 !include "MUI.nsh"
+!include "fileassoc.nsh"
 !define MUI_ABORTWARNING
 !define MUI_ICON "Icon.ico"
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
@@ -63,6 +64,9 @@ Section "MainSection" SEC01
   # Start Menu
   createDirectory "$SMPROGRAMS\${PRODUCT_PUBLISHER}"
   createShortCut "$SMPROGRAMS\${PRODUCT_PUBLISHER}\${PRODUCT_NAME}.lnk" "$INSTDIR\net8.0\TranSimCS.exe" "" "$INSTDIR\icon.ico"
+  
+  # File associations
+  !insertmacro APP_ASSOCIATE "transim" "transim.savegame" "TranSim world" "$INSTDIR\icon.ico" "Play this world" "$INSTDIR\net8.0\TranSimCS.exe $\"%1$\"" 
   
   # Registry information for add/remove programs
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayName" "${PRODUCT_PUBLISHER} - ${PRODUCT_NAME}"
@@ -115,6 +119,9 @@ FunctionEnd
 ; Note: if there is any file changed or added to these folders, they will not be removed. Also, parent folder (which in my example 
 ; is company name ZWare) will not be removed if there is any other application installed in it.
 Section Uninstall
+  # Remove the .transim file association
+  !insertmacro APP_UNASSOCIATE "transim" "transim.savegame"
+  
   # Remove Start Menu launcher
   Delete "$SMPROGRAMS\${PRODUCT_PUBLISHER}\${PRODUCT_NAME}.lnk"
   # Try to remove the Start Menu folder - this will only happen if it is empty
