@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -29,9 +30,9 @@ namespace TranSimCS
 
         private static Game1 instance;
         public static Game1 Instance { get { return instance ?? throw new ApplicationException("Game has not been yet started"); } }
-        public static void Start() {
+        public static void Start(string[] args) {
             if (instance != null) return;
-            instance = new Game1();
+            instance = new Game1(args);
             instance.Run();
         }
 
@@ -61,7 +62,9 @@ namespace TranSimCS
             newMenu = value;
         } }
 
-        public Game1() {
+        public IReadOnlyList<string> Args { get; private set; }
+
+        public Game1(string[] args) {
             GraphicsDeviceManager = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
@@ -69,6 +72,9 @@ namespace TranSimCS
             Window.AllowUserResizing = true;
             fps = new();
             tps = new();
+
+            //Parse the arguments
+            Args = new ReadOnlyCollection<string>(args);
 
             // Request 24-bit depth buffer for better precision and Z-fighting preventionw
             GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
@@ -140,11 +146,26 @@ namespace TranSimCS
             DefaultUiStyle = CreateUiStyle();
 
             MlemPlatform.Current = new MlemPlatform.DesktopGl<TextInputEventArgs>((w, c) => w.TextInput += c);
-            Menu = new InGameMenu(this);
 
             Assets.ReadAssets();
 
             KeyPromptMapper.SetUpKeyPrompts(Content);
+
+            var menu = new InGameMenu(this);
+            //Process the args
+            if (Args.Count == 1) {
+                //The user tries to load a file
+                try {
+                    menu.LoadWorldFromFile(Args[0]);
+                } catch (Exception e) {
+                    var error = OptionsDialog.FromError(menu, e, new CloseImmediately(menu));
+                    menu.Overlay = error;
+                }
+                
+            } else {
+                
+            }
+            Menu = menu;
         }
 
         protected override void Update(GameTime gameTime) {

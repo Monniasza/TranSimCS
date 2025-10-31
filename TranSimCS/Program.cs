@@ -49,7 +49,7 @@ public class Program {
 
         JsonProcessor.Init();
 
-        Game1.Start();
+        Game1.Start(args);
     }
 
     // ===== SYSTEM.TEXT.JSON (NEW METHODS) =====
