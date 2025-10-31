@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace TranSimCS.Worlds.ECS {
-    public class PositionComponent {
+    public struct PositionComponent {
+        public ObjPos position;
     }
 }
