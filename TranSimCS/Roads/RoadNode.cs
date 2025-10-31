@@ -33,6 +33,7 @@ namespace TranSimCS.Roads {
         public RoadNode(TSWorld world, string name, ObjPos positionData, Guid? id = null) {
             Guid = id ?? Guid.NewGuid();
             PositionProp = new(ObjPos.Zero, "Position", this);
+            PositionProp.ValueChanged += PositionProp_ValueChanged;
             Name = name;
             PositionProp.Value = positionData;
             World = world;
@@ -40,6 +41,14 @@ namespace TranSimCS.Roads {
             FrontEnd = new RoadNodeEnd(NodeEnd.Forward, this);
             PositionProp.ValueChanged += (sender, e) => InvalidateMeshes();
             Mesh = new MeshGenerator<RoadNode>(this, GenerateMesh);
+        }
+
+        private void PositionProp_ValueChanged(object? sender, PropertyChangedEventArgs2<ObjPos> e) {
+            var value = e.NewValue;
+            var pos = value.Position;
+            if (float.IsNaN(pos.X)) throw new ArgumentException("X === NaN");
+            if (float.IsNaN(pos.Y)) throw new ArgumentException("Y === NaN");
+            if (float.IsNaN(pos.Z)) throw new ArgumentException("Z === NaN");
         }
 
         //Lane structure

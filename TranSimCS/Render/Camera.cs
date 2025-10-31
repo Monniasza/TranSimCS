@@ -49,7 +49,7 @@ namespace TranSimCS {
 
         public void SetUpEffect(BasicEffect effect, InGameMenu game) => SetUpEffect(effect, game.Game.GraphicsDevice);
         public void SetUpEffect(BasicEffect effect, GraphicsDevice gpu) {
-            effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, gpu.Viewport.AspectRatio, 0.1f, 1000000f);
+            effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, gpu.Viewport.AspectRatio, 0.1f, 100000f);
             effect.World = Matrix.Identity;
             // Optimized near/far plane for better depth buffer precision across all distances
             // Near plane increased from 1f to 0.1f - this dramatically improves depth precision

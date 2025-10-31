@@ -178,8 +178,14 @@ namespace TranSimCS.Menus.InGame {
             if (effect != null) {
                 nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), effect.Projection, effect.View, effect.World);
                 farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), effect.Projection, effect.View, effect.World);
-            }            
-            Ray ray = new(nearPoint, Vector3.Normalize(farPoint - nearPoint));
+            }
+            VectorMethods.CheckVector(nearPoint, nameof(nearPoint));
+            VectorMethods.CheckVector(farPoint, nameof(farPoint));
+
+            var tangential = Vector3.Normalize(farPoint - nearPoint); //this generates NaN values
+            VectorMethods.CheckVector(tangential, nameof(tangential));
+
+            Ray ray = new(nearPoint, tangential);
             MouseRayOld = MouseRay;
             MouseRay = ray; // Store the ray for later use
 
