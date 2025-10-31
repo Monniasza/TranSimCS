@@ -32,7 +32,6 @@ namespace TranSimCS.Menus.InGame {
         public TSWorld World { get; private set; } = null!;
         public readonly Configuration configuration;
 
-
         //Graphics
         private BasicEffect effect = null!;
         public RenderHelper renderHelper { get; private set; } = null!; // Assuming you have a RenderHelper class for rendering
@@ -62,7 +61,6 @@ namespace TranSimCS.Menus.InGame {
         //Overlays
         public RoadConfigurator configurator { get; private set; }
         public EscapeMenu escapeMenu { get; private set; }
-
 
         //Colors
         private Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
@@ -103,8 +101,6 @@ namespace TranSimCS.Menus.InGame {
             };
             configuration.Camera.SetUpEffect(effect, this);
             renderHelper = new RenderHelper(Game.GraphicsDevice, effect);
-
-            //Load the road texture
 
             //Set up meshes
             SelectorObjects = new MultiMesh();
@@ -220,7 +216,6 @@ namespace TranSimCS.Menus.InGame {
             if (!IsMouseOverUI) {
                 var meshes = World.RootGraph;
                 var hovering = meshes.Find(MouseRay, out var selectedNode, out distance, out selection);
-                //selection = MeshUtil.RayIntersectMeshes(meshes, ray, out distance); //this is bad
             }
             SelectedObject = selection;
             if (selection is LaneStrip laneStrip) {
@@ -258,7 +253,6 @@ namespace TranSimCS.Menus.InGame {
             var motionElementX = camera.Distance * MathF.Sin(camera.Azimuth);
             var motionElementZ = camera.Distance * MathF.Cos(camera.Azimuth); // Calculate the motion elements based on the camera's azimuth
             var motionElementY = camera.Distance; // Calculate the vertical motion element based on the camera's elevation
-            var cameraDirection = camera.GetOffsetVector(); // Get the forward vector of the camera
             var movement = new Vector3(
                 motionElementX * forwardMotion + motionElementZ * sideMotion,
                 upMotion * motionElementY,
@@ -348,7 +342,7 @@ namespace TranSimCS.Menus.InGame {
             foreach (var section in World.RoadSections) renderHelper.AddAll(section.Mesh.GetMesh());
 
             //Draw buildings
-            foreach (var building in World.Buildings) renderHelper.AddAll(building.Mesh.GetMesh());
+            foreach (var building in World.Buildings.data) renderHelper.AddAll(building.Mesh.GetMesh());
 
             //If a road segment is selected, draw the selection
             var roadSelection = MouseOverRoad;
@@ -394,13 +388,6 @@ namespace TranSimCS.Menus.InGame {
             IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Add);
             if (SelectedObject is AddLaneSelection selection)
                 RoadRenderer.CreateAddLane(selection, plusRenderBin, configuration.LaneSpec.Width, roadSegmentHighlightColor, 0.5f);
-
-            var groundPlaneColors = new Color[] {
-                Color.White,
-                new(255, 0, 0), new(255, 128, 0), new(255, 255, 0), new(200, 255, 0),
-                new(0, 255, 0), new(0, 255, 128), new(0, 255, 255), new(0, 200, 255),
-                new(0, 0, 255), new(128, 0, 255), new(255, 0, 255), new(255, 0, 128)
-            };
 
             //Render ground with multiple planes
             var centerPos = configuration.Camera.Position;
@@ -457,20 +444,9 @@ namespace TranSimCS.Menus.InGame {
                 GenerateGroundVertex(d, s, C)
             );
         }
-
         private VertexPositionColorTexture GenerateGroundVertex(Vector3 pos, float texscale, Color? color = null) {
             var c = color ?? Color.White;
             return new VertexPositionColorTexture(pos, c, new(pos.X / texscale, pos.Z / texscale));
-        }
-
-        private void Mark(Ray ray) {
-            var p0 = ray.Position + 10 * ray.Direction;
-            var p1 = ray.Position + 20 * ray.Direction;
-            Mark(p0, Color.Red); Mark(p1, Color.Green);
-        }
-        private void Mark(Vector3 p, Color c) {
-            var bin = renderHelper.GetOrCreateRenderBinForced(Assets.Cobble);
-            bin.DrawQuad(p + new Vector3(-1, 1, 0), p + new Vector3(1, 1, 0), p + new Vector3(1, -1, 0), p + new Vector3(-1, -1, 0), c);
         }
 
         public (object[], string)[] FixedKeys() => [

@@ -131,14 +131,14 @@ namespace TranSimCS.Worlds {
                 BuildingUnit building = new BuildingUnit();
                 building.PositionProp.Value = new(new(-1024, 0, i * 128), RoadNode.AZIMUTH_SOUTH);
                 building.UnitSizeProp.Value = new(128, 256, 4);
-                world.Buildings.Add(building);
+                world.Buildings.data.Add(building);
             }
 
             //One collosal building
             BuildingUnit building2 = new BuildingUnit();
             building2.PositionProp.Value = new ObjPos(new(-512, 0, 2000), 0);
             building2.UnitSizeProp.Value = new(128, 256, 128) ;
-            world.Buildings.Add(building2);
+            world.Buildings.data.Add(building2);
         }
     }
 }

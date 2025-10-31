@@ -34,6 +34,7 @@ namespace TranSimCS.Worlds {
             options.Converters.Add(new Save2.LaneStripConverter(this));
             options.Converters.Add(new Save2.RoadStripConverter(this));
             options.Converters.Add(new Save2.TSWorldConverter());
+            options.Converters.Add(new Save2.Vector3iConverter());
 
             return options;
         }
