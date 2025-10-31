@@ -50,7 +50,7 @@ namespace TranSimCS.Geometry {
             return x == other.x && y == other.y && z == other.z;
         }
 
-        public string ToString(string? format, IFormatProvider? formatProvider) {
+        public override string ToString() {
             return $"({x}, {y}, {z})";
         }
 
@@ -92,6 +92,14 @@ namespace TranSimCS.Geometry {
 
         public static implicit operator Vector3(Vector3i v) => new Vector3(v.x, v.y, v.z);
         public static explicit operator Vector3i(Vector3 v) => new Vector3i((int)v.X, (int)v.Y, (int)v.Z);
+
+        public override bool Equals(object? obj) {
+            if(obj is Vector3i v) return Equals(v); return false;
+        }
+
+        public override int GetHashCode() {
+            return HashCode.Combine(x, y, z);
+        }
     }
 
     public static class SpanMethods {
