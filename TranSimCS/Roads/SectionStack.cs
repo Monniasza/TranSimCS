@@ -28,9 +28,11 @@ namespace TranSimCS.Roads {
                         guid = JsonSerializer.Deserialize<Guid>(ref reader0, options);
                         break;
                     case "start":
+                        reader0.Read();
                         start = nodeEndConverter.Read(ref reader0, typeof(RoadNodeEnd), options);
                         break;
                     case "end":
+                        reader0.Read();
                         end = nodeEndConverter.Read(ref reader0, typeof(RoadNodeEnd), options);
                         break;
                     case "nodes":
