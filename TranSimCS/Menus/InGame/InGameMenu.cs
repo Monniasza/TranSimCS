@@ -342,7 +342,7 @@ namespace TranSimCS.Menus.InGame {
             IRenderBin renderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
 
             // Draw the asphalt texture for the road
-            foreach (var roadSegment in World.RoadSegments) renderHelper.AddAll(roadSegment.Mesh.GetMesh());
+            foreach (var roadSegment in World.RoadSegments.data) renderHelper.AddAll(roadSegment.Mesh.GetMesh());
             
             //Draw road sections
             foreach (var section in World.RoadSections) renderHelper.AddAll(section.Mesh.GetMesh());

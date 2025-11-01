@@ -12,10 +12,6 @@ namespace TranSimCS.Save2 {
                 throw new JsonException("Expected StartObject token");
             }
 
-            //var roadNodeConverter = new RoadNodeConverter(world);
-            var roadStripConverter = new RoadStripConverter(world);
-
-
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
                 switch (propertyName.ToLower()) {
                     case "nodes":
@@ -23,11 +19,12 @@ namespace TranSimCS.Save2 {
                         world.Nodes.ReadFromJson(ref reader0, options);
                         break;
                     case "segments":
-                        world.RoadSegments.Clear();
-                        while (reader0.Read() && reader0.TokenType != JsonTokenType.EndArray) {
-                            var segment = roadStripConverter.Read(ref reader0, typeof(Roads.RoadStrip), options);
-                            world.RoadSegments.Add(segment);
-                        }
+                        world.RoadSegments.data.Clear();
+                        world.RoadSegments.ReadFromJson(ref reader0, options);
+                        break;
+                    case "buildings":
+                        world.Buildings.data.Clear();
+                        world.Buildings.ReadFromJson(ref reader0, options);
                         break;
                 }
             }, true);
@@ -47,12 +44,12 @@ namespace TranSimCS.Save2 {
             value.Nodes.SaveToJson(writer, options);
             
             writer.WritePropertyName("segments");
-            writer.WriteStartArray();
-            var roadStripConverter = new RoadStripConverter(value);
-            foreach (var segment in value.RoadSegments) {
-                roadStripConverter.Write(writer, segment, options);
-            }
-            writer.WriteEndArray();
+            value.RoadSegments.SaveToJson(writer, options);
+
+            //TODO sections
+
+            writer.WritePropertyName("buildings");
+            value.Buildings.SaveToJson(writer, options);
             
             writer.WriteEndObject();
         }

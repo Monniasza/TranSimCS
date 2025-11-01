@@ -74,23 +74,23 @@ namespace TranSimCS.Worlds {
 
             //1-2
             var lc12 = Generator.GenerateLaneConnections(node1.FrontEnd, 0, node1.Lanes.Count, node2.RearEnd, 0, node2.Lanes.Count);
-            world.RoadSegments.Add(lc12);
+            world.RoadSegments.data.Add(lc12);
 
             //2-3
             var lc23 = Generator.GenerateLaneConnections(node2.FrontEnd, 0, node2.Lanes.Count, node3.RearEnd, 0, node3.Lanes.Count, 0, 1);
-            world.RoadSegments.Add(lc23);
+            world.RoadSegments.data.Add(lc23);
 
             //3-4a
             var lc34a = Generator.GenerateLaneConnections(node3.FrontEnd, 3, 4, node4a.RearEnd, 0, node4a.Lanes.Count);
-            world.RoadSegments.Add(lc34a);
+            world.RoadSegments.data.Add(lc34a);
 
             //3-4b
             var lc34b = Generator.GenerateLaneConnections(node3.FrontEnd, 1, 3, node4b.RearEnd, 0, node4b.Lanes.Count);
-            world.RoadSegments.Add(lc34b);
+            world.RoadSegments.data.Add(lc34b);
 
             //3-4c
             var lc34c = Generator.GenerateLaneConnections(node3.FrontEnd, 0, 1, node4c.RearEnd, 0, node4c.Lanes.Count);
-            world.RoadSegments.Add(lc34c);
+            world.RoadSegments.data.Add(lc34c);
 
             //Set up an intersection example
             var n10l = new RoadNode(world, "Node 10l", new Vector3(-110, 0.1f, 20), RoadNode.AZIMUTH_NORTH);

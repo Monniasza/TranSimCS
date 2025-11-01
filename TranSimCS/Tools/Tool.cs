@@ -74,7 +74,7 @@ namespace TranSimCS.Tools {
                 } else if (selectedRoad != null) {
                     log.Trace($"Demolishing road segment: {selectedRoad}");
                     MouseOverRoad = null; // Reset the mouse over road selection
-                    world.RoadSegments.Remove(selectedRoad); // Remove the selected road segment from the world
+                    world.RoadSegments.data.Remove(selectedRoad); // Remove the selected road segment from the world
                 }
             }
             //Demolish the lane on a selected node if the right mouse button is clicked

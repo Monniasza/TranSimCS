@@ -28,7 +28,7 @@ namespace TranSimCS.Worlds {
             node.PositionProp.ValueChanged -= RoadNodePositionChanged; // Unsubscribe from changes in the road node position
             foreach (var segment in node.Connections) {
                 segment.Mesh.Invalidate(); // Invalidate the mesh of the segment if the node is removed
-                RoadSegments.Remove(segment); // Remove the segment from the road segments collection
+                RoadSegments.data.Remove(segment); // Remove the segment from the road segments collection
             }
             log.Trace($"Road node id {node.Guid} name {node.Name} removed");
         }

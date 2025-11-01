@@ -31,7 +31,6 @@ namespace TranSimCS.Worlds {
             options.Converters.Add(new Save2.LaneEndConverter(this));
             options.Converters.Add(new Save2.RoadNodeEndConverter(this));
             options.Converters.Add(new Save2.LaneStripConverter(this));
-            options.Converters.Add(new Save2.RoadStripConverter(this));
             options.Converters.Add(new Save2.TSWorldConverter());
             options.Converters.Add(new Save2.Vector3iConverter());
 
@@ -71,10 +70,11 @@ namespace TranSimCS.Worlds {
                     Nodes.data.Clear();
                     Nodes.data.UnionWith(loadedWorld.Nodes.data);
 
-                    RoadSegments.Clear();
-                    foreach (var segment in loadedWorld.RoadSegments) {
-                        RoadSegments.Add(segment);
-                    }
+                    RoadSegments.data.Clear();
+                    RoadSegments.data.UnionWith(loadedWorld.RoadSegments.data);
+
+                    Buildings.data.Clear();
+                    Buildings.data.UnionWith(loadedWorld.Buildings.data);
 
                     log.Info($"World loaded successfully from {filename}");
                 } else {

@@ -20,14 +20,14 @@ namespace TranSimCS.Worlds
         private static Logger log = LogManager.GetCurrentClassLogger();
 
         //The contents of the world
-        public ListenableObjContainer<RoadStrip> RoadSegments { get; } = new();
+        public SegmentStack RoadSegments;
         public ListenableObjContainer<RoadSection> RoadSections { get; } = new();
         public BuildingStack Buildings { get; }
         public NodeStack Nodes { get; }
         public World ECS { get; private set; }
 
         public RoadStrip? FindRoadStrip(RoadNodeEnd start, RoadNodeEnd end) {
-            foreach (var strip in RoadSegments) 
+            foreach (var strip in RoadSegments.data) 
                 if (strip.CheckEnds(start, end)) 
                     return strip;
             return null;
@@ -36,7 +36,7 @@ namespace TranSimCS.Worlds
             RoadStrip? result = FindRoadStrip(start, end);
             if (result == null) {
                 result = new RoadStrip(start, end);
-                RoadSegments.Add(result);
+                RoadSegments.data.Add(result);
             }
             return result;
         }
@@ -62,19 +62,18 @@ namespace TranSimCS.Worlds
 
             Buildings = new BuildingStack(this);
             Nodes = new NodeStack(this);
+            RoadSegments = new SegmentStack(this);
 
             //Spatial indexing
             SectionsGraph = new SceneGraph.SceneTree();
-            SegmentsGraph = new SceneGraph.SceneTree();
             TempSelectorsMesh = new Property<Model.MultiMesh>(new Model.MultiMesh(), "selectors", null, Equality.ReferenceEqualComparer<MultiMesh>());
             TempSelectors = new SceneGraph.SceneLeaf(new MeshProperty(TempSelectorsMesh));
             RootGraph.Add(SectionsGraph);
-            RootGraph.Add(SegmentsGraph);
             RootGraph.Add(TempSelectors);
 
             //Event handling
-            RoadSegments.ItemAdded += HandleAddRoadSegment;
-            RoadSegments.ItemRemoved += HandleRemoveRoadSegment;
+            RoadSegments.data.ItemAdded += HandleAddRoadSegment;
+            RoadSegments.data.ItemRemoved += HandleRemoveRoadSegment;
             Nodes.data.ItemAdded += HandleAddRoadNode;
             Nodes.data.ItemRemoved += HandleRemoveRoadNode;
 
@@ -89,8 +88,6 @@ namespace TranSimCS.Worlds
             segment.EndNode.connectionsOld.Add(segment);
             AddIfAbsent(segment.StartNode.Node);
             AddIfAbsent(segment.EndNode.Node);
-
-            SegmentsGraph.Add(segment.Mesh.Leaf);
         }
 
         
@@ -107,8 +104,6 @@ namespace TranSimCS.Worlds
             foreach(var lane in lanes){
                 lane.Destroy();
             };
-
-            SegmentsGraph.Remove(segment.Mesh.Leaf);
         }
         private void LaneAddedToRoad(object sender, RoadStripEventArgs e) {
             //Handle the addition of a new lane to a road segment
@@ -126,7 +121,7 @@ namespace TranSimCS.Worlds
 
         public void ClearAll() {
             RoadSections.Clear();
-            RoadSegments.Clear();
+            RoadSegments.data.Clear();
             Nodes.data.Clear();
             Buildings.data.Clear();
             ECS.Clear();

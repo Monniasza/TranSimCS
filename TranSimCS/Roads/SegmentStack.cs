@@ -1,27 +1,30 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using TranSimCS.Roads;
+using System.Threading.Tasks;
+using TranSimCS.Save2;
 using TranSimCS.Worlds;
+using TranSimCS.Worlds.Stack;
 
-namespace TranSimCS.Save2 {
-    public class RoadStripConverter : JsonConverter<RoadStrip> {
-        private readonly TSWorld _world;
-
-        public RoadStripConverter(TSWorld world) {
-            _world = world;
+namespace TranSimCS.Roads {
+    public class SegmentStack : ObjectStack<RoadStrip, SegmentStack> {
+        public readonly TrackerSpatial<RoadStrip, SegmentStack> trackerSpatial;
+        public SegmentStack(TSWorld world) : base(world) {
+            trackerSpatial = new TrackerSpatial<RoadStrip, SegmentStack>(world);
+            stackTrackers.Add(trackerSpatial);
         }
 
-        public override RoadStrip Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        public override RoadStrip ReadElementFromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
             RoadNodeEnd? start = null;
             RoadNodeEnd? end = null;
             List<LaneStrip> lanes = new List<LaneStrip>();
             Guid? guid = Guid.Empty;
             RoadFinish finish = RoadFinish.Embankment;
 
-            var roadNodeEndConverter = new RoadNodeEndConverter(_world);
-            var laneStripConverter = new LaneStripConverter(_world);
+            var roadNodeEndConverter = new RoadNodeEndConverter(World);
+            var laneStripConverter = new LaneStripConverter(World);
 
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
                 switch (propertyName.ToLower()) {
@@ -38,7 +41,7 @@ namespace TranSimCS.Save2 {
                         end = roadNodeEndConverter.Read(ref reader0, typeof(RoadNodeEnd), options);
                         break;
                     case "lanes":
-                        JsonProcessor.ReadJsonArrayProperties(ref reader0, (ref reader1, _) => { 
+                        JsonProcessor.ReadJsonArrayProperties(ref reader0, (ref reader1, _) => {
                             var lane = laneStripConverter.Read(ref reader1, typeof(LaneStrip), options);
                             lanes.Add(lane);
                         });
@@ -60,30 +63,30 @@ namespace TranSimCS.Save2 {
             foreach (var lane in lanes) {
                 roadStrip.AddLaneStrip(lane);
             }
-            return roadStrip; 
-            
+            return roadStrip;
+
         }
 
-        public override void Write(Utf8JsonWriter writer, RoadStrip value, JsonSerializerOptions options) {
+        public override void SaveElementToJson(Utf8JsonWriter writer, RoadStrip value, JsonSerializerOptions options) {
             if (value == null) {
                 writer.WriteNullValue();
                 return;
             }
 
             writer.WriteStartObject();
-            
+
             writer.WriteString("guid", value.Guid.ToString());
-            
+
             writer.WritePropertyName("start");
-            var roadNodeEndConverter = new RoadNodeEndConverter(_world);
+            var roadNodeEndConverter = new RoadNodeEndConverter(World);
             roadNodeEndConverter.Write(writer, value.StartNode, options);
-            
+
             writer.WritePropertyName("end");
             roadNodeEndConverter.Write(writer, value.EndNode, options);
-            
+
             writer.WritePropertyName("lanes");
             writer.WriteStartArray();
-            var laneStripConverter = new LaneStripConverter(_world);
+            var laneStripConverter = new LaneStripConverter(World);
             foreach (var lane in value.Lanes) {
                 laneStripConverter.Write(writer, lane, options);
             }
@@ -92,7 +95,7 @@ namespace TranSimCS.Save2 {
             var finishConverter = new RoadFinishConverter();
             writer.WritePropertyName("finish");
             finishConverter.Write(writer, value.Finish, options);
-            
+
             writer.WriteEndObject();
         }
     }

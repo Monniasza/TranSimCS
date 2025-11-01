@@ -9,6 +9,9 @@ using TranSimCS.Worlds;
 using TranSimCS.Worlds.Stack;
 
 namespace TranSimCS.Roads {
+    /// <summary>
+    /// A collection of <see cref="RoadNode"/>s in a <see cref="TSWorld"/>
+    /// </summary>
     public class NodeStack : ObjectStack<RoadNode, NodeStack> {
         public readonly TrackerSpatial<RoadNode, NodeStack> tracker;
         public NodeStack(TSWorld world) : base(world) {
