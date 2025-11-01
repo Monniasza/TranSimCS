@@ -21,7 +21,7 @@ namespace TranSimCS.Worlds
 
         //The contents of the world
         public SegmentStack RoadSegments;
-        public ListenableObjContainer<RoadSection> RoadSections { get; } = new();
+        public SectionStack RoadSections { get; }
         public BuildingStack Buildings { get; }
         public NodeStack Nodes { get; }
         public World ECS { get; private set; }
@@ -63,12 +63,11 @@ namespace TranSimCS.Worlds
             Buildings = new BuildingStack(this);
             Nodes = new NodeStack(this);
             RoadSegments = new SegmentStack(this);
+            RoadSections = new SectionStack(this);
 
             //Spatial indexing
-            SectionsGraph = new SceneGraph.SceneTree();
             TempSelectorsMesh = new Property<Model.MultiMesh>(new Model.MultiMesh(), "selectors", null, Equality.ReferenceEqualComparer<MultiMesh>());
             TempSelectors = new SceneGraph.SceneLeaf(new MeshProperty(TempSelectorsMesh));
-            RootGraph.Add(SectionsGraph);
             RootGraph.Add(TempSelectors);
 
             //Event handling
@@ -120,7 +119,7 @@ namespace TranSimCS.Worlds
         }
 
         public void ClearAll() {
-            RoadSections.Clear();
+            RoadSections.data.Clear();
             RoadSegments.data.Clear();
             Nodes.data.Clear();
             Buildings.data.Clear();

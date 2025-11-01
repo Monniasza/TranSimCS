@@ -26,6 +26,10 @@ namespace TranSimCS.Save2 {
                         world.Buildings.data.Clear();
                         world.Buildings.ReadFromJson(ref reader0, options);
                         break;
+                    case "sections":
+                        world.RoadSections.data.Clear();
+                        world.RoadSections.ReadFromJson(ref reader0, options);
+                        break;
                 }
             }, true);
 
@@ -46,7 +50,8 @@ namespace TranSimCS.Save2 {
             writer.WritePropertyName("segments");
             value.RoadSegments.SaveToJson(writer, options);
 
-            //TODO sections
+            writer.WritePropertyName("sections");
+            value.RoadSections.SaveToJson(writer, options);
 
             writer.WritePropertyName("buildings");
             value.Buildings.SaveToJson(writer, options);

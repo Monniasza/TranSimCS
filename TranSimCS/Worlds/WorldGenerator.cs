@@ -124,7 +124,7 @@ namespace TranSimCS.Worlds {
             n12b.ConnectedSection.Value = section;
             n13b.ConnectedSection.Value = section;
             section.MainSlopeNodes.Value = new RoadNodeEndPair(n11b, n13b);
-            world.RoadSections.Add(section);
+            world.RoadSections.data.Add(section);
 
             //Another array of buildings
             for(int i = 0; i < 128; i++) {

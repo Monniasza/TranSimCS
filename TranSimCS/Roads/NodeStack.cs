@@ -13,10 +13,10 @@ namespace TranSimCS.Roads {
     /// A collection of <see cref="RoadNode"/>s in a <see cref="TSWorld"/>
     /// </summary>
     public class NodeStack : ObjectStack<RoadNode, NodeStack> {
-        public readonly TrackerSpatial<RoadNode, NodeStack> tracker;
+        public readonly TrackerSpatial<RoadNode, NodeStack> trackerSpatial;
         public NodeStack(TSWorld world) : base(world) {
-            tracker = new TrackerSpatial<RoadNode, NodeStack> (world);
-            stackTrackers.Add(tracker);
+            trackerSpatial = new TrackerSpatial<RoadNode, NodeStack> (world);
+            stackTrackers.Add(trackerSpatial);
         }
         public override RoadNode ReadElementFromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
             Guid? guid = null;

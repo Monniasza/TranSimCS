@@ -25,9 +25,9 @@ namespace TranSimCS.Menus.InGame {
             // Without this, meshes from previous frames accumulate causing Z-fighting and flickering
             SelectorObjects.Clear();
 
-            World.SectionsGraph.Active = CheckSections.Checked;
+            World.RoadSections.trackerSpatial.sceneTree.Active = CheckSections.Checked;
             World.RoadSegments.trackerSpatial.sceneTree.Active = CheckSegments.Checked;
-            World.Nodes.tracker.sceneTree.Active = CheckNodes.Checked;
+            World.Nodes.trackerSpatial.sceneTree.Active = CheckNodes.Checked;
 
             //Add tool selectors for collision detection
             var tempSelectors = new MultiMesh();

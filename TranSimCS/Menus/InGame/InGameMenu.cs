@@ -345,7 +345,7 @@ namespace TranSimCS.Menus.InGame {
             foreach (var roadSegment in World.RoadSegments.data) renderHelper.AddAll(roadSegment.Mesh.GetMesh());
             
             //Draw road sections
-            foreach (var section in World.RoadSections) renderHelper.AddAll(section.Mesh.GetMesh());
+            foreach (var section in World.RoadSections.data) renderHelper.AddAll(section.Mesh.GetMesh());
 
             //Draw buildings
             foreach (var building in World.Buildings.data) renderHelper.AddAll(building.Mesh.GetMesh());
