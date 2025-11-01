@@ -153,7 +153,7 @@ namespace TranSimCS.Tools {
                         };
                         selectedNode = newLane.Front;
                         newNode.AddLane(newLane);
-                        world.RoadNodes.Add(newNode);
+                        world.Nodes.data.Add(newNode);
                     }
                     if(selectedNode != null) {
                         var strip = world.GetOrMakeLaneStrip(node.Value, selectedNode.Value.OppositeEnd);

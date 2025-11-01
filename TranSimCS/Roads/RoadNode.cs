@@ -93,7 +93,7 @@ namespace TranSimCS.Roads {
             ReIndex();
 
             if(Lanes.Count == 0) {
-                World.RoadNodes.Remove(this);
+                World.Nodes.data.Remove(this);
             }
             Mesh.Invalidate();
         }

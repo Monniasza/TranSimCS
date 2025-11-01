@@ -69,15 +69,38 @@ namespace TranSimCS.Worlds.Stack {
 
 
         //ABSTRACT METHODS
+        /// <summary>
+        /// Override this to implement reading a single object
+        /// </summary>
+        /// <param name="reader">JSON input stream</param>
+        /// <param name="options">JsonSerializerOptions from the serializer</param>
+        /// <returns></returns>
         public abstract TObj ReadElementFromJson(ref Utf8JsonReader reader, JsonSerializerOptions options);
+        /// <summary>
+        /// Override this to implement saving a single object
+        /// </summary>
+        /// <param name="writer">JSON output stream</param>
+        /// <param name="obj">object to be saved</param>
+        /// <param name="options">JsonSerializerOptions from the serializer</param>
         public abstract void SaveElementToJson(Utf8JsonWriter writer, TObj obj, JsonSerializerOptions options);
 
         //SERIALIZATION
+        /// <summary>
+        /// Reads a JSON array from a saved file
+        /// </summary>
+        /// <param name="reader">JSON input stream</param>
+        /// <param name="options">JsonSerializerOptions from the serializer</param>
         public void ReadFromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
             JsonProcessor.ReadJsonArrayProperties(ref reader, (ref Utf8JsonReader reader0, int idx) => {
-                ReadElementFromJson(ref reader0, options);
+                var element = ReadElementFromJson(ref reader0, options);
+                data.Add(element);
             });
         }
+        /// <summary>
+        /// Saves this object stack to a JSON array
+        /// </summary>
+        /// <param name="writer">JSON output stream</param>
+        /// <param name="options">JsonSerializerOptions from the serializer</param>
         public void SaveToJson(Utf8JsonWriter writer, JsonSerializerOptions options) {
             writer.WriteStartArray();
             foreach(var element in data) {

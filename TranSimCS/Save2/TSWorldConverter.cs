@@ -12,18 +12,15 @@ namespace TranSimCS.Save2 {
                 throw new JsonException("Expected StartObject token");
             }
 
-            var roadNodeConverter = new RoadNodeConverter(world);
+            //var roadNodeConverter = new RoadNodeConverter(world);
             var roadStripConverter = new RoadStripConverter(world);
 
 
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
                 switch (propertyName.ToLower()) {
                     case "nodes":
-                        world.RoadNodes.Clear();
-                        JsonProcessor.ReadJsonArrayProperties(ref reader0, (ref reader1, idx) => {
-                            var node = roadNodeConverter.Read(ref reader1, typeof(Roads.RoadNode), options);
-                            world.RoadNodes.Add(node);
-                        });
+                        world.Nodes.data.Clear();
+                        world.Nodes.ReadFromJson(ref reader0, options);
                         break;
                     case "segments":
                         world.RoadSegments.Clear();
@@ -47,12 +44,7 @@ namespace TranSimCS.Save2 {
             writer.WriteStartObject();
             
             writer.WritePropertyName("nodes");
-            writer.WriteStartArray();
-            var roadNodeConverter = new RoadNodeConverter(value);
-            foreach (var node in value.RoadNodes) {
-                roadNodeConverter.Write(writer, node, options);
-            }
-            writer.WriteEndArray();
+            value.Nodes.SaveToJson(writer, options);
             
             writer.WritePropertyName("segments");
             writer.WriteStartArray();

@@ -13,10 +13,6 @@ namespace TranSimCS.Worlds {
         /// </summary>
         public readonly SceneTree RootGraph;
         /// <summary>
-        /// Scene graph for road nodes
-        /// </summary>
-        public readonly SceneTree NodesGraph;
-        /// <summary>
         /// Scene graph for road sections
         /// </summary>
         public readonly SceneTree SectionsGraph;

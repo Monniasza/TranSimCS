@@ -25,7 +25,7 @@ namespace TranSimCS.Save2.Examples {
                 Spec = LaneSpec.Default
             };
             node1.AddLane(lane1);
-            world.RoadNodes.Add(node1);
+            world.Nodes.data.Add(node1);
 
             var node2 = new RoadNode(world, "Node 2", new Vector3(100, 0, 0), RoadNode.AZIMUTH_NORTH);
             var lane2 = new Lane {
@@ -34,7 +34,7 @@ namespace TranSimCS.Save2.Examples {
                 Spec = LaneSpec.Default
             };
             node2.AddLane(lane2);
-            world.RoadNodes.Add(node2);
+            world.Nodes.data.Add(node2);
 
             // Save the world (NEW METHOD - System.Text.Json)
             string savePath = Path.Combine(Program.SaveRoot, "example_world.json");
@@ -43,7 +43,7 @@ namespace TranSimCS.Save2.Examples {
 
             // Load the world (NEW METHOD - System.Text.Json)
             var loadedWorld = TSWorld.LoadJson(savePath);
-            Console.WriteLine($"World loaded. Number of nodes: {loadedWorld.RoadNodes.Count}");
+            Console.WriteLine($"World loaded. Number of nodes: {loadedWorld.Nodes.data.Count}");
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace TranSimCS.Save2.Examples {
 
             // Add some data
             var node = new RoadNode(world, "Test Node", new Vector3(50, 0, 50), RoadNode.AZIMUTH_EAST);
-            world.RoadNodes.Add(node);
+            world.Nodes.data.Add(node);
 
             // Save
             string savePath = Path.Combine(Program.SaveRoot, "temp_world.json");
@@ -83,7 +83,7 @@ namespace TranSimCS.Save2.Examples {
             // Load data into existing object
             newWorld.LoadFromFileJson(savePath);
 
-            Console.WriteLine($"Data loaded into existing object. Nodes: {newWorld.RoadNodes.Count}");
+            Console.WriteLine($"Data loaded into existing object. Nodes: {newWorld.Nodes.data.Count}");
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace TranSimCS.Save2.Examples {
                     Spec = LaneSpec.Default
                 };
                 node.AddLane(lane);
-                world.RoadNodes.Add(node);
+                world.Nodes.data.Add(node);
             }
 
             // OLD METHOD (Newtonsoft.Json)

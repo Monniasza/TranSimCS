@@ -27,7 +27,7 @@ namespace TranSimCS.Menus.InGame {
 
             World.SectionsGraph.Active = CheckSections.Checked;
             World.SegmentsGraph.Active = CheckSegments.Checked;
-            World.NodesGraph.Active = CheckNodes.Checked;
+            World.Nodes.tracker.sceneTree.Active = CheckNodes.Checked;
 
             //Add tool selectors for collision detection
             var tempSelectors = new MultiMesh();

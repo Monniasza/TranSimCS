@@ -70,7 +70,7 @@ namespace TranSimCS.Tools {
                 if (selectedNode != null) {
                     //Demolish a node
                     MouseOverRoad = null;
-                    world.RoadNodes.Remove(selectedNode);
+                    world.Nodes.data.Remove(selectedNode);
                 } else if (selectedRoad != null) {
                     log.Trace($"Demolishing road segment: {selectedRoad}");
                     MouseOverRoad = null; // Reset the mouse over road selection
@@ -241,7 +241,7 @@ namespace TranSimCS.Tools {
                 var n = NewlyCreatedNode ?? new RoadNode(menu.World, "", PrePosition);
                 Generator.GenerateLanes(laneCount, n, menu.configuration.LaneSpec   );
                 n.PositionProp.Value = PrePosition;
-                menu.World.RoadNodes.Add(n);
+                menu.World.Nodes.data.Add(n);
                 NewlyCreatedNode = null;
             }
         }

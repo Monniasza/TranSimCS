@@ -55,7 +55,7 @@ namespace TranSimCS.Tools {
                 RoadNode node = new RoadNode(world, "", pos);
                 Generator.GenerateLanes(1, node, spec);
                 nodes[i] = node;
-                world.RoadNodes.Add(node);
+                world.Nodes.data.Add(node);
             }
             RoadStrip[] segments = new RoadStrip[segmentCount];
             NodeEnd[] endsA = random.GetItems([NodeEnd.Forward, NodeEnd.Backward], segmentCount);

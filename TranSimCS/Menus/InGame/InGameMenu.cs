@@ -374,7 +374,7 @@ namespace TranSimCS.Menus.InGame {
 
             //Draw node selectors
             if (CheckNodes.Checked)
-                foreach (var node in World.RoadNodes)
+                foreach (var node in World.Nodes.data)
                     renderHelper.AddAll(node.Mesh.GetMesh());
 
             //Draw SelectorObjects

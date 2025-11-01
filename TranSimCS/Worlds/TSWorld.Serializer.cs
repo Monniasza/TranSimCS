@@ -28,7 +28,6 @@ namespace TranSimCS.Worlds {
             options.Converters.Add(new Save2.ObjPosConverter());
             options.Converters.Add(new Save2.LaneSpecConverter());
             options.Converters.Add(new Save2.LaneConverter());
-            options.Converters.Add(new Save2.RoadNodeConverter(this));
             options.Converters.Add(new Save2.LaneEndConverter(this));
             options.Converters.Add(new Save2.RoadNodeEndConverter(this));
             options.Converters.Add(new Save2.LaneStripConverter(this));
@@ -69,12 +68,8 @@ namespace TranSimCS.Worlds {
 
                 if (loadedWorld != null) {
                     // Copy data from loaded world to this object
-                    RoadNodes.Clear();
-                    foreach (var node in loadedWorld.RoadNodes) {
-                        // Update the World reference to point to this world
-                        node.World = this;
-                        RoadNodes.Add(node);
-                    }
+                    Nodes.data.Clear();
+                    Nodes.data.UnionWith(loadedWorld.Nodes.data);
 
                     RoadSegments.Clear();
                     foreach (var segment in loadedWorld.RoadSegments) {
@@ -86,7 +81,7 @@ namespace TranSimCS.Worlds {
                     throw new InvalidOperationException("Deserialization returned null");
                 }
             } catch (Exception ex) {
-                log.Error(ex, $"Failed to load world from {filename}");
+                log.Error(ex, $"Failed to load world from {filename}\n{ex}");
                 throw;
             }
         }

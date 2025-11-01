@@ -1,23 +1,21 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using TranSimCS.Roads;
+using System.Threading.Tasks;
+using TranSimCS.Save2;
 using TranSimCS.Worlds;
+using TranSimCS.Worlds.Stack;
 
-namespace TranSimCS.Save2 {
-    /// <summary>
-    /// OBSOLETE. To be replaced with <see cref="NodeStack"/>
-    /// </summary>
-    [Obsolete]
-    public class RoadNodeConverter : JsonConverter<RoadNode> {
-        private readonly TSWorld _world;
-
-        public RoadNodeConverter(TSWorld world) {
-            _world = world;
+namespace TranSimCS.Roads {
+    public class NodeStack : ObjectStack<RoadNode, NodeStack> {
+        public readonly TrackerSpatial<RoadNode, NodeStack> tracker;
+        public NodeStack(TSWorld world) : base(world) {
+            tracker = new TrackerSpatial<RoadNode, NodeStack> (world);
+            stackTrackers.Add(tracker);
         }
-
-        public override RoadNode Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        public override RoadNode ReadElementFromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
             Guid? guid = null;
             ObjPos? pos = null;
             List<Lane> lanes = new List<Lane>();
@@ -51,27 +49,27 @@ namespace TranSimCS.Save2 {
             if (guid == null) throw new JsonException("Missing id property");
             if (pos == null) throw new JsonException($"Missing pos property for node {guid}");
 
-            RoadNode node = new RoadNode(_world, name, pos.Value, guid);
+            RoadNode node = new RoadNode(World, name, pos.Value, guid);
             foreach (var lane in lanes) {
                 node.AddLane(lane);
             }
             return node;
         }
 
-        public override void Write(Utf8JsonWriter writer, RoadNode value, JsonSerializerOptions options) {
+        public override void SaveElementToJson(Utf8JsonWriter writer, RoadNode value, JsonSerializerOptions options) {
             if (value == null) {
                 writer.WriteNullValue();
                 return;
             }
 
             writer.WriteStartObject();
-            
+
             writer.WriteString("id", value.Guid.ToString());
-            
+
             writer.WritePropertyName("pos");
             var objPosConverter = new ObjPosConverter();
             objPosConverter.Write(writer, value.PositionProp.Value, options);
-            
+
             writer.WritePropertyName("lanes");
             writer.WriteStartArray();
             var laneConverter = new LaneConverter();
@@ -79,11 +77,11 @@ namespace TranSimCS.Save2 {
                 laneConverter.Write(writer, lane, options);
             }
             writer.WriteEndArray();
-            
+
             if (!string.IsNullOrEmpty(value.Name)) {
                 writer.WriteString("name", value.Name);
             }
-            
+
             writer.WriteEndObject();
         }
     }

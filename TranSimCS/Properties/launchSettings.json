@@ -2,7 +2,7 @@
   "profiles": {
     "TranSimCS": {
       "commandName": "Project",
-      "hotReloadEnabled": false,
+      "hotReloadEnabled": true,
       "nativeDebugging": true
     }
   }

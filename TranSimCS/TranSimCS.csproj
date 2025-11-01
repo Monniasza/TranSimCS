@@ -14,6 +14,15 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <SignAssembly>False</SignAssembly>
     <DelaySign>False</DelaySign>
+    <StartupObject>Program</StartupObject>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <Title>TranSim</Title>
+    <PackageIcon>logo1024.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Monniasza/TranSimCS</RepositoryUrl>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Optimize>True</Optimize>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Icon.ico" />
@@ -52,6 +61,16 @@
     <Folder Include="Menus\MainMenu\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="logo1024.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Update="NLog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

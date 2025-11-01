@@ -22,7 +22,7 @@ namespace TranSimCS.Worlds {
         public event EventHandler<PropertyChangedEventArgs2<T>> ValueChanged;
         public IEqualityComparer<T> comparer;
 
-        public Property(T val, string name, Obj parent = null, IEqualityComparer<T> equals = null) {
+        public Property(T val, string name, Obj? parent = null, IEqualityComparer<T> equals = null) {
             _val = val;
             this.name = name;
             Parent = parent;

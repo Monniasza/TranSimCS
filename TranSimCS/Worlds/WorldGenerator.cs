@@ -25,18 +25,18 @@ namespace TranSimCS.Worlds {
             Generator.GenerateLanes(1, node4a, 3.5f, 0);
             Generator.GenerateLanes(2, node4b, 3.5f, 0);
             Generator.GenerateLanes(1, node4c, 3.5f, 0);
-            world.RoadNodes.Add(node1);
-            world.RoadNodes.Add(node2);
-            world.RoadNodes.Add(node3);
-            world.RoadNodes.Add(node4a);
-            world.RoadNodes.Add(node4b);
-            world.RoadNodes.Add(node4c);
+            world.Nodes.data.Add(node1);
+            world.Nodes.data.Add(node2);
+            world.Nodes.data.Add(node3);
+            world.Nodes.data.Add(node4a);
+            world.Nodes.data.Add(node4b);
+            world.Nodes.data.Add(node4c);
 
             //Set up a fancy road example
             var fancynode1 = new RoadNode(world, "Fancy node 1", new Vector3(50, 0.1f, 0), RoadNode.AZIMUTH_NORTH);
-            world.RoadNodes.Add(fancynode1);
+            world.Nodes.data.Add(fancynode1);
             var fancynode2 = new RoadNode(world, "Fancy node 2", new Vector3(50, 0.1f, 100), RoadNode.AZIMUTH_NORTH);
-            world.RoadNodes.Add(fancynode2);
+            world.Nodes.data.Add(fancynode2);
             var fancyRoad = world.GetOrMakeRoadStrip(fancynode1.FrontEnd, fancynode2.RearEnd);
             var laneBus = LaneSpec.Bus;
             var laneDefault = LaneSpec.Default;
@@ -105,11 +105,11 @@ namespace TranSimCS.Worlds {
             Generator.GenerateLanes(2, n12, 3, -3);
             Generator.GenerateLanes(2, n13, 3, -3);
 
-            world.RoadNodes.Add(n10l);
-            world.RoadNodes.Add(n10r);
-            world.RoadNodes.Add(n11);
-            world.RoadNodes.Add(n12);
-            world.RoadNodes.Add(n13);
+            world.Nodes.data.Add(n10l);
+            world.Nodes.data.Add(n10r);
+            world.Nodes.data.Add(n11);
+            world.Nodes.data.Add(n12);
+            world.Nodes.data.Add(n13);
 
             var n10lb = n10l.RearEnd;
             var n10rb = n10r.RearEnd;
