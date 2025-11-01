@@ -87,11 +87,11 @@ namespace TranSimCS.Roads {
         }
 
         //Mesh cache
-        private Mesh? mesh; // Cached mesh for the lane strip
-        public Mesh GetMesh() {
+        private MultiMesh? mesh; // Cached mesh for the lane strip
+        public MultiMesh GetMesh() {
             if (mesh == null) {
-                mesh = new Mesh(); // Create a new mesh if it doesn't exist
-                RoadRenderer.GenerateLaneStripMesh(this, mesh); // Generate the mesh for the lane strip if it doesn't exist
+                mesh = new MultiMesh(); // Create a new mesh if it doesn't exist
+                StripRenderer.GenerateLaneStripMesh(this, mesh); // Generate the mesh for the lane strip if it doesn't exist
             }
             return mesh; // Return the cached mesh
         }

@@ -18,6 +18,7 @@ namespace TranSimCS {
         public static Texture2D Cobble { get; private set; }
         public static Texture2D BuildingBricks { get; private set; }
         public static Texture2D BuildingWindows { get; private set; }
+        public static Texture2D Arrow { get; private set; }
 
         public static ContentManager Content => Game1.Instance.Content;
 
@@ -32,6 +33,7 @@ namespace TranSimCS {
             Tiles = Content.Load<Texture2D>("tile");
             BuildingBricks = Content.Load<Texture2D>("brickwall");
             BuildingWindows  = Content.Load<Texture2D>("brickwindow");
+            Arrow = Content.Load<Texture2D>("markings/arrow");
         }
     }
 }
