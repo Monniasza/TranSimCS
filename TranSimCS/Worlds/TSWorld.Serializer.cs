@@ -76,6 +76,9 @@ namespace TranSimCS.Worlds {
                     Buildings.data.Clear();
                     Buildings.data.UnionWith(loadedWorld.Buildings.data);
 
+                    RoadSections.data.Clear();
+                    RoadSections.data.UnionWith(loadedWorld.RoadSections.data);
+
                     log.Info($"World loaded successfully from {filename}");
                 } else {
                     throw new InvalidOperationException("Deserialization returned null");
