@@ -1,4 +1,4 @@
-using System;
+ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -42,12 +42,41 @@ namespace TranSimCS.Tools {
         string ITool.Description => "Demolish objects and subcomponents";
 
         public void Draw(GameTime gameTime) {
-            //unused
+            var roadSelection = game.MouseOverRoad;
+            if (roadSelection == null) return;
+
+            IRenderBin renderBin = game.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
+
+            if (roadSelection.SelectedLaneStrip != null) {
+                var laneStrip = roadSelection.SelectedLaneStrip;
+                var half = roadSelection.SelectedRoadHalf;
+                
+                if (half == SegmentHalf.Start || half == SegmentHalf.End) {
+                    var laneEnd = laneStrip.GetHalf(half.Value);
+                    var quad = RoadRenderer.GenerateLaneQuad(laneEnd, 0.6f, Color.Orange);
+                    renderBin.DrawQuad(quad);
+                } else {
+                    var mesh = laneStrip.GetMesh();
+                    foreach (var vertex in mesh.Vertices) {
+                        var coloredVertex = vertex;
+                        coloredVertex.Color = Color.Orange;
+                        renderBin.AddVertex(coloredVertex);
+                    }
+                    foreach (var index in mesh.Indices) {
+                        renderBin.AddIndex(index);
+                    }
+                }
+            } else if (roadSelection.SelectedRoadNode != null) {
+                var roadNode = roadSelection.SelectedRoadNode;
+                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(roadNode, Color.Red, 0.65f);
+                renderBin.DrawQuad(nodeQuad);
+            }
         }
 
+
         public void Draw2D(GameTime gameTime) {
-            //unused
         }
+
 
         public (object[], string)[] PromptKeys() => [
             ([MouseButton.Left], "to demolish the road segment, a node or the entire object"),
