@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using MonoGame.Extended;
 using NLog;
+using NLog.Time;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads;
@@ -27,6 +28,8 @@ namespace TranSimCS.Tools {
 
             float v1 = 0.2f;
             float v2 = 0.3f;
+            float v3 = 0.55f;
+            float v4 = 0.65f;
 
             //Determine elements to be removed when left-clicking (the segment/node) in red
             //Determine elements to be removed when right-clicking (the strip/lane) in orange
@@ -63,8 +66,13 @@ namespace TranSimCS.Tools {
 
                 //The node/lane itself
                 var roadNode = roadSelection.SelectedRoadNode;
-                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(roadNode, Color.Red, 0.65f);
+                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(roadNode, R, v3);
                 renderBin.DrawQuad(nodeQuad);
+                var lqp = RoadRenderer.GenerateLaneQuad(selLane, v4, O);
+                var q1 = lqp.Back;
+                renderBin.DrawQuad(q1);
+                var q2 = lqp.Front;
+                renderBin.DrawQuad(q2);
             } else if(selStrip != null) {
                 //Deleting segment/strip
                 var segment = selStrip.road;
