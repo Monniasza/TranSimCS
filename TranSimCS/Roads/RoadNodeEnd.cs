@@ -25,8 +25,8 @@ namespace TranSimCS.Roads {
         public RoadNodeEnd OppositeEnd => Node.GetEnd(End.Negate());
 
         //Indexing component for the road node, maintained by the World class
-        internal ISet<RoadStrip> connectionsOld = new HashSet<RoadStrip>(); // Connections to other road segments
-        public ISet<RoadStrip> ConnectionsOld => new ReadOnlySet<RoadStrip>(connectionsOld); // Expose the connections set
+        internal ISet<RoadStrip> connectedSegments = new HashSet<RoadStrip>(); // Connections to other road segments
+        public ISet<RoadStrip> ConnectedSegments => new ReadOnlySet<RoadStrip>(connectedSegments); // Expose the connections set
 
         //Indexing of the road sections
         public Property<RoadSection> ConnectedSection { get; } = new Property<RoadSection>(null, "connection");

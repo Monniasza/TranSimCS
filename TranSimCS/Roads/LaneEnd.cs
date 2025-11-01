@@ -32,6 +32,7 @@ namespace TranSimCS.Roads {
             end == other.end &&
             lane == other.lane;
         public override int GetHashCode() => HashCode.Combine(end, lane);
+
         public static bool operator ==(LaneEnd left, LaneEnd right) => left.Equals(right);
         public static bool operator !=(LaneEnd left, LaneEnd right) => !left.Equals(right);
 

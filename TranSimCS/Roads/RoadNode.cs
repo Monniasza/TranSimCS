@@ -134,7 +134,7 @@ namespace TranSimCS.Roads {
         public RoadNodeEnd GetEnd(NodeEnd end) => end.GetConditional(RearEnd, FrontEnd);
 
         //Connections (maintained by the node ends)
-        public IEnumerable<RoadStrip> Connections => RearEnd.ConnectionsOld.Union(FrontEnd.ConnectionsOld);
+        public IEnumerable<RoadStrip> Connections => RearEnd.ConnectedSegments.Union(FrontEnd.ConnectedSegments);
 
         //Center position
         // Calculates and caches the node center based on lane positions.

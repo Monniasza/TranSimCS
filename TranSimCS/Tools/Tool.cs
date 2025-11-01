@@ -1,4 +1,4 @@
- using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -8,7 +8,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
-using NLog;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
@@ -32,112 +31,14 @@ namespace TranSimCS.Tools {
 
         public void OnOpen() { }
         public void OnClose() { }
+
+        public void AddAttributes(ISet<string> action) {}
+
+        
     }
-
-    public class RoadDemolitionTool(InGameMenu game) : ITool {
-
-        private static Logger log = LogManager.GetCurrentClassLogger();
-        string ITool.Name => "Road Demolition Tool";
-
-        string ITool.Description => "Demolish objects and subcomponents";
-
-        public void Draw(GameTime gameTime) {
-            var roadSelection = game.MouseOverRoad;
-            if (roadSelection == null) return;
-
-            IRenderBin renderBin = game.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
-
-            if (roadSelection.SelectedLaneStrip != null) {
-                var laneStrip = roadSelection.SelectedLaneStrip;
-                var half = roadSelection.SelectedRoadHalf;
-                
-                if (half == SegmentHalf.Start || half == SegmentHalf.End) {
-                    var laneEnd = laneStrip.GetHalf(half.Value);
-                    var quad = RoadRenderer.GenerateLaneQuad(laneEnd, 0.6f, Color.Orange);
-                    renderBin.DrawQuad(quad);
-                } else {
-                    var mesh = laneStrip.GetMesh();
-                    foreach (var vertex in mesh.Vertices) {
-                        var coloredVertex = vertex;
-                        coloredVertex.Color = Color.Orange;
-                        renderBin.AddVertex(coloredVertex);
-                    }
-                    foreach (var index in mesh.Indices) {
-                        renderBin.AddIndex(index);
-                    }
-                }
-            } else if (roadSelection.SelectedRoadNode != null) {
-                var roadNode = roadSelection.SelectedRoadNode;
-                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(roadNode, Color.Red, 0.65f);
-                renderBin.DrawQuad(nodeQuad);
-            }
-        }
-
-
-        public void Draw2D(GameTime gameTime) {
-        }
-
-
-        public (object[], string)[] PromptKeys() => [
-            ([MouseButton.Left], "to demolish the road segment, a node or the entire object"),
-            ([MouseButton.Right], "to demolish the lane, a lane strip or a subcomponent")
-        ];
-
-        public void Update(GameTime gameTime) {
-            //unused
-        }
-
-        void ITool.OnClick(MouseButton button) {
-            RoadSelection MouseOverRoad = game.MouseOverRoad;
-            TSWorld world = game.World;
-
-            //Demolish the selected road segment if the left mouse button is clicked
-            if (button == MouseButton.Left) {
-                // If a road segment is selected, remove it from the world
-                var selectedRoad = MouseOverRoad?.SelectedLaneTag?.road;
-                var selectedNode = MouseOverRoad?.SelectedRoadNode;
-                if (selectedNode != null) {
-                    //Demolish a node
-                    MouseOverRoad = null;
-                    world.Nodes.data.Remove(selectedNode);
-                } else if (selectedRoad != null) {
-                    log.Trace($"Demolishing road segment: {selectedRoad}");
-                    MouseOverRoad = null; // Reset the mouse over road selection
-                    world.RoadSegments.data.Remove(selectedRoad); // Remove the selected road segment from the world
-                }
-            }
-            //Demolish the lane on a selected node if the right mouse button is clicked
-            if (button == MouseButton.Right) {
-                // If a lane tag is selected, remove it from the road segment
-                var selectedLaneStrip = MouseOverRoad?.SelectedLaneStrip;
-                var selectedNode = MouseOverRoad?.SelectedRoadNode;
-                var selectedRoadHalf = MouseOverRoad?.SelectedRoadHalf;
-                var selectedLane = MouseOverRoad?.SelectedLane;
-                if(selectedLane != null) {
-                    //Demolish the node lane
-                    MouseOverRoad = null; // Reset the mouse over road selection
-                    selectedNode.RemoveLane(selectedLane); // Remove the selected lane from the road node
-                }else if(selectedLaneStrip != null) {
-                    //Demolish just the lane strip
-                    MouseOverRoad = null;
-                    selectedLaneStrip.Destroy();
-                }
-            }
-
-            game.MouseOverRoad = MouseOverRoad;
-        }
-
-        void ITool.OnKeyDown(Keys key) {
-            //unused
-        }
-
-        void ITool.OnKeyUp(Keys key) {
-            //unused
-        }
-
-        void ITool.OnRelease(MouseButton button) {
-            //unused
-        }
+    public static class ToolAttribs {
+        public const string noHighlights = "!highlight";
+        public const string addLaneSelection = "als";
     }
 
     public class PickerTool(InGameMenu game) : ITool {
