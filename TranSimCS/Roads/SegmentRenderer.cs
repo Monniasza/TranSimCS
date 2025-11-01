@@ -21,7 +21,7 @@ namespace TranSimCS.Roads {
         public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MultiMesh renderHelper, float voffset = 0) {
             IRenderBin roadBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
             foreach (var lane in connection.Lanes)
-                roadBin.DrawModel(lane.GetMesh());
+                renderHelper.AddAll(lane.GetMesh());
 
             //Draw the road finish
             var finish = connection.Finish;
