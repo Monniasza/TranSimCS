@@ -58,7 +58,7 @@ namespace TranSimCS.Worlds.Building {
 
             writer.WritePropertyName("size");
             var vecConverter = new Vector3iConverter();
-            objPosConverter.Write(writer, value.PositionProp.Value, options);
+            vecConverter.Write(writer, value.UnitSizeProp.Value, options);
 
             writer.WriteEndObject();
         }
