@@ -60,6 +60,11 @@ namespace TranSimCS.Tools {
                     var laneTag = laneDependency.Tag;
                     RoadRenderer.GenerateLaneRangeMesh(laneTag, renderBin, O, v2);
                 }
+
+                //The node/lane itself
+                var roadNode = roadSelection.SelectedRoadNode;
+                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(roadNode, Color.Red, 0.65f);
+                renderBin.DrawQuad(nodeQuad);
             } else if(selStrip != null) {
                 //Deleting segment/strip
                 var segment = selStrip.road;
@@ -67,34 +72,6 @@ namespace TranSimCS.Tools {
                 if (segmentTag != null) RoadRenderer.GenerateLaneRangeMesh(segmentTag.Value, renderBin, R, v1);
                 var stripTag = selStrip.Tag;
                 RoadRenderer.GenerateLaneRangeMesh(stripTag, renderBin, O, v2);
-            }
-
-
-            if (roadSelection.SelectedLaneStrip != null) {
-
-
-                var laneStrip = roadSelection.SelectedLaneStrip;
-                var half = roadSelection.SelectedRoadHalf;
-
-                if (half == SegmentHalf.Start || half == SegmentHalf.End) {
-                    var laneEnd = laneStrip.GetHalf(half.Value);
-                    var quad = RoadRenderer.GenerateLaneQuad(laneEnd, 0.6f, Color.Orange);
-                    renderBin.DrawQuad(quad);
-                } else {
-                    var mesh = laneStrip.GetMesh().GetOrCreateRenderBinForced(Assets.Road);
-                    foreach (var vertex in mesh.Vertices) {
-                        var coloredVertex = vertex;
-                        coloredVertex.Color = Color.Orange;
-                        renderBin.AddVertex(coloredVertex);
-                    }
-                    foreach (var index in mesh.Indices) {
-                        renderBin.AddIndex(index);
-                    }
-                }
-            } else if (roadSelection.SelectedRoadNode != null) {
-                var roadNode = roadSelection.SelectedRoadNode;
-                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(roadNode, Color.Red, 0.65f);
-                renderBin.DrawQuad(nodeQuad);
             }
         }
 
