@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using TranSimCS.Menus.InGame;
+using TranSimCS.Tools.Panels;
 
 namespace TranSimCS.Tools {
     /// <summary>
@@ -13,7 +14,6 @@ namespace TranSimCS.Tools {
     public class DumpingTool : ITool {
         public DumpingTool(InGameMenu menu) {
             this.game = menu;
-            this.menu = new DumpingMenu(menu);
         }
 
         public string Name => "Dumping Tool";
@@ -36,14 +36,11 @@ namespace TranSimCS.Tools {
             //unused
         }
 
+        void ITool.AddAttributes(ISet<string> action) {
+            action.Add(ToolAttribs.showDumpTools);
+        }
+
         
         private InGameMenu game;
-        private DumpingMenu menu;
-        void ITool.OnOpen() {
-            game.UiSystem.Add(RoadCreationTool.uiID, menu);
-        }
-        void ITool.OnClose() {
-            game.UiSystem.Remove(RoadCreationTool.uiID);
-        }
     }
 }

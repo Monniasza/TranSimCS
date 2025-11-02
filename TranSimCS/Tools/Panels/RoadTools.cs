@@ -9,7 +9,7 @@ using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Worlds;
 
-namespace TranSimCS.Tools {
+namespace TranSimCS.Tools.Panels {
     public class RoadTools : Panel {
         public InGameMenu Game { get; private set; }
         public Checkbox flattenTilt { get; private set; }
@@ -25,8 +25,8 @@ namespace TranSimCS.Tools {
             return new StyleProp<TextureRegion>(new TextureRegion(Game.Game.Content.Load<Texture2D>(name)));
         }
 
-        public RoadTools(InGameMenu game, Anchor anchor, Vector2 size)
-            : base(anchor, size, true) {
+        public RoadTools(InGameMenu game)
+            : base(Anchor.AutoLeft, new(1, 1), true) {
             Game = game;
 
             var settingsLabel = new Paragraph(Anchor.AutoInline, 0.5f, "Settings");

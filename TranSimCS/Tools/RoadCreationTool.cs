@@ -13,6 +13,7 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Spline;
+using TranSimCS.Tools.Panels;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Tools {
@@ -114,7 +115,7 @@ namespace TranSimCS.Tools {
         public readonly InGameMenu menu;
         public RoadCreationTool(InGameMenu menu) {
             this.menu = menu;
-            RoadTools = new RoadTools(menu, Anchor.CenterLeft, new(200, 0.5f));
+            RoadTools = menu.ToolsPanel.GetPanel<RoadTools>(ToolAttribs.showRoadTools);
         }
 
         private LaneEnd? GetLaneEnd() {
@@ -293,11 +294,10 @@ namespace TranSimCS.Tools {
 
         public RoadTools RoadTools { get; private set; }
         public const string uiID = "roadTools";
-        void ITool.OnOpen() {
-            menu.UiSystem.Add(uiID, RoadTools);
-        }
-        void ITool.OnClose() {
-            menu.UiSystem.Remove(uiID);
+
+        void ITool.AddAttributes(ISet<string> action) {
+            action.Add(ToolAttribs.showFinishes);
+            action.Add(ToolAttribs.showRoadTools);
         }
     }
 }

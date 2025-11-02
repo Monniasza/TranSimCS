@@ -19,6 +19,7 @@ using SpriteFontPlus;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Roads;
+using TranSimCS.Tools;
 
 namespace TranSimCS
 {
@@ -151,6 +152,8 @@ namespace TranSimCS
 
             KeyPromptMapper.SetUpKeyPrompts(Content);
 
+            ITool.Init();
+
             var menu = new InGameMenu(this);
             //Process the args
             if (Args.Count == 1) {
@@ -165,6 +168,9 @@ namespace TranSimCS
             } else {
                 
             }
+
+            
+
             Menu = menu;
         }
 

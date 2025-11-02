@@ -40,8 +40,12 @@ namespace TranSimCS {
             return EqualityComparer<U>.Create((a, b) => eq2.Equals(byFunc(a), byFunc(b)));
         }
 
-        internal static IEqualityComparer<T> ReferenceEqualComparer<T>() {
+        public static EqualityComparer<T> ReferenceEqualComparer<T>() {
             return EqualityComparer<T>.Create((a, b) => Object.ReferenceEquals(a, b));
+        }
+
+        public static EqualityComparer<ISet<T>> SetEquals<T>() {
+            return EqualityComparer<ISet<T>>.Create((x, y) => (x == null) ? y == null : x.SetEquals(y));
         }
     }
 }

@@ -12,6 +12,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads;
+using TranSimCS.Tools.Panels;
 using TranSimCS.Worlds;
 using static MLEM.Ui.Elements.Paragraph;
 
@@ -34,11 +35,22 @@ namespace TranSimCS.Tools {
 
         public void AddAttributes(ISet<string> action) {}
 
-        
+        public static void Init() {
+            ToolsPanel.AddPanel(ToolAttribs.showRoadTools, (x => new RoadTools(x)));
+            ToolsPanel.AddPanel(ToolAttribs.showFinishes, (x => new RoadFinishTab(x)));
+            ToolsPanel.AddPanel(ToolAttribs.showDumpTools, (x => new DumpingMenu(x)));
+        }        
     }
     public static class ToolAttribs {
         public const string noHighlights = "!highlight";
         public const string addLaneSelection = "als";
+
+        //UI attributes
+        public const string showFinishes = "menuFinish";
+        public const string showRoadTools = "menuRoadTools";
+        public const string showLaneSpecs = "menuLaneSpec";
+        public const string showMoveTools = "menuMove";
+        public const string showDumpTools = "menuDump";
     }
 
     public class PickerTool(InGameMenu game) : ITool {

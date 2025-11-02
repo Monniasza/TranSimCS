@@ -49,6 +49,7 @@ namespace TranSimCS.Menus.InGame {
         public Panel RootPanel {  get; private set; } = null!;
         public Panel ToolPanel {  get; private set; } = null!;
         public Panel SettingsPanel { get; private set; } = null!;
+        public ToolsPanel ToolsPanel { get; private set; } = null!;
         public RootElement ToolPanelRoot { get; private set; } = null!;
 
         public ToolDescriptionPanel ToolDescPanel { get; private set; } = null!;
@@ -70,7 +71,8 @@ namespace TranSimCS.Menus.InGame {
         
         //Tools
         public RoadCreationTool RoadCreationTool { get; private set; }
-        public ReadOnlySet<string> ToolAttributes { get; private set; } = new ReadOnlySet<string>(new HashSet<string>());
+        public ReadOnlySet<string> ToolAttributes { get => ToolAttributesProp.Value; set => ToolAttributesProp.Value = value; }
+        public Property<ReadOnlySet<string>> ToolAttributesProp = new(new ReadOnlySet<string>(new HashSet<string>()), "attributes", null, Equality.SetEquals<string>());
 
         internal InGameMenu(Game1 game): base(game) {
             configuration = new Configuration();
@@ -126,6 +128,10 @@ namespace TranSimCS.Menus.InGame {
 
             configurator = new RoadConfigurator(this, configuration.LaneSpecProp, MLEM.Ui.Anchor.Center, new(0.5f, 0.5f));
 
+            //Set up the tool panel
+            ToolsPanel = new ToolsPanel(this);
+            UiSystem.Add("toolsPanel", ToolsPanel);
+
             RoadCreationTool = new RoadCreationTool(this);
             SetUpToolPictureButton("noTool", null);
             SetUpToolPictureButton("ui/blast2", new RoadDemolitionTool(this));
@@ -144,6 +150,8 @@ namespace TranSimCS.Menus.InGame {
 
             KeyBindPanel = new KeyBindPanel(this);
             UiSystem.Add("keybinds", KeyBindPanel);
+
+            
 
             //Set up the escape menu
             escapeMenu = new EscapeMenu(this);

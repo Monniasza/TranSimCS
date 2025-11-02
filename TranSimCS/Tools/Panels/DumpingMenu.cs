@@ -12,14 +12,14 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Roads;
 using TranSimCS.Worlds;
 
-namespace TranSimCS.Tools {
+namespace TranSimCS.Tools.Panels {
     public class DumpingMenu: Panel {
         public NumberField diameter;
         public NumberField nodecount;
         public NumberField roadcount;
         public InGameMenu game;
 
-        public DumpingMenu(InGameMenu game): base(MLEM.Ui.Anchor.CenterLeft, new(200, 0.5f)) {
+        public DumpingMenu(InGameMenu game): base(MLEM.Ui.Anchor.CenterLeft, new(1, 1), true) {
             this.game = game;
             Paragraph diameterLabel = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 0.5f, "Spread diameter", true);
             AddChild(diameterLabel);
@@ -93,6 +93,6 @@ namespace TranSimCS.Tools {
             return new ObjPos(pos, azimuth, pitch, roll);
 
         }
-        public float RandomCentered(Random random, float radius) => (random.NextSingle() * radius * 2) - radius;
+        public float RandomCentered(Random random, float radius) => random.NextSingle() * radius * 2 - radius;
     }
 }
