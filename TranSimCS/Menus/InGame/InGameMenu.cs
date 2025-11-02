@@ -130,7 +130,7 @@ namespace TranSimCS.Menus.InGame {
 
             //Set up the tool panel
             ToolsPanel = new ToolsPanel(this);
-            UiSystem.Add("toolsPanel", ToolsPanel);
+            
 
             RoadCreationTool = new RoadCreationTool(this);
             SetUpToolPictureButton("noTool", null);

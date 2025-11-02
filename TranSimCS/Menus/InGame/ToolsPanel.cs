@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MLEM.Ui;
 using MLEM.Ui.Elements;
 using TranSimCS.Worlds.Stack;
 
@@ -44,11 +45,21 @@ namespace TranSimCS.Menus.InGame {
             //Delete all panels
             RemoveChildren();
 
+            var elements = 0;
             //Add tool panels back
             foreach (var attrib in attribs) {
                 if(panels.TryGetValue(attrib, out var panel)){
                     AddChild(panel);
+                    elements++;
                 }
+            }
+
+
+            //If empty, remove
+            if (elements == 0) {
+                menu.UiSystem.Remove("toolsPanel");
+            } else {
+                menu.UiSystem.Add("toolsPanel", this);
             }
         }
         public T GetPanel<T>(string key) where T: Element => (T)panels[key];

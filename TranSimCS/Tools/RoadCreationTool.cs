@@ -293,7 +293,6 @@ namespace TranSimCS.Tools {
         }
 
         public RoadTools RoadTools { get; private set; }
-        public const string uiID = "roadTools";
 
         void ITool.AddAttributes(ISet<string> action) {
             action.Add(ToolAttribs.showFinishes);
