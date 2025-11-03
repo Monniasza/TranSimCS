@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Model;
 using TranSimCS.SceneGraph;
+using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Worlds {
     public partial class TSWorld {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using MLEM.Ui;
 using MLEM.Ui.Elements;
-using TranSimCS.Worlds;
+using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Menus {
     public class EnumDropdown<T> : Dropdown where T : Enum {

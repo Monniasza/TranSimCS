@@ -8,7 +8,7 @@ using MLEM.Input;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Roads;
 using TranSimCS.Tools.Panels;
-using TranSimCS.Worlds;
+using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Tools {
     public class RoadFinishTool : ITool {

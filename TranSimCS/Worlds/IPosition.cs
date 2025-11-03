@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Xna.Framework;
+using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Worlds {
     /// <summary>

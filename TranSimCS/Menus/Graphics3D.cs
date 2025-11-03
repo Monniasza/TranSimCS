@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Model;
-using TranSimCS.Worlds;
+using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Menus {
     public class Graphics3D {

@@ -6,6 +6,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
+using TranSimCS.Worlds.Property;
 using static TranSimCS.Roads.Roads;
 
 namespace TranSimCS.Roads {

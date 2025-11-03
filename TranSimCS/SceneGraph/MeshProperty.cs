@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Model;
-using TranSimCS.Worlds;
+using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.SceneGraph {
     public class MeshProperty : IMeshSource {

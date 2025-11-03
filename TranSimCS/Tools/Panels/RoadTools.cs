@@ -7,7 +7,7 @@ using MLEM.Ui.Elements;
 using MLEM.Ui.Style;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
-using TranSimCS.Worlds;
+using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Tools.Panels {
     public class RoadTools : Panel {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Iesi.Collections.Generic;
 using Microsoft.Xna.Framework;
 using TranSimCS.Worlds;
+using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Roads {
     public class RoadNodeEnd: IPosition {

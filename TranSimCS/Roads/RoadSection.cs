@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using TranSimCS.Model;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
+using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Roads {
     public class RoadSection : Obj, IObjMesh<RoadSection>{

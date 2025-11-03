@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MLEM.Ui;
 using MLEM.Ui.Elements;
+using TranSimCS.Worlds.Property;
 using TranSimCS.Worlds.Stack;
 
 namespace TranSimCS.Menus.InGame {
@@ -37,7 +38,7 @@ namespace TranSimCS.Menus.InGame {
             panels.Add(attributeName, ctor(menu));
         }
 
-        private void ToolAttributesProp_ValueChanged(object? sender, Worlds.PropertyChangedEventArgs2<Iesi.Collections.Generic.ReadOnlySet<string>> e) {
+        private void ToolAttributesProp_ValueChanged(object? sender, PropertyChangedEventArgs2<Iesi.Collections.Generic.ReadOnlySet<string>> e) {
             Rebuild(e.NewValue);
         }
 

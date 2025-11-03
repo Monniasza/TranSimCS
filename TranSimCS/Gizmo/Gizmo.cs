@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TranSimCS.Model;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
+using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Gizmo {
     public abstract class Gizmo: Obj, IObjMesh<Gizmo> {

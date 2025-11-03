@@ -10,6 +10,7 @@ using MonoGame.Extended.Collections;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.SceneGraph;
+using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Worlds.Building {
     public class BuildingUnit : Obj, IPosition, IObjMesh<BuildingUnit> {

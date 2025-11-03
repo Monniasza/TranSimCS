@@ -204,5 +204,15 @@ namespace TranSimCS.Geometry
             var reference = 0.0f;
             return discriminant.CompareTo(reference);
         }
+
+        public static readonly float fieldsInDeg = MathF.Pow(2.0f, 32) / 360f;
+        public static readonly float degsInField = 360f / MathF.Pow(2.0f, 32);
+
+        public static float FieldToDegs(int azimuth) {
+            return (float)azimuth * degsInField;
+        }
+        public static int DegsToField(float v) {
+            return (int)(v * fieldsInDeg);
+        }
     }
 }

@@ -23,6 +23,7 @@ using TranSimCS.Roads;
 using TranSimCS.Spline;
 using TranSimCS.Tools;
 using TranSimCS.Worlds;
+using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Menus.InGame {
     public partial class InGameMenu : Menu {
@@ -143,6 +144,7 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("inspect", new InspectTool(this));
             SetUpToolPictureButton("finish", new RoadFinishTool(this));
             SetUpToolPictureButton("trashdump", new DumpingTool(this));
+            SetUpToolPictureButton("precpos", new PrecPos(this));
 
             //Set up the tool preview
             ToolDescPanel = new ToolDescriptionPanel(this);
@@ -261,12 +263,15 @@ namespace TranSimCS.Menus.InGame {
                 configuration.Camera.SetUpEffect(effect, this);
             }
 
+            //Disable Left Shift/Space motion if tool requests it
+            var disableShift = ToolAttributes.Contains(ToolAttribs.noShift);
+
             //Handle camera movement with WASD keys
             float sideMotion = 0.0f; // Side motion for camera movement
             float forwardMotion = 0.0f; // Forward motion for camera movement
             float upMotion = 0.0f; // Up motion for camera movement
-            if (keyboardState.IsKeyDown(Keys.Space)) upMotion += 1.0f; // Move up
-            if (keyboardState.IsKeyDown(Keys.LeftShift)) upMotion -= 1.0f; // Move down
+            if (!disableShift && keyboardState.IsKeyDown(Keys.Space)) upMotion += 1.0f; // Move up
+            if (!disableShift && keyboardState.IsKeyDown(Keys.LeftShift)) upMotion -= 1.0f; // Move down
             if (keyboardState.IsKeyDown(Keys.W)) forwardMotion += 1.0f; // Move forward
             if (keyboardState.IsKeyDown(Keys.S)) forwardMotion -= 1.0f; // Move backward
             if (keyboardState.IsKeyDown(Keys.A)) sideMotion -= 1.0f; // Move left

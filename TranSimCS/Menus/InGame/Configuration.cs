@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TranSimCS.Roads;
 using TranSimCS.Tools;
 using TranSimCS.Worlds;
+using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Menus.InGame {
     /// <summary>

@@ -39,7 +39,8 @@ namespace TranSimCS.Tools {
             ToolsPanel.AddPanel(ToolAttribs.showRoadTools, (x => new RoadTools(x)));
             ToolsPanel.AddPanel(ToolAttribs.showFinishes, (x => new RoadFinishTab(x)));
             ToolsPanel.AddPanel(ToolAttribs.showDumpTools, (x => new DumpingMenu(x)));
-        }        
+            ToolsPanel.AddPanel(ToolAttribs.showPosManip, (x => new PrecPosTools(x)));
+        }
     }
     public static class ToolAttribs {
         public const string noHighlights = "!highlight";
@@ -51,6 +52,8 @@ namespace TranSimCS.Tools {
         public const string showLaneSpecs = "menuLaneSpec";
         public const string showMoveTools = "menuMove";
         public const string showDumpTools = "menuDump";
+        public const string showPosManip = "menuPos";
+        public const string noShift = "disableShift";
     }
 
     public class PickerTool(InGameMenu game) : ITool {

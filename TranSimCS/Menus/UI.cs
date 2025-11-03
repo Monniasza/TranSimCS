@@ -7,7 +7,7 @@ using MLEM.Ui.Elements;
 using MLEM.Ui.Style;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Roads;
-using TranSimCS.Worlds;
+using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Menus {
     internal static class UI {
@@ -61,11 +61,21 @@ namespace TranSimCS.Menus {
             component.Size = textfieldSize;
             panel.AddChild(component);
         }
-        public static NumberField SetUpFloatProp(string title, Panel panel, Property<float> prop) {
+        public static NumberField SetUpFloatProp(string title, Panel panel, Property<float>? prop) {
             var textfieldSize = new Vector2(0.5f, 20);
-            var textfield = new NumberField(Anchor.AutoInline, textfieldSize, null, prop.Value);
-            textfield.ValueChanged += (c, v) => prop.Value = v;
-            prop.ValueChanged += (s, e) => textfield.Value = e.NewValue;
+            var textfield = new NumberField(Anchor.AutoInline, textfieldSize, null, prop?.Value ?? 0);
+            if (prop != null) {
+                textfield.ValueChanged += (c, v) => prop.Value = v;
+                prop.ValueChanged += (s, e) => textfield.Value = e.NewValue;
+            }
+            SetUpProp(title, panel, textfield);
+            return textfield;
+        }
+        public static NumberField SetUpReplacementField<T>(string title, Panel panel, Func<T, float> get, Func<T, float, T> replacer, Property<T> prop) {
+            var textfieldSize = new Vector2(0.5f, 20);
+            var textfield = new NumberField(Anchor.AutoInline, textfieldSize, null, get(prop.Value));
+            textfield.ValueChanged += (c, v) => prop.Value = replacer(prop.Value, v);
+            prop.ValueChanged += (s, e) => textfield.Value = get(e.NewValue);
             SetUpProp(title, panel, textfield);
             return textfield;
         }

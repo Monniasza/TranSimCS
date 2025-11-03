@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TranSimCS.Collections;
 using TranSimCS.Roads;
 using TranSimCS.Tools;
+using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Worlds {
     public partial class TSWorld {

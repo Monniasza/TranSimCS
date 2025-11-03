@@ -13,6 +13,7 @@ using NLog;
 using TranSimCS.Model;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds.Building;
+using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Worlds
 {
