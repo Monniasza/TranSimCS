@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
+using NLog;
 using TranSimCS.Geometry;
 using TranSimCS.Roads;
 using TranSimCS.Worlds.Building;
 
 namespace TranSimCS.Worlds {
     public static class WorldGenerator {
-
+        public static Logger log = LogManager.GetCurrentClassLogger();
         public static void SetUpExampleWorld(TSWorld world) {
             //Reset the world
             world.ClearAll();
@@ -55,41 +56,43 @@ namespace TranSimCS.Worlds {
             for (int i = 0; i < 12; i++) {
                 var loffset = (i - 6) * 3.5f;
                 var roffset = loffset + 3.5f;
-                var spec = laneSpecs[i];
+                var thisspec = laneSpecs[i];
 
                 var lane1 = new Lane();
                 lane1.LeftPosition = loffset;
                 lane1.RightPosition = roffset;
-                lane1.Spec = spec;
+                lane1.Spec = thisspec;
                 fancynode1.AddLane(lane1);
 
                 var lane2 = new Lane();
                 lane2.LeftPosition = loffset;
                 lane2.RightPosition = roffset;
                 fancynode2.AddLane(lane2);
-                lane2.Spec = spec;
+                lane2.Spec = thisspec;
 
-                Generator.JoinLanesByIndices(fancyRoad, i, i, spec);
+                Generator.JoinLanesByIndices(fancyRoad, i, i, thisspec);
             }
 
+            var spec = LaneSpec.Default;
+
             //1-2
-            var lc12 = Generator.GenerateLaneConnections(node1.FrontEnd, 0, node1.Lanes.Count, node2.RearEnd, 0, node2.Lanes.Count);
+            var lc12 = Generator.GenerateLaneConnections(node1.FrontEnd, 0, node1.Lanes.Count, node2.RearEnd, 0, node2.Lanes.Count, spec);
             world.RoadSegments.data.Add(lc12);
 
             //2-3
-            var lc23 = Generator.GenerateLaneConnections(node2.FrontEnd, 0, node2.Lanes.Count, node3.RearEnd, 0, node3.Lanes.Count, 0, 1);
+            var lc23 = Generator.GenerateLaneConnections(node2.FrontEnd, 0, node2.Lanes.Count, node3.RearEnd, 0, node3.Lanes.Count, spec, 0, 1);
             world.RoadSegments.data.Add(lc23);
 
             //3-4a
-            var lc34a = Generator.GenerateLaneConnections(node3.FrontEnd, 3, 4, node4a.RearEnd, 0, node4a.Lanes.Count);
+            var lc34a = Generator.GenerateLaneConnections(node3.FrontEnd, 3, 4, node4a.RearEnd, 0, node4a.Lanes.Count, spec);
             world.RoadSegments.data.Add(lc34a);
 
             //3-4b
-            var lc34b = Generator.GenerateLaneConnections(node3.FrontEnd, 1, 3, node4b.RearEnd, 0, node4b.Lanes.Count);
+            var lc34b = Generator.GenerateLaneConnections(node3.FrontEnd, 1, 3, node4b.RearEnd, 0, node4b.Lanes.Count, spec);
             world.RoadSegments.data.Add(lc34b);
 
             //3-4c
-            var lc34c = Generator.GenerateLaneConnections(node3.FrontEnd, 0, 1, node4c.RearEnd, 0, node4c.Lanes.Count);
+            var lc34c = Generator.GenerateLaneConnections(node3.FrontEnd, 0, 1, node4c.RearEnd, 0, node4c.Lanes.Count, spec);
             world.RoadSegments.data.Add(lc34c);
 
             //Set up an intersection example
@@ -139,6 +142,30 @@ namespace TranSimCS.Worlds {
             building2.PositionProp.Value = new ObjPos(new(-512, 0, 2000), 0);
             building2.UnitSizeProp.Value = new(128, 256, 128) ;
             world.Buildings.data.Add(building2);
+
+            //Car parking lot
+            LaneSpec parkingSpec = LaneSpec.Default;
+            parkingSpec.Color = new Color(0, 192, 255);
+            var cs = world.Cars;
+            ObjPos parkingStart = new ObjPos(new(350, 0.1f, 150), RoadNode.AZIMUTH_NORTH);
+            RoadNode parkingStartNode = new RoadNode(world, "Parking start", parkingStart);
+            Generator.GenerateLanes(10, parkingStartNode, parkingSpec);
+            ObjPos parkingEnd = new ObjPos(new(350, 0.1f, 350), RoadNode.AZIMUTH_NORTH);
+            RoadNode parkingEndNode = new RoadNode(world, "Parking start", parkingEnd);
+            Generator.GenerateLanes(10, parkingEndNode, parkingSpec);
+            var parkingStrip = Generator.GenerateLaneConnections(parkingStartNode.FrontEnd, 0, 10, parkingEndNode.RearEnd, 0, 10, parkingSpec);
+            world.RoadSegments.data.Add(parkingStrip);
+            for(float x = 351.5f; x < 383; x += 3) {
+                for(float z = 152.5f; z < 350; z += 5) {
+                    Car.Car car = new Car.Car(world);
+                    var objpos = new ObjPos(new(x, 0.2f, z), RoadNode.AZIMUTH_NORTH);
+                    car.PositionProp.Value = objpos;
+                    car.Randomize();
+                    log.Info($"Added a car at {objpos.Position} with mesh {car.MeshId}");
+                    cs.data.Add(car);
+                }
+            }
+
         }
     }
 }

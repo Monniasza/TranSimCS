@@ -46,10 +46,7 @@ namespace TranSimCS.Worlds {
             return !(left == right);
         }
 
-        public Transform3 CalcReferenceFrame() {
-            Matrix matrix = Matrix.CreateFromYawPitchRoll(GeometryUtils.FieldToRadians(Azimuth), -Inclination, Tilt) * Matrix.CreateTranslation(Position);
-            return new Transform3(matrix);
-        }
+        public Transform3 CalcReferenceFrame() => new(CalcReferenceMatrix());
 
         public static ObjPos FromPosTangentTilt(Vector3 pos, Vector3 tangent, float tilt) {
             var htangent = GeometryUtils.hypot2(tangent.X, tangent.Z);
@@ -72,5 +69,8 @@ namespace TranSimCS.Worlds {
                 && Inclination.Equals(other.Inclination)
                 && Azimuth.Equals(other.Azimuth);
         }
+
+        public Matrix CalcReferenceMatrix() => Matrix.CreateFromYawPitchRoll(GeometryUtils.FieldToRadians(Azimuth), -Inclination, Tilt) * Matrix.CreateTranslation(Position);
+
     }
 }

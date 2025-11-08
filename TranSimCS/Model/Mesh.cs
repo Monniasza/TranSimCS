@@ -27,13 +27,15 @@ namespace TranSimCS.Model {
             foreach(var row in tags) Tags.Add(row.Key, row.Value);
         }
 
-        int IRenderBin.AddVertex(VertexPositionColorTexture vertex) {
+        int IRenderBin.AddVertex(VertexPositionColorTexture vertex) => AddVertex(vertex);
+        public int AddVertex(VertexPositionColorTexture vertex) {
             Vertices.Add(vertex);
             InvalidateAccelerationStructure();
             return Vertices.Count - 1; // Return the index of the newly added vertex
         }
 
-        void IRenderBin.AddIndex(int index) {
+        void IRenderBin.AddIndex(int index) => AddIndex(index);
+        public void AddIndex(int index) {
             Indices.Add(index);
             InvalidateAccelerationStructure();
         }

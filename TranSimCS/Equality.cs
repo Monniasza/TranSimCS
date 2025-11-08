@@ -47,5 +47,15 @@ namespace TranSimCS {
         public static EqualityComparer<ISet<T>> SetEquals<T>() {
             return EqualityComparer<ISet<T>>.Create((x, y) => (x == null) ? y == null : x.SetEquals(y));
         }
+
+        public static bool ListEquals<T>(IList<T>? a, IList<T>? b, IEqualityComparer<T>? eq = null) {
+            eq ??= EqualityComparer<T>.Default;
+            if (a == null || b == null) return a == b;
+            if(a.Count != b.Count) return false;
+            for (int i = 0; i < a.Count; i++) {
+                if(!eq.Equals(a[i], b[i])) return false;
+            }
+            return true;
+        }
     }
 }

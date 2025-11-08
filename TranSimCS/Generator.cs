@@ -46,7 +46,7 @@ namespace TranSimCS
         /// <param name="shle">how many lanes open from the left to the end</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public static RoadStrip GenerateLaneConnections(RoadNodeEnd start, int lstartIdx, int rstartIdx, RoadNodeEnd end, int lendIdx, int rendIdx, int shls = 0, int shle = 0){
+        public static RoadStrip GenerateLaneConnections(RoadNodeEnd start, int lstartIdx, int rstartIdx, RoadNodeEnd end, int lendIdx, int rendIdx, LaneSpec spec, int shls = 0, int shle = 0){
             //Calculate lane balances
             int startingLanes = rstartIdx - lstartIdx; // How many lanes are open at the start node
             int endingLanes = rendIdx - lendIdx; // How many lanes are open at the start node
@@ -75,30 +75,31 @@ namespace TranSimCS
 
             //Generate the left changing section of the road
             for(int i = 0; i < closingLeftLanes; i++) 
-                JoinLanesByIndices(strip, lstartIdx+i, lendIdx);
+                JoinLanesByIndices(strip, lstartIdx+i, lendIdx, spec);
             for(int i = 0; i < openingLeftLanes; i++)
-                JoinLanesByIndices(strip, lstartIdx, lendIdx+i);
+                JoinLanesByIndices(strip, lstartIdx, lendIdx+i, spec);
 
             // Generate lane connections based on the calculated indices and shifts
             for(int i = 0; i < unchangingLanesCount; i++) {
                 int startIdx = unchangingLanesStartLeft + i; // Calculate the starting index for the lane
                 int endIdx = unchangingLanesEndLeft + i; // Calculate the ending index for the lane
-                JoinLanesByIndices(strip, startIdx, endIdx);
+                JoinLanesByIndices(strip, startIdx, endIdx, spec);
             }
 
             //Generate the right changing section of the road
             for(int i = 0; i < closingRightLanes; i++)
-                JoinLanesByIndices(strip, unchangingLanesStartRight + i, unchangingLanesEndRight-1);
+                JoinLanesByIndices(strip, unchangingLanesStartRight + i, unchangingLanesEndRight-1, spec);
             for(int i = 0; i < openingRightLanes; i++)
-                JoinLanesByIndices(strip, unchangingLanesStartRight-1, unchangingLanesEndRight+i);
+                JoinLanesByIndices(strip, unchangingLanesStartRight-1, unchangingLanesEndRight+i, spec);
             return strip; // Return the created road strip
         }
-        public static void GenerateOneToOneConnections(RoadStrip strip, int lstartIdx, int rstartIdx, int lendIdx, int rendIdx) {
+        public static void GenerateOneToOneConnections(RoadStrip strip, int lstartIdx, int rstartIdx, int lendIdx, int rendIdx, LaneSpec spec) {
             for (int i = lstartIdx; i < rstartIdx; i++) {
                 for (int j = lendIdx; j < rendIdx; j++) {
                     var startLane = strip.StartNode.GetLaneEnd(i);
                     var endLane = strip.EndNode.GetLaneEnd(j);
                     LaneStrip laneStrip = new LaneStrip(startLane, endLane); // Create a new lane strip connecting the start and end lanes
+                    laneStrip.Spec = spec;
                     strip.AddLaneStrip(laneStrip); // Add the lane strip to the road strip
                 }
             }

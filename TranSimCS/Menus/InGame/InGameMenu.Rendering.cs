@@ -64,6 +64,9 @@ namespace TranSimCS.Menus.InGame {
             //Draw buildings
             foreach (var building in World.Buildings.data) renderHelper.AddAll(building.Mesh.GetMesh());
 
+            //Draw cars
+            foreach (var car in World.Cars.data) renderHelper.AddAll(car.Mesh.GetMesh());
+
             bool suppressHighlights = ToolAttributes.Contains(ToolAttribs.noHighlights);
             if (!suppressHighlights) DrawHighlights(time);
 

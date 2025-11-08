@@ -20,6 +20,7 @@ using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Roads;
 using TranSimCS.Tools;
+using TranSimCS.Worlds.Car;
 
 namespace TranSimCS
 {
@@ -149,6 +150,8 @@ namespace TranSimCS
             MlemPlatform.Current = new MlemPlatform.DesktopGl<TextInputEventArgs>((w, c) => w.TextInput += c);
 
             Assets.ReadAssets();
+
+            Car.Init();
 
             KeyPromptMapper.SetUpKeyPrompts(Content);
 

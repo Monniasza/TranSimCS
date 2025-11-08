@@ -16,24 +16,34 @@ using TranSimCS.Worlds;
 using TranSimCS.Worlds.ECS;
 
 public class Program {
-    public static string DataRoot { get; private set; }
+    public static string UserRoot { get; private set; }
     public static string SaveRoot { get; private set; }
+
+    public static string DataRoot { get; private set; }
+
     private static Logger log = LogManager.GetCurrentClassLogger();
 
     private static void Main(string[] args) {
         var appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        DataRoot = Path.Combine(appdata, "TranSim");
-        SaveRoot = Path.Combine(DataRoot, "saves");
-        Directory.CreateDirectory(DataRoot);
+        UserRoot = Path.Combine(appdata, "TranSim");
+        SaveRoot = Path.Combine(UserRoot, "saves");
+        var exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+        DataRoot = Path.GetDirectoryName(exePath);
+        
+        Directory.CreateDirectory(UserRoot);
         Directory.CreateDirectory(SaveRoot);
 
-        var logPath = Path.Combine(DataRoot, "log.txt");
+        var now = DateTime.Now;
+        var nowString = now.ToString();
+        var logPath = Path.Combine(UserRoot, "log"+nowString+".txt");
 
         NLog.LogManager.Setup().LoadConfiguration(builder => {
             builder.ForLogger().FilterMinLevel(LogLevel.Info).WriteToConsole();
             builder.ForLogger().FilterMinLevel(LogLevel.Trace).WriteToFile(
                 fileName: logPath);
         });
+
+        log.Info("Running from " + DataRoot);
 
         //MeshIntersectTriangle bug
         Vector3 ptA = new(0, 2, 0);

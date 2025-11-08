@@ -19,11 +19,11 @@ namespace TranSimCS.Collections {
         }
 
 
-        public T this[int index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public T this[int index] { get => _elements[index]; set => _elements[index] = value; }
 
-        public int Count => throw new NotImplementedException();
+        public int Count => _elements.Count;
 
-        public bool IsReadOnly => throw new NotImplementedException();
+        public bool IsReadOnly => false;
 
         public void Add(T item) {
             _elements.Add(item);

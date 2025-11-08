@@ -131,9 +131,11 @@ namespace TranSimCS.Tools {
             vec.Y *= ymul;
             vec.Z *= xzmul;            
 
-            var tr = obj.PositionData.CalcReferenceFrame();
-            tr.O = Vector3.Zero;
-            if (rel) vec = tr.Transform(vec);
+            if (rel) {
+                var tr = obj.PositionData.CalcReferenceFrame();
+                tr.O = Vector3.Zero;
+                vec = tr.Transform(vec);
+            }
 
             obj.Drag(vec, Vector3.Zero);
         }

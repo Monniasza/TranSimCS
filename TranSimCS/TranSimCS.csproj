@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
@@ -24,6 +24,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <Optimize>True</Optimize>
   </PropertyGroup>
+	<ItemGroup>
+		<Content Include="Files\**">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
   <ItemGroup>
     <None Remove="Icon.ico" />
     <None Remove="Icon.bmp" />
@@ -41,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Arch" Version="2.1.0-beta" />
+    <PackageReference Include="CjClutter.ObjLoader" Version="1.0.0" />
     <PackageReference Include="Clipper2" Version="1.5.4" />
     <PackageReference Include="Iesi.Collections" Version="4.1.1" />
     <PackageReference Include="MadWorldNL.EarCut" Version="1.1.0" />

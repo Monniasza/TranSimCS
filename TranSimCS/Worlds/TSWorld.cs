@@ -14,6 +14,7 @@ using TranSimCS.Model;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds.Building;
 using TranSimCS.Worlds.Property;
+using TranSimCS.Worlds.Car;
 
 namespace TranSimCS.Worlds
 {
@@ -21,9 +22,10 @@ namespace TranSimCS.Worlds
         private static Logger log = LogManager.GetCurrentClassLogger();
 
         //The contents of the world
-        public SegmentStack RoadSegments;
+        public SegmentStack RoadSegments { get; }
         public SectionStack RoadSections { get; }
         public BuildingStack Buildings { get; }
+        public CarStack Cars { get; }
         public NodeStack Nodes { get; }
         public World ECS { get; private set; }
 
@@ -65,6 +67,7 @@ namespace TranSimCS.Worlds
             Nodes = new NodeStack(this);
             RoadSegments = new SegmentStack(this);
             RoadSections = new SectionStack(this);
+            Cars = new CarStack(this);
 
             //Spatial indexing
             TempSelectorsMesh = new Property<Model.MultiMesh>(new Model.MultiMesh(), "selectors", null, Equality.ReferenceEqualComparer<MultiMesh>());

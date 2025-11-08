@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using NLog.Targets;
 using TranSimCS.Collections;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
@@ -57,6 +58,12 @@ namespace TranSimCS {
             var count = src.Vertices.Count;
             var transformedVertices = src.Vertices.Select(Transform).ToArray();
             dst.DrawModel(transformedVertices, src.Indices, src.Tags);
+        }
+        public void TransformOutOfPlace(MultiMesh src, MultiMesh dst) {
+            foreach (var bin in src.RenderBins) {
+                var tgtBin = dst.GetOrCreateRenderBinForced(bin.Key);
+                TransformOutOfPlace(bin.Value, tgtBin);
+            }
         }
         public void TransformInPlace(IRenderBin mesh) => mesh.Vertices.TransformInPlace(Transform);
         public void TransformInPlace(MultiMesh mesh) {

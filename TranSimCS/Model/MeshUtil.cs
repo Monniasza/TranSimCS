@@ -2,11 +2,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using NLog;
 using TranSimCS.Geometry;
 
 namespace TranSimCS.Model {
     public static class MeshUtil {
         const bool allowBVH = true;
+
+        public static void Stats(this IRenderBin mesh, Logger log) {
+            log.Info($"Mesh stats: verts {mesh.Vertices.Count}, indices {mesh.Indices.Count}");
+        }
 
         public static BoundingBox BoundingBox(this IRenderBin mesh) {
             if(allowBVH && mesh is Mesh concrete) {
