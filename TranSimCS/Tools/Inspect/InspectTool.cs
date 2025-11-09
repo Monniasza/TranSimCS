@@ -12,7 +12,7 @@ using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Roads;
 
-namespace TranSimCS.Tools {
+namespace TranSimCS.Tools.Inspect {
     public class InspectTool(InGameMenu game) : ITool {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
 
@@ -20,7 +20,7 @@ namespace TranSimCS.Tools {
 
         public string Description { get; private set; } = "Inspect objects";
 
-        public Guid? Guid { get; private set; }
+        public Guid? Guid { get; set; }
 
         public void Draw(GameTime gameTime) {
             //unused
@@ -32,7 +32,7 @@ namespace TranSimCS.Tools {
 
         public void OnClick(MouseButton button) {
             if(button == MouseButton.Left) {
-                String? guidString = Guid?.ToString();
+                string? guidString = Guid?.ToString();
                 //Copy the GUID to the clipboard
                 if(guidString != null) ClipboardService.SetText(guidString);
                 var none = "none";
@@ -62,36 +62,36 @@ namespace TranSimCS.Tools {
         public void Update(GameTime gameTime) {
             //TODO: Add expandability for more inspectors
             var obj = game.SelectedObject;
-            String? elementType = null;
-            Guid = null;
+            string? elementType = null;
 
             if(obj is LaneRange lr) {
                 //Selected a road
                 var road = lr.road;
-                Guid = road.Guid;
                 elementType = "Road strip";
                 Description = $"Inspect objects.";
             }
             if (obj is LaneStrip ls) {
                 //Selected a road
                 var road = ls.road;
-                Guid = road.Guid;
                 elementType = "Road strip";
                 Description = $"Inspect objects.";
             }
             if (obj is LaneEnd le) {
                 //Selected a road
                 var node = le.lane.RoadNode;
-                Guid = node.Guid;
                 elementType = "Road node";
                 Description = $"Inspect objects.";
             }
 
             StringBuilder sb = new StringBuilder();
-
             sb.AppendLine("Inspect objects");
             if(elementType != null) sb.Append("Object type: ").AppendLine(elementType);
-            if (Guid != null) sb.Append("GUID: ").AppendLine(Guid.ToString());
+
+            foreach (var inspector in InspectMethods.inspectors) {
+                var result = inspector(obj, this);
+                if (result != null) sb.AppendLine(result);
+            }
+
             Description = sb.ToString();
         }
     }

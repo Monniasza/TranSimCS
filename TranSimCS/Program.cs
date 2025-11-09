@@ -12,6 +12,7 @@ using TranSimCS;
 using TranSimCS.Geometry;
 using TranSimCS.Roads;
 using TranSimCS.Save2;
+using TranSimCS.Tools.Inspect;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.ECS;
 
@@ -58,6 +59,7 @@ public class Program {
         //Test intersection: intersects=true, point=(0, 0, 0), t=4
 
         JsonProcessor.Init();
+        InspectMethods.Init();
 
         Game1.Start(args);
     }

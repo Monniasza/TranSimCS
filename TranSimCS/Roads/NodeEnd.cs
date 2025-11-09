@@ -11,5 +11,10 @@ namespace TranSimCS.Roads {
             if (end == NodeEnd.Forward) return forward;
             throw new ArgumentException($"Invalid node end: {end}");
         }
+        public static int Discriminant(this NodeEnd end) {
+            if (end == NodeEnd.Forward) return 1;
+            if (end == NodeEnd.Backward) return -1;
+            return 0;
+        }
     }
 }

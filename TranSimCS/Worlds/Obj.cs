@@ -12,10 +12,14 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 
 namespace TranSimCS.Worlds {
+    public interface IGuid {
+        public Guid Guid { get; }
+    }
+
     /// <summary>
     /// An object placed in the world. Worlds themselves are objects
     /// </summary>
-    public abstract class Obj: INotifyPropertyChanged, IEquatable<Obj?> {
+    public abstract class Obj: INotifyPropertyChanged, IEquatable<Obj?>, IGuid {
         private static Logger log = LogManager.GetCurrentClassLogger();
 
         //PROPERTIES

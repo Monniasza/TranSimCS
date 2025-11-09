@@ -22,6 +22,7 @@ using TranSimCS.Polygons;
 using TranSimCS.Roads;
 using TranSimCS.Spline;
 using TranSimCS.Tools;
+using TranSimCS.Tools.Inspect;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Property;
 

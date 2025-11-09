@@ -1,10 +1,24 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
+using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads {
-    public struct LaneEnd(NodeEnd End, Lane Lane) : IEquatable<LaneEnd>, IDraggableObj {
+    public struct LaneEnd(NodeEnd End, Lane Lane) : IEquatable<LaneEnd>, IDraggableObj, IRoadElement {
+        //ROAD ELEMENT
+        public Guid Guid => lane.RoadNode.Guid;
+        public Lane GetLane() => lane;
+        public LaneStrip? GetLaneStrip() => null;
+        public RoadNode GetRoadNode() => lane.RoadNode;
+        public RoadStrip? GetRoadStrip() => null;
+        public int XDiscriminant() => 0;
+        public int ZDiscriminant() => end.Discriminant();
+        public LaneEnd? GetLaneEnd() => this;
+        public RoadNodeEnd? GetNodeEnd() => RoadNodeEnd;
+
+
         //DRAGGING
         public void Drag(Vector3 vector, Vector3 dragFrom) => lane.Drag(vector, dragFrom);
         public void Rotate(int fieldAzimuth, float pitch, float tilt) => lane.Rotate(fieldAzimuth, pitch, tilt);
@@ -14,7 +28,6 @@ namespace TranSimCS.Roads {
         public Lane lane = Lane;
 
         public RoadNodeEnd RoadNodeEnd => lane.RoadNode.GetEnd(end);
-
         public LaneEnd OppositeEnd => new LaneEnd(end.Negate(), lane);
 
         //BOUNDARIES, RESPECTING THE SIDE

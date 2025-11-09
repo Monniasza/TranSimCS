@@ -5,24 +5,43 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using TranSimCS.Model;
+using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads {
-    public struct LaneStripEnd(LaneStrip strip, SegmentHalf half) : IDraggableObj {
+    public struct LaneStripEnd(LaneStrip strip, SegmentHalf half) : IDraggableObj, IRoadElement {
         public LaneStrip strip = strip;
         public SegmentHalf half = half;
-        public LaneEnd LaneEnd => strip.GetHalf(half);
+        public LaneEnd laneEnd => strip.GetHalf(half);
 
-        public void Drag(Vector3 vector, Vector3 dragFrom) {
-            LaneEnd.Drag(vector, dragFrom);
-        }
+        //DRAGGING
+        public void Drag(Vector3 vector, Vector3 dragFrom) => laneEnd.Drag(vector, dragFrom);
+        public void Rotate(int fieldAzimuth, float pitch, float tilt) => laneEnd.Rotate(fieldAzimuth, pitch, tilt);
 
-        public void Rotate(int fieldAzimuth, float pitch, float tilt) {
-            LaneEnd.Rotate(fieldAzimuth, pitch, tilt);
-        }
+        //ROAD ELEMENT
+        public Guid Guid => strip.road.Guid;
+        public Lane? GetLane() => strip.GetHalf(half).lane;
+        public LaneStrip? GetLaneStrip() => strip;
+        public RoadNode? GetRoadNode() => strip.GetHalf(half).RoadNodeEnd.Node;
+        public RoadStrip? GetRoadStrip() => strip.road;
+        public int XDiscriminant() => 0;
+        public int ZDiscriminant() => half.Discriminant();
+        public LaneEnd? GetLaneEnd() => laneEnd;
+        public RoadNodeEnd? GetNodeEnd() => null;
     }
 
-    public class LaneStrip : IEquatable<LaneStrip?>, IDraggableObj {
+    public class LaneStrip : IEquatable<LaneStrip?>, IDraggableObj, IRoadElement {
+        //ROAD ELEMENT
+        public Guid Guid => road.Guid;
+        public Lane? GetLane() => null;
+        public LaneStrip? GetLaneStrip() => this;
+        public RoadNode? GetRoadNode() => null;
+        public RoadStrip? GetRoadStrip() => road;
+        public int XDiscriminant() => 0;
+        public int ZDiscriminant() => 0;
+        public LaneEnd? GetLaneEnd() => null;
+        public RoadNodeEnd? GetNodeEnd() => null;
+
         private LaneEnd startLane;
         private LaneEnd endLane;
         public RoadStrip road { get; internal set;}
@@ -149,11 +168,11 @@ namespace TranSimCS.Roads {
             //unused
         }
 
-        public static bool operator ==(LaneStrip left, LaneStrip right) {
+        public static bool operator ==(LaneStrip? left, LaneStrip? right) {
             return EqualityComparer<LaneStrip>.Default.Equals(left, right);
         }
 
-        public static bool operator !=(LaneStrip left, LaneStrip right) {
+        public static bool operator !=(LaneStrip? left, LaneStrip? right) {
             return !(left == right);
         }
     }

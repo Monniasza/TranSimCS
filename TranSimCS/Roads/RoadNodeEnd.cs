@@ -6,7 +6,18 @@ using TranSimCS.Worlds;
 using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Roads {
-    public class RoadNodeEnd: IPosition {
+    public class RoadNodeEnd: IPosition, IRoadElement {
+        //ROAD ELEMENT
+        public Guid Guid => Node.Guid;
+        public Lane? GetLane() => null;
+        public LaneStrip? GetLaneStrip() => null;
+        public RoadNode? GetRoadNode() => Node;
+        public RoadStrip? GetRoadStrip() => null;
+        public int XDiscriminant() => 0;
+        public int ZDiscriminant() => End.Discriminant();
+        public LaneEnd? GetLaneEnd() => null;
+        public RoadNodeEnd? GetNodeEnd() => this;
+
         //Constructor
         public readonly NodeEnd End;
         public readonly RoadNode Node;

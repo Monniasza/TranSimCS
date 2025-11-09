@@ -15,7 +15,17 @@ namespace TranSimCS.Roads {
         public ObjPos NewPosition { get; } = newPosition;
     }
 
-    public class RoadNode: Obj, IPosition, IObjMesh<RoadNode> {
+    public class RoadNode: Obj, IPosition, IObjMesh<RoadNode>, IRoadElement {
+        //ROAD ELEMENT
+        public Lane? GetLane() => null;
+        public LaneStrip? GetLaneStrip() => null;
+        public RoadNode? GetRoadNode() => this;
+        public RoadStrip? GetRoadStrip() => null;
+        public int XDiscriminant() => 0;
+        public int ZDiscriminant() => 0;
+        public LaneEnd? GetLaneEnd() => null;
+        public RoadNodeEnd? GetNodeEnd() => null;
+
         public Property<ObjPos> PositionProp { get; private set; }
 
         //Example azimuth values

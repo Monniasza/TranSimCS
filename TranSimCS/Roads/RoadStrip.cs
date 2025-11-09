@@ -10,21 +10,6 @@ using TranSimCS.Worlds.Property;
 using static TranSimCS.Roads.Roads;
 
 namespace TranSimCS.Roads {
-    public enum SegmentHalf {
-        Start, // Represents the left half of a road segment
-        End // Represents the right half of a road segment
-    }
-
-    public struct LaneRange(RoadStrip road, Lane startLaneIndexL, Lane startLaneIndexR, NodeEnd startSide, Lane endLaneIndexL, Lane endLaneIndexR, NodeEnd endSide) {
-        public RoadStrip road = road; // The road connection this tag is associated with
-        public Lane startLaneIndexL = startLaneIndexL; // The starting lane index for the tag
-        public Lane startLaneIndexR = startLaneIndexR;
-        public NodeEnd startSide = startSide;
-        public Lane endLaneIndexL = endLaneIndexL;
-        public Lane endLaneIndexR = endLaneIndexR;
-        public NodeEnd endSide = endSide;
-    }
-
     public class RoadStripEventArgs : EventArgs {
         public LaneStrip lane { get; } // The road strip associated with the event
         public RoadStripEventArgs(LaneStrip strip) {
@@ -38,7 +23,18 @@ namespace TranSimCS.Roads {
     /// <remarks>A <see cref="RoadStrip"/> defines the relationship between two road nodes, specifying
     /// the lanes involved at each node and their respective indices. It also includes properties for lane
     /// specifications and rendering-related data, such as meshes for visualization.</remarks>
-    public class RoadStrip: Obj, IObjMesh<RoadStrip> {
+    public class RoadStrip: Obj, IObjMesh<RoadStrip>, IRoadElement {
+        //ROAD ELEMENT
+        public Lane? GetLane() => null;
+        public LaneStrip? GetLaneStrip() => null;
+        public RoadNode? GetRoadNode() => null;
+        public RoadStrip? GetRoadStrip() => this;
+        public int XDiscriminant() => 0;
+        public int ZDiscriminant() => 0;
+        public LaneEnd? GetLaneEnd() => null;
+        public RoadNodeEnd? GetNodeEnd() => null;
+
+
         // Properties to hold the start and end nodes and their respective lane indices
         public readonly RoadNodeEnd StartNode; // The starting road node of the connection
         public readonly RoadNodeEnd EndNode;
