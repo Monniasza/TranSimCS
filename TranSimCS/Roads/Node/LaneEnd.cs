@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
+using TranSimCS.Roads;
+using TranSimCS.Roads.Strip;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
-namespace TranSimCS.Roads {
+namespace TranSimCS.Roads.Node {
     public struct LaneEnd(NodeEnd End, Lane Lane) : IEquatable<LaneEnd>, IDraggableObj, IRoadElement {
         //ROAD ELEMENT
         public Guid Guid => lane.RoadNode.Guid;

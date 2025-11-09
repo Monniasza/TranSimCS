@@ -1,6 +1,8 @@
 ﻿using System;
+using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
 
-namespace TranSimCS.Roads {
+namespace TranSimCS.Roads.Strip {
     public struct LaneRange(RoadStrip road, Lane startLaneIndexL, Lane startLaneIndexR, NodeEnd startSide, Lane endLaneIndexL, Lane endLaneIndexR, NodeEnd endSide): IRoadElement {
         public RoadStrip road = road; // The road connection this tag is associated with
         public Lane startLaneIndexL = startLaneIndexL; // The starting lane index for the tag

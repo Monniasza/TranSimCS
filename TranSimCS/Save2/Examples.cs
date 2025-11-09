@@ -3,6 +3,7 @@ using System.IO;
 using TranSimCS.Roads;
 using TranSimCS.Worlds;
 using Microsoft.Xna.Framework;
+using TranSimCS.Roads.Node;
 
 namespace TranSimCS.Save2.Examples {
     /// <summary>

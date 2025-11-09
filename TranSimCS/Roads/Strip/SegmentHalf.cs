@@ -1,4 +1,4 @@
-﻿namespace TranSimCS.Roads {
+﻿namespace TranSimCS.Roads.Strip {
     public enum SegmentHalf {
         Start, // Represents the left half of a road segment
         End // Represents the right half of a road segment

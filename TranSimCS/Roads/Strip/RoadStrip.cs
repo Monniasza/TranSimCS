@@ -4,12 +4,13 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
+using TranSimCS.Roads.Node;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Property;
 using static TranSimCS.Roads.Roads;
 
-namespace TranSimCS.Roads {
+namespace TranSimCS.Roads.Strip {
     public class RoadStripEventArgs : EventArgs {
         public LaneStrip lane { get; } // The road strip associated with the event
         public RoadStripEventArgs(LaneStrip strip) {
@@ -65,7 +66,7 @@ namespace TranSimCS.Roads {
             }
         }
         public bool CheckEnds(RoadNodeEnd first, RoadNodeEnd second) {
-            return (first == StartNode && second == EndNode) || (first == EndNode && second == StartNode);
+            return first == StartNode && second == EndNode || first == EndNode && second == StartNode;
         }
 
         private List<LaneStrip> lanes = new(); // List of lane strips associated with this road connection

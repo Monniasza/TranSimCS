@@ -2,6 +2,8 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Strip;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Save2 {

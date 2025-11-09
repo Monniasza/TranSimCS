@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using Iesi.Collections.Generic;
 using Microsoft.Xna.Framework;
+using TranSimCS.Roads;
+using TranSimCS.Roads.Strip;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Property;
 
-namespace TranSimCS.Roads {
+namespace TranSimCS.Roads.Node {
     public class RoadNodeEnd: IPosition, IRoadElement {
         //ROAD ELEMENT
         public Guid Guid => Node.Guid;
@@ -61,7 +63,7 @@ namespace TranSimCS.Roads {
 
         public Transform3 CalcReferenceFrame() {
             var frame = PositionProp.Value.CalcReferenceFrame();
-            return (End == NodeEnd.Backward) ? frame.Around() : frame;
+            return End == NodeEnd.Backward ? frame.Around() : frame;
             //it's to be inverted
             
         }

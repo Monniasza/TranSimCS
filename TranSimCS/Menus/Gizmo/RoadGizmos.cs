@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
-using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Menus.Gizmo {

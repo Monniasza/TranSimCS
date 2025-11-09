@@ -5,10 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using TranSimCS.Model;
+using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
-namespace TranSimCS.Roads {
+namespace TranSimCS.Roads.Strip {
     public struct LaneStripEnd(LaneStrip strip, SegmentHalf half) : IDraggableObj, IRoadElement {
         public LaneStrip strip = strip;
         public SegmentHalf half = half;
@@ -94,9 +96,9 @@ namespace TranSimCS.Roads {
         public LaneRange Tag => new LaneRange(road, StartLane.lane, StartLane.lane, StartLane.end, EndLane.lane, EndLane.lane, EndLane.end); // Create a LaneTag for the lane strip, which includes the road and the start and end lanes
 
         public LaneStrip(LaneEnd startLane, LaneEnd endLane) {
-            this.StartLane = startLane!; // Starting lane of the lane strip
-            this.EndLane = endLane!; // Ending lane of the lane strip
-            this.Spec = LaneSpec.Default; // Default specification for the lane strip
+            StartLane = startLane!; // Starting lane of the lane strip
+            EndLane = endLane!; // Ending lane of the lane strip
+            Spec = LaneSpec.Default; // Default specification for the lane strip
         }
 
         public LaneStrip(LaneEnd start, LaneEnd end, LaneSpec spec) {
@@ -161,7 +163,7 @@ namespace TranSimCS.Roads {
         }
 
         public bool IsBetween(LaneEnd start, LaneEnd end) {
-            return (start == StartLane && end == EndLane) || (start == EndLane && end == StartLane);
+            return start == StartLane && end == EndLane || start == EndLane && end == StartLane;
         }
 
         public void Rotate(int fieldAzimuth, float pitch, float tilt) {

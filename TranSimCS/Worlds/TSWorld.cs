@@ -15,6 +15,8 @@ using TranSimCS.SceneGraph;
 using TranSimCS.Worlds.Building;
 using TranSimCS.Worlds.Property;
 using TranSimCS.Worlds.Car;
+using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Strip;
 
 namespace TranSimCS.Worlds
 {
@@ -35,10 +37,11 @@ namespace TranSimCS.Worlds
                     return strip;
             return null;
         }
-        public RoadStrip GetOrMakeRoadStrip(RoadNodeEnd start, RoadNodeEnd end) {
+        public RoadStrip GetOrMakeRoadStrip(RoadNodeEnd start, RoadNodeEnd end, RoadFinish? finish = null) {
             RoadStrip? result = FindRoadStrip(start, end);
             if (result == null) {
                 result = new RoadStrip(start, end);
+                result.Finish = finish ?? RoadFinish.Embankment;
                 RoadSegments.data.Add(result);
             }
             return result;
@@ -51,8 +54,8 @@ namespace TranSimCS.Worlds
                 if(lane.IsBetween(start, end)) return lane;
             return null;
         }
-        public LaneStrip GetOrMakeLaneStrip(LaneEnd start, LaneEnd end) {
-            var roadStrip = GetOrMakeRoadStrip(start.RoadNodeEnd, end.RoadNodeEnd);
+        public LaneStrip GetOrMakeLaneStrip(LaneEnd start, LaneEnd end, RoadFinish? finish = null) {
+            var roadStrip = GetOrMakeRoadStrip(start.RoadNodeEnd, end.RoadNodeEnd, finish);
             foreach (var lane in roadStrip.Lanes)
                 if (lane.IsBetween(start, end)) return lane;
             LaneStrip strip = new LaneStrip(start, end);

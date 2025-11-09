@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Strip;
 using TranSimCS.Spline;
 
 namespace TranSimCS.Menus.InGame {

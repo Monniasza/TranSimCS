@@ -12,6 +12,8 @@ using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Strip;
 using TranSimCS.Spline;
 using TranSimCS.Tools.Panels;
 using TranSimCS.Worlds;
@@ -157,7 +159,7 @@ namespace TranSimCS.Tools {
                         world.Nodes.data.Add(newNode);
                     }
                     if(selectedNode != null) {
-                        var strip = world.GetOrMakeLaneStrip(node.Value, selectedNode.Value.OppositeEnd);
+                        var strip = world.GetOrMakeLaneStrip(node.Value, selectedNode.Value.OppositeEnd, menu.configuration.RoadFinish);
                         strip.Spec = spec;
                         node = selectedNode;
                     }

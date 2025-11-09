@@ -11,7 +11,7 @@ using TranSimCS.Model;
 using TranSimCS.Polygons;
 using static TranSimCS.Geometry.GeometryUtils;
 
-namespace TranSimCS.Roads {
+namespace TranSimCS.Roads.Strip {
     public static class SegmentRenderer {
         /// <summary>
         /// Generates the mesh for a road segment.
@@ -104,8 +104,8 @@ namespace TranSimCS.Roads {
                 var strip = RoadRenderer.GenerateSplines(lane);
                 var leftSpline = strip.Item1;
                 var rightSpline = strip.Item2.Inverse();
-                var leftPoints = GeometryUtils.GenerateSplinePoints(leftSpline);
-                var rightPoints = GeometryUtils.GenerateSplinePoints(rightSpline);
+                var leftPoints = GenerateSplinePoints(leftSpline);
+                var rightPoints = GenerateSplinePoints(rightSpline);
                 var mergedPoints = leftPoints.Concat(rightPoints);
                 var mergedPoint = mergedPoints.First();
                 Debug.Print($"Point: {mergedPoint}");
@@ -127,8 +127,8 @@ namespace TranSimCS.Roads {
             Debug.Print($"Island: {islandsPoly.path.Count}");
 
             //Calculate length of the road
-            var lengthL = GeometryUtils.CountLength(leftTopPoints);
-            var lengthR = GeometryUtils.CountLength(rightTopPoints);
+            var lengthL = CountLength(leftTopPoints);
+            var lengthR = CountLength(rightTopPoints);
             var length = lengthL + lengthR;
 
             //Back-transform the paths
@@ -159,7 +159,7 @@ namespace TranSimCS.Roads {
             float x = (float)p.x - 200;
             float y = 0.1f;
             float z = (float)p.y;
-            return new Vector3(x, y, (z * stretch) - 60);
+            return new Vector3(x, y, z * stretch - 60);
         }
 
         public static void DrawIsland(Surface surface, Surface sideSurface, MultiMesh mesh, SplineFrame frm, PathD path, float h, float stretch) {
@@ -196,7 +196,7 @@ namespace TranSimCS.Roads {
                 
 
                 //Fill the top
-                var vertices = retransformedPointsUp.Select(GeometryUtils.CreateVertex).ToArray();
+                var vertices = retransformedPointsUp.Select(CreateVertex).ToArray();
                 RenderUtil.InvertNormals(triangulation);
                 ((IRenderBin)topRenderBin).DrawModel(vertices, triangulation);
             }

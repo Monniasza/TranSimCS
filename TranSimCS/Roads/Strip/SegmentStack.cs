@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
 using TranSimCS.Save2;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Stack;
 
-namespace TranSimCS.Roads {
+namespace TranSimCS.Roads.Strip {
     public class SegmentStack : ObjectStack<RoadStrip, SegmentStack> {
         public readonly TrackerSpatial<RoadStrip, SegmentStack> trackerSpatial;
         public SegmentStack(TSWorld world) : base(world) {

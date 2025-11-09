@@ -10,7 +10,8 @@ using NLog;
 using TextCopy;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
-using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Strip;
 
 namespace TranSimCS.Tools.Inspect {
     public class InspectTool(InGameMenu game) : ITool {

@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using NLog;
 using TranSimCS.Geometry;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
 using TranSimCS.Worlds.Building;
 
 namespace TranSimCS.Worlds {

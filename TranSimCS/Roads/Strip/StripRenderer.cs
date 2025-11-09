@@ -1,8 +1,9 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using TranSimCS.Model;
+using TranSimCS.Roads;
 
-namespace TranSimCS.Roads {
+namespace TranSimCS.Roads.Strip {
     public static class StripRenderer {
 
         public static void GenerateLaneStripMesh(LaneStrip laneStrip, MultiMesh renderer, float voffset = 0.01f) {
@@ -21,7 +22,7 @@ namespace TranSimCS.Roads {
             var midpoint = (lpoint + rpoint) / 2;
             var tangent = avgspline.Tangential(t);
             tangent.Normalize();
-            var fakebinormal = (rpoint - lpoint);
+            var fakebinormal = rpoint - lpoint;
             var width = Vector3.Cross(tangent, fakebinormal).Length();
             var normalfakebirnormal = Vector3.Normalize(fakebinormal);
             var nrm = Vector3.Cross(tangent, normalfakebirnormal);

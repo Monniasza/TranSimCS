@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
-using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Geometry {

@@ -10,6 +10,8 @@ using MonoGame.Extended;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Strip;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Tools.Panels {

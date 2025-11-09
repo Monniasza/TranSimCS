@@ -8,7 +8,7 @@ using TranSimCS.Save2;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Stack;
 
-namespace TranSimCS.Roads {
+namespace TranSimCS.Roads.Node {
     /// <summary>
     /// A collection of <see cref="RoadNode"/>s in a <see cref="TSWorld"/>
     /// </summary>

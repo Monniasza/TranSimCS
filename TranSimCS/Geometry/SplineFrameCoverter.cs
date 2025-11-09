@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Model;
-using TranSimCS.Roads;
+using TranSimCS.Roads.Strip;
 
 namespace TranSimCS.Geometry {
     public class SplineFrameCoverter {

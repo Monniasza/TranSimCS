@@ -10,6 +10,7 @@ using NLog.Time;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Strip;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Tools {

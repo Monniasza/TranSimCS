@@ -4,9 +4,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Iesi.Collections.Generic;
 using Microsoft.Xna.Framework;
+using TranSimCS.Roads;
+using TranSimCS.Roads.Strip;
 using TranSimCS.Worlds;
 
-namespace TranSimCS.Roads {
+namespace TranSimCS.Roads.Node {
     /// <summary>
     /// A lane defines where vehicles can ride through and in which direction.
     /// </summary>
