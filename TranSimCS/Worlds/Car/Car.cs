@@ -8,6 +8,7 @@ using NLog;
 using ObjLoader.Loader.Loaders;
 using TranSimCS.Collections;
 using TranSimCS.Model;
+using TranSimCS.Model.OBJ;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds.Property;
 using static TranSimCS.Model.MeshLoader;
@@ -22,6 +23,8 @@ namespace TranSimCS.Worlds.Car {
         private static string objRoot;
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
 
+        public static Model.OBJ.ObjLoader newLoader;
+
         public static void Init() {
             //Load all meshes
             objRoot = Path.Combine(Program.DataRoot, "Files", "eracoon_cars", "obj");
@@ -34,25 +37,50 @@ namespace TranSimCS.Worlds.Car {
             loader = new MeshLoader(objFinder, mtlFinder);
             converter = new OBJConverter(x => Assets.White);
 
+            newLoader = new(null);
+
             //Find all cars in the directory and load them
             var objs = Directory.GetFiles(objRoot).Where(x => x.EndsWith(".obj"));
 
             foreach (var obj in objs) {
                 try {
-                    log.Info("Loading car mesh " + obj);
-                    var objData = loader.Load(obj);
-                    var mesh = converter.ConvertToSingleMesh(objData);
-                    var multimesh = new MultiMesh();
-                    IRenderBin submesh = multimesh.GetOrCreateRenderBinForced(Assets.White);
-                    submesh.DrawModel(mesh);
-                    meshes.Add((obj, multimesh));
-                    loadedMeshes.Add(obj, multimesh);
-                    mesh.Stats(log);
+                    NewLoad(obj);
                 } catch (Exception e) {
                     //Failed to load
                     log.Error("Failed to load a car model " + obj);
                     log.Error(e);
+                    throw;
                 }
+                
+            }
+        }
+
+        private static void NewLoad(string obj) {
+            log.Info("Loading car mesh " + obj);
+            var objData = newLoader.LoadObj(obj);
+            var multimesh = new MultiMesh();
+            var submesh = multimesh.GetOrCreateRenderBinForced(Assets.White);
+            var mesh = ObjConverter.ToSingleMesh(objData, submesh);
+            meshes.Add((obj, multimesh));
+            loadedMeshes.Add(obj, multimesh);
+            mesh.Stats(log);
+        }
+
+        private static void OldLoad(string obj) {
+            try {
+                log.Info("Loading car mesh " + obj);
+                var objData = loader.Load(obj);
+                var mesh = converter.ConvertToSingleMesh(objData);
+                var multimesh = new MultiMesh();
+                IRenderBin submesh = multimesh.GetOrCreateRenderBinForced(Assets.White);
+                submesh.DrawModel(mesh);
+                meshes.Add((obj, multimesh));
+                loadedMeshes.Add(obj, multimesh);
+                mesh.Stats(log);
+            } catch (Exception e) {
+                //Failed to load
+                log.Error("Failed to load a car model " + obj);
+                log.Error(e);
             }
         }
 

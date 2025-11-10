@@ -73,5 +73,18 @@ namespace TranSimCS.Model {
             intersectionDistance = intersectionDistance0;
             return tag;
         }
+        public static T[] TriangleFan<T>(IList<T> polygon) {
+            int tricount = polygon.Count - 2;
+            T[] values = new T[tricount * 3];
+            for (int i = 0; i < tricount; i++) {
+                var idx0 = 0;
+                var idx1 = i;
+                var idx2 = i+1;
+                values[i*3] = polygon[idx0];
+                values[i*3+1] = polygon[idx1];
+                values[i*3+2] = polygon[idx2];
+            }
+            return values;
+        }
     }
 }

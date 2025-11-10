@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,6 +26,17 @@ public class Program {
     private static Logger log = LogManager.GetCurrentClassLogger();
 
     private static void Main(string[] args) {
+        //NumberFormatInfo: Enforce the period as a decimal separator
+        var nfi = NumberFormatInfo.CurrentInfo;
+        nfi = (NumberFormatInfo) nfi.Clone();
+        var culture = CultureInfo.CurrentCulture;
+        culture = (CultureInfo) culture.Clone();
+        nfi.NumberDecimalSeparator = ".";
+        nfi.CurrencyDecimalSeparator = ".";
+        nfi.PercentDecimalSeparator = ".";
+        culture.NumberFormat = nfi;
+        CultureInfo.CurrentCulture = culture;
+
         var appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         UserRoot = Path.Combine(appdata, "TranSim");
         SaveRoot = Path.Combine(UserRoot, "saves");
