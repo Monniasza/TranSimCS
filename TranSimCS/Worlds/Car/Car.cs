@@ -5,25 +5,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NLog;
-using ObjLoader.Loader.Loaders;
 using TranSimCS.Collections;
 using TranSimCS.Model;
 using TranSimCS.Model.OBJ;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds.Property;
-using static TranSimCS.Model.MeshLoader;
 
 namespace TranSimCS.Worlds.Car {
     public class Car : Obj, IObjMesh<Car>, IPosition {
-        public static OBJConverter converter;
-        public static MeshLoader loader;
         public static Dictionary<string, MultiMesh> loadedMeshes = [];
         public static ObservableList<(string, MultiMesh)> meshes = [];
         private static Random rnd = new Random();
         private static string objRoot;
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
 
-        public static Model.OBJ.ObjLoader newLoader;
+        public static ObjLoader newLoader;
 
         public static void Init() {
             //Load all meshes
@@ -31,11 +27,6 @@ namespace TranSimCS.Worlds.Car {
 
             static Stream objFinder(string x) => File.OpenRead(x);
             static Stream mtlFinder(string x) => File.OpenRead(Path.Combine(objRoot, x));
-            var mspObj = new MaterialStreamAdapter(objFinder);
-            var mspMtl = new MaterialStreamAdapter(mtlFinder);
-
-            loader = new MeshLoader(objFinder, mtlFinder);
-            converter = new OBJConverter(x => Assets.White);
 
             newLoader = new(null);
 
@@ -44,7 +35,14 @@ namespace TranSimCS.Worlds.Car {
 
             foreach (var obj in objs) {
                 try {
-                    NewLoad(obj);
+                    log.Info("Loading car mesh " + obj);
+                    var objData = newLoader.LoadObj(obj);
+                    var multimesh = new MultiMesh();
+                    var submesh = multimesh.GetOrCreateRenderBinForced(Assets.White);
+                    var mesh = ObjConverter.ToSingleMesh(objData, submesh);
+                    meshes.Add((obj, multimesh));
+                    loadedMeshes.Add(obj, multimesh);
+                    mesh.Stats(log);
                 } catch (Exception e) {
                     //Failed to load
                     log.Error("Failed to load a car model " + obj);
@@ -52,35 +50,6 @@ namespace TranSimCS.Worlds.Car {
                     throw;
                 }
                 
-            }
-        }
-
-        private static void NewLoad(string obj) {
-            log.Info("Loading car mesh " + obj);
-            var objData = newLoader.LoadObj(obj);
-            var multimesh = new MultiMesh();
-            var submesh = multimesh.GetOrCreateRenderBinForced(Assets.White);
-            var mesh = ObjConverter.ToSingleMesh(objData, submesh);
-            meshes.Add((obj, multimesh));
-            loadedMeshes.Add(obj, multimesh);
-            mesh.Stats(log);
-        }
-
-        private static void OldLoad(string obj) {
-            try {
-                log.Info("Loading car mesh " + obj);
-                var objData = loader.Load(obj);
-                var mesh = converter.ConvertToSingleMesh(objData);
-                var multimesh = new MultiMesh();
-                IRenderBin submesh = multimesh.GetOrCreateRenderBinForced(Assets.White);
-                submesh.DrawModel(mesh);
-                meshes.Add((obj, multimesh));
-                loadedMeshes.Add(obj, multimesh);
-                mesh.Stats(log);
-            } catch (Exception e) {
-                //Failed to load
-                log.Error("Failed to load a car model " + obj);
-                log.Error(e);
             }
         }
 
