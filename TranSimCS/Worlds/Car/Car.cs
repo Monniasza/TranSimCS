@@ -87,6 +87,7 @@ namespace TranSimCS.Worlds.Car {
             if (BodyMesh == null) return;
             var refframe = PositionProp.Value.CalcReferenceFrame();
             refframe.TransformOutOfPlace(BodyMesh, mesh);
+            mesh.AddTagsToAll(car);
         }
     }
 }

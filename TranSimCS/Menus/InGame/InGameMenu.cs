@@ -62,6 +62,7 @@ namespace TranSimCS.Menus.InGame {
         public Checkbox CheckNodes { get; private set; } = null!;
         public Checkbox CheckSegments { get; private set; } = null!;
         public Checkbox CheckSections { get; private set; } = null!;
+        public Checkbox CheckUnits { get; private set; } = null!;
 
         //Overlays
         public RoadConfigurator configurator { get; private set; }
@@ -127,6 +128,8 @@ namespace TranSimCS.Menus.InGame {
             CheckSegments = UI.CreateCheck(this, SettingsPanel, "Select segments", "ui/road");
             CheckSegments.Checked = true;
             CheckSections = UI.CreateCheck(this, SettingsPanel, "Select sections and intersections", "ui/junction");
+            CheckSections.Checked = true;
+            CheckUnits = UI.CreateCheck(this, SettingsPanel, "Select vehicles", "ui/car");
             CheckSections.Checked = true;
 
             configurator = new RoadConfigurator(this, configuration.LaneSpecProp, MLEM.Ui.Anchor.Center, new(0.5f, 0.5f));

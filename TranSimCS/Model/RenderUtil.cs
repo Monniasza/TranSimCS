@@ -180,12 +180,18 @@ namespace TranSimCS.Model {
 
         public static void AddTagsToLastTriangles(this IRenderBin rb, int count, object value) {
             if (value == null) return;
-            ArgumentOutOfRangeException.ThrowIfNegative(count, nameof(count));
             if (count == 0) return;
             int startIndex = (rb.Indices.Count / 3) - count; // Each triangle has 3 indices
+            if (count < 0) {
+                startIndex = 0;
+                count = rb.Indices.Count / 3;
+            }
             for (int i = 0; i < count; i++) {
                 rb.Tags[startIndex + i] = value;
             }
+        }
+        public static void AddTagsToAll(this MultiMesh mesh, object value) {
+            foreach(var unit in mesh.RenderBins.Values) unit.AddTagsToLastTriangles(-1, value);
         }
     }
 }
