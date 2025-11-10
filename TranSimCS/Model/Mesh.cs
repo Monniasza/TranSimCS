@@ -40,6 +40,17 @@ namespace TranSimCS.Model {
             InvalidateAccelerationStructure();
         }
 
+        void IRenderBin.AddIndices(int[] indices) => AddIndices(indices);
+        public void AddIndices(int[] indices) => Indices.AddRange(indices);
+
+        int IRenderBin.AddVerts(VertexPositionColorTexture[] verts) => AddVerts(verts);
+        public int AddVerts(VertexPositionColorTexture[] verts) {
+            int index = Vertices.Count;
+            Vertices.AddRange(verts);
+            return index;
+
+        }
+
         public void Clear() {
             Vertices.Clear();
             Indices.Clear();

@@ -14,7 +14,7 @@
 ; Main constants - define following constants as you want them displayed in your installation wizard
 !define VERSIONMINOR 0
 !define VERSIONMAJOR 0
-!define VERSIONBUILD 0
+!define VERSIONBUILD 1
 !define PRODUCT_NAME "TranSim"
 !define PRODUCT_VERSION "${VERSIONMAJOR}.${VERSIONMINOR}.${VERSIONBUILD}"
 !define PRODUCT_PUBLISHER "Monniasza"

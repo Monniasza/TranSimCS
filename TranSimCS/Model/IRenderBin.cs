@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -27,6 +28,8 @@ namespace TranSimCS.Model {
 
         public int AddVertex(VertexPositionColorTexture vertex);
         public void AddIndex(int index);
+        public int AddVerts(VertexPositionColorTexture[] verts);
+        public void AddIndices(int[] indices);
         public void Clear();
         
 
@@ -44,13 +47,11 @@ namespace TranSimCS.Model {
         public void DrawModel(IList<VertexPositionColorTexture> vertices, IList<int> indices, IEnumerable<KeyValuePair<int, object>>? tags = null) {
             ArgumentNullException.ThrowIfNull(vertices, nameof(vertices));
             ArgumentNullException.ThrowIfNull(indices, nameof(indices));
-            int[] newVertexIds = new int[vertices.Count];
+            int startVertexId = AddVerts(vertices.ToArray());
             int startingIndex = Indices.Count;
             int startingTriCount = startingIndex / 3;
-            for (int i = 0; i < vertices.Count; i++)
-                newVertexIds[i] = AddVertex(vertices[i]);
             foreach (var index in indices)
-                AddIndex(newVertexIds[index]);
+                AddIndex(startVertexId + index);
             foreach(var kv in tags ?? []) {
                 var newTriId = startingTriCount + kv.Key;
                 Tags.Add(newTriId, kv.Value);
