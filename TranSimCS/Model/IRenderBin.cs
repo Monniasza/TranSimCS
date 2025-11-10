@@ -50,8 +50,11 @@ namespace TranSimCS.Model {
             int startVertexId = AddVerts(vertices.ToArray());
             int startingIndex = Indices.Count;
             int startingTriCount = startingIndex / 3;
-            foreach (var index in indices)
-                AddIndex(startVertexId + index);
+            var indicesArray = indices.ToArray();
+            for (int i = 0; i < indicesArray.Length; i++) {
+                indicesArray[i] += startVertexId;
+            }
+            AddIndices(indicesArray);
             foreach(var kv in tags ?? []) {
                 var newTriId = startingTriCount + kv.Key;
                 Tags.Add(newTriId, kv.Value);
