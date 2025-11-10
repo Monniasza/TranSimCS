@@ -21,6 +21,7 @@ namespace TranSimCS.SceneGraph {
             Leaf = new SceneLeaf(this);
             this.obj = obj;
             this.func = func;
+            obj.PropertyChanged += (s, e) => Invalidate();
         }
 
         public MultiMesh GetMesh() {
