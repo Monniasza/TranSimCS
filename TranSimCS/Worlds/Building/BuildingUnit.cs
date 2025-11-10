@@ -22,12 +22,6 @@ namespace TranSimCS.Worlds.Building {
             PositionProp = new Property<ObjPos>(ObjPos.Zero, "pos", this);
             UnitSizeProp = new Property<Vector3i>(new(8, 2, 4), "size", this);
             Mesh = new MeshGenerator<BuildingUnit>(this, GenerateMesh);
-
-            PropertyChanged += BuildingUnit_PropertyChanged;
-        }
-
-        private void BuildingUnit_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) {
-            Mesh.Invalidate();
         }
 
         private static void GenerateMesh(BuildingUnit unit, MultiMesh mesh) {
