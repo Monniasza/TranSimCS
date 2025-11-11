@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using TranSimCS.Geometry;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Strip;
 using TranSimCS.Save2;
 using TranSimCS.Worlds.Stack;
 
@@ -26,8 +27,11 @@ namespace TranSimCS.Worlds.Car {
             Guid? guid = null;
             ObjPos? pos = null;
             string? mesh = null;
+            float speed = 0;
+            LaneStrip? strip = null;
 
             var objPosConverter = new ObjPosConverter();
+            var stripConverter = new StripRefConverter(world);
 
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
                 switch (propertyName.ToLower()) {
@@ -42,6 +46,13 @@ namespace TranSimCS.Worlds.Car {
                         reader0.Read();
                         mesh = reader0.GetString();
                         break;
+                    case "speed":
+                        reader0.Read();
+                        speed = reader0.GetSingle();
+                        break;
+                    case "strip":
+                        strip = stripConverter.Read(ref reader0, typeof(LaneStrip), options);
+                        break;
                 }
             });
 
@@ -51,6 +62,8 @@ namespace TranSimCS.Worlds.Car {
             car.Guid = guid.Value;
             car.PositionProp.Value = pos.Value;
             car.MeshId = mesh;
+            car.Speed = speed;
+            car.LaneStrip = strip;
             return car;
         }
 
@@ -64,6 +77,13 @@ namespace TranSimCS.Worlds.Car {
 
             writer.WritePropertyName("mesh");
             writer.WriteStringValue(value.MeshId);
+
+            writer.WritePropertyName("speed");
+            writer.WriteNumberValue(value.Speed);
+
+            writer.WritePropertyName("strip");
+            var stripConverter = new StripRefConverter(world);
+            stripConverter.Write(writer, value.LaneStrip, options);
 
             writer.WriteEndObject();
         }
