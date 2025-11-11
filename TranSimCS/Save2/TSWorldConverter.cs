@@ -59,6 +59,9 @@ namespace TranSimCS.Save2 {
 
             writer.WritePropertyName("buildings");
             value.Buildings.SaveToJson(writer, options);
+
+            writer.WritePropertyName("cars");
+            value.Cars.SaveToJson(writer, options);
             
             writer.WriteEndObject();
         }
