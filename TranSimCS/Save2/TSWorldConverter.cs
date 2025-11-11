@@ -30,6 +30,10 @@ namespace TranSimCS.Save2 {
                         world.RoadSections.data.Clear();
                         world.RoadSections.ReadFromJson(ref reader0, options);
                         break;
+                    case "cars":
+                        world.Cars.data.Clear();
+                        world.Cars.ReadFromJson(ref reader0, options);
+                        break;
                 }
             }, true);
 
