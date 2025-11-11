@@ -72,5 +72,22 @@ namespace TranSimCS.Worlds {
 
         public Matrix CalcReferenceMatrix() => Matrix.CreateFromYawPitchRoll(GeometryUtils.FieldToRadians(Azimuth), -Inclination, Tilt) * Matrix.CreateTranslation(Position);
 
+        public Vector3 GetTangential() {
+            var az = GeometryUtils.FieldToRadians(Azimuth);
+            var scP = MathF.SinCos(Inclination);
+            var sP = scP.Sin;
+            var cP = scP.Cos;
+            var scA = MathF.SinCos(az);
+            var sA = scA.Sin;
+            var cA = scA.Cos;
+            return new Vector3(sA * cP, sP, cA * cP);
+        }
+
+        public static (float Azimuth, float Inclination) Atan3(Vector3 v) {
+            var a = MathF.Atan2(v.X, v.Z);
+            var h = GeometryUtils.hypot2(v.X, v.Z);
+            var p = MathF.Atan2(v.Y, h);
+            return (a, p);
+        }
     }
 }

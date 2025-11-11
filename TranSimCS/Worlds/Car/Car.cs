@@ -12,8 +12,10 @@ using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Model.OBJ;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.SceneGraph;
+using TranSimCS.Spline;
 using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Worlds.Car {
@@ -54,7 +56,7 @@ namespace TranSimCS.Worlds.Car {
                     log.Error(e);
                     throw;
                 }
-                
+
             }
         }
 
@@ -80,7 +82,7 @@ namespace TranSimCS.Worlds.Car {
         private void MeshIdProp_ValueChanged(object? sender, PropertyChangedEventArgs2<string?> e) {
             BodyMesh = null;
             var key = e.NewValue;
-            if(loadedMeshes.TryGetValue(key, out var bm)) {
+            if (loadedMeshes.TryGetValue(key, out var bm)) {
                 BodyMesh = bm;
             }
             Mesh.Invalidate();
@@ -99,41 +101,59 @@ namespace TranSimCS.Worlds.Car {
             mesh.AddTagsToAll(car);
         }
 
-        public Vector3 Velocity;
+        public float Speed;
+        public Vector3 Velocity {
+            get => PositionProp.Value.GetTangential() * Speed;
+            set {
+                var atan3 = ObjPos.Atan3(value);
+                var pr = PositionProp.Value;
+                pr.Azimuth = GeometryUtils.RadiansToField(atan3.Azimuth);
+                pr.Inclination = atan3.Inclination;
+                Speed = value.Length();
+            }
+        }
+        public void Reverse() {
+            var pr = PositionProp.Value;
+            pr.Azimuth += RoadNode.AZIMUTH_SOUTH;
+            pr.Inclination *= -1;
+            PositionProp.Value = pr;
+        }
         public Property<LaneStrip?> OnStripProp;
         public LaneStrip? LaneStrip { get => OnStripProp.Value; set => OnStripProp.Value = value; }
 
         internal void Update(GameTime t) {
-            var rf = PositionProp.Value.CalcReferenceFrame();
-            var xyz = rf.O;
-            var newXYZ = xyz + Velocity * (float)(t.ElapsedGameTime.TotalSeconds);
-            if (LaneStrip == null) {
-                var pr = PositionProp.Value;
-                pr.Position = newXYZ;
-                PositionProp.Value = pr;
+            var vel = Velocity;
+            var pr = PositionProp.Value;
+            var xyz = pr.Position + vel * (float)(t.ElapsedGameTime.TotalSeconds);
+            pr.Position = xyz;
+            PositionProp.Value = pr;
+            if (LaneStrip?.road == null) {
                 return;
             }
-            var splineframe = LaneStrip.road.SplineFrame;
-            var derivedCoords = splineframe.UnTransform(newXYZ, -1, 2);
-            var newT = derivedCoords.Z;
+
+            var splines = LaneStrip.SplineCache;
+            var lspline = splines.Item1;
+            var rspline = splines.Item2;
+            var spline = (lspline + rspline) / 2;
+            var newT = Bezier3.FindT(spline, xyz, 20, 5, -1, 2);
             if (newT < 0) {
                 //Passed the beginning
-                Overflow(SegmentHalf.Start, t, ref newXYZ);
+                Overflow(SegmentHalf.Start, t, ref xyz);
             } else if (newT > 1) {
                 //Passed the end
-                Overflow(SegmentHalf.End, t, ref newXYZ);
+                Overflow(SegmentHalf.End, t, ref xyz);
             }
 
-            splineframe = LaneStrip.road.SplineFrame;
-            derivedCoords = splineframe.UnTransform(newXYZ);
-            newT = derivedCoords.Z;
+            splines = LaneStrip.SplineCache;
+            lspline = splines.Item1;
+            rspline = splines.Item2;
+            spline = (lspline + rspline) / 2;
+            newT = Bezier3.FindT(spline, xyz);
 
-            var stripSplines = RoadRenderer.GenerateSplines(LaneStrip.Tag);
-            var stripSpline = (stripSplines.Item1 + stripSplines.Item2) / 2;
-            var latSpline = (stripSplines.Item2 - stripSplines.Item1);
+            var latSpline = (rspline - lspline);
 
             var lateral = latSpline[newT];
-            var tangential = stripSpline.Tangential(newT);
+            var tangential = spline.Tangential(newT);
 
             var d = Vector3.Dot(tangential, Velocity);
             if(d < 0) {
@@ -141,8 +161,8 @@ namespace TranSimCS.Worlds.Car {
                 lateral *= -1;
             }
 
-            newXYZ = stripSpline[newT];
-            var newCoords = ObjPos.FromPosTangentLateral(newXYZ, tangential, lateral);
+            xyz = spline[newT];
+            var newCoords = ObjPos.FromPosTangentLateral(xyz, tangential, lateral);
             PositionProp.Value = newCoords;
 
         }
@@ -154,15 +174,17 @@ namespace TranSimCS.Worlds.Car {
             var candidates = World.FindLaneStrips(nextLane);
             if (candidates.Count == 0) {
                 //End of road, reverse
-                Velocity *= -1;
+                Reverse();
                 var endnode = nextLane.lane;
                 var latpos = endnode.MiddlePosition;
                 var pp = endnode.RoadNode.PositionProp.Value;
-                var mirror = pp.Position;
+                var rf = pp.CalcReferenceFrame();
+                var mirror = rf.O + rf.X * latpos;
                 var actualCoords = 2*mirror - newPos;
                 newPos = actualCoords;
                 return;
             }
+            //Car gets stuck when hitting a next segment
             var choice = rnd.GetRandomEntry(candidates);
             LaneStrip = choice;
         }

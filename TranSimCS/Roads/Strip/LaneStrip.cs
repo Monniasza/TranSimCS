@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
@@ -107,6 +108,10 @@ namespace TranSimCS.Roads.Strip {
             Spec = spec;
         }
 
+        //Spline cache
+        private (Bezier3, Bezier3)? splineCache = null;
+        public (Bezier3, Bezier3) SplineCache => splineCache ?? RecalcSplines();
+
         //Mesh cache
         private MultiMesh? mesh; // Cached mesh for the lane strip
         public MultiMesh GetMesh() {
@@ -118,6 +123,12 @@ namespace TranSimCS.Roads.Strip {
         }
         public void InvalidateMesh() {
             mesh = null; // Invalidate the cached mesh, forcing it to be regenerated next time
+            splineCache = null;
+        }
+        private (Bezier3, Bezier3) RecalcSplines() {
+            var splines = RoadRenderer.GenerateSplines(Tag);
+            splineCache = splines;
+            return splines;
         }
 
         public LaneEnd GetHalf(SegmentHalf selectedRoadHalf) {
