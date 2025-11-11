@@ -59,12 +59,12 @@ namespace TranSimCS.Save2 {
             if (lenient && reader.TokenType == type) return;
             ForceRead(ref reader);
             if (type != reader.TokenType)
-                Fail(reader, $"Unxpected token: {reader.TokenType}, expected {type}");
+                Fail(reader, $"Unexpected token: {reader.TokenType}, expected {type}");
         }
         public static void FailTokenTypes(ref Utf8JsonReader reader, params JsonTokenType[] type) {
             var stringsList = type.Select(type => type.ToString());
             var concatString = String.Join(", ", stringsList);
-            Fail(reader, $"Unxpected token: {reader.TokenType}, expected {concatString}");
+            Fail(reader, $"Unexpected token: {reader.TokenType}, expected {concatString}");
         }
         public static void Fail(Utf8JsonReader reader, string message, Exception? innerException = null) {
             var ln = reader.GetLineNumber();
