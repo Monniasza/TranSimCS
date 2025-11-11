@@ -118,10 +118,10 @@ namespace TranSimCS.Worlds
             //Handle the removal of a lane from a road segment
         }
 
-        
 
-        public void Update(float deltaTime)
-        {
+        public event Action<GameTime>? OnUpdate;
+        public void Update(GameTime deltaTime){
+            OnUpdate?.Invoke(deltaTime);
             // Update logic for the world can be added here
         }
 

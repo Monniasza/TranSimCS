@@ -170,6 +170,15 @@ namespace TranSimCS.Roads.Strip {
             //unused
         }
 
+        public bool IsConnected(LaneEnd end) {
+            return end == StartLane || end == EndLane;
+        }
+        public SegmentHalf? WhichEnd(LaneEnd end) {
+            if (end == StartLane) return SegmentHalf.Start;
+            if (end == EndLane) return SegmentHalf.End;
+            return null;
+        }
+
         public static bool operator ==(LaneStrip? left, LaneStrip? right) {
             return EqualityComparer<LaneStrip>.Default.Equals(left, right);
         }

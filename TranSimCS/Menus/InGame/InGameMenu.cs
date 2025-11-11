@@ -178,6 +178,9 @@ namespace TranSimCS.Menus.InGame {
         }
 
         public override void Update(GameTime time) {
+            //Run the world
+            World.Update(time);
+
             //Pre-get the necessary values for the mouse ray and camera
             int mouseX = Game.MouseState.X;
             int mouseY = Game.MouseState.Y;

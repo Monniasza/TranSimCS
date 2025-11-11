@@ -13,11 +13,13 @@ namespace TranSimCS.Worlds.Car {
     public class CarStack : ObjectStack<Car, CarStack> {
         private readonly TSWorld world;
         public readonly TrackerSpatial<Car, CarStack> trackerSpatial;
-
+        public readonly UpdateLoopTracker<Car, CarStack> trackerUpdate;
         public CarStack(TSWorld world) : base(world) {
             this.world = world;
             trackerSpatial = new TrackerSpatial<Car, CarStack>(world);
+            trackerUpdate = new((x, t) => x.Update(t));
             stackTrackers.Add(trackerSpatial);
+            stackTrackers.Add(trackerUpdate);
         }
 
         public override Car ReadElementFromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {

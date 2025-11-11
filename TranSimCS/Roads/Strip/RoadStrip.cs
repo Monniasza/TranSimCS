@@ -152,10 +152,11 @@ namespace TranSimCS.Roads.Strip {
                 (bounds.leftEnd, bounds.rightEnd) = (-bounds.rightEnd, -bounds.leftEnd);
             }
             segment.Bounds = bounds;
+            segment.CalcSplineFrame();
             SegmentRenderer.GenerateRoadSegmentFullMesh(segment, mesh); // Otherwise, render the road segment
         }
 
-        public SplineFrame CalcSplineFrame() {
+        public void CalcSplineFrame() {
             var start = StartNode.CalcReferenceFrame();
             var end = EndNode.CalcReferenceFrame();
 
@@ -163,7 +164,8 @@ namespace TranSimCS.Roads.Strip {
             var xSpline = GeometryUtils.GenerateJoinSpline(start.O + start.X, end.O - end.X, start.Z, end.Z);
             var ySpline = GeometryUtils.GenerateJoinSpline(start.O + start.Y, end.O + end.Y, start.Z, end.Z);
 
-            return new SplineFrame(zeroSpline, xSpline - zeroSpline, ySpline - zeroSpline, new Spline.Bezier3());
+            SplineFrame = new SplineFrame(zeroSpline, xSpline - zeroSpline, ySpline - zeroSpline, new Spline.Bezier3());
         }
+        public SplineFrame SplineFrame { get; private set; }
     }
 }

@@ -29,7 +29,7 @@ namespace TranSimCS.Roads.Strip {
             var height = finish.depth;
             var breadth = finish.depth * MathF.Tan(finish.angle);
 
-            var splineFrame = connection.CalcSplineFrame();
+            var splineFrame = connection.SplineFrame;
             var bounds = connection.Bounds;
 
             var swidth = MathF.Abs(bounds.rightStart - bounds.leftStart);

@@ -9,6 +9,7 @@ using TranSimCS.Worlds.Building;
 namespace TranSimCS.Worlds {
     public static class WorldGenerator {
         public static Logger log = LogManager.GetCurrentClassLogger();
+        private static Random rnd = new Random();
         public static void SetUpExampleWorld(TSWorld world) {
             //Reset the world
             world.ClearAll();
@@ -156,17 +157,21 @@ namespace TranSimCS.Worlds {
             Generator.GenerateLanes(10, parkingEndNode, parkingSpec);
             var parkingStrip = Generator.GenerateLaneConnections(parkingStartNode.FrontEnd, 0, 10, parkingEndNode.RearEnd, 0, 10, parkingSpec);
             world.RoadSegments.data.Add(parkingStrip);
-            for(float x = 351.5f; x < 383; x += 3) {
-                for(float z = 152.5f; z < 350; z += 5) {
-                    Car.Car car = new Car.Car(world);
-                    var objpos = new ObjPos(new(x, 0.2f, z), RoadNode.AZIMUTH_NORTH);
-                    car.PositionProp.Value = objpos;
-                    car.Randomize();
-                    log.Info($"Added a car at {objpos.Position} with mesh {car.MeshId}");
-                    cs.data.Add(car);
-                }
+            
+            foreach(var strip in parkingStrip.Lanes) {
+                var car = new Car.Car(world);
+                car.Randomize();
+                var middle = strip.StartLane.lane.MiddlePosition;
+                var xpos = 350 + 3 * middle;
+                var zpos = 150 + 200 * rnd.NextSingle();
+                var ypos = 0.1f;
+                var vel = rnd.NextSingle() * 20 - 10;
+                var posprop = new ObjPos(new(xpos, ypos, zpos), RoadNode.AZIMUTH_NORTH, 0, 0);
+                car.PositionProp.Value = posprop;
+                car.Velocity = Vector3.UnitZ * vel;
+                car.LaneStrip = strip;
+                cs.data.Add(car);
             }
-
         }
     }
 }
