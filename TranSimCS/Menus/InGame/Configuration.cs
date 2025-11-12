@@ -19,9 +19,6 @@ namespace TranSimCS.Menus.InGame {
         public readonly Property<RoadFinish> RoadFinishProp;
         public RoadFinish RoadFinish { get => RoadFinishProp.Value; set => RoadFinishProp.Value = value; }
 
-        public readonly Property<Camera> CameraProp;
-        public Camera Camera { get => CameraProp.Value; set => CameraProp.Value = value; }
-
         public readonly Property<ITool?> ToolProp;
         public ITool? Tool { get => ToolProp.Value; set => ToolProp.Value = value; }
 
@@ -30,7 +27,6 @@ namespace TranSimCS.Menus.InGame {
         public Configuration() {
             LaneSpecProp = new Property<LaneSpec>(LaneSpec.Default, "laneSpec", this);
             RoadFinishProp = new Property<RoadFinish>(RoadFinish.Embankment, "roadFinish", this);
-            CameraProp = new Property<Camera>(Camera.Default, "camera", this);
             ToolProp = new Property<ITool?>(null, "tool", this, Equality.ReferenceEqualComparer<ITool?>());
         }
     }

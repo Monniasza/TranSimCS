@@ -50,8 +50,6 @@ namespace TranSimCS.Menus.InGame {
 
 
         public override void Draw(GameTime time) {
-            
-
             //Clear the screen to a solid color and clear the render helper
             renderHelper.Clear();
 
@@ -86,7 +84,7 @@ namespace TranSimCS.Menus.InGame {
                 RoadRenderer.CreateAddLane(selection, plusRenderBin, configuration.LaneSpec.Width, roadSegmentHighlightColor, 0.5f);
 
             //Render ground with multiple planes
-            var centerPos = configuration.Camera.Position;
+            var centerPos = renderManager.Camera.Position;
             IRenderBin grassBin = renderHelper.GetOrCreateRenderBinForced(Assets.Grass);
             RenderGround(centerPos, grassBin);
 
@@ -100,7 +98,7 @@ namespace TranSimCS.Menus.InGame {
                 tris += (bin.Indices.Count) / 3;
                 verts += bin.Vertices.Count;
             }
-            renderHelper.Render();
+            renderManager.Render(renderHelper);
         }
 
         private void RenderGround(Vector3 posoffset, IRenderBin renderBin) {

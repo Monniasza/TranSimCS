@@ -37,8 +37,8 @@ namespace TranSimCS.Menus.InGame {
         public readonly Configuration configuration;
 
         //Graphics
-        private BasicEffect effect = null!;
-        public RenderHelper renderHelper { get; private set; } = null!; // Assuming you have a RenderHelper class for rendering
+        public RenderManager renderManager { get; private set; }
+        public MultiMesh renderHelper { get; private set; }
 
         public Ray MouseRay { get; private set; } // Ray from the mouse position in the world
         public Ray MouseRayOld { get; private set; } // Ray from the mouse position in the world
@@ -103,12 +103,8 @@ namespace TranSimCS.Menus.InGame {
             }
 
             //Generate graphics stuff
-            effect = new BasicEffect(Game.GraphicsDevice) {
-                VertexColorEnabled = true,
-                TextureEnabled = true
-            };
-            configuration.Camera.SetUpEffect(effect, this);
-            renderHelper = new RenderHelper(Game.GraphicsDevice, effect);
+            renderManager = new RenderManager(Game.GraphicsDevice);
+            renderHelper = new MultiMesh();
 
             //Set up meshes
             SelectorObjects = new MultiMesh();
@@ -200,6 +196,7 @@ namespace TranSimCS.Menus.InGame {
             // Unproject screen coordinates to near and far points in 3D space
             Vector3 nearPoint = Vector3.Zero;
             Vector3 farPoint = Vector3.Zero;
+            var effect = renderManager.effect;
             if (effect != null) {
                 nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), effect.Projection, effect.View, effect.World);
                 farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), effect.Projection, effect.View, effect.World);
@@ -258,7 +255,8 @@ namespace TranSimCS.Menus.InGame {
             if (MouseOverRoad != null) SelectedObject = MouseOverRoad.hitObject;
 
             //Handle scroll wheel input for zooming in and out
-            var camera = configuration.Camera;
+            var effect = renderManager.effect;
+            var camera = renderManager.Camera;
             if (Game.MouseState.ScrollWheelValue != scrollWheelValue) {
                 // Zoom in or out based on the scroll wheel value
                 int mouseScrollDelta = Game.MouseState.ScrollWheelValue - scrollWheelValue;
@@ -268,7 +266,7 @@ namespace TranSimCS.Menus.InGame {
                 camera.Distance *= zoomDelta; // Update camera distance based on zoom factor
             }
             if (effect != null) {
-                configuration.Camera.SetUpEffect(effect, this);
+                camera.SetUpEffect(effect, this);
             }
 
             //Disable Left Shift/Space motion if tool requests it
@@ -307,7 +305,7 @@ namespace TranSimCS.Menus.InGame {
             newElevation = MathHelper.Clamp(newElevation, -MathF.PI / 2 + 0.01f, MathF.PI / 2 - 0.01f);
             camera.Azimuth = newAzimuth; // Update camera azimuth
             camera.Elevation = newElevation; // Update camera elevation
-            configuration.Camera = camera;
+            renderManager.Camera = camera;
 
             //Run the world tool
             var Tool = configuration.Tool;
