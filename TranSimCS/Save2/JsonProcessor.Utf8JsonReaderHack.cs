@@ -48,6 +48,21 @@ namespace TranSimCS.Save2 {
             };
         }
 
+        public unsafe static Func<TSource, TField> CreateDelegate<TSource, TField>(int offset) {
+            var type = typeof(TSource);
+            var fieldOffset = offset;
+
+            return (element) => {
+                var reader = element;
+                var ptr = &element;
+                TField result;
+                var newPtr = ptr + fieldOffset;
+                var castedPtr = (TField*)newPtr;
+                result = *castedPtr;
+                return result;
+            };
+        }
+
         public static bool IsSubclassOrEqual(this Type a, Type b) {
             return a == b || a.IsSubclassOf(b);
         }

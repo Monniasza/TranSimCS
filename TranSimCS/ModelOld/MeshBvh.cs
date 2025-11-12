@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 
 namespace TranSimCS.Model {
-    internal sealed class MeshBvh {
+    public sealed class MeshBvh {
         private const int LeafSize = 4;
         private readonly Mesh mesh;
         private readonly Node[] nodes;
