@@ -74,9 +74,7 @@ namespace TranSimCS.Menus.InGame {
                     renderHelper.AddAll(node.Mesh.GetMesh());
 
             //Draw SelectorObjects
-            renderHelper.AddAll(SelectorObjects);
-
-            
+            renderHelper.AddAll(SelectorObjects);            
 
             //If the add lane button is selected, draw it
             IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Add);
