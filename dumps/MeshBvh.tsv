@@ -1,0 +1,10 @@
+Stan	Kod	Plik	Wiersz	Kolumna	Projekt	Repozytorium	Zawierająca składowa	Zawierający typ	Rodzaj
+	class MeshBvh								
+	internal MeshBvh GetAccelerationStructure() => bvh ??= MeshBvh.Build(this);	C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\ModelOld\Mesh.cs	16	18	TranSimCS		GetAccelerationStructure	Mesh	
+	internal MeshBvh GetAccelerationStructure() => bvh ??= MeshBvh.Build(this);	C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\ModelOld\Mesh.cs	16	64	TranSimCS		GetAccelerationStructure	Mesh	Zakwalifikowane
+	private MeshBvh? bvh;	C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\ModelOld\Mesh.cs	14	17	TranSimCS			Mesh	
+	public abstract MeshBvh CreateSpatial();	C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Model\MeshElement.cs	28	25	TranSimCS		CreateSpatial	MeshElement	
+	public override MeshBvh CreateSpatial() {	C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\Model\MeshElement.cs	60	25	TranSimCS		CreateSpatial	MeshElement	
+	public static MeshBvh Build(Mesh mesh) {	C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\ModelOld\MeshBvh.cs	37	23	TranSimCS		Build	MeshBvh	
+	MeshBvh.MeshBvh(Mesh, MeshBvh.Node[], MeshBvh.Triangle[])								
+	return new MeshBvh(mesh, nodes.ToArray(), tris.ToArray());	C:\Users\Oskar\SynologyDrive\Programowanie\TranSimCS\TranSimCS\ModelOld\MeshBvh.cs	57	24	TranSimCS		Build	MeshBvh	Konstruktor
