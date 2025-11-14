@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Worlds;
 using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Model {
@@ -27,6 +28,10 @@ namespace TranSimCS.Model {
         public abstract MeshBvh CreateSpatial();
 
         public abstract void Render(RenderManager gd);
+
+        public static string GoodName(Obj obj, params string[] elements) {
+            return $"{obj.Guid}.{string.Join('/', elements)}";
+        }
     }
     public class MeshElement<TMaterial, TVertex>: MeshElement{
         public TMaterial Material { get; set; }

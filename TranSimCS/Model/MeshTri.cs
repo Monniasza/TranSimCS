@@ -25,5 +25,12 @@ namespace TranSimCS.Model {
         /// Selection tag. null for no selection.
         /// </summary>
         public object? Tag;
+
+        public MeshTri(int a, int b, int c, object? tag = null) {
+            A = a; B = b; C = c; Tag = tag;
+        }
+
+        public static MeshTri operator +(MeshTri triangle, int offset) => new MeshTri(triangle.A + offset, triangle.B + offset, triangle.C + offset, triangle.Tag);
+
     }
 }
