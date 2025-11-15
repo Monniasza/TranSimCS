@@ -13,7 +13,9 @@ using TranSimCS.Tools;
 namespace TranSimCS.Menus.InGame {
     public partial class InGameMenu {
         private void DrawHighlights(GameTime time) {
-            IRenderBin renderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
+            MeshBuilder<SimpleMaterial, VertexPositionColorTexture> renderBin = new();
+            renderBin.Name = "highlights";
+            renderBin.Material = new SimpleMaterial(Assets.Road);
 
             //If a road segment is selected, draw the selection
             var roadSelection = MouseOverRoad;
@@ -46,6 +48,8 @@ namespace TranSimCS.Menus.InGame {
                 renderBin.DrawQuad(quad);
                 renderBin.DrawQuad(nodeQuad);
             }
+
+            renderHelper.AddElement(renderBin.Create());
         }
 
 
@@ -74,16 +78,19 @@ namespace TranSimCS.Menus.InGame {
                     renderHelper.AddAll(node.Mesh.GetMesh());
 
             //Draw SelectorObjects
-            renderHelper.AddAll(SelectorObjects);            
+            renderHelper.AddAll(SelectorObjects);
 
             //If the add lane button is selected, draw it
-            IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Add);
+            MeshBuilder<SimpleMaterial, VertexPositionColorTexture> plusRenderBin = new();
+            plusRenderBin.Material = new SimpleMaterial(Assets.Add);
+            plusRenderBin.Name = "addLanes";
             if (SelectedObject is AddLaneSelection selection)
                 RoadRenderer.CreateAddLane(selection, plusRenderBin, configuration.LaneSpec.Width, roadSegmentHighlightColor, 0.5f);
+            renderHelper.AddElement(plusRenderBin.Create());
 
             //Render ground with multiple planes
             var centerPos = renderManager.Camera.Position;
-            IRenderBin grassBin = renderHelper.GetOrCreateRenderBinForced(Assets.Grass);
+            MeshBuilder<SimpleMaterial, VertexPositionColorTexture> grassBin = new();
             RenderGround(centerPos, grassBin);
 
             //Render road tool
@@ -92,14 +99,15 @@ namespace TranSimCS.Menus.InGame {
             //Render the render helper
             var tris = 0;
             var verts = 0;
-            foreach (var bin in renderHelper.RenderBins.Values) {
-                tris += (bin.Indices.Count) / 3;
-                verts += bin.Vertices.Count;
+            foreach (var bin in renderHelper.Elements) {
+                tris += bin.Triangles.Length;
+                verts += bin.Vertices0().Count;
             }
+
             renderManager.Render(renderHelper);
         }
 
-        private void RenderGround(Vector3 posoffset, IRenderBin renderBin) {
+        private void RenderGround(Vector3 posoffset, MeshBuilder<SimpleMaterial, VertexPositionColorTexture> renderBin) {
             posoffset.Y = 0;
 
             //Render the center
@@ -120,7 +128,7 @@ namespace TranSimCS.Menus.InGame {
                 scale *= 2;
             }
         }
-        private void GroundParallelogram(IRenderBin renderBin, Vector3 initialpos, Vector3 basepos, Vector3 xplus, Vector3 yplus, float scale) {
+        private void GroundParallelogram(MeshBuilder<SimpleMaterial, VertexPositionColorTexture> renderBin, Vector3 initialpos, Vector3 basepos, Vector3 xplus, Vector3 yplus, float scale) {
             var a = (initialpos + basepos * scale);
             var s = scale / 100;
             var C = Color.White;
@@ -129,12 +137,12 @@ namespace TranSimCS.Menus.InGame {
             var b = a + ymul;
             var c = b + xmul;
             var d = a + xmul;
-            renderBin.DrawQuad(
+            renderBin.DrawQuad([
                 GenerateGroundVertex(a, s, C),
                 GenerateGroundVertex(b, s, C),
                 GenerateGroundVertex(c, s, C),
                 GenerateGroundVertex(d, s, C)
-            );
+            ]);
         }
         private VertexPositionColorTexture GenerateGroundVertex(Vector3 pos, float texscale, Color? color = null) {
             var c = color ?? Color.White;

@@ -53,21 +53,21 @@ namespace TranSimCS {
             var roll = MathF.Atan2(yComp, xComp);
             return new Vector3(yaw, pitch, roll);
         }
-        public void TransformOutOfPlace(IRenderBin src, IRenderBin dst) {
-            if (dst == null) dst = src;
-            var count = src.Vertices.Count;
+        public void TransformOutOfPlace(MeshElement<SimpleMaterial, VertexPositionColorTexture> src, MeshBuilder<SimpleMaterial, VertexPositionColorTexture> dst) {
+            var count = src.Vertices.Length;
             var transformedVertices = src.Vertices.Select(Transform).ToArray();
-            dst.DrawModel(transformedVertices, src.Indices, src.Tags);
+            dst.AddAll(transformedVertices, src.Triangles);
         }
-        public void TransformOutOfPlace(MultiMesh src, MultiMesh dst) {
-            foreach (var bin in src.RenderBins) {
-                var tgtBin = dst.GetOrCreateRenderBinForced(bin.Key);
-                TransformOutOfPlace(bin.Value, tgtBin);
+        public void TransformOutOfPlace(MeshComplex src, MeshComplex dst) {
+            foreach (var bin in src.Elements) {
+                dst.AddElement(TransformInPlace(bin));
             }
         }
-        public void TransformInPlace(IRenderBin mesh) => mesh.Vertices.TransformInPlace(Transform);
-        public void TransformInPlace(MultiMesh mesh) {
-            foreach(var submesh in mesh.RenderBins) TransformInPlace(submesh.Value);
+        public void TransformInPlace(MeshElement<SimpleMaterial, VertexPositionColorTexture> mesh) => mesh.Vertices.TransformInPlace(Transform);
+        public void TransformInPlace(MeshComplex mesh) {
+            foreach(var submesh in mesh.Elements) {
+                TransformInPlace(submesh);
+            }
         }
     }
 }

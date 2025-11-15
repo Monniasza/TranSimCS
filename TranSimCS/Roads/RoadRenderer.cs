@@ -15,8 +15,8 @@ using static TranSimCS.Geometry.GeometryUtils;
 using static TranSimCS.Geometry.LineEnd;
 
 namespace TranSimCS.Roads {
-    public struct LaneQuadPair(Quad front, Quad back) {
-        public Quad Front = front, Back = back;
+    public struct LaneQuadPair<T>(Quad<T> front, Quad<T> back) {
+        public Quad<T> Front = front, Back = back;
     }
 
     public static class RoadRenderer {
@@ -24,7 +24,7 @@ namespace TranSimCS.Roads {
         public static Color SemiClearWhite => new Color(255, 255, 255, 128);
         public static Color SemiClearGray => new Color(128, 128, 128, 128);
 
-        public static void CreateAddLanes(RoadNode nodeEnd, IRenderBin mesh, float size = 1, Color? color = null, float voffset = 0.2f) {
+        public static void CreateAddLanes(RoadNode nodeEnd, MeshBuilder<SimpleMaterial, VertexPositionColorTexture> mesh, float size = 1, Color? color = null, float voffset = 0.2f) {
             if (nodeEnd.Lanes.Count < 1) return;
             var leftLimit = nodeEnd.Lanes[0].LeftPosition;
             var rightLimit = nodeEnd.Lanes[nodeEnd.Lanes.Count - 1].RightPosition;
@@ -33,67 +33,54 @@ namespace TranSimCS.Roads {
             CreateAddLane(new AddLaneSelection(-1, leftLimit, nodeEnd.RearEnd), mesh, size, color, voffset);
             CreateAddLane(new AddLaneSelection(1, rightLimit, nodeEnd.RearEnd), mesh, size, color, voffset);
         }
-        public static Quad CreateAddLane(AddLaneSelection als, IRenderBin mesh, float size = 1, Color? color = null, float voffset = 0.2f) {
+        public static Quad<VertexPositionColorTexture> CreateAddLane(AddLaneSelection als, MeshBuilder<SimpleMaterial, VertexPositionColorTexture> mesh, float size = 1, Color? color = null, float voffset = 0.2f) {
             var zrange = RoadEndToRange(als.nodeEnd.End) * size;
             var xrange = als.CalculateOffsets(size);
-            Quad quad = GenerateLaneQuad(als.nodeEnd.Node, xrange.X, xrange.Y, color ?? SemiClearGray, voffset, zrange.X, zrange.Y);
+            var quad = GenerateLaneQuad(als.nodeEnd.Node, xrange.X, xrange.Y, color ?? SemiClearGray, voffset, zrange.X, zrange.Y);
             mesh.DrawQuad(quad);
-            mesh.AddTagsToLastTriangles(2, als);
             return quad;
         }
-        public static Quad GenerateRoadNodeSelQuad(RoadNode node, Color color, float voffset = 0.2f) {
+        public static Quad<VertexPositionColorTexture> GenerateRoadNodeSelQuad(RoadNode node, Color color, float voffset = 0.2f) {
             return GenerateLaneQuad(node, node.Lanes[0].LeftPosition, node.Lanes[node.Lanes.Count - 1].RightPosition, color, voffset);
         }
-        public static void GenerateRoadNodeMesh(RoadNode node, MultiMesh renderBin, float voffset = 0) {
+        public static void GenerateRoadNodeMesh(RoadNode node, MeshComplex renderBin, float voffset = 0) {
             foreach(var lane in node.Lanes) GenerateLaneMesh(lane, renderBin, voffset);
         }
-        public static void GenerateLaneMesh(Lane lane, MultiMesh mesh, float voffset = 0) {
-            IRenderBin renderBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
+        public static void GenerateLaneMesh(Lane lane, MeshComplex mesh, float voffset = 0) {
+            MeshBuilder<SimpleMaterial, VertexPositionColorTexture> renderBin = new MeshBuilder<SimpleMaterial, VertexPositionColorTexture>();
+            renderBin.Name = MeshElement.GoodName(lane.RoadNode, "lane", lane.Index.ToString());
 
             var quads = GenerateLaneQuad(lane, voffset);
-            renderBin.DrawQuad(quads.Front);
-            renderBin.AddTagsToLastTriangles(2, lane.Front);
-            renderBin.DrawQuad(quads.Back);
-            renderBin.AddTagsToLastTriangles(2, lane.Rear);
+            renderBin.DrawQuad(quads.Back, lane.Rear);
+            renderBin.DrawQuad(quads.Front, lane.Front);
         }
-        public static LaneQuadPair GenerateLaneQuad(Lane lane, float voffset = 0.2f, Color? color = null) {
+        public static LaneQuadPair<VertexPositionColorTexture> GenerateLaneQuad(Lane lane, float voffset = 0.2f, Color? color = null) {
             var altColor = lane.Spec.Color;
             altColor.A /= 2;
-            return GenerateLaneQuads(lane.RoadNode, lane.LeftPosition, lane.RightPosition, color ?? altColor, voffset);
+            var rear = GenerateLaneQuad(lane.Rear, voffset, color);
+            var front = GenerateLaneQuad(lane.Front, voffset, color);
+            return new(front, rear);
         }
-        public static Quad GenerateLaneQuad(LaneEnd lane, float voffset = 0.2f, Color? color = null) {
+        public static Quad<VertexPositionColorTexture> GenerateLaneQuad(LaneEnd lane, float voffset = 0.2f, Color? color = null) {
             var altColor = lane.lane.Spec.Color;
             altColor.A /= 2;
             var range = GeometryUtils.RoadEndToRange(lane.end);
-            return GenerateLaneQuad(lane.lane.RoadNode, lane.lane.LeftPosition, lane.lane.RightPosition, color ?? altColor, voffset, range.X, range.Y);
-        }
-        public static LaneQuadPair GenerateLaneQuads(RoadNode node, float lb, float rb, Color color, float voffset = 0) {
-            Vector3 offset = new Vector3(0, voffset, 0);
-            Transform3 transform = node.PositionProp.Value.CalcReferenceFrame();
-            var vl = transform.O + lb * transform.X;
-            var vr = transform.O + rb * transform.X;
-            var vd = vl - transform.Z;
-            var vc = vr - transform.Z;
-            var va = vl + transform.Z;
-            var vb = vr + transform.Z;
-            Quad front = new Quad(va, vb, vr, vl, color) + offset;
-            Quad back = new Quad(vl, vr, vc, vd, color) + offset;
-            return new LaneQuadPair(front, back);
+            return GenerateLaneQuad(lane.lane.RoadNode, lane.lane.LeftPosition, lane.lane.RightPosition, color ?? altColor, lane, voffset, range.X, range.Y);
         }
 
-        public static Quad GenerateLaneQuad(RoadNode node, float lb, float rb, Color color, float voffset = 0.2f, float minZ = -1, float maxZ = 1) {
+        public static Quad<VertexPositionColorTexture> GenerateLaneQuad(RoadNode node, float lb, float rb, Color color, object? tag = null, float voffset = 0.2f, float minZ = -1, float maxZ = 1) {
             Vector3 offset = new Vector3(0, voffset, 0);
             Transform3 transform = node.PositionProp.Value.CalcReferenceFrame();
-            var vl = transform.O + lb * transform.X;
-            var vr = transform.O + rb * transform.X;
+            var vl = transform.O + lb * transform.X + offset;
+            var vr = transform.O + rb * transform.X + offset;
             var vd = vl + transform.Z * minZ;
             var vc = vr + transform.Z * minZ;
             var va = vl + transform.Z * maxZ;
             var vb = vr + transform.Z * maxZ;
-            return new Quad(va, vb, vc, vd, color) + offset; 
+            return Quads.Create(va, vb, vc, vd, color);
         }
 
-        public static void GenerateLaneRangeMesh(LaneRange range, IRenderBin renderer, Color color, float voffset = 0.3f, object? tag = null) {
+        public static void GenerateLaneRangeMesh(LaneRange range, MeshBuilder<SimpleMaterial, VertexPositionColorTexture> renderer, Color color, float voffset = 0.3f, object? tag = null) {
             var strips = GenerateSplines(range, voffset); // Generate the splines for the left and right lanes
 
             //Generate border curves
@@ -106,11 +93,7 @@ namespace TranSimCS.Roads {
             var triangleCount = strip.Length - 2; // Each triangle is formed by 3 vertices, so the number of triangles is the number of vertices minus 2
 
             //Draw strip representing the lane
-            renderer.DrawStrip(strip);
-
-            //Apply the tag to the last triangles in the strip
-            object tagToUse = tag ?? range; // Use the provided tag or the lane range as the default tag
-            renderer.AddTagsToLastTriangles(triangleCount, tagToUse); // Add tags to the last triangles in the strip
+            renderer.DrawStrip(strip, tag);
         }
 
         public static (Bezier3, Bezier3) GenerateSplines(LaneRange laneTag, float voffset = 0) {
@@ -155,7 +138,7 @@ namespace TranSimCS.Roads {
             );
         }
 
-        public static void DrawBezierStrip(Bezier3 lbound, Bezier3 rbound, IRenderBin renderer, Color color) {
+        public static void DrawBezierStrip(Bezier3 lbound, Bezier3 rbound, MeshBuilder<SimpleMaterial, VertexPositionColorTexture> renderer, Color color) {
             Vector3[] leftBorder = GenerateSplinePoints(lbound, 10);
             Vector3[] rightBorder = GenerateSplinePoints(rbound, 10);
 
@@ -166,8 +149,10 @@ namespace TranSimCS.Roads {
             renderer.DrawStrip(strip);
         }
 
-        internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh, int accuracy = 17, float voffset = 0.3f) {
-            var mesh = multimesh.GetOrCreateRenderBinForced(Assets.Asphalt);
+        internal static void GenerateSectionMesh(RoadSection roadSection, MeshComplex multimesh, int accuracy = 17, float voffset = 0.3f) {
+            var meshBuilder = new MeshBuilder<SimpleMaterial, VertexPositionColorTexture>();
+            var mat = new SimpleMaterial(Assets.Asphalt);
+            meshBuilder.Material = mat;
 
             //Rotate the list so the 1st main end lies on the index 0
             var endsPair = roadSection.MainSlopeNodes.Value;
@@ -199,16 +184,18 @@ namespace TranSimCS.Roads {
             leftNodes.Add(leftNode.val);
 
             //Generate the main strip with vertical offset to prevent Z-fighting
-            GenerateIntersectionStrip(mesh, start, end, accuracy, voffset);
+            GenerateIntersectionStrip(meshBuilder, start, end, accuracy, voffset);
 
             //Generate other vertices on the right
-            GenerateSubrangeVerts(mesh, rightNodes.ToArray(), 1, accuracy, voffset);
+            GenerateSubrangeVerts(meshBuilder, rightNodes.ToArray(), 1, accuracy, voffset);
 
             //Generate other vertices on the left
-            GenerateSubrangeVerts(mesh, leftNodes.ToArray(), -1, accuracy, voffset);
+            GenerateSubrangeVerts(meshBuilder, leftNodes.ToArray(), -1, accuracy, voffset);
+
+            meshBuilder.Name = MeshElement.GoodName(roadSection, "asphalt");
         }
 
-        public static void GenerateSubrangeVerts(IRenderBin mesh, RoadNodeEnd[] nodes, int discriminant, int accuracy = 17, float voffset = 0f) {
+        public static void GenerateSubrangeVerts(MeshBuilder<SimpleMaterial, VertexPositionColorTexture> mesh, RoadNodeEnd[] nodes, int discriminant, int accuracy = 17, float voffset = 0f) {
             var lbound = 1;
             var ubound = nodes.Length - 2;
 
@@ -259,7 +246,7 @@ namespace TranSimCS.Roads {
 
                 //Render the last-node or the inter-strip patch with vertical offset
                 var offset = new Vector3(0, voffset, 0);
-                RenderPatch.RenderCoonsPatch(mesh, bottomSpline, topSpline, leftSpline.Inverse(), rightSpline.Inverse(), (PointGenerator)((p, uv) => CreateVertex(p + offset, color)), accuracy, accuracy);
+                RenderPatch.RenderCoonsPatch(mesh, bottomSpline, topSpline, leftSpline.Inverse(), rightSpline.Inverse(), (p, uv) => CreateVertex(p + offset, color), accuracy, accuracy);
 
                 lbound++;
                 ubound--;
@@ -279,7 +266,7 @@ namespace TranSimCS.Roads {
             return GenerateJoinSpline(startPos.Ray, endPos.Ray);
         }
 
-        public static void GenerateIntersectionStrip(IRenderBin mesh, RoadNodeEnd start, RoadNodeEnd end, int accuracy = 17, float voffset = 0f) {
+        public static void GenerateIntersectionStrip(MeshBuilder<SimpleMaterial, VertexPositionColorTexture> mesh, RoadNodeEnd start, RoadNodeEnd end, int accuracy = 17, float voffset = 0f) {
             //Generate bounding edges
             var startLeft = calcBoundingLineEndFaced(start, -1);
             var startRight = calcBoundingLineEndFaced(start, 1);

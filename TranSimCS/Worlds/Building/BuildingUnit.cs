@@ -24,29 +24,31 @@ namespace TranSimCS.Worlds.Building {
             Mesh = new MeshGenerator<BuildingUnit>(this, GenerateMesh);
         }
 
-        private static void GenerateMesh(BuildingUnit unit, MultiMesh mesh) {
+        private static void GenerateMesh(BuildingUnit unit, MeshComplex mesh) {
             var size = unit.UnitSizeProp.Value;
             var width = size.x;
             var depth = size.z;
             var height = size.y;
 
             //Generate the sides
-            var windowsMesh = mesh.GetOrCreateRenderBinForced(Assets.BuildingWindows);
+            var windowsMesh = new MeshBuilder<SimpleMaterial, VertexPositionColorTexture>();
+            windowsMesh.Material = new SimpleMaterial(Assets.BuildingWindows);
             EmitStrip(unit, unit.UnitSizeProp.Value, windowsMesh);
+            mesh.AddElement(windowsMesh.Create());
 
             //Generate the rooftop
-            var roofMesh = mesh.GetOrCreateRenderBinForced(Assets.Concrete);
+            var roofMesh = new MeshBuilder<SimpleMaterial, VertexPositionColorTexture>();
+            roofMesh.Material = new SimpleMaterial(Assets.Concrete);
             var dx = Vector3.UnitX * 4 * width;
             var dy = Vector3.UnitZ * 4 * depth;
             roofMesh.DrawParallelogram(Vector3.UnitY * 4 * height, dx, dy, Color.White, new RectangleF(0, 0, width, depth));
             roofMesh.DrawParallelogram(Vector3.Zero,               dx, dy, Color.White, new RectangleF(0, 0, width, depth));
-            roofMesh.AddTagsToLastTriangles(4, unit);
 
             //Transform the object
             var refframe = unit.PositionProp.Value.CalcReferenceFrame();
             refframe.TransformInPlace(mesh);
         }
-        private static void EmitStrip(object tag, Vector3i size, IRenderBin mesh) {
+        private static void EmitStrip(object tag, Vector3i size, MeshBuilder<SimpleMaterial, VertexPositionColorTexture> mesh) {
             var width = size.x;
             var depth = size.z;
             var height = size.y;
@@ -74,8 +76,7 @@ namespace TranSimCS.Worlds.Building {
                     i++;
                 }
             }
-            mesh.DrawStrip(verts);
-            mesh.AddTagsToLastTriangles(8, tag);
+            mesh.DrawStrip(verts, tag);
         }
     }
 }

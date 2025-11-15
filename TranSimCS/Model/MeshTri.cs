@@ -32,5 +32,14 @@ namespace TranSimCS.Model {
 
         public static MeshTri operator +(MeshTri triangle, int offset) => new MeshTri(triangle.A + offset, triangle.B + offset, triangle.C + offset, triangle.Tag);
 
+        public static MeshTri[] FromArray(int[] data, object? tag = null) {
+            var tricount = data.Length / 3;
+            var tris = new MeshTri[tricount];
+            for (int i = 0; i < tricount; i++) {
+                var a = data[i*3];
+                var b = data[i * 3 + 2];
+                var c = data[i * 3 + 1];
+                tris[i] = new(a, b, c, tag);
+            }
     }
 }

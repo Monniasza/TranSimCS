@@ -10,10 +10,10 @@ using TranSimCS.Model;
 using TranSimCS.Spline;
 
 namespace TranSimCS.Render {
-    public delegate VertexPositionColorTexture PointGenerator(Vector3 pointPos, Vector2 interpPos);
+    public delegate T PointGenerator<T>(Vector3 pointPos, Vector2 interpPos);
 
     public static class RenderPatch {
-        public static void DrawDebugFence(IRenderBin mesh, ISpline<Vector3> spline, Vector3 height, Color color, int accuracy = 17) {
+        public static void DrawDebugFence(MeshBuilder<SimpleMaterial, VertexPositionColorTexture> mesh, ISpline<Vector3> spline, Vector3 height, Color color, int accuracy = 17) {
             var points = GeometryUtils.GenerateSplinePoints(spline, accuracy);
             var strip = new VertexPositionColorTexture[accuracy * 2];
             for(int i = 0; i < accuracy; i++) {
@@ -41,13 +41,13 @@ namespace TranSimCS.Render {
         /// <param name="vertFn">converts positions and UVs into vertices</param>
         /// <param name="resC">resolution of the top and bottom</param>
         /// <param name="resD">resolution of the left and right</param>
-        public static void RenderCoonsPatch(
-            IRenderBin mesh,
+        public static void RenderCoonsPatch<TMaterial, TVertex>(
+            MeshBuilder<TMaterial, TVertex> mesh,
             ISpline<Vector3> c0,
             ISpline<Vector3> c1,
             ISpline<Vector3> d0,
             ISpline<Vector3> d1,
-            PointGenerator vertFn,
+            PointGenerator<TVertex> vertFn,
             int resC = 17,
             int resD = 17) {
 
@@ -56,7 +56,7 @@ namespace TranSimCS.Render {
             var lutD0 = GeometryUtils.GenerateSplinePoints(d0, resD);
             var lutD1 = GeometryUtils.GenerateSplinePoints(d1, resD);
 
-            var results = new VertexPositionColorTexture[resC, resD];
+            var results = new TVertex[resC, resD];
 
             var cornerC0D0 = lutC0[0];
             var cornerC0D1 = lutC0[resC - 1];

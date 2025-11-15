@@ -10,23 +10,23 @@ namespace TranSimCS.SceneGraph {
     /// <param name="func">mesh generating function</param>
     public class MeshGenerator<T>: IMeshSource
         where T : Obj, IObjMesh<T> {
-        public event Action<MultiMesh>? OnMeshGenerated;
+        public event Action<MeshComplex>? OnMeshGenerated;
         public event Action? OnMeshInvalidated;
-        private MultiMesh? mesh;
+        private MeshComplex? mesh;
         public readonly SceneLeaf Leaf;
         public readonly T obj;
-        public readonly Action<T, MultiMesh> func;
+        public readonly Action<T, MeshComplex> func;
 
-        public MeshGenerator(T obj, Action<T, MultiMesh> func) {
+        public MeshGenerator(T obj, Action<T, MeshComplex> func) {
             Leaf = new SceneLeaf(this);
             this.obj = obj;
             this.func = func;
             obj.PropertyChanged += (s, e) => Invalidate();
         }
 
-        public MultiMesh GetMesh() {
+        public MeshComplex GetMesh() {
             if (mesh == null) {
-                mesh = new MultiMesh();
+                mesh = new MeshComplex();
                 func(obj, mesh);
                 OnMeshGenerated?.Invoke(mesh);
             }

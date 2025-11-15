@@ -19,6 +19,15 @@ namespace TranSimCS.Model {
         public bool IsVisible = true;
         public IVertexProcessor<TMaterial, TVertex>? VertexProcessor;
 
+        public int AddVertex(TVertex vertex) {
+            Verts.Add(vertex);
+            return Verts.Count - 1;
+        }
+        public int AddVertices(TVertex[] verts) {
+            Verts.AddRange(verts);
+            return Verts.Count - verts.Length;
+        }
+
         /// <summary>
         /// Add vertices. Meant to be used with object initializers
         /// </summary>
@@ -65,6 +74,9 @@ namespace TranSimCS.Model {
 
         public MeshBuilder<TMaterial, TVertex> Clone() {
             return new(this);
+        }
+        public MeshElement<TMaterial, TVertex> Create() {
+            return new MeshElement<TMaterial, TVertex>(Name, Material, Verts.ToArray(), Tris.ToArray(), IsVisible, VertexProcessor);
         }
     }
 }

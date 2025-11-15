@@ -7,10 +7,10 @@ using TranSimCS.Model;
 
 namespace TranSimCS.SceneGraph {
     public interface IMeshSource {
-        public event Action<MultiMesh>? OnMeshGenerated;
+        public event Action<MeshComplex>? OnMeshGenerated;
         public event Action? OnMeshInvalidated;
 
-        public MultiMesh GetMesh();
+        public MeshComplex GetMesh();
         public void Invalidate();
     }
 }

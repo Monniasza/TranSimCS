@@ -113,7 +113,7 @@ namespace TranSimCS.SceneGraph {
             return false;
         }
 
-        public static BoundingBox FromMany(IEnumerable<IRenderBin> meshes) {
+        public static BoundingBox FromMany(IEnumerable<MeshElement> meshes) {
             var boundingBoxes = meshes.Select(MeshUtil.BoundingBox);
             return AggregateBounds(boundingBoxes);
         }

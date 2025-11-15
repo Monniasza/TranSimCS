@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads.Node;
@@ -58,7 +59,7 @@ namespace TranSimCS.Menus.Gizmo {
             return plane;
         }
         // Builds the visual quad representing the gizmo and registers selection tags.
-        public void CreateMesh(IRenderBin renderBin) {
+        public void CreateMesh(MeshBuilder<SimpleMaterial, VertexPositionColorTexture> renderBin) {
             var refpos = roadNode.PositionProp.Value;
             var azimuth = refpos.Azimuth;
             var radians = GeometryUtils.FieldToRadians(azimuth);
@@ -72,8 +73,7 @@ namespace TranSimCS.Menus.Gizmo {
             Vector3 p2 = Vector3.Transform(new Vector3(1, 0, 1), frameMatrix);
             Vector3 p3 = Vector3.Transform(new Vector3(1, 0, -1), frameMatrix);
             Vector3 p4 = Vector3.Transform(new Vector3(-1, 0, -1), frameMatrix);
-            renderBin.DrawQuad(p1, p2, p3, p4, Color.Red);
-            renderBin.AddTagsToLastTriangles(2, this);
+            renderBin.DrawQuadUV(Color.Red, p1, p2, p3, p4, this);
         }
 
         public void Rotate(int fieldAzimuth, float pitch, float tilt) {

@@ -18,7 +18,7 @@ namespace TranSimCS.Menus.InGame {
         public Vector3 GroundSelection => IntersectWithGround(MouseRay);
         public Vector3 GroundSelectionOld => IntersectWithGround(MouseRayOld);
 
-        public MultiMesh SelectorObjects { get; private set; }
+        public MeshComplex SelectorObjects { get; private set; }
 
         private void CreateSelectors() {
             // CRITICAL: Clear SelectorObjects and InvisibleSelectors to prevent geometry accumulation across frames
@@ -31,7 +31,7 @@ namespace TranSimCS.Menus.InGame {
             World.Cars.trackerSpatial.sceneTree.Active = CheckUnits.Checked;
 
             //Add tool selectors for collision detection
-            var tempSelectors = new MultiMesh();
+            var tempSelectors = new MeshComplex();
             configuration.Tool?.AddSelectors(tempSelectors, SelectorObjects);
 
             tempSelectors.AddAll(SelectorObjects);
