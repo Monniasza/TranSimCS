@@ -131,7 +131,7 @@ namespace TranSimCS.Roads.Strip {
         /// Left start, right start, left end, right end
         /// </summary>
         public RoadBounds Bounds { get; private set; } 
-        protected static void GenerateMesh(RoadStrip segment, MultiMesh mesh) {
+        protected static void GenerateMesh(RoadStrip segment, MeshComplex mesh) {
             var bounds = new RoadBounds();
             //Generate bounds
             foreach (var lane in segment.Lanes) {

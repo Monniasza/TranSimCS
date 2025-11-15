@@ -23,7 +23,7 @@ namespace TranSimCS.Worlds {
         /// <summary>
         /// Mesh property for temporary selectors
         /// </summary>
-        public Property<MultiMesh> TempSelectorsMesh;
+        public Property<MeshComplex> TempSelectorsMesh;
 
         public List<LaneStrip> FindLaneStrips(LaneEnd end) {
             var nodeEnd = end.RoadNodeEnd;

@@ -11,6 +11,7 @@ using NLog;
 using NLog.Targets;
 using TranSimCS;
 using TranSimCS.Geometry;
+using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Save2;
 using TranSimCS.Tools.Inspect;
@@ -72,6 +73,7 @@ public class Program {
 
         JsonProcessor.Init();
         InspectMethods.Init();
+        VertexProcessors.Init();
 
         Game1.Start(args);
     }

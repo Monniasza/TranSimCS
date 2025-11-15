@@ -25,7 +25,7 @@ namespace TranSimCS.Tools {
             var roadSelection = game.MouseOverRoad;
             if (roadSelection == null) return;
 
-            IRenderBin renderBin = game.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
+            var renderBin = MeshBuilder.NewBuilder(Assets.Road);
 
             float v1 = 0.2f;
             float v2 = 0.3f;
@@ -82,6 +82,8 @@ namespace TranSimCS.Tools {
                 var stripTag = selStrip.Tag;
                 RoadRenderer.GenerateLaneRangeMesh(stripTag, renderBin, O, v2);
             }
+
+            game.renderHelper.AddElement(renderBin);
         }
 
 

@@ -25,7 +25,7 @@ namespace TranSimCS.Model {
             var inverseTransform = Matrix.Invert(transform);
 
             var invertedRay = RayMethods.Transform(ray, inverseTransform);
-            var lookup = MeshUtil.RayIntersectMeshes(mesh.Elements.Values, invertedRay, out T);
+            var lookup = MeshUtil.RayIntersectMeshes(mesh.Elements, invertedRay, out T);
             tag = lookup;
             return T < float.MaxValue;
         }

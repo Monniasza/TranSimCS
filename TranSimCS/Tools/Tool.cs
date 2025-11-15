@@ -27,7 +27,7 @@ namespace TranSimCS.Tools {
         public void Update(GameTime gameTime);
         public void Draw(GameTime gameTime);
         public void Draw2D(GameTime gameTime);
-        public void AddSelectors(MultiMesh invisibleSelectors, MultiMesh visibleSelectors) { }
+        public void AddSelectors(MeshComplex invisibleSelectors, MeshComplex visibleSelectors) { }
         public (object[], string)[] PromptKeys();
 
         public void OnOpen() { }
@@ -145,20 +145,22 @@ namespace TranSimCS.Tools {
             var tw = frame.X * 0.1f;
             var bw = frame.X * 0.2f;
             var rl = frame.Z * 5;
-            var quad = new Quad(
+            var quad = new Quad<VertexPositionColorTexture>(
                 new VertexPositionColorTexture(startPoint + length        , laneColor, new(0        , 0)),
                 new VertexPositionColorTexture(startPoint + length + width, laneColor, new(laneCount, 0)),
                 new VertexPositionColorTexture(startPoint          + width, laneColor, new(laneCount, 1)),
                 new VertexPositionColorTexture(startPoint                 , laneColor, new(0        , 1))
             );
-            var quad2 = new Quad(
+            var quad2 = new Quad<VertexPositionColorTexture>(
                 new VertexPositionColorTexture(startPoint2 - tw + rl, Color.Orange, new(0, 0)),
                 new VertexPositionColorTexture(startPoint2 + tw + rl, Color.Orange, new(1, 0)),
                 new VertexPositionColorTexture(startPoint2 + bw     , Color.Orange, new(1, 1)),
                 new VertexPositionColorTexture(startPoint2 - bw     , Color.Orange, new(0, 1))
             );
-            IRenderBin bin = menu.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
-            bin.DrawQuad(quad); bin.DrawQuad(quad2);
+
+            var renderBin = MeshBuilder.NewBuilder(Assets.Road);
+            renderBin.DrawQuad(quad); renderBin.DrawQuad(quad2);
+            menu.renderHelper.AddElement(renderBin);
         }
 
         void ITool.Draw2D(GameTime gameTime) {

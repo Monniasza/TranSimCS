@@ -36,12 +36,18 @@ namespace TranSimCS.Model {
         }
 
         private static long count = 1 << 32;
-        public static string NewName() => count.ToString();
+        public static string NewName() => (count++).ToString();
     }
+
+    /// <summary>
+    /// Specialization of <see cref="MeshElement"/> for particular materials/vertices.
+    /// </summary>
+    /// <typeparam name="TMaterial"></typeparam>
+    /// <typeparam name="TVertex"></typeparam>
     public class MeshElement<TMaterial, TVertex>: MeshElement{
         public TMaterial Material { get; set; }
         public TVertex[] Vertices { get; set; }
-        public IList Vertices0() => Vertices;
+        public override IList Vertices0() => Vertices;
         public IVertexProcessor<TMaterial, TVertex>? VertexProcessor { get; set; }
         public IVertexProcessor<TMaterial, TVertex>? GetVertexProcessor() => VertexProcessor ?? VertexProcessor<TMaterial, TVertex>.Default;
         public IVertexProcessor<TMaterial, TVertex> GetVertexProcessorStrict() => VertexProcessor ?? VertexProcessor<TMaterial, TVertex>.GetDefault();

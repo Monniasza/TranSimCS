@@ -9,8 +9,9 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace TranSimCS.Model.OBJ {
     public class ObjConverter {
-        public static Mesh ToSingleMesh(ObjData obj, Mesh? mesh = null) {
-            if(mesh == null) mesh = new Mesh();
+        public static MeshElement<SimpleMaterial, VertexPositionColorTexture> ToSingleMesh(ObjData obj) {
+            var meshBuilder = new MeshBuilder<SimpleMaterial, VertexPositionColorTexture>();
+
             foreach (var group in obj.Groups) {
                 var mat = group.Material;
                 var colorvector = new Vector4(mat.Kd, mat.d);
@@ -30,20 +31,24 @@ namespace TranSimCS.Model.OBJ {
                         var vert = new VertexPositionColorTexture(position, color, texcoords);
                         dedupedVerts[fv] = vert;
 
-                        int index = mesh.AddVertex(vert);
+                        int index = meshBuilder.AddVertex(vert);
                         lov[fv] = index;
                     }
                 }
                 foreach (var Face in group.Faces) {
                     var face = Face.Vertices;
+                    var indices = new int[face.Count];
                     for (int i = 0; i < face.Count; i++) {
                         var fv = face[i];
                         var index = lov[fv];
-                        mesh.AddIndex(index);
+                        indices[i] = index;
                     }
+                    var triangleFan = MeshUtil.TriangleFan(indices);
+                    var tris = MeshTri.FromArray(triangleFan);
+                    meshBuilder.AddTris = tris;
                 }
             }
-            return mesh;
+            return meshBuilder.Create();
         }
     }
 }

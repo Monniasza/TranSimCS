@@ -7,6 +7,6 @@ using TranSimCS.Model;
 
 namespace TranSimCS.Worlds.ECS {
     public struct MeshComponent {
-        public MultiMesh mesh;
+        public MeshComplex mesh;
     }
 }

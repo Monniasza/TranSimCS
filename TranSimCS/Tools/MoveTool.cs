@@ -84,7 +84,7 @@ namespace TranSimCS.Tools {
             }
         }
 
-        void ITool.AddSelectors(MultiMesh addTo, MultiMesh visibleSelectors) {
+        void ITool.AddSelectors(MeshComplex addTo, MeshComplex visibleSelectors) {
             //Unused
         }
 

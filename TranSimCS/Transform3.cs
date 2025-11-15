@@ -32,8 +32,8 @@ namespace TranSimCS {
         public readonly VertexPositionColorTexture Transform(VertexPositionColorTexture input) {
             return new VertexPositionColorTexture(Transform(input.Position), input.Color, input.TextureCoordinate);
         }
-        public readonly Quad Transform(Quad quad) {
-            return new Quad(Transform(quad.a), Transform(quad.b), Transform(quad.c), Transform(quad.d));
+        public readonly Quad<VertexPositionColorTexture> Transform(Quad<VertexPositionColorTexture> quad) {
+            return new Quad<VertexPositionColorTexture>(Transform(quad.A), Transform(quad.B), Transform(quad.C), Transform(quad.D));
         }
 
         public Transform3 Around() => new Transform3(-X, Y, -Z, O);
@@ -58,15 +58,22 @@ namespace TranSimCS {
             var transformedVertices = src.Vertices.Select(Transform).ToArray();
             dst.AddAll(transformedVertices, src.Triangles);
         }
+        public MeshElement<SimpleMaterial, VertexPositionColorTexture> Transform(MeshElement<SimpleMaterial, VertexPositionColorTexture> src) {
+            var count = src.Vertices.Length;
+            var transformedVertices = src.Vertices.Select(Transform).ToArray();
+            return new(src.Name, src.Material, transformedVertices, src.Triangles, src.IsVisible, src.VertexProcessor);
+        }
         public void TransformOutOfPlace(MeshComplex src, MeshComplex dst) {
             foreach (var bin in src.Elements) {
-                dst.AddElement(TransformInPlace(bin));
+                if(bin is MeshElement<SimpleMaterial, VertexPositionColorTexture> bin0) {
+                    dst.AddElement(Transform(bin0));
+                }
             }
         }
         public void TransformInPlace(MeshElement<SimpleMaterial, VertexPositionColorTexture> mesh) => mesh.Vertices.TransformInPlace(Transform);
         public void TransformInPlace(MeshComplex mesh) {
             foreach(var submesh in mesh.Elements) {
-                TransformInPlace(submesh);
+                if(submesh is MeshElement<SimpleMaterial, VertexPositionColorTexture> bin0) TransformInPlace(bin0);
             }
         }
     }

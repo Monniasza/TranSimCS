@@ -20,8 +20,8 @@ using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Worlds.Car {
     public class Car : Obj, IObjMesh<Car>, IPosition {
-        public static Dictionary<string, MultiMesh> loadedMeshes = [];
-        public static ObservableList<(string, MultiMesh)> meshes = [];
+        public static Dictionary<string, MeshComplex> loadedMeshes = [];
+        public static ObservableList<(string, MeshComplex)> meshes = [];
         private static Random rnd = new Random();
         private static string objRoot;
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
@@ -44,9 +44,9 @@ namespace TranSimCS.Worlds.Car {
                 try {
                     log.Info("Loading car mesh " + obj);
                     var objData = newLoader.LoadObj(obj);
-                    var multimesh = new MultiMesh();
-                    var submesh = multimesh.GetOrCreateRenderBinForced(Assets.White);
-                    var mesh = ObjConverter.ToSingleMesh(objData, submesh);
+                    var multimesh = new MeshComplex();
+                    var mesh = ObjConverter.ToSingleMesh(objData);
+                    multimesh.AddElement(mesh);
                     meshes.Add((obj, multimesh));
                     loadedMeshes.Add(obj, multimesh);
                     mesh.Stats(log);
@@ -63,7 +63,7 @@ namespace TranSimCS.Worlds.Car {
         public MeshGenerator<Car> Mesh { get; }
 
         public Property<ObjPos> PositionProp { get; }
-        public MultiMesh? BodyMesh { get; private set; }
+        public MeshComplex? BodyMesh { get; private set; }
 
         public Property<string?> MeshIdProp;
         public string? MeshId { get => MeshIdProp.Value; set => MeshIdProp.Value = value; }
@@ -94,7 +94,7 @@ namespace TranSimCS.Worlds.Car {
             MeshId = element.Item1;
         }
 
-        private void GenerateMesh(Car car, MultiMesh mesh) {
+        private void GenerateMesh(Car car, MeshComplex mesh) {
             if (BodyMesh == null) return;
             var refframe = PositionProp.Value.CalcReferenceFrame();
             refframe.TransformOutOfPlace(BodyMesh, mesh);

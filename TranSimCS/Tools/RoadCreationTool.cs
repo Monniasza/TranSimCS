@@ -281,8 +281,9 @@ namespace TranSimCS.Tools {
                 var endDiff = endLateral * endWidth / 2;
                 Bezier3 lbound = GeometryUtils.GenerateJoinSpline(startPos - startDiff, endPos - endDiff, startTangent, -endTangent) + offset;
                 Bezier3 rbound = GeometryUtils.GenerateJoinSpline(startPos + startDiff, endPos + endDiff, startTangent, -endTangent) + offset;
-                IRenderBin renderBin = menu.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
+                var renderBin = MeshBuilder.NewBuilder(Assets.Road);
                 RoadRenderer.DrawBezierStrip(lbound, rbound, renderBin, previewColor);
+                menu.renderHelper.AddElement(renderBin.Create());
             }
         }
 
@@ -290,7 +291,7 @@ namespace TranSimCS.Tools {
             //unused
         }
 
-        void ITool.AddSelectors(MultiMesh addTo, MultiMesh visibleSelectors) {
+        void ITool.AddSelectors(MeshComplex invisibleSelectors, MeshComplex visibleSelectors) {
             SelectionUtils.AddAddLaneSelectors(menu);
         }
 

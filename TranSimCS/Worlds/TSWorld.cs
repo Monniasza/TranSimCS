@@ -73,7 +73,7 @@ namespace TranSimCS.Worlds
             Cars = new CarStack(this);
 
             //Spatial indexing
-            TempSelectorsMesh = new Property<Model.MultiMesh>(new Model.MultiMesh(), "selectors", null, Equality.ReferenceEqualComparer<MultiMesh>());
+            TempSelectorsMesh = new Property<MeshComplex>(new MeshComplex(), "selectors", null, Equality.ReferenceEqualComparer<MeshComplex>());
             TempSelectors = new SceneGraph.SceneLeaf(new MeshProperty(TempSelectorsMesh));
             RootGraph.Add(TempSelectors);
 

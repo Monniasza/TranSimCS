@@ -36,10 +36,12 @@ namespace TranSimCS.Model {
             var tricount = data.Length / 3;
             var tris = new MeshTri[tricount];
             for (int i = 0; i < tricount; i++) {
-                var a = data[i*3];
+                var a = data[i * 3];
                 var b = data[i * 3 + 2];
                 var c = data[i * 3 + 1];
                 tris[i] = new(a, b, c, tag);
             }
+            return tris;
+        }
     }
 }
