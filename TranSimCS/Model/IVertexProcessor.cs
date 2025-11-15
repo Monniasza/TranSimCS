@@ -65,10 +65,9 @@ namespace TranSimCS.Model {
             gpu.effect.LightingEnabled = UseNormals;
             gpu.effect.TextureEnabled = mat.Texture != null;
             gpu.effect.Texture = mat.Texture ?? gpu.effect.Texture;
-
             // Ensure depth testing is enabled to prevent Z-fighting and flickering
             gpu.gpu.DepthStencilState = DepthStencilState.Default;
-            gpu.gpu.SamplerStates[0] = SamplerState.PointWrap;
+            gpu.gpu.SamplerStates[0] = mat.SamplerState;
 
             foreach (var pass in gpu.effect.CurrentTechnique.Passes) {
                 pass.Apply();

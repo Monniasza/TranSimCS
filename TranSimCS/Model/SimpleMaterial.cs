@@ -14,5 +14,8 @@ namespace TranSimCS.Model {
         /// The texture used by the renderer. null for no texturing
         /// </summary>
         public Texture2D? Texture;
+        public SamplerState SamplerState = SamplerState.LinearWrap;
+
+        public SimpleMaterial() { }
     }
 }

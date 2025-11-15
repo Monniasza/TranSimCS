@@ -8,14 +8,17 @@ using Microsoft.Xna.Framework.Graphics;
 namespace TranSimCS.Model {
     public class RenderBinConverter {
         //OLD ==> NEW
-        public MeshComplex MultiMesh2MeshComplex(MultiMesh mesh) {
-            MeshComplex mc = new MeshComplex();
-            foreach(var row in mesh.RenderBins) {
+        public void MultiMesh2MeshComplex(MultiMesh mesh, MeshComplex dest) {
+            foreach (var row in mesh.RenderBins) {
                 SimpleMaterial mat = new SimpleMaterial();
                 mat.Texture = row.Key;
                 var meshElement = RenderBin2MeshElement(mat, row.Value);
-                mc.AddElement(meshElement);
+                dest.AddElement(meshElement);
             }
+        }
+        public MeshComplex MultiMesh2MeshComplex(MultiMesh mesh) {
+            MeshComplex mc = new MeshComplex();
+            MultiMesh2MeshComplex(mesh, mc);
             return mc;
         }
         public MeshElement<SimpleMaterial, VertexPositionColorTexture> RenderBin2MeshElement(SimpleMaterial material, IRenderBin mesh) {
