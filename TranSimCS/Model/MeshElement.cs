@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,28 +19,23 @@ namespace TranSimCS.Model {
             IsVisible = isVisible;
         }
 
-        public string Name;
+        public readonly string Name;
         public abstract Type MaterialType();
         public abstract Type VertexType();
 
         public MeshTri[] Triangles { get; set; }
         public bool IsVisible { get; set; }
-        public abstract MeshBvh GetSpatial();
-        public abstract IList Vertices0();
+        public abstract MeshBvh CreateSpatial();
 
-        public abstract bool Render(RenderManager gd);
+        public abstract void Render(RenderManager gd);
 
         public static string GoodName(Obj obj, params string[] elements) {
             return $"{obj.Guid}.{string.Join('/', elements)}";
         }
-
-        private static long count = 1 << 32;
-        public static string NewName() => count.ToString();
     }
     public class MeshElement<TMaterial, TVertex>: MeshElement{
         public TMaterial Material { get; set; }
         public TVertex[] Vertices { get; set; }
-        public IList Vertices0() => Vertices;
         public IVertexProcessor<TMaterial, TVertex>? VertexProcessor { get; set; }
         public IVertexProcessor<TMaterial, TVertex>? GetVertexProcessor() => VertexProcessor ?? VertexProcessor<TMaterial, TVertex>.Default;
         public IVertexProcessor<TMaterial, TVertex> GetVertexProcessorStrict() => VertexProcessor ?? VertexProcessor<TMaterial, TVertex>.GetDefault();
@@ -57,19 +51,16 @@ namespace TranSimCS.Model {
         public override Type MaterialType() => typeof(TMaterial);
         public override Type VertexType() => typeof(TVertex);
 
-        public override bool Render(RenderManager gd) {
-            if(!IsVisible) return false;
-            var vp = GetVertexProcessor();
-            if(vp == null) return false;
+        public override void Render(RenderManager gd) {
+            if(!IsVisible) return;
+            var vp = GetVertexProcessorStrict();
             vp.Render(gd, this);
-            return true;
         }
 
-        private MeshBvh<TMaterial, TVertex>? meshBvh;
-        public override MeshBvh GetSpatial() => GetSpatial0();
-        public MeshBvh<TMaterial, TVertex> GetSpatial0() {
-            meshBvh ??= MeshBvh<TMaterial, TVertex>.Build(this);
-            return meshBvh;
+        public override MeshBvh CreateSpatial() {
+            //TODO
+
+            throw new NotImplementedException();
         }
     }
 }

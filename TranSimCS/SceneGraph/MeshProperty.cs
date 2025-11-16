@@ -8,21 +8,21 @@ using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.SceneGraph {
     public class MeshProperty : IMeshSource {
-        private Property<MeshComplex> prop;
-        public event Action<MeshComplex>? OnMeshGenerated;
+        private Property<MultiMesh> prop;
+        public event Action<MultiMesh>? OnMeshGenerated;
         public event Action? OnMeshInvalidated;
 
-        public MeshProperty(Property<MeshComplex> prop) {
+        public MeshProperty(Property<MultiMesh> prop) {
             this.prop = prop;
             prop.ValueChanged += Prop_ValueChanged;
         }
 
-        private void Prop_ValueChanged(object? sender, PropertyChangedEventArgs2<MeshComplex> e) {
+        private void Prop_ValueChanged(object? sender, PropertyChangedEventArgs2<MultiMesh> e) {
             if (e.OldValue != null) OnMeshInvalidated?.Invoke();
             if (e.NewValue != null) OnMeshGenerated?.Invoke(e.NewValue);
         }
 
-        public MeshComplex GetMesh() {
+        public MultiMesh GetMesh() {
             return prop.Value;
         }
 

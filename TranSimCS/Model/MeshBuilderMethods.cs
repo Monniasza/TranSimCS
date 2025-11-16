@@ -6,8 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MLEM.Maths;
-using TranSimCS.Geometry;
 
 namespace TranSimCS.Model {
     /// <summary>
@@ -94,26 +92,22 @@ namespace TranSimCS.Model {
                 new VertexPositionColorTexture(quad.D, c, new(0, 1))
             ], quad.Tag);
         }
-        public static MeshBuilder<TMaterial, VertexPositionColorTexture> DrawQuadUV<TMaterial>(this MeshBuilder<TMaterial, VertexPositionColorTexture> meshBuilder, Color color, Vector3 a, Vector3 b, Vector3 c, Vector3 d, object? tag = null, RectangleF? rect = null) {
-            var l = rect?.Left ?? 0;
-            var u = rect?.Top ?? 1;
-            var r = rect?.Right ?? 1;
-            var D = rect?.Bottom ?? 0;
+        public static MeshBuilder<TMaterial, VertexPositionColorTexture> DrawQuadUV<TMaterial>(this MeshBuilder<TMaterial, VertexPositionColorTexture> meshBuilder, Color color, Vector3 a, Vector3 b, Vector3 c, Vector3 d, object? tag = null) {
             return DrawQuad(meshBuilder, [
-                new VertexPositionColorTexture(a, color, new(l, D)),
-                new VertexPositionColorTexture(b, color, new(r, D)),
-                new VertexPositionColorTexture(c, color, new(r, u)),
-                new VertexPositionColorTexture(d, color, new(l, u))
+                new VertexPositionColorTexture(a, color, new(0, 0)),
+                new VertexPositionColorTexture(b, color, new(1, 0)),
+                new VertexPositionColorTexture(c, color, new(1, 1)),
+                new VertexPositionColorTexture(d, color, new(0, 1))
             ], tag);
         }
 
         //PARALLELOGRAMS (POS/COL/UV?)
-        public static MeshBuilder<TMaterial, VertexPositionColorTexture> DrawParallelogram<TMaterial>(this MeshBuilder<TMaterial, VertexPositionColorTexture> meshBuilder, Vector3 a, Vector3 x, Vector3 y, Color c, object? tag = null, RectangleF ? rect = null) {
+        public static MeshBuilder<TMaterial, VertexPositionColorTexture> DrawParallelogram<TMaterial>(this MeshBuilder<TMaterial, VertexPositionColorTexture> meshBuilder, Vector3 a, Vector3 x, Vector3 y, Color c, float width = 0.2f) {
             var p1 = a;
             var p2 = a + x;
             var p3 = p2 + y;
             var p4 = a + y;
-            return DrawQuadUV(meshBuilder, c, p1, p2, p3, p4, tag, rect);
+            return DrawQuadUV(meshBuilder, c, p1, p2, p3, p4);
         }
 
         //LINES (POS/COL/UV)
@@ -138,77 +132,5 @@ namespace TranSimCS.Model {
             }
             return meshBuilder;
         }
-        public static void TagLast(this MeshElement rb, int count, object value) {
-            if (value == null) return;
-            if (count == 0) return;
-            int startIndex = (rb.Triangles.Length) - count; // Each triangle has 3 indices
-            if (count < 0) {
-                startIndex = 0;
-                count = rb.Triangles.Length;
-            }
-            for (int i = 0; i < count; i++) {
-                var tri = rb.Triangles[i];
-                tri.Tag = value;
-                rb.Triangles[i] = tri;
-            }
-        }
-
-        //STRIPS
-        /// <summary>
-        /// Draws a strip of vertices, where each vertex is connected to the next one in a triangle strip fashion.
-        /// The vertices should start at the bottom left and even positions are the left vertices, odd positions are the right vertices.
-        /// </summary>
-        /// <param name="vertices"></param>
-        /// <exception cref="ArgumentException"></exception>
-        public static void DrawStrip<TMaterial, TVertex>(this MeshBuilder<TMaterial, TVertex> rb, TVertex[] vertices, object? tag = null) {
-            ArgumentNullException.ThrowIfNull(vertices, nameof(vertices));
-            if (vertices.Length < 3) throw new ArgumentException("At least three vertices are required to draw a strip.");
-            int baseIDX = rb.AddVertices(vertices);
-            MeshTri[] tris = new MeshTri[vertices.Length];
-            for (int i = 0; i < tris.Length; i++) {
-                MeshTri tri = new MeshTri();
-                tri.Tag = tag;
-                tri.A = i;
-                if ((i & 1) == 0) {
-                    tri.B = i + 2;
-                    tri.C = i + 1;
-                } else {
-                    tri.B = i + 1;
-                    tri.C = i + 2;
-                }
-                tris[i] = tri;
-            }
-            rb.AddTris = tris;
-        }
-        public static void DrawClosedStrip<TMaterial, TVertex>(this MeshBuilder<TMaterial, TVertex> rb, TVertex[] l, TVertex[] r, object? tag = null) {
-            var woven = GeometryUtils.WeaveStrip(l, r).ToList();
-            woven.Add(l[0]);
-            woven.Add(r[0]);
-            DrawStrip(rb, woven.ToArray());
-        }
-        public static void DrawClosedStrip<TMaterial, TVertex>(this MeshBuilder<TMaterial, TVertex> rb, TVertex[] lr, object? tag = null) {
-            var woven = lr.ToList();
-            woven.Add(lr[0]);
-            woven.Add(lr[1]);
-            DrawStrip(rb, woven.ToArray());
-        }
-
-        public static void DrawStrip<TMaterial, TVertex>(this MeshBuilder<TMaterial, TVertex> rb, TVertex[] l, TVertex[] r, object? tag = null)
-            => DrawStrip(rb, GeometryUtils.WeaveStrip(l, r));
-
-        //TRIANGLES
-        /// <summary>
-        /// Draws a triangle using the specified vertices. They must be in the clockwise order to form a triangle.
-        /// </summary>
-        /// <param name="a">first vertex</param>
-        /// <param name="b">second vertex</param>
-        /// <param name="c">third vertex</param>
-        public static void DrawTriangle<TMaterial, TVertex>(this MeshBuilder<TMaterial, TVertex> rb, TVertex a, TVertex b, TVertex c, object? tag = null) {
-            int indexA = rb.AddVertex(a);
-            int indexB = rb.AddVertex(b);
-            int indexC = rb.AddVertex(c);
-            DrawTriangleIndices(rb, indexA, indexB, indexC, tag);
-        }
-        public static void DrawTriangleIndices<TMaterial, TVertex>(this MeshBuilder<TMaterial, TVertex> rb, int a, int b, int c, object? tag = null) => rb.Tris.Add(new(a, b, c, tag));
     }
 }

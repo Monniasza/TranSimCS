@@ -62,19 +62,6 @@ namespace TranSimCS.Save2 {
                 return result;
             };
         }
-        public unsafe static Setter<TSource, TField> CreateSetter<TSource, TField>(int offset) {
-            var type = typeof(TSource);
-            var fieldOffset = offset;
-
-            return (ref element, newValue) => {
-                var tmp = element;
-                var ptr = &tmp;
-                var newPtr = ptr + fieldOffset;
-                var castedPtr = (TField*)newPtr;
-                *castedPtr = newValue;
-                element = tmp;
-            };
-        }
 
         public static bool IsSubclassOrEqual(this Type a, Type b) {
             return a == b || a.IsSubclassOf(b);

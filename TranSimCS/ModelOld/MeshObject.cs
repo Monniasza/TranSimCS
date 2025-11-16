@@ -10,12 +10,12 @@ using TranSimCS.Worlds;
 namespace TranSimCS.Model {
     public struct MeshObject {
         public ObjPos pos;
-        public MeshComplex mesh;
+        public MultiMesh mesh;
 
-        public MeshObject(MeshComplex mesh) {
+        public MeshObject(MultiMesh mesh) {
             this.mesh = mesh;
         }
-        public MeshObject(MeshComplex mesh, ObjPos pos) {
+        public MeshObject(MultiMesh mesh, ObjPos pos) {
             this.mesh = mesh;
             this.pos = pos;
         }
@@ -25,11 +25,11 @@ namespace TranSimCS.Model {
             var inverseTransform = Matrix.Invert(transform);
 
             var invertedRay = RayMethods.Transform(ray, inverseTransform);
-            var lookup = MeshUtil.RayIntersectMeshes(mesh.Elements.Values, invertedRay, out T);
+            var lookup = MeshUtil.RayIntersectMeshes(mesh.RenderBins.Values, invertedRay, out T);
             tag = lookup;
             return T < float.MaxValue;
         }
-        public void Render(MeshComplex target) {
+        public void Render(MultiMesh target) {
             var refframe = pos.CalcReferenceFrame();
             refframe.TransformOutOfPlace(mesh, target);
         }

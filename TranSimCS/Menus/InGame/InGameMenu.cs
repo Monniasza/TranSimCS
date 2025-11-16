@@ -38,7 +38,7 @@ namespace TranSimCS.Menus.InGame {
 
         //Graphics
         public RenderManager renderManager { get; private set; }
-        public MeshComplex renderHelper { get; private set; }
+        public MultiMesh renderHelper { get; private set; }
 
         public Ray MouseRay { get; private set; } // Ray from the mouse position in the world
         public Ray MouseRayOld { get; private set; } // Ray from the mouse position in the world
@@ -104,10 +104,10 @@ namespace TranSimCS.Menus.InGame {
 
             //Generate graphics stuff
             renderManager = new RenderManager(Game.GraphicsDevice);
-            renderHelper = new MeshComplex();
+            renderHelper = new MultiMesh();
 
             //Set up meshes
-            SelectorObjects = new MeshComplex();
+            SelectorObjects = new MultiMesh();
 
             //Set up the UI from below
             RootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 120));

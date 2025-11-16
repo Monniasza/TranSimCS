@@ -5,21 +5,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
-using TranSimCS.Collections;
 
 namespace TranSimCS.Model {
     public class MeshComplex {
-        public readonly HashSet<MeshElement> Elements;
+        public readonly Dictionary<string, MeshElement> Elements;
 
         public MeshComplex() {
             Elements = [];
         }
 
-        public void AddElement(MeshElement meshElement) {
-            Elements.Add(meshElement);
+        public void AddElement(MeshElement<SimpleMaterial, VertexPositionColorTexture> meshElement) {
+            Elements.Add(meshElement.Name, meshElement);
         }
-        public bool Remove(MeshElement element) => Elements.Remove(element);
-        public void Clear() => Elements.Clear();
-        public void AddAll(MeshComplex other) => Elements.AddRange(other.Elements);
+        public bool RemoveKey(string key) => Elements.Remove(key);
+        public void Replace(MeshElement element) => Elements[element.Name] = element;
     }
 }

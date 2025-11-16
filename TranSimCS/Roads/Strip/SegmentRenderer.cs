@@ -18,9 +18,8 @@ namespace TranSimCS.Roads.Strip {
         /// </summary>
         /// <param name="connection">road segment</param>
         /// <param name="renderHelper">render helper</param>
-        public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MeshComplex renderHelper, float voffset = 0) {
-            var roadBin = new MeshBuilder<SimpleMaterial, VertexPositionColorTexture>();
-            roadBin.Material = new(Assets.Road);
+        public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MultiMesh renderHelper, float voffset = 0) {
+            IRenderBin roadBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
             foreach (var lane in connection.Lanes)
                 renderHelper.AddAll(lane.GetMesh());
 
@@ -69,8 +68,7 @@ namespace TranSimCS.Roads.Strip {
             var bottomPointsR = UniformTexturing.UniformTextured(leftDownPoints, avgWidthFn);
 
             //Draw the strips
-            var finishBin = new MeshBuilder<SimpleMaterial, VertexPositionColorTexture>();
-            finishBin.Material = new SimpleMaterial(texture);
+            IRenderBin finishBin = renderHelper.GetOrCreateRenderBinForced(texture);
             finishBin.DrawStrip(leftPointsL, leftPointsR);
             finishBin.DrawStrip(rightPointsL, rightPointsR);
             finishBin.DrawStrip(bottomPointsL, bottomPointsR);
@@ -80,15 +78,13 @@ namespace TranSimCS.Roads.Strip {
             var rightUpStartPos = rightTopPoints[0];
             var rightDownStartPos = rightDownPoints[0];
             var leftDownStartPos = leftDownPoints[0];
-            var startCap = GenerateEndCap(leftUpStartPos, rightUpStartPos, rightDownStartPos, leftDownStartPos, swidth, height, breadth);
-            finishBin.DrawQuad(startCap);
+            GenerateEndCap(leftUpStartPos, rightUpStartPos, rightDownStartPos, leftDownStartPos, swidth, height, breadth, finishBin);
 
             var leftUpEndPos = leftTopPoints.Last();
             var rightUpEndPos = rightTopPoints.Last();
             var rightDownEndPos = rightDownPoints.Last();
             var leftDownEndPos = leftDownPoints.Last();
-            var endCap = GenerateEndCap(rightUpEndPos, leftUpEndPos, leftDownEndPos, rightDownEndPos, swidth, height, breadth);
-            finishBin.DrawQuad(endCap);
+            GenerateEndCap(rightUpEndPos, leftUpEndPos, leftDownEndPos, rightDownEndPos, swidth, height, breadth, finishBin);
 
             //If the road is only 1 lane, do not render the islands
             if (connection.Lanes.Count < 2) return;
@@ -140,13 +136,25 @@ namespace TranSimCS.Roads.Strip {
                 DrawIsland(Surface.Tiles, Surface.Concrete, renderHelper, splineFrame, path, 0.5f, length);
             }
 
-            //Apply it all
-            renderHelper.AddElement(finishBin.Create());
-            renderHelper.AddElement(roadBin.Create());
         }
 
         public static PathD FlattenPath(IEnumerable<Vector3> points) => new PathD(points.Select(v => new PointD(v.X, v.Z)));
 
+        public static void DebugPolygon(MultiMesh mesh, Polygon polygon, Color c, Vector3 position, float stretch = 50) {
+            //Debug.Print("DebugPolygon");
+            var renderBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
+            foreach (var loop in polygon.path) {
+                //Debug.Print("DebugPolygon loop");
+                for (int i = 0; i < loop.Count; i++) {   
+                    var prev = loop[i];
+                    var next = loop[(i + 1) % loop.Count];
+                    var p1 = UnmapPolyPoint(prev, stretch);
+                    var p2 = UnmapPolyPoint(next, stretch);
+                    //Debug.Print($"DebugPolygon vert {i} @ {p1}");
+                    renderBin.DrawLine(p1, p2, Vector3.UnitY, c);
+                }
+            }
+        }
         public static Vector3 UnmapPolyPoint(PointD p, float stretch = 50) {
             float x = (float)p.x - 200;
             float y = 0.1f;
@@ -154,15 +162,13 @@ namespace TranSimCS.Roads.Strip {
             return new Vector3(x, y, z * stretch - 60);
         }
 
-        public static void DrawIsland(Surface surface, Surface sideSurface, MeshComplex mesh, SplineFrame frm, PathD path, float h, float stretch) {
+        public static void DrawIsland(Surface surface, Surface sideSurface, MultiMesh mesh, SplineFrame frm, PathD path, float h, float stretch) {
             if (Clipper.Area(path) < 0) path.Reverse();
             var retransformedPointsUp = Retransform(frm, path, h);
 
             if (DebugOptions.DebugIslands) {
                 var retransformedPointsHighUp = Retransform(frm, path, h * 2).ToArray();
-                var roadBin = new MeshBuilder<SimpleMaterial, VertexPositionColorTexture>();
-                roadBin.Material = new(Assets.Road);
-                roadBin.Name = MeshElement.NewName();
+                var roadBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
                 for (int i = 0; i < retransformedPointsHighUp.Length; i++) {
                     var prev = retransformedPointsHighUp[i];
                     var next = retransformedPointsHighUp[(i + 1) % retransformedPointsHighUp.Length];
@@ -172,24 +178,14 @@ namespace TranSimCS.Roads.Strip {
 
             var averagePosition = retransformedPointsUp.Aggregate((x, y) => x + y);
 
-            var sideTex = sideSurface.GetTexture();
-            if (sideTex != null) {
-                var sideRenderBin = new MeshBuilder<SimpleMaterial, VertexPositionColorTexture>();
-                sideRenderBin.Material = new(sideTex);
-                sideRenderBin.Name = MeshElement.NewName();
+            if(mesh.TryGetOrCreateRenderBin(sideSurface.GetTexture(), out var sideRenderBin)) {
                 var retransformedPoints = Retransform(frm, path, 0);
                 var retransformedPointsCyclic = retransformedPoints.Append(retransformedPoints.First()).ToArray();
                 var retransformedPointsUpCyclic = retransformedPointsUp.Append(retransformedPointsUp.First()).ToArray();
                 var texturedStrip = UniformTexturing.UniformTexturedTwin(retransformedPointsCyclic, retransformedPointsUpCyclic, UniformTexturing.PairStrip());
                 sideRenderBin.DrawStrip(texturedStrip.Item2, texturedStrip.Item1);
-                mesh.AddElement(sideRenderBin.Create());
             }
-
-            var topTex = surface.GetTexture();
-            if (topTex != null) {
-                var topRenderBin = new MeshBuilder<SimpleMaterial, VertexPositionColorTexture>();
-                topRenderBin.Material = new(topTex);
-                topRenderBin.Name = MeshElement.NewName();
+            if(mesh.TryGetOrCreateRenderBin(surface.GetTexture(), out var topRenderBin)) {
                 //Triangulate first in 2D
                 var transformedPath = path.Select(p => new PointD(p.x, p.y * stretch)).ToArray();
                 //transformedPath.Reverse();
@@ -198,26 +194,23 @@ namespace TranSimCS.Roads.Strip {
                 var requiredTriCount = (path.Count - 2) * 3;
                 Debug.Print($"Requested idx count: {requiredTriCount} triangulation: {triangulation.Length}");
                 
+
                 //Fill the top
-                var tris = MeshTri.FromArray(triangulation);
                 var vertices = retransformedPointsUp.Select(CreateVertex).ToArray();
                 RenderUtil.InvertNormals(triangulation);
-                topRenderBin.AddAll(vertices, tris);
-                mesh.AddElement(topRenderBin.Create());
+                ((IRenderBin)topRenderBin).DrawModel(vertices, triangulation);
             }
-
-            
         }
         public static IEnumerable<Vector3> Retransform(SplineFrame frame, IEnumerable<PointD> pts, float z = 0) {
             return pts.Select(pt => frame.Transform(new((float)pt.x, z, (float)pt.y)));
         }
 
-        public static Quad<VertexPositionColorTexture> GenerateEndCap(Vector3 ul, Vector3 ur, Vector3 dr, Vector3 dl, float width, float height, float expand) {
+        public static void GenerateEndCap(Vector3 ul, Vector3 ur, Vector3 dr, Vector3 dl, float width, float height, float expand, IRenderBin mesh) {
             var p1 = new VertexPositionColorTexture(ul, Color.White, new(0, 0));
             var p2 = new VertexPositionColorTexture(ur, Color.White, new(width, 0));
             var p3 = new VertexPositionColorTexture(dr, Color.White, new(width + expand, -height));
             var p4 = new VertexPositionColorTexture(dl, Color.White, new(-expand, -height));
-            return new(p1, p2, p3, p4);
+            mesh.DrawQuad(p1, p2, p3, p4);
         }
     }
 }

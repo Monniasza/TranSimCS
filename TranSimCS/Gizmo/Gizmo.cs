@@ -18,6 +18,6 @@ namespace TranSimCS.Gizmo {
             Mesh = new MeshGenerator<Gizmo>(this, (gizmo, mesh) => GenerateMesh(mesh));
         }
 
-        public abstract void GenerateMesh(MeshComplex mesh);
+        public abstract void GenerateMesh(MultiMesh mesh);
     }
 }

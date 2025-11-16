@@ -11,17 +11,13 @@ namespace TranSimCS.Model {
     public interface IVertexProcessor<TMaterial, TVertex> {
         public void Render(RenderManager gpu, MeshElement<TMaterial, TVertex> mesh);
         public Vector3 GetVertexCoords(TVertex vertex);
-        public TVertex SetCoords(TVertex vertex, Vector3 coords);
     }
     public class VertexProcessor<TMaterial, TVertex>: IVertexProcessor<TMaterial, TVertex> {
         public readonly Action<RenderManager, MeshElement<TMaterial, TVertex>> Renderer;
         public readonly Func<TVertex, Vector3> CoordGetter;
-        public readonly Func<TVertex, Vector3, TVertex> CoordSetter;
-
-        public VertexProcessor(Action<RenderManager, MeshElement<TMaterial, TVertex>> renderer, Func<TVertex, Vector3> coordGetter, Func<TVertex, Vector3, TVertex> coordSetter) {
+        public VertexProcessor(Action<RenderManager, MeshElement<TMaterial, TVertex>> renderer, Func<TVertex, Vector3> coordGetter) {
             Renderer = renderer;
             CoordGetter = coordGetter;
-            CoordSetter = coordSetter;
         }
         public static IVertexProcessor<TMaterial, TVertex>? Default { get; set; }
         internal static IVertexProcessor<TMaterial, TVertex> GetDefault() => Default ?? throw new NotSupportedException($"Vertex processor for {typeof(TMaterial)}/{typeof(TVertex)} not supported");
@@ -29,7 +25,6 @@ namespace TranSimCS.Model {
         public Vector3 GetVertexCoords(TVertex vertex) => CoordGetter(vertex);
 
         public void Render(RenderManager gpu, MeshElement<TMaterial, TVertex> mesh) => Renderer(gpu, mesh);
-        public TVertex SetCoords(TVertex vertex, Vector3 coords) => CoordSetter(vertex, coords);
     }
     public static class VertexProcessors {
         public static SimpleVertexProcessor<VertexPositionColorTexture> vpVPCT;
@@ -51,10 +46,6 @@ namespace TranSimCS.Model {
         public static readonly SimpleVertexProcessor<TVertex> INSTANCE;
 
         public Vector3 GetVertexCoords(TVertex vertex) => CoordGetter(vertex);
-        public TVertex SetCoords(TVertex vertex, Vector3 coords){
-            CoordSetter(ref vertex, coords);
-            return vertex;
-        }
 
         public void Render(RenderManager gpu, MeshElement<SimpleMaterial, TVertex> mesh) {
             var mat = mesh.Material;
@@ -103,9 +94,9 @@ namespace TranSimCS.Model {
             if (_indexScratch.Length < indexCount) {
                 Array.Resize(ref _indexScratch, GrowCapacity(_indexScratch.Length, indexCount));
             }
-        }        
+        }
 
-        public static Setter<TVertex, Vector3> CoordSetter;
+
         public static Func<TVertex, Vector3> CoordGetter;
         private static Dictionary<GraphicsDevice, BasicEffect> effectGenerator = [];
         public static bool UseNormals;
@@ -119,7 +110,6 @@ namespace TranSimCS.Model {
                     case VertexElementUsage.Position:
                         var fieldOffset = element.Offset;
                         CoordGetter = JsonProcessor.CreateDelegate<TVertex, Vector3>(fieldOffset);
-                        CoordSetter = JsonProcessor.CreateSetter<TVertex, Vector3>(fieldOffset);
                         break;
                     case VertexElementUsage.Normal:
                         UseNormals = true;

@@ -17,6 +17,5 @@ namespace TranSimCS.Model {
         public SamplerState SamplerState = SamplerState.LinearWrap;
 
         public SimpleMaterial() { }
-        public SimpleMaterial(Texture2D? tex) { Texture = tex; }
     }
 }
