@@ -6,12 +6,11 @@ using TranSimCS.Roads;
 namespace TranSimCS.Roads.Strip {
     public static class StripRenderer {
 
-        public static void GenerateLaneStripMesh(LaneStrip laneStrip, MeshComplex renderer, float voffset = 0.01f) {
+        public static void GenerateLaneStripMesh(LaneStrip laneStrip, MultiMesh renderer, float voffset = 0.01f) {
             var tag = laneStrip.Tag;
 
-            var roadBin = MeshBuilder.NewBuilder(Assets.Road);
+            var roadBin = renderer.GetOrCreateRenderBinForced(Assets.Road);
             RoadRenderer.GenerateLaneRangeMesh(tag, roadBin, laneStrip.Spec.Color, voffset, laneStrip); // Generate the lane tag mesh
-            renderer.AddElement(roadBin.Create());
 
             //Generate arrows
             float aoffset = 0.15f;
@@ -33,9 +32,8 @@ namespace TranSimCS.Roads.Strip {
             var displacement = tangent * width / 2;
             midpoint += nrm * aoffset;
 
-            var arrowBin = MeshBuilder.NewBuilder(Assets.Arrow);
+            var arrowBin = renderer.GetOrCreateRenderBinForced(Assets.Arrow);
             arrowBin.DrawLine(midpoint - displacement, midpoint + displacement, nrm, Color.White, arrowWidth);
-            renderer.AddElement(arrowBin.Create());
 
             //Generate side-lines
         }

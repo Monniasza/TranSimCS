@@ -113,10 +113,10 @@ namespace TranSimCS.Roads.Strip {
         public (Bezier3, Bezier3) SplineCache => splineCache ?? RecalcSplines();
 
         //Mesh cache
-        private MeshComplex? mesh; // Cached mesh for the lane strip
-        public MeshComplex GetMesh() {
+        private MultiMesh? mesh; // Cached mesh for the lane strip
+        public MultiMesh GetMesh() {
             if (mesh == null) {
-                mesh = new MeshComplex(); // Create a new mesh if it doesn't exist
+                mesh = new MultiMesh(); // Create a new mesh if it doesn't exist
                 StripRenderer.GenerateLaneStripMesh(this, mesh); // Generate the mesh for the lane strip if it doesn't exist
             }
             return mesh; // Return the cached mesh

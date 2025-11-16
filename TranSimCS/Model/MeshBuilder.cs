@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Model.OBJ;
 
 namespace TranSimCS.Model {
@@ -78,15 +77,6 @@ namespace TranSimCS.Model {
         }
         public MeshElement<TMaterial, TVertex> Create() {
             return new MeshElement<TMaterial, TVertex>(Name, Material, Verts.ToArray(), Tris.ToArray(), IsVisible, VertexProcessor);
-        }
-    }
-
-    public static class MeshBuilder {
-        public static MeshBuilder<SimpleMaterial, VertexPositionColorTexture> NewBuilder(Texture2D texture) {
-            var mb = new MeshBuilder<SimpleMaterial, VertexPositionColorTexture>();
-            mb.Name = MeshElement.NewName();
-            mb.Material = new SimpleMaterial(texture);
-            return mb;
         }
     }
 }
