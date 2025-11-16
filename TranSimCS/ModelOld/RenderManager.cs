@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Model;
 using TranSimCS.Worlds.Property;
 
-namespace TranSimCS.Model {
+namespace TranSimCS.ModelOld {
     public class RenderManager {
         public readonly Property<Camera> CameraProp;
         public readonly GraphicsDevice gpu;
