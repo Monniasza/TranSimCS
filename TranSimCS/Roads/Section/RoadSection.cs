@@ -12,7 +12,7 @@ using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Property;
 
-namespace TranSimCS.Roads {
+namespace TranSimCS.Roads.Section {
     public class RoadSection : Obj, IObjMesh<RoadSection>{
         //Added nodes, maintained by the 
         private List<RoadNodeEnd> nodes = new();
@@ -48,7 +48,7 @@ namespace TranSimCS.Roads {
             if (pair.End == node) affectedHalf = SegmentHalf.End;
 
             if (affectedHalf != null) {
-                RoadNodeEnd otherEnd = (affectedHalf == SegmentHalf.Start) ? pair.End : pair.Start;
+                RoadNodeEnd otherEnd = affectedHalf == SegmentHalf.Start ? pair.End : pair.Start;
                 var replacement = otherEnd;
                 var closestDistance = float.PositiveInfinity;
 

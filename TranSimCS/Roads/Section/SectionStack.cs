@@ -9,7 +9,7 @@ using TranSimCS.Save2;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Stack;
 
-namespace TranSimCS.Roads {
+namespace TranSimCS.Roads.Section {
     public class SectionStack : ObjectStack<RoadSection, SectionStack> {
         public readonly TrackerSpatial<RoadSection, SectionStack> trackerSpatial;
         public SectionStack(TSWorld world) : base(world) {
