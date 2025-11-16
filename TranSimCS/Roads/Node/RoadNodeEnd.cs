@@ -26,6 +26,7 @@ namespace TranSimCS.Roads.Node {
         internal RoadNodeEnd(NodeEnd end, RoadNode node) {
             End = end;
             Node = node;
+            ConnectedSection = new Property<RoadSection?>(null, "connection");
             ConnectedSection.ValueChanged += ConnectedSection_ValueChanged;
         }
 
@@ -43,7 +44,7 @@ namespace TranSimCS.Roads.Node {
         public ISet<RoadStrip> ConnectedSegments => new ReadOnlySet<RoadStrip>(connectedSegments); // Expose the connections set
 
         //Indexing of the road sections
-        public Property<RoadSection> ConnectedSection { get; } = new Property<RoadSection>(null, "connection");
+        public readonly Property<RoadSection?> ConnectedSection;
 
         //Position
         public Property<ObjPos> PositionProp => Node.PositionProp;
@@ -70,6 +71,16 @@ namespace TranSimCS.Roads.Node {
 
         public void Rotate(int fieldAzimuth, float pitch, float tilt) {
             ((IDraggableObj)Node).Rotate(fieldAzimuth, pitch, tilt);
+        }
+
+        public RoadSection GetOrCreateSection() {
+            var section = ConnectedSection.Value;
+            if (section == null) {
+                section = new RoadSection(Node.World);
+                ConnectedSection.Value = section;
+                Node.World.RoadSections.data.Add(section);
+            }
+            return section;
         }
     }
 }

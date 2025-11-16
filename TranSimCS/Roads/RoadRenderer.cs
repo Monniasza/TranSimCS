@@ -208,6 +208,8 @@ namespace TranSimCS.Roads {
 
             //Generate other vertices on the left
             GenerateSubrangeVerts(mesh, leftNodes.ToArray(), -1, accuracy, voffset);
+
+            mesh.AddTagsToLastTriangles(-1, roadSection);
         }
 
         public static void GenerateSubrangeVerts(Mesh mesh, RoadNodeEnd[] nodes, int discriminant, int accuracy = 17, float voffset = 0f) {

@@ -35,6 +35,13 @@ namespace TranSimCS.Roads.Section {
         }
         internal void OnConnect(RoadNodeEnd node) {
             nodes.Add(node);
+
+            if (nodes.Count == 1) {
+                MainSlopeNodes.Value = new(node, node);
+            } else if (nodes.Count == 2) {
+                MainSlopeNodes.Value = new(MainSlopeNodes.Value.Start, node);
+            }
+
             node.Node.PropertyChanged += Node_PropertyChanged;
             Regenerate();
         }

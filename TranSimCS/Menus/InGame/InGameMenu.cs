@@ -147,6 +147,7 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("finish", new RoadFinishTool(this));
             SetUpToolPictureButton("trashdump", new DumpingTool(this));
             SetUpToolPictureButton("precpos", new PrecPos(this));
+            SetUpToolPictureButton("sectionedit", new SecGen(this));
 
             //Set up the tool preview
             ToolDescPanel = new ToolDescriptionPanel(this);
