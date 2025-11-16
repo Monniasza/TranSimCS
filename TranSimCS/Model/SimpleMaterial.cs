@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace TranSimCS.Model {
+namespace TranSimCS.ModelOld {
     /// <summary>
     /// A material for <see cref="SimpleVertexProcessor{TVertex}"/>
     /// </summary>
