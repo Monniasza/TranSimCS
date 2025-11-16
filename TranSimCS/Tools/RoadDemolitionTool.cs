@@ -25,7 +25,7 @@ namespace TranSimCS.Tools {
             var roadSelection = game.MouseOverRoad;
             if (roadSelection == null) return;
 
-            IRenderBin renderBin = game.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
+            Mesh renderBin = game.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
 
             float v1 = 0.2f;
             float v2 = 0.3f;

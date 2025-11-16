@@ -44,7 +44,7 @@ namespace TranSimCS.Model {
         }
         public void AddAll(MultiMesh meshes) {
             foreach (var kv in meshes.RenderBins) {
-                IRenderBin renderBin = GetOrCreateRenderBinForced(kv.Key);
+                Mesh renderBin = GetOrCreateRenderBinForced(kv.Key);
                 renderBin.DrawModel(kv.Value);
             }
         }

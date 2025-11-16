@@ -9,11 +9,11 @@ namespace TranSimCS.Model {
     public static class MeshUtil {
         const bool allowBVH = true;
 
-        public static void Stats(this IRenderBin mesh, Logger log) {
+        public static void Stats(this Mesh mesh, Logger log) {
             log.Info($"Mesh stats: verts {mesh.Vertices.Count}, indices {mesh.Indices.Count}");
         }
 
-        public static BoundingBox BoundingBox(this IRenderBin mesh) {
+        public static BoundingBox BoundingBox(this Mesh mesh) {
             if(allowBVH && mesh is Mesh concrete) {
                 return concrete.GetAccelerationStructure().Bounds;
             } else {
@@ -25,7 +25,7 @@ namespace TranSimCS.Model {
         }
 
         
-        public static object? RayIntersectMesh(IRenderBin mesh, Ray ray, out float intersectionDistance) {
+        public static object? RayIntersectMesh(Mesh mesh, Ray ray, out float intersectionDistance) {
             if (allowBVH && mesh is Mesh concrete) {
                 var bvh = concrete.GetAccelerationStructure();
                 if (bvh.RayIntersect(ray, out var triId, out var hitDist)) {
@@ -39,7 +39,7 @@ namespace TranSimCS.Model {
             }
         }
 
-        private static object? RayIntersectMeshLinear(IRenderBin mesh, Ray ray, out float intersectionDistance0) {
+        private static object? RayIntersectMeshLinear(Mesh mesh, Ray ray, out float intersectionDistance0) {
             object? tag = null;
             var minDist = float.MaxValue;
             for (int i = 0; i < mesh.Indices.Count; i += 3) {
@@ -60,10 +60,10 @@ namespace TranSimCS.Model {
             return tag;
         }
 
-        public static object? RayIntersectMeshes(IEnumerable<IRenderBin> meshes, Ray ray, out float intersectionDistance) {
+        public static object? RayIntersectMeshes(IEnumerable<Mesh> meshes, Ray ray, out float intersectionDistance) {
             object? tag = null;
             float intersectionDistance0 = float.MaxValue;
-            foreach (IRenderBin mesh in meshes) {
+            foreach (Mesh mesh in meshes) {
                 object? tag1 = RayIntersectMesh(mesh, ray, out var intersectionDistance1);
                 if (intersectionDistance1 < intersectionDistance0) {
                     intersectionDistance0 = intersectionDistance1;

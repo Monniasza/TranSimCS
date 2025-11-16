@@ -21,7 +21,7 @@ namespace TranSimCS.Model {
             MultiMesh2MeshComplex(mesh, mc);
             return mc;
         }
-        public MeshElement<SimpleMaterial, VertexPositionColorTexture> RenderBin2MeshElement(SimpleMaterial material, IRenderBin mesh) {
+        public MeshElement<SimpleMaterial, VertexPositionColorTexture> RenderBin2MeshElement(SimpleMaterial material, Mesh mesh) {
             var tricount = mesh.Indices.Count / 3;
             MeshTri[] tris = new MeshTri[tricount];
             for (int i = 0; i < tricount; i+=3) {
@@ -45,7 +45,7 @@ namespace TranSimCS.Model {
             foreach(var row in mc.Elements) {
                 var meshElement0 = row.Value;
                 if(meshElement0 is MeshElement<SimpleMaterial, VertexPositionColorTexture> meshElement) {
-                    IRenderBin bin = mesh.GetOrCreateRenderBinForced(meshElement.Material.Texture);
+                    Mesh bin = mesh.GetOrCreateRenderBinForced(meshElement.Material.Texture);
                     MeshElement2Mesh(meshElement, bin);
                 }
             }
@@ -56,7 +56,7 @@ namespace TranSimCS.Model {
             MeshElement2Mesh(meshElement, mesh);
             return mesh;
         }
-        public void MeshElement2Mesh(MeshElement<SimpleMaterial, VertexPositionColorTexture> meshElement, IRenderBin renderBin) {
+        public void MeshElement2Mesh(MeshElement<SimpleMaterial, VertexPositionColorTexture> meshElement, Mesh renderBin) {
             var verts = meshElement.Vertices;
             var tris = meshElement.Triangles;
             int[] indices = new int[tris.Length * 3];

@@ -13,7 +13,7 @@ using TranSimCS.Tools;
 namespace TranSimCS.Menus.InGame {
     public partial class InGameMenu {
         private void DrawHighlights(GameTime time) {
-            IRenderBin renderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
+            Mesh renderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
 
             //If a road segment is selected, draw the selection
             var roadSelection = MouseOverRoad;
@@ -77,13 +77,13 @@ namespace TranSimCS.Menus.InGame {
             renderHelper.AddAll(SelectorObjects);            
 
             //If the add lane button is selected, draw it
-            IRenderBin plusRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Add);
+            Mesh plusRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Add);
             if (SelectedObject is AddLaneSelection selection)
                 RoadRenderer.CreateAddLane(selection, plusRenderBin, configuration.LaneSpec.Width, roadSegmentHighlightColor, 0.5f);
 
             //Render ground with multiple planes
             var centerPos = renderManager.Camera.Position;
-            IRenderBin grassBin = renderHelper.GetOrCreateRenderBinForced(Assets.Grass);
+            Mesh grassBin = renderHelper.GetOrCreateRenderBinForced(Assets.Grass);
             RenderGround(centerPos, grassBin);
 
             //Render road tool
@@ -99,7 +99,7 @@ namespace TranSimCS.Menus.InGame {
             renderManager.Render(renderHelper);
         }
 
-        private void RenderGround(Vector3 posoffset, IRenderBin renderBin) {
+        private void RenderGround(Vector3 posoffset, Mesh renderBin) {
             posoffset.Y = 0;
 
             //Render the center
@@ -120,7 +120,7 @@ namespace TranSimCS.Menus.InGame {
                 scale *= 2;
             }
         }
-        private void GroundParallelogram(IRenderBin renderBin, Vector3 initialpos, Vector3 basepos, Vector3 xplus, Vector3 yplus, float scale) {
+        private void GroundParallelogram(Mesh renderBin, Vector3 initialpos, Vector3 basepos, Vector3 xplus, Vector3 yplus, float scale) {
             var a = (initialpos + basepos * scale);
             var s = scale / 100;
             var C = Color.White;

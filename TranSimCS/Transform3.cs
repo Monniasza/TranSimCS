@@ -54,7 +54,7 @@ namespace TranSimCS {
             var roll = MathF.Atan2(yComp, xComp);
             return new Vector3(yaw, pitch, roll);
         }
-        public void TransformOutOfPlace(IRenderBin src, IRenderBin dst) {
+        public void TransformOutOfPlace(Mesh src, Mesh dst) {
             if (dst == null) dst = src;
             var count = src.Vertices.Count;
             var transformedVertices = src.Vertices.Select(Transform).ToArray();
@@ -66,7 +66,7 @@ namespace TranSimCS {
                 TransformOutOfPlace(bin.Value, tgtBin);
             }
         }
-        public void TransformInPlace(IRenderBin mesh) => mesh.Vertices.TransformInPlace(Transform);
+        public void TransformInPlace(Mesh mesh) => mesh.Vertices.TransformInPlace(Transform);
         public void TransformInPlace(MultiMesh mesh) {
             foreach(var submesh in mesh.RenderBins) TransformInPlace(submesh.Value);
         }

@@ -46,7 +46,7 @@ namespace TranSimCS.Worlds.Building {
             var refframe = unit.PositionProp.Value.CalcReferenceFrame();
             refframe.TransformInPlace(mesh);
         }
-        private static void EmitStrip(object tag, Vector3i size, IRenderBin mesh) {
+        private static void EmitStrip(object tag, Vector3i size, Mesh mesh) {
             var width = size.x;
             var depth = size.z;
             var height = size.y;

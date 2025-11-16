@@ -21,7 +21,7 @@ namespace TranSimCS.Model {
         /// <param name="c">third vertex</param>
         /// <param name="d">fourth vertex</param>
         private static readonly int[] indexDataQuadLookup = [0, 1, 2, 0, 2, 3];
-        public static void DrawQuad(this IRenderBin rb, VertexPositionColorTexture a, VertexPositionColorTexture b, VertexPositionColorTexture c, VertexPositionColorTexture d) {
+        public static void DrawQuad(this Mesh rb, VertexPositionColorTexture a, VertexPositionColorTexture b, VertexPositionColorTexture c, VertexPositionColorTexture d) {
             int indexA = rb.AddVertex(a);
             int indexB = rb.AddVertex(b);
             int indexC = rb.AddVertex(c);
@@ -31,7 +31,7 @@ namespace TranSimCS.Model {
                 rb.AddIndex(indexDataQuad[index]);
             }
         }
-        public static void DrawQuad(this IRenderBin rb, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, RectangleF rect) {
+        public static void DrawQuad(this Mesh rb, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, RectangleF rect) {
             var minU = rect.Left;
             var minV = rect.Top;
             var maxU = rect.Right;
@@ -43,19 +43,19 @@ namespace TranSimCS.Model {
                 new VertexPositionColorTexture(c, color, new(maxU, maxV)),
                 new VertexPositionColorTexture(d, color, new(minU, maxV)));
         }
-        public static void DrawQuad(this IRenderBin rb, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color) {
+        public static void DrawQuad(this Mesh rb, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color) {
             rb.DrawQuad(a, b, c, d, color, new RectangleF(0, 0, 1, 1));
         }
-        public static void DrawQuad(this IRenderBin rb, QuadOld q) => rb.DrawQuad(q.a, q.b, q.c, q.d);
-        public static void DrawQuad(this IRenderBin rb, int a, int b, int c, int d) {
+        public static void DrawQuad(this Mesh rb, QuadOld q) => rb.DrawQuad(q.a, q.b, q.c, q.d);
+        public static void DrawQuad(this Mesh rb, int a, int b, int c, int d) {
             int[] indexDataQuad = [a, b, c, d];
             foreach (var index in indexDataQuadLookup) rb.AddIndex(indexDataQuad[index]);
         }
 
-        public static void DrawParallelogram(this IRenderBin rb, Vector3 origin, Vector3 plusX, Vector3 plusY, Color c) {
+        public static void DrawParallelogram(this Mesh rb, Vector3 origin, Vector3 plusX, Vector3 plusY, Color c) {
             rb.DrawQuad(origin + plusY, origin + plusX + plusY, origin + plusX, origin, c);
         }
-        public static void DrawParallelogram(this IRenderBin rb, Vector3 origin, Vector3 plusX, Vector3 plusY, Color c, RectangleF rect) {
+        public static void DrawParallelogram(this Mesh rb, Vector3 origin, Vector3 plusX, Vector3 plusY, Color c, RectangleF rect) {
             rb.DrawQuad(origin + plusY, origin + plusX + plusY, origin + plusX, origin, c, rect);
         }
 
@@ -65,7 +65,7 @@ namespace TranSimCS.Model {
         /// <param name="a">first vertex</param>
         /// <param name="b">second vertex</param>
         /// <param name="c">third vertex</param>
-        public static void DrawTriangle(this IRenderBin rb, VertexPositionColorTexture a, VertexPositionColorTexture b, VertexPositionColorTexture c) {
+        public static void DrawTriangle(this Mesh rb, VertexPositionColorTexture a, VertexPositionColorTexture b, VertexPositionColorTexture c) {
             int indexA = rb.AddVertex(a);
             int indexB = rb.AddVertex(b);
             int indexC = rb.AddVertex(c);
@@ -78,7 +78,7 @@ namespace TranSimCS.Model {
         /// </summary>
         /// <param name="vertices"></param>
         /// <exception cref="ArgumentException"></exception>
-        public static void DrawStrip(this IRenderBin rb, VertexPositionColorTexture[] vertices) {
+        public static void DrawStrip(this Mesh rb, VertexPositionColorTexture[] vertices) {
             ArgumentNullException.ThrowIfNull(vertices);
             if (vertices.Length < 3) throw new ArgumentException("At least three vertices are required to draw a strip.");
             int[] newVertexIds = new int[vertices.Length];
@@ -97,7 +97,7 @@ namespace TranSimCS.Model {
             }
         }
 
-        public static void DrawLine(this IRenderBin rb, Vector3 start, Vector3 end, Vector3 normal, Color c, float width = 0.2f) {
+        public static void DrawLine(this Mesh rb, Vector3 start, Vector3 end, Vector3 normal, Color c, float width = 0.2f) {
             var len = end - start;
             var cross = Vector3.Cross(normal, len);
             cross.Normalize();
@@ -115,23 +115,23 @@ namespace TranSimCS.Model {
            );
         }
 
-        public static void DrawClosedStrip(this IRenderBin rb, VertexPositionColorTexture[] l, VertexPositionColorTexture[] r) {
+        public static void DrawClosedStrip(this Mesh rb, VertexPositionColorTexture[] l, VertexPositionColorTexture[] r) {
             var woven = GeometryUtils.WeaveStrip(l, r).ToList();
             woven.Add(l[0]);
             woven.Add(r[0]);
             DrawStrip(rb, woven.ToArray());
         }
-        public static void DrawClosedStrip(this IRenderBin rb, VertexPositionColorTexture[] lr) {
+        public static void DrawClosedStrip(this Mesh rb, VertexPositionColorTexture[] lr) {
             var woven = lr.ToList();
             woven.Add(lr[0]);
             woven.Add(lr[1]);
             DrawStrip(rb, woven.ToArray());
         }
 
-        public static void DrawStrip(this IRenderBin rb, VertexPositionColorTexture[] l, VertexPositionColorTexture[] r)
+        public static void DrawStrip(this Mesh rb, VertexPositionColorTexture[] l, VertexPositionColorTexture[] r)
             => DrawStrip(rb, GeometryUtils.WeaveStrip(l, r));
 
-        public static void DrawCenteredPoly(this IRenderBin rb, VertexPositionColorTexture center, params VertexPositionColorTexture[] perimeter) {
+        public static void DrawCenteredPoly(this Mesh rb, VertexPositionColorTexture center, params VertexPositionColorTexture[] perimeter) {
             var centerIdx = rb.AddVertex(center);
             var perimeterIndexes = new int[perimeter.Length];
             for (int i = 0; i < perimeter.Length; i++)
@@ -151,7 +151,7 @@ namespace TranSimCS.Model {
         /// The elements should start at top left
         /// </summary>
         /// <param name="vertices"></param>
-        public static void DrawGrid(this IRenderBin rb, VertexPositionColorTexture[,] vertices) {
+        public static void DrawGrid(this Mesh rb, VertexPositionColorTexture[,] vertices) {
             ArgumentNullException.ThrowIfNull(vertices);
             int height = vertices.GetLength(1);
             int width = vertices.GetLength(0);
@@ -179,7 +179,7 @@ namespace TranSimCS.Model {
             }
         }
 
-        public static void AddTagsToLastTriangles(this IRenderBin rb, int count, object value) {
+        public static void AddTagsToLastTriangles(this Mesh rb, int count, object value) {
             if (value == null) return;
             if (count == 0) return;
             int startIndex = (rb.Indices.Count / 3) - count; // Each triangle has 3 indices

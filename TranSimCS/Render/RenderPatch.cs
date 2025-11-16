@@ -13,7 +13,7 @@ namespace TranSimCS.Render {
     public delegate VertexPositionColorTexture PointGenerator(Vector3 pointPos, Vector2 interpPos);
 
     public static class RenderPatch {
-        public static void DrawDebugFence(IRenderBin mesh, ISpline<Vector3> spline, Vector3 height, Color color, int accuracy = 17) {
+        public static void DrawDebugFence(Mesh mesh, ISpline<Vector3> spline, Vector3 height, Color color, int accuracy = 17) {
             var points = GeometryUtils.GenerateSplinePoints(spline, accuracy);
             var strip = new VertexPositionColorTexture[accuracy * 2];
             for(int i = 0; i < accuracy; i++) {
@@ -42,7 +42,7 @@ namespace TranSimCS.Render {
         /// <param name="resC">resolution of the top and bottom</param>
         /// <param name="resD">resolution of the left and right</param>
         public static void RenderCoonsPatch(
-            IRenderBin mesh,
+            Mesh mesh,
             ISpline<Vector3> c0,
             ISpline<Vector3> c1,
             ISpline<Vector3> d0,

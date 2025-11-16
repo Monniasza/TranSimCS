@@ -11,6 +11,7 @@ using MLEM.Input;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
+using TranSimCS.ModelOld;
 using TranSimCS.Roads.Node;
 using TranSimCS.Tools.Panels;
 using TranSimCS.Worlds;
@@ -157,7 +158,7 @@ namespace TranSimCS.Tools {
                 new VertexPositionColorTexture(startPoint2 + bw     , Color.Orange, new(1, 1)),
                 new VertexPositionColorTexture(startPoint2 - bw     , Color.Orange, new(0, 1))
             );
-            IRenderBin bin = menu.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
+            Mesh bin = menu.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
             bin.DrawQuad(quad); bin.DrawQuad(quad2);
         }
 

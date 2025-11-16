@@ -58,7 +58,7 @@ namespace TranSimCS.Menus.Gizmo {
             return plane;
         }
         // Builds the visual quad representing the gizmo and registers selection tags.
-        public void CreateMesh(IRenderBin renderBin) {
+        public void CreateMesh(Mesh renderBin) {
             var refpos = roadNode.PositionProp.Value;
             var azimuth = refpos.Azimuth;
             var radians = GeometryUtils.FieldToRadians(azimuth);

@@ -67,7 +67,7 @@ namespace TranSimCS.Render {
         public Vector3 position => data.Position;
         public int index;
 
-        public VertexNode(IRenderBin mesh, VertexPositionColorTexture position) {
+        public VertexNode(Mesh mesh, VertexPositionColorTexture position) {
             index = mesh.AddVertex(position);
             data = position;
         }
@@ -76,11 +76,11 @@ namespace TranSimCS.Render {
     public static class EarClipping {
         private static Logger log = LogManager.GetCurrentClassLogger();
 
-        public static void DrawEarClipping(IRenderBin mesh, params int[] indices) {
+        public static void DrawEarClipping(Mesh mesh, params int[] indices) {
 
         }
 
-        public static void DrawEarClipping(IRenderBin mesh, params VertexPositionColorTexture[] verts) {
+        public static void DrawEarClipping(Mesh mesh, params VertexPositionColorTexture[] verts) {
             var normal = GeometryUtils.NormalPoly(verts.Select(v => v.Position).ToArray());
             var addedVerts = verts.Select(v => (mesh.AddVertex(v), v)).ToArray();
             var length = verts.Length;
@@ -140,7 +140,7 @@ namespace TranSimCS.Render {
             OutputTriangle(mesh, currentNode);
         }
 
-        public static void OutputTriangle(IRenderBin mesh, DLNode<(int, VertexPositionColorTexture)> node) {
+        public static void OutputTriangle(Mesh mesh, DLNode<(int, VertexPositionColorTexture)> node) {
             var prevIndex = node.Prev.val.Item1;
             var nextIndex = node.Next.val.Item1;
             var currIndex = node.val.Item1;

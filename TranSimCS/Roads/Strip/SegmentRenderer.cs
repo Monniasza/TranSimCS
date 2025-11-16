@@ -19,7 +19,7 @@ namespace TranSimCS.Roads.Strip {
         /// <param name="connection">road segment</param>
         /// <param name="renderHelper">render helper</param>
         public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MultiMesh renderHelper, float voffset = 0) {
-            IRenderBin roadBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
+            Mesh roadBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
             foreach (var lane in connection.Lanes)
                 renderHelper.AddAll(lane.GetMesh());
 
@@ -68,7 +68,7 @@ namespace TranSimCS.Roads.Strip {
             var bottomPointsR = UniformTexturing.UniformTextured(leftDownPoints, avgWidthFn);
 
             //Draw the strips
-            IRenderBin finishBin = renderHelper.GetOrCreateRenderBinForced(texture);
+            Mesh finishBin = renderHelper.GetOrCreateRenderBinForced(texture);
             finishBin.DrawStrip(leftPointsL, leftPointsR);
             finishBin.DrawStrip(rightPointsL, rightPointsR);
             finishBin.DrawStrip(bottomPointsL, bottomPointsR);
@@ -198,14 +198,14 @@ namespace TranSimCS.Roads.Strip {
                 //Fill the top
                 var vertices = retransformedPointsUp.Select(CreateVertex).ToArray();
                 RenderUtil.InvertNormals(triangulation);
-                ((IRenderBin)topRenderBin).DrawModel(vertices, triangulation);
+                ((Mesh)topRenderBin).DrawModel(vertices, triangulation);
             }
         }
         public static IEnumerable<Vector3> Retransform(SplineFrame frame, IEnumerable<PointD> pts, float z = 0) {
             return pts.Select(pt => frame.Transform(new((float)pt.x, z, (float)pt.y)));
         }
 
-        public static void GenerateEndCap(Vector3 ul, Vector3 ur, Vector3 dr, Vector3 dl, float width, float height, float expand, IRenderBin mesh) {
+        public static void GenerateEndCap(Vector3 ul, Vector3 ur, Vector3 dr, Vector3 dl, float width, float height, float expand, Mesh mesh) {
             var p1 = new VertexPositionColorTexture(ul, Color.White, new(0, 0));
             var p2 = new VertexPositionColorTexture(ur, Color.White, new(width, 0));
             var p3 = new VertexPositionColorTexture(dr, Color.White, new(width + expand, -height));
