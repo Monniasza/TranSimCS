@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
+using TranSimCS.ModelOld;
 using TranSimCS.Render;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
@@ -15,8 +16,8 @@ using static TranSimCS.Geometry.GeometryUtils;
 using static TranSimCS.Geometry.LineEnd;
 
 namespace TranSimCS.Roads {
-    public struct LaneQuadPair(Quad front, Quad back) {
-        public Quad Front = front, Back = back;
+    public struct LaneQuadPair(QuadOld front, QuadOld back) {
+        public QuadOld Front = front, Back = back;
     }
 
     public static class RoadRenderer {
@@ -33,15 +34,15 @@ namespace TranSimCS.Roads {
             CreateAddLane(new AddLaneSelection(-1, leftLimit, nodeEnd.RearEnd), mesh, size, color, voffset);
             CreateAddLane(new AddLaneSelection(1, rightLimit, nodeEnd.RearEnd), mesh, size, color, voffset);
         }
-        public static Quad CreateAddLane(AddLaneSelection als, IRenderBin mesh, float size = 1, Color? color = null, float voffset = 0.2f) {
+        public static QuadOld CreateAddLane(AddLaneSelection als, IRenderBin mesh, float size = 1, Color? color = null, float voffset = 0.2f) {
             var zrange = RoadEndToRange(als.nodeEnd.End) * size;
             var xrange = als.CalculateOffsets(size);
-            Quad quad = GenerateLaneQuad(als.nodeEnd.Node, xrange.X, xrange.Y, color ?? SemiClearGray, voffset, zrange.X, zrange.Y);
+            QuadOld quad = GenerateLaneQuad(als.nodeEnd.Node, xrange.X, xrange.Y, color ?? SemiClearGray, voffset, zrange.X, zrange.Y);
             mesh.DrawQuad(quad);
             mesh.AddTagsToLastTriangles(2, als);
             return quad;
         }
-        public static Quad GenerateRoadNodeSelQuad(RoadNode node, Color color, float voffset = 0.2f) {
+        public static QuadOld GenerateRoadNodeSelQuad(RoadNode node, Color color, float voffset = 0.2f) {
             return GenerateLaneQuad(node, node.Lanes[0].LeftPosition, node.Lanes[node.Lanes.Count - 1].RightPosition, color, voffset);
         }
         public static void GenerateRoadNodeMesh(RoadNode node, MultiMesh renderBin, float voffset = 0) {
@@ -61,7 +62,7 @@ namespace TranSimCS.Roads {
             altColor.A /= 2;
             return GenerateLaneQuads(lane.RoadNode, lane.LeftPosition, lane.RightPosition, color ?? altColor, voffset);
         }
-        public static Quad GenerateLaneQuad(LaneEnd lane, float voffset = 0.2f, Color? color = null) {
+        public static QuadOld GenerateLaneQuad(LaneEnd lane, float voffset = 0.2f, Color? color = null) {
             var altColor = lane.lane.Spec.Color;
             altColor.A /= 2;
             var range = GeometryUtils.RoadEndToRange(lane.end);
@@ -76,12 +77,12 @@ namespace TranSimCS.Roads {
             var vc = vr - transform.Z;
             var va = vl + transform.Z;
             var vb = vr + transform.Z;
-            Quad front = new Quad(va, vb, vr, vl, color) + offset;
-            Quad back = new Quad(vl, vr, vc, vd, color) + offset;
+            QuadOld front = new QuadOld(va, vb, vr, vl, color) + offset;
+            QuadOld back = new QuadOld(vl, vr, vc, vd, color) + offset;
             return new LaneQuadPair(front, back);
         }
 
-        public static Quad GenerateLaneQuad(RoadNode node, float lb, float rb, Color color, float voffset = 0.2f, float minZ = -1, float maxZ = 1) {
+        public static QuadOld GenerateLaneQuad(RoadNode node, float lb, float rb, Color color, float voffset = 0.2f, float minZ = -1, float maxZ = 1) {
             Vector3 offset = new Vector3(0, voffset, 0);
             Transform3 transform = node.PositionProp.Value.CalcReferenceFrame();
             var vl = transform.O + lb * transform.X;
@@ -90,7 +91,7 @@ namespace TranSimCS.Roads {
             var vc = vr + transform.Z * minZ;
             var va = vl + transform.Z * maxZ;
             var vb = vr + transform.Z * maxZ;
-            return new Quad(va, vb, vc, vd, color) + offset; 
+            return new QuadOld(va, vb, vc, vd, color) + offset; 
         }
 
         public static void GenerateLaneRangeMesh(LaneRange range, IRenderBin renderer, Color color, float voffset = 0.3f, object? tag = null) {

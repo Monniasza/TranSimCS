@@ -9,6 +9,7 @@ using NLog.Targets;
 using TranSimCS.Collections;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
+using TranSimCS.ModelOld;
 
 namespace TranSimCS {
     public struct Transform3 {
@@ -32,8 +33,8 @@ namespace TranSimCS {
         public readonly VertexPositionColorTexture Transform(VertexPositionColorTexture input) {
             return new VertexPositionColorTexture(Transform(input.Position), input.Color, input.TextureCoordinate);
         }
-        public readonly Quad Transform(Quad quad) {
-            return new Quad(Transform(quad.a), Transform(quad.b), Transform(quad.c), Transform(quad.d));
+        public readonly QuadOld Transform(QuadOld quad) {
+            return new QuadOld(Transform(quad.a), Transform(quad.b), Transform(quad.c), Transform(quad.d));
         }
 
         public Transform3 Around() => new Transform3(-X, Y, -Z, O);

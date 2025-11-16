@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,12 +8,13 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace TranSimCS.Model {
 
-    public class Mesh: IRenderBin {
+    public class Mesh{
         public List<VertexPositionColorTexture> Vertices { get; } = new List<VertexPositionColorTexture>();
         public List<int> Indices { get; } = new List<int>();
         public IDictionary<int, object> Tags { get; } = new Dictionary<int, object>();
-        private MeshBvh? bvh;
 
+
+        private MeshBvh? bvh;
         internal MeshBvh GetAccelerationStructure() => bvh ??= MeshBvh.Build(this);
         internal void InvalidateAccelerationStructure() => bvh = null;
 
@@ -26,24 +28,17 @@ namespace TranSimCS.Model {
             Indices.AddRange(indices);
             foreach(var row in tags) Tags.Add(row.Key, row.Value);
         }
-
-        int IRenderBin.AddVertex(VertexPositionColorTexture vertex) => AddVertex(vertex);
         public int AddVertex(VertexPositionColorTexture vertex) {
             Vertices.Add(vertex);
             InvalidateAccelerationStructure();
             return Vertices.Count - 1; // Return the index of the newly added vertex
         }
-
-        void IRenderBin.AddIndex(int index) => AddIndex(index);
         public void AddIndex(int index) {
             Indices.Add(index);
             InvalidateAccelerationStructure();
         }
-
-        void IRenderBin.AddIndices(int[] indices) => AddIndices(indices);
         public void AddIndices(int[] indices) => Indices.AddRange(indices);
 
-        int IRenderBin.AddVerts(VertexPositionColorTexture[] verts) => AddVerts(verts);
         public int AddVerts(VertexPositionColorTexture[] verts) {
             int index = Vertices.Count;
             Vertices.AddRange(verts);
@@ -56,6 +51,39 @@ namespace TranSimCS.Model {
             Indices.Clear();
             Tags.Clear();
             InvalidateAccelerationStructure();
+        }
+        public void DrawTriangle(int a, int b, int c) {
+            AddIndex(a);
+            AddIndex(b);
+            AddIndex(c);
+        }
+
+        /// <summary>
+        /// Draws a model using the specified vertices and indices.
+        /// </summary>
+        /// <param name="vertices">List of vertices</param>
+        /// <param name="indices">List of indices</param>
+        public void DrawModel(IList<VertexPositionColorTexture> vertices, IList<int> indices, IEnumerable<KeyValuePair<int, object>>? tags = null) {
+            ArgumentNullException.ThrowIfNull(vertices, nameof(vertices));
+            ArgumentNullException.ThrowIfNull(indices, nameof(indices));
+            int startVertexId = AddVerts(vertices.ToArray());
+            int startingIndex = Indices.Count;
+            int startingTriCount = startingIndex / 3;
+            var indicesArray = indices.ToArray();
+            for (int i = 0; i < indicesArray.Length; i++) {
+                indicesArray[i] += startVertexId;
+            }
+            AddIndices(indicesArray);
+            foreach (var kv in tags ?? []) {
+                var newTriId = startingTriCount + kv.Key;
+                Tags.Add(newTriId, kv.Value);
+            }
+
+        }
+        public void DrawModel(Mesh mesh) {
+            ArgumentNullException.ThrowIfNull(mesh);
+            DrawModel(mesh.Vertices, mesh.Indices, mesh.Tags);
+
         }
     }
 }

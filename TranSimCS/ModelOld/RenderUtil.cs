@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MLEM.Maths;
 using TranSimCS.Geometry;
+using TranSimCS.ModelOld;
 
 namespace TranSimCS.Model {
     /// <summary>
@@ -45,7 +46,7 @@ namespace TranSimCS.Model {
         public static void DrawQuad(this IRenderBin rb, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color) {
             rb.DrawQuad(a, b, c, d, color, new RectangleF(0, 0, 1, 1));
         }
-        public static void DrawQuad(this IRenderBin rb, Quad q) => rb.DrawQuad(q.a, q.b, q.c, q.d);
+        public static void DrawQuad(this IRenderBin rb, QuadOld q) => rb.DrawQuad(q.a, q.b, q.c, q.d);
         public static void DrawQuad(this IRenderBin rb, int a, int b, int c, int d) {
             int[] indexDataQuad = [a, b, c, d];
             foreach (var index in indexDataQuadLookup) rb.AddIndex(indexDataQuad[index]);

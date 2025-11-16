@@ -145,13 +145,13 @@ namespace TranSimCS.Tools {
             var tw = frame.X * 0.1f;
             var bw = frame.X * 0.2f;
             var rl = frame.Z * 5;
-            var quad = new Quad(
+            var quad = new QuadOld(
                 new VertexPositionColorTexture(startPoint + length        , laneColor, new(0        , 0)),
                 new VertexPositionColorTexture(startPoint + length + width, laneColor, new(laneCount, 0)),
                 new VertexPositionColorTexture(startPoint          + width, laneColor, new(laneCount, 1)),
                 new VertexPositionColorTexture(startPoint                 , laneColor, new(0        , 1))
             );
-            var quad2 = new Quad(
+            var quad2 = new QuadOld(
                 new VertexPositionColorTexture(startPoint2 - tw + rl, Color.Orange, new(0, 0)),
                 new VertexPositionColorTexture(startPoint2 + tw + rl, Color.Orange, new(1, 0)),
                 new VertexPositionColorTexture(startPoint2 + bw     , Color.Orange, new(1, 1)),
