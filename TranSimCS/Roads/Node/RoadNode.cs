@@ -52,6 +52,7 @@ namespace TranSimCS.Roads.Node {
             RearEnd = new RoadNodeEnd(NodeEnd.Backward, this);
             FrontEnd = new RoadNodeEnd(NodeEnd.Forward, this);
             Mesh = new MeshGenerator<RoadNode>(this, GenerateMesh);
+            Mesh.OnMeshInvalidated += InvalidateMesh0;
             PositionProp.ValueChanged += PositionProp_ValueChanged;
         }
 
@@ -61,7 +62,6 @@ namespace TranSimCS.Roads.Node {
             if (float.IsNaN(pos.X)) throw new ArgumentException("X === NaN");
             if (float.IsNaN(pos.Y)) throw new ArgumentException("Y === NaN");
             if (float.IsNaN(pos.Z)) throw new ArgumentException("Z === NaN");
-            InvalidateMeshes();
         }
 
         //Lane structure
@@ -130,14 +130,13 @@ namespace TranSimCS.Roads.Node {
             // Use 0.4f offset to render nodes clearly above all other road elements (roads at 0.2f, intersections at 0.3f)
             RoadRenderer.GenerateRoadNodeMesh(node, mesh, 0.4f);
         }
-        // Invalidates this node and its connected strips to trigger mesh rebuilding.
-        private void InvalidateMeshes() {
-            Mesh.Invalidate();
-            foreach (var connection in Connections) connection.Mesh.Invalidate();
-        }
+
         // Clears cached data when the base mesh invalidation occurs.
-        protected static void InvalidateMesh0(RoadNode node){
-            node._centerPos = null;
+        protected void InvalidateMesh0(){
+            _centerPos = null;
+            foreach (var connection in Connections) connection.Mesh.Invalidate();
+            RearEnd.ConnectedSection.Value?.Regenerate();
+            FrontEnd.ConnectedSection.Value?.Regenerate();
         }
 
         //Halves of this road node

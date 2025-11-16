@@ -49,7 +49,7 @@ namespace TranSimCS.Roads.Section {
             if (start == null) JsonProcessor.Fail(reader, $"Missing start node for section {guid}");
             if (end == null) JsonProcessor.Fail(reader, $"Missing end node for section {guid}");
             if (list.Count == 0) JsonProcessor.Fail(reader, $"No attached nodes for section {guid}");
-            RoadSection section = new RoadSection();
+            RoadSection section = new RoadSection(World);
             section.Guid = guid.Value;
             foreach (var node in list) 
                 node.ConnectedSection.Value = section;

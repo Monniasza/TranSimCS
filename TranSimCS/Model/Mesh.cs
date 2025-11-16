@@ -9,8 +9,8 @@ using Microsoft.Xna.Framework.Graphics;
 namespace TranSimCS.Model {
 
     public class Mesh{
-        public List<VertexPositionColorTexture> Vertices { get; } = new List<VertexPositionColorTexture>();
-        public List<int> Indices { get; } = new List<int>();
+        public List<VertexPositionColorTexture> Vertices { get; } = [];
+        public List<int> Indices { get; } = [];
         public IDictionary<int, object> Tags { get; } = new Dictionary<int, object>();
 
 

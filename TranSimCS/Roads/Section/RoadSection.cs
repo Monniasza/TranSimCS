@@ -14,6 +14,8 @@ using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Roads.Section {
     public class RoadSection : Obj, IObjMesh<RoadSection>{
+        public readonly TSWorld World;
+
         //Added nodes, maintained by the 
         private List<RoadNodeEnd> nodes = new();
         public IList<RoadNodeEnd> Nodes => new ReadOnlyCollection<RoadNodeEnd>(nodes);
@@ -26,7 +28,8 @@ namespace TranSimCS.Roads.Section {
 
         public MeshGenerator<RoadSection> Mesh { get; private set; }
 
-        public RoadSection() {
+        public RoadSection(TSWorld world) {
+            this.World = world;
             MainSlopeNodes = new Property<RoadNodeEndPair>(new(null, null), "slopeNodes", this);
             Mesh = new MeshGenerator<RoadSection>(this, (rs, mesh) => RoadRenderer.GenerateSectionMesh(rs, mesh));
         }
@@ -39,6 +42,11 @@ namespace TranSimCS.Roads.Section {
         internal void OnDisconnect(RoadNodeEnd node) {
             nodes.Remove(node);
             node.Node.PropertyChanged -= Node_PropertyChanged;
+
+            //If there are fewer than 2 node, demolish this
+            if(nodes.Count < 2) {
+                World.RoadSections.data.Remove(this);
+            }
 
             // If one of the main-slope road node ends was disconnected, select the closest one to the existing other half
             SegmentHalf? affectedHalf = null;

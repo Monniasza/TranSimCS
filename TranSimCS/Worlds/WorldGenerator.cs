@@ -4,6 +4,7 @@ using NLog;
 using TranSimCS.Geometry;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Section;
 using TranSimCS.Worlds.Building;
 
 namespace TranSimCS.Worlds {
@@ -122,7 +123,7 @@ namespace TranSimCS.Worlds {
             var n12b = n12.RearEnd;
             var n13b = n13.RearEnd;
 
-            var section = new RoadSection();
+            var section = new RoadSection(world);
             n10lb.ConnectedSection.Value = section;
             n10rb.ConnectedSection.Value = section;
             n11b.ConnectedSection.Value = section;
