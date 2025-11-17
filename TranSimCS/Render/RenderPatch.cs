@@ -68,8 +68,6 @@ namespace TranSimCS.Render {
             
             for (int s = 0; s < resC; s++) {
                 for (int t = 0; t < resD; t++) {
-                    var ns = resC - s - 1;
-                    var nt = resD - t - 1;
                     var S = s * stepS;
                     var T = t * stepT;
                     var nS = 1 - S;
@@ -85,6 +83,15 @@ namespace TranSimCS.Render {
                     results[s, t] = vertex;
                 }
             }
+
+            //Maybe the mesh generation is wrong? Let's debug fence
+            /*for(int i = 0; i < resC; i++) {
+
+            }
+            for (int i = 0; i < resD; i++) {
+
+            }*/
+
             mesh.DrawGrid(results);
         }
         public static void L(float s, float t, ISpline<Vector3> c0, ISpline<Vector3> c1) => Vector3.Lerp(c0[s], c1[s], t);

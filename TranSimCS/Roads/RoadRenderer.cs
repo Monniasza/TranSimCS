@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Debugging;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
@@ -216,7 +217,7 @@ namespace TranSimCS.Roads {
             var lbound = 1;
             var ubound = nodes.Length - 2;
 
-            var prevSpline = GenerateRoadEdge(nodes[0], nodes[nodes.Length-1], -1).Inverse();
+            var prevSpline = GenerateRoadEdge(nodes[0], nodes[nodes.Length - 1], -1).Inverse();
 
             while (lbound <= ubound) {
                 var preNode = nodes[lbound - 1];
@@ -244,10 +245,8 @@ namespace TranSimCS.Roads {
                     rightSpline = nextToEndSpline;
                 } else {
                     //More nodes remaining
-                    var ledge = GenerateRoadEdge(startNode, endNode, -discriminant);
-                    var redge = GenerateRoadEdge(startNode, endNode, discriminant);
-                    var innerSpline = (discriminant < 0) ? redge : ledge;
-                    var outerSpline = (discriminant < 0) ? ledge : redge;
+                    var innerSpline = GenerateRoadEdge(startNode, endNode, -1);
+                    var outerSpline = GenerateRoadEdge(startNode, endNode, 1);
 
                     //Calculations for the fill patch
                     topSpline = prevSpline;
@@ -259,6 +258,16 @@ namespace TranSimCS.Roads {
                     GenerateIntersectionStrip(mesh, startNode, endNode, accuracy, voffset);
 
                     prevSpline = innerSpline;
+                }
+                topSpline = topSpline.Inverse();
+
+                if (DebugOptions.DebugSectionFences) {
+                    //Debug fences
+                    var h = Vector3.UnitY * 5;
+                    RenderPatch.DrawDebugFence(mesh, topSpline, h, Color.Red);
+                    RenderPatch.DrawDebugFence(mesh, bottomSpline, h, Color.Maroon);
+                    RenderPatch.DrawDebugFence(mesh, leftSpline, h, Color.Lime);
+                    RenderPatch.DrawDebugFence(mesh, rightSpline, h, Color.Green);
                 }
 
                 //Render the last-node or the inter-strip patch with vertical offset

@@ -7,6 +7,6 @@ using System.Threading.Tasks;
 namespace TranSimCS.Debugging {
     public static class DebugOptions {
         public static readonly bool DebugIslands = false;
-
+        public static readonly bool DebugSectionFences = false;
     }
 }
