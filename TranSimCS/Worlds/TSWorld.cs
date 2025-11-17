@@ -95,9 +95,7 @@ namespace TranSimCS.Worlds
             segment.EndNode.connectedSegments.Add(segment);
             AddIfAbsent(segment.StartNode.Node);
             AddIfAbsent(segment.EndNode.Node);
-        }
-
-        
+        }        
 
         private void HandleRemoveRoadSegment(RoadStrip segment) {
             // Handle the removal of a road segment
