@@ -52,7 +52,7 @@ namespace TranSimCS.Worlds {
             for (int i = 0; i < lanetypes.Length; i++) {
                 var lanetype = lanetypes[i];
                 laneSpecs[11 - i] = lanetype;
-                lanetype.Flags ^= LaneFlags.Forward | LaneFlags.Backward;
+                lanetype.Flags ^= LaneFlags.IsBackward;
                 laneSpecs[i] = lanetype;
             }
 

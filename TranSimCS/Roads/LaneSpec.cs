@@ -11,7 +11,7 @@ namespace TranSimCS.Roads {
 
 
         // Constructor to initialize the LaneSpec with lane index, width, and offset
-        public LaneSpec(Color color, VehicleTypes vehicleTypes, float width = 3.5f, float speedLimit = 50, LaneFlags flags = LaneFlags.Forward) {
+        public LaneSpec(Color color, VehicleTypes vehicleTypes, float width = 3.5f, float speedLimit = 50, LaneFlags flags = LaneFlags.None) {
             Color = color;
             VehicleTypes = vehicleTypes;
             Flags = flags;

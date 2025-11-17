@@ -9,7 +9,7 @@ namespace TranSimCS.Roads {
         public override LaneSpec Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
             Color color = Color.Gray;
             VehicleTypes vehicleTypes = VehicleTypes.None;
-            LaneFlags flags = LaneFlags.Forward;
+            LaneFlags flags = LaneFlags.None;
             float width = 3.5f;
             float speedLimit = 50f;
 
