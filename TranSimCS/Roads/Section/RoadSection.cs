@@ -31,7 +31,7 @@ namespace TranSimCS.Roads.Section {
         public RoadSection(TSWorld world) {
             this.World = world;
             MainSlopeNodes = new Property<RoadNodeEndPair>(new(null, null), "slopeNodes", this);
-            Mesh = new MeshGenerator<RoadSection>(this, (rs, mesh) => RoadRenderer.GenerateSectionMesh(rs, mesh));
+            Mesh = new MeshGenerator<RoadSection>(this, (rs, mesh) => SectionRenderer.GenerateSectionMesh(rs, mesh));
         }
         internal void OnConnect(RoadNodeEnd node) {
             nodes.Add(node);
