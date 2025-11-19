@@ -73,7 +73,7 @@ namespace TranSimCS.Menus.MainMenu {
 
         public Panel MainPanel { get; private set; }
         public override void LoadContentOverride() {
-            Panel panel = new(MLEM.Ui.Anchor.Center, new(0.5f, 0.5f), true);
+            Panel panel = new(MLEM.Ui.Anchor.Center, new(300, 0.5f), true);
             MainPanel = panel;
             UiSystem.Add("main", panel);
 
@@ -92,7 +92,7 @@ namespace TranSimCS.Menus.MainMenu {
         }
 
         public void NewMenuOption(string tex, string title, Action action) {
-            var imageAnchor = Anchor.AutoInline;
+            var imageAnchor = Anchor.CenterLeft;
             var imageScale = new Vector2(32, 32);
             PictureButton startButton = new PictureButton(MLEM.Ui.Anchor.AutoLeft, new(1, 40), UI.CreateTextureCallback(tex), imageAnchor, imageScale, title);
             startButton.PictureBeforeText();
