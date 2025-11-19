@@ -18,6 +18,7 @@ using MonoGame.Extended;
 using SpriteFontPlus;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
+using TranSimCS.Menus.MainMenu;
 using TranSimCS.Roads;
 using TranSimCS.Tools;
 using TranSimCS.Worlds.Car;
@@ -157,9 +158,10 @@ namespace TranSimCS
 
             ITool.Init();
 
-            var menu = new InGameMenu(this);
+            
             //Process the args
             if (Args.Count == 1) {
+                var menu = new InGameMenu(this);
                 //The user tries to load a file
                 try {
                     menu.LoadWorldFromFile(Args[0]);
@@ -167,14 +169,10 @@ namespace TranSimCS
                     var error = OptionsDialog.FromError(menu, e, new CloseImmediately(menu));
                     menu.Overlay = error;
                 }
-                
+                Menu = menu;
             } else {
-                
+                Menu = new MainMenu(this);
             }
-
-            
-
-            Menu = menu;
         }
 
         protected override void Update(GameTime gameTime) {

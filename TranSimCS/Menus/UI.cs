@@ -79,5 +79,17 @@ namespace TranSimCS.Menus {
             SetUpProp(title, panel, textfield);
             return textfield;
         }
+
+        public static PictureButton SetUpPictureButton(Element parent, String texture, Action? callback = null) {
+            var button = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(40, 40), CreateTextureCallback(Assets.Content.Load<Texture2D>(texture)), MLEM.Ui.Anchor.Center, new(32, 32));
+            if (callback != null)
+                button.OnPressed = (e) => callback.Invoke();
+            parent.AddChild(button);
+            return button;
+        }
+        public static Image.TextureCallback CreateTextureCallback(Texture2D texture2D) {
+            return (_) => new MLEM.Textures.TextureRegion(texture2D);
+        }
+        public static Image.TextureCallback CreateTextureCallback(string name) => CreateTextureCallback(Assets.Content.Load<Texture2D>(name));
     }
 }

@@ -161,11 +161,9 @@ namespace TranSimCS.Menus.InGame {
             //Set up the escape menu
             escapeMenu = new EscapeMenu(this);
         }
-        private Image.TextureCallback CreateTextureCallback(Texture2D texture2D) {
-            return (_) => new MLEM.Textures.TextureRegion(texture2D);
-        }
+        
         private PictureButton SetUpPictureButton(String texture, Action? callback = null) {
-            var button = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(40, 40), CreateTextureCallback(Game.Content.Load<Texture2D>(texture)), MLEM.Ui.Anchor.Center, new(32, 32));
+            var button = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(40, 40), UI.CreateTextureCallback(Game.Content.Load<Texture2D>(texture)), MLEM.Ui.Anchor.Center, new(32, 32));
             if(callback != null) 
                 button.OnPressed = (e) => callback.Invoke();
             ToolPanel.AddChild(button);

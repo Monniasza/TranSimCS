@@ -63,7 +63,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Menus\Gizmo\" />
-    <Folder Include="Menus\MainMenu\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md">

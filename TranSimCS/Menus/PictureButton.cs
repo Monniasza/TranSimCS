@@ -17,13 +17,29 @@ namespace TranSimCS.Menus {
     internal class PictureButton : Button {
         public Image Image;
 
-        public PictureButton(Anchor anchor, Vector2 size, TextureCallback image = null, Anchor imageAnchor = Anchor.Center, Vector2? imageSize = null, Paragraph.TextCallback textCallback = null, Paragraph.TextCallback tooltipTextCallback = null) : base(anchor, size, textCallback, tooltipTextCallback) {
+        public PictureButton(Anchor anchor, Vector2 size, TextureCallback image = null, Anchor imageAnchor = Anchor.Center, Vector2? imageSize = null) : base(anchor, size) {
+            CreatePicture(image, imageAnchor, imageSize ?? new(0.5f, 0.5f));
+        }
+        public PictureButton(Anchor anchor, Vector2 size, TextureCallback image = null, Anchor imageAnchor = Anchor.Center, Vector2? imageSize = null, Paragraph.TextCallback? textCallback = null, Paragraph.TextCallback? tooltipTextCallback = null) : base(anchor, size, textCallback, tooltipTextCallback) {
+            CreatePicture(image, imageAnchor, imageSize ?? new(0.5f, 0.5f));
+        }
+        public PictureButton(Anchor anchor, Vector2 size, TextureCallback image = null, Anchor imageAnchor = Anchor.Center, Vector2? imageSize = null, string? textCallback = null, string? tooltipTextCallback = null) : base(anchor, size, textCallback, tooltipTextCallback) {
             CreatePicture(image, imageAnchor, imageSize ?? new(0.5f, 0.5f));
         }
 
         private void CreatePicture(TextureCallback image, Anchor anchor, Vector2 imageSize) {
             Image = new Image(anchor, imageSize, image);
             AddChild(Image);
+        }
+        public static Image.TextureCallback CreateTextureCallback(Texture2D texture2D) {
+            return (_) => new MLEM.Textures.TextureRegion(texture2D);
+        }
+
+        public void PictureBeforeText() {
+            RemoveChild(Image);
+            RemoveChild(Text);
+            AddChild(Image);
+            AddChild(Text);
         }
     }
 }
