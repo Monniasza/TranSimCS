@@ -153,6 +153,14 @@ namespace TranSimCS.Roads.Strip {
             }
             segment.Bounds = bounds;
             segment.CalcSplineFrame();
+
+            //Check: If the road segment is a part of a road section, do not create its mesh
+            var roadSectionA = segment.StartNode.ConnectedSection;
+            var roadSectionB = segment.EndNode.ConnectedSection;
+            if (roadSectionA != null && roadSectionB != null && roadSectionA == roadSectionB)
+                //Belongs to a road section, abort
+                return;
+
             SegmentRenderer.GenerateRoadSegmentFullMesh(segment, mesh); // Otherwise, render the road segment
         }
 
