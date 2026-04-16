@@ -155,8 +155,8 @@ namespace TranSimCS.Roads.Strip {
             segment.CalcSplineFrame();
 
             //Check: If the road segment is a part of a road section, do not create its mesh
-            var roadSectionA = segment.StartNode.ConnectedSection;
-            var roadSectionB = segment.EndNode.ConnectedSection;
+            var roadSectionA = segment.StartNode.ConnectedSection.Value;
+            var roadSectionB = segment.EndNode.ConnectedSection.Value;
             if (roadSectionA != null && roadSectionB != null && roadSectionA == roadSectionB)
                 //Belongs to a road section, abort
                 return;
