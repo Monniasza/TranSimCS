@@ -202,7 +202,6 @@ namespace TranSimCS.Spline
         /// </summary>
         /// <param name="spline">source spline</param>
         /// <param name="pos">target point to find the nearest T to</param>
-        /// <param name="accuracy">number of loop iterations</param>
         /// <param name="depth">number of iterations to find the closest point</param>
         /// <param name="lowerLimit">lower limit of the t value</param>
         /// <param name="upperLimit">upper limit of the t value</param>
