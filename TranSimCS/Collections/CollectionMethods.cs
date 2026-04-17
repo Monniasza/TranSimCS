@@ -17,5 +17,8 @@ namespace TranSimCS.Collections {
                 list[i] = transform(list[i]);
             }
         }
+        public static void FilterInPlace<T>(this HashSet<T> set, Predicate<T> data) {
+            set.RemoveWhere(x => !data(x));
+        }
     }
 }

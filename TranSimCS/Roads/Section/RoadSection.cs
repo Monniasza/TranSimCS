@@ -5,12 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using TranSimCS.Collections;
 using TranSimCS.Model;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.SceneGraph;
+using TranSimCS.Spline;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Property;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TranSimCS.Roads.Section {
     public class RoadSection : Obj, IObjMesh<RoadSection>{
@@ -140,6 +143,21 @@ namespace TranSimCS.Roads.Section {
             var reference = 0.0f;
             var det = Vector3.Dot(testOffset, right);
             return det.CompareTo(reference);
+        }
+
+        public LaneStrip[] FindStrips() {
+            var result = new List<LaneStrip>();
+
+            //Find connected road strips
+            var roadStrips = new HashSet<RoadStrip>();
+            foreach(var node in Nodes) roadStrips.AddRange(node.ConnectedSegments);
+
+            //Filter the set
+            roadStrips.FilterInPlace((strip) => Nodes.Contains(strip.StartNode) && Nodes.Contains(strip.EndNode));
+
+            foreach(var road in roadStrips) result.AddRange(road.Lanes);
+
+            return result.ToArray();
         }
     }
 }

@@ -51,6 +51,13 @@ namespace TranSimCS.Roads.Node {
         public Vector3 CenterPosition => Node.CenterPosition;
         public Vector3 CenterOffset => Node.CenterOffset;
 
+        public MonoGame.Extended.Range<float> Range {
+            get {
+                var asVector = Bounds();
+                return new(asVector.X, asVector.Y);
+            }
+        }
+
         public LaneEnd GetLaneEnd(int x) {
             return new LaneEnd(End, Node.Lanes[x]);
         }
