@@ -58,11 +58,6 @@ namespace TranSimCS.Roads {
             // External override
             public RoadSurfaceMode? ModeOverride;
 
-            // Cached metadata (filled by builder)
-            public float Flatness;
-            public float ConstraintDensity;
-            public bool HasCrossLaneCoupling;
-
             public void Validate() {
                 Verify.ThrowIfNullOrContainsNull(Nodes, nameof(Nodes));
                 Verify.ThrowIfNullOrContainsNull(Strips, nameof(Strips));
@@ -84,9 +79,6 @@ namespace TranSimCS.Roads {
                 dDistance = dDistance,
                 dSegments = dSegments,
 
-                Flatness = ComputeFlatness(strip),
-                ConstraintDensity = ComputeDensity(strip),
-                HasCrossLaneCoupling = DetectCoupling(strip),
                 ModeOverride = RoadSurfaceMode.Coons
             };
         }
@@ -107,10 +99,6 @@ namespace TranSimCS.Roads {
                 dAngle = dAngle,
                 dDistance = dDistance,
                 dSegments = dSegments,
-
-                Flatness = ComputeSectionFlatness(section),
-                ConstraintDensity = ComputeSectionDensity(section),
-                HasCrossLaneCoupling = DetectSectionCoupling(section)
             };
         }
 
