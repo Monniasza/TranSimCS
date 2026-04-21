@@ -214,5 +214,24 @@ namespace TranSimCS.Geometry
         public static int DegsToField(float v) {
             return (int)(v * fieldsInDeg);
         }
+
+        public static Vector3 Normalized(this Vector3 v) {
+            var result = v;
+            result.Normalize();
+            return result;
+        }
+        public static Vector3 Orthogonalize(this Vector3 v, Vector3 n) {
+            float nn = Vector3.Dot(n, n);
+            const float eps = 1e-8f;
+
+            if (nn < eps)
+                return v;
+
+            // Normalize only if magnitude is extreme
+            float invLen = 1.0f / MathF.Sqrt(nn);
+            Vector3 nNorm = n * invLen;
+
+            return v - Vector3.Dot(v, nNorm) * nNorm;
+        }
     }
 }

@@ -112,6 +112,8 @@ namespace TranSimCS.Roads.Section {
         }
 
         internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh, int accuracy = 17, float voffset = 0.01f) {
+            if (roadSection.Nodes.Count == 0) return; //Guard agains empty sections
+
             var mesh = multimesh.GetOrCreateRenderBinForced(Assets.Asphalt);
 
             //Rotate the list so the 1st main end lies on the index 0

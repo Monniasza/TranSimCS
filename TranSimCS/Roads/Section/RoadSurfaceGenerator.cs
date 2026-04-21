@@ -6,17 +6,18 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads.Node;
-using TranSimCS.Roads.Section;
 using TranSimCS.Roads.Strip;
 
-namespace TranSimCS.Roads {
-    public static class RoadSurfaceGenerator {
+namespace TranSimCS.Roads.Section {
+    public static partial class RoadSurfaceGenerator {
         public enum RoadSurfaceMode {
             Flat,
             Coons,
-            TPS
+            TPS,
+            DegeneratePolygon
         }
 
         public struct Constraint {
@@ -83,6 +84,12 @@ namespace TranSimCS.Roads {
             };
         }
 
+        private static Vector3 ComputeNormal(RoadStrip strip) {
+            var startFrame = strip.StartNode.CalcReferenceFrame();
+            var endFrame = strip.EndNode.CalcReferenceFrame();
+            return (startFrame.Y + endFrame.Y).Normalized();
+        }
+
         public static RoadSurfaceInput FromSection(RoadSection section,
                                            float dAngle,
                                            float dDistance,
@@ -102,21 +109,26 @@ namespace TranSimCS.Roads {
             };
         }
 
+        private static Constraint[] ExtractSectionConstraints(RoadSection section) {
+            return [new Constraint(section.MainSlopeNodes.Value.Start, section.MainSlopeNodes.Value.End)];
+        }
+
         public static RoadSurfaceMode Decide(ref RoadSurfaceInput input) {
+            var isFlat = false;
+            var isCrossCoupled = false;
+
 
             // ---- 1. HARD OVERRIDE ----
             if (input.ModeOverride != null)
                 return input.ModeOverride.Value;
 
             // ---- 2. FLAT MODE ----
-            if (input.Flatness < input.dDistance * 0.1f &&
-                input.ConstraintDensity < 0.2f) {
+            if (isFlat) {
                 return RoadSurfaceMode.Flat;
             }
 
             // ---- 3. TPS REQUIRED ----
-            if (input.HasCrossLaneCoupling ||
-                input.ConstraintDensity > 0.6f) {
+            if (isCrossCoupled) {
                 return RoadSurfaceMode.TPS;
             }
 
@@ -134,6 +146,18 @@ namespace TranSimCS.Roads {
                 RoadSurfaceMode.TPS => GenerateTPS(input),
                 _ => throw new Exception("Unknown mode: " + mode)
             };
+        }
+
+        private static Mesh GenerateTPS(RoadSurfaceInput input) {
+            throw new NotImplementedException();
+        }
+
+        private static Mesh GenerateCoons(RoadSurfaceInput input) {
+            throw new NotImplementedException();
+        }
+
+        private static Mesh GenerateFlat(RoadSurfaceInput input) {
+            throw new NotImplementedException();
         }
     }
 }
