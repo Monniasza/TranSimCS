@@ -1,0 +1,3 @@
+[submodule "external/Plankton"]
+	path = external/Plankton
+	url = https://github.com/meshmash/Plankton.git
