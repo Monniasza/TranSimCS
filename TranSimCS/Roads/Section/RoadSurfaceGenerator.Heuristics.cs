@@ -94,25 +94,39 @@ namespace TranSimCS.Roads.Section {
             return result;
         }
 
-        public static bool IsPolygonValid(this Polygon borderPolygon) {
-            if (borderPolygon.Area() < 0.001) return false;
-            var simplified = borderPolygon.Simplify(0.001);
-            //Check if both paths are approximately equal
-            int length = borderPolygon.path.Count;
-            int simplifiedLength = simplified.path.Count;
-            if(length != simplifiedLength) return false;
-            for (int i = 0; i < simplifiedLength; i++) {
-                var basePath = borderPolygon.path[i];
-                var simplifiedPath = simplified.path[i];
-                int innerLengthBase = basePath.Count;
-                int innerLengthSimplified = simplifiedPath.Count;
-                if(innerLengthBase != innerLengthSimplified) return false;
-                for (int j = 0; j < innerLengthSimplified; j++) {
-                    var basePoint = basePath[j];
-                    var simplifiedPoint = simplifiedPath[j];
-                    if(!Clipper.PointsNearEqual(basePoint, simplifiedPoint, 0.0001)) return false;
-                }
-            }
+        public static bool IsPolygonValid(this Polygon poly, double eps = 1e-3) {
+            if (poly.path == null || poly.path.Count == 0)
+                return false;
+
+            // Step 1: clean geometry (removes tiny edges / noise)
+            //var cleaned = Clipper.CleanPaths(poly.path, eps);
+            var cleaned = poly.path;
+
+            if (cleaned.Count == 0)
+                return false;
+
+            // Step 2: area check (degenerate polygons)
+            double area = Clipper.Area(cleaned);
+            if (Math.Abs(area) < eps)
+                return false;
+
+            // Step 3: simplify (removes self-intersections)
+            var simplified = Clipper.SimplifyPaths(cleaned, eps);
+
+            if (simplified.Count == 0)
+                return false;
+
+            // Step 4: topology change detection
+            // If path count changes → strong signal of self-intersection
+            if (simplified.Count != cleaned.Count)
+                return false;
+
+            // Step 5: geometric equivalence test (robust)
+            var xor = Clipper.Xor(cleaned, simplified, poly.fillRule);
+
+            if (Math.Abs(Clipper.Area(xor)) > eps)
+                return false;
+
             return true;
         }
     }
