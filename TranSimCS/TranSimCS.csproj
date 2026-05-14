@@ -29,6 +29,11 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
+	<ItemGroup>
+	  <Compile Remove="HalfEdge\**" />
+	  <EmbeddedResource Remove="HalfEdge\**" />
+	  <None Remove="HalfEdge\**" />
+	</ItemGroup>
   <ItemGroup>
     <None Remove="Icon.ico" />
     <None Remove="Icon.bmp" />
