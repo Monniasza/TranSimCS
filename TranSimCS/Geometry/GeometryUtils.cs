@@ -38,7 +38,9 @@ namespace TranSimCS.Geometry
         public static Bezier3 GenerateJoinSpline(Ray start, Ray end) => GenerateJoinSpline(start.Position, end.Position, start.Direction, end.Direction);
 
         public static Bezier3 GenerateJoinSpline(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent){
-            float tangentLength = Vector3.Distance(startPos, endPos) * 0.4f;
+            float dist = Vector3.Distance(startPos, endPos);
+            float calculatedMagnitude = (1 - Vector3.Dot(startTangent, endTangent));
+            float tangentLength = dist * (1 - calculatedMagnitude);
             Vector3 a = startPos;
             Vector3 b = startPos + startTangent * tangentLength; // Start tangent point
             Vector3 c = endPos + endTangent * tangentLength; // End tangent point
