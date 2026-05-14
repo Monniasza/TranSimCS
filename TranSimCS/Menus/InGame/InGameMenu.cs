@@ -148,6 +148,7 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("trashdump", new DumpingTool(this));
             SetUpToolPictureButton("precpos", new PrecPos(this));
             SetUpToolPictureButton("sectionedit", new SecGen(this));
+            SetUpToolPictureButton("equidistant", new ToolEquidistant(this));
 
             //Set up the tool preview
             ToolDescPanel = new ToolDescriptionPanel(this);
