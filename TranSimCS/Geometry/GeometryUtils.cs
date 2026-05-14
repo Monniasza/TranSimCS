@@ -37,10 +37,31 @@ namespace TranSimCS.Geometry
 
         public static Bezier3 GenerateJoinSpline(Ray start, Ray end) => GenerateJoinSpline(start.Position, end.Position, start.Direction, end.Direction);
 
-        public static Bezier3 GenerateJoinSpline(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent){
-            float dist = Vector3.Distance(startPos, endPos);
-            float calculatedMagnitude = (1 - Vector3.Dot(startTangent, endTangent));
-            float tangentLength = dist * (1 - calculatedMagnitude);
+        //Coefficients
+        const float bezierAtCollinear = 0.333f;
+        const float bezierAtRight = 0.390f;
+        const float bezierAtUTurn = 0.666f;
+        const float coeff0 = bezierAtRight;
+        //coeff2-coeff1+coeff0 = bezierAtCollinear;
+        //coeff2+coeff1+coeff0 = bezierAtUTurn;
+        //2*coeff1 = bezierAtUTurn - bezierAtCollinear;
+        const float coeff1 = (bezierAtUTurn - bezierAtCollinear) / 2;
+        //coeff2 + (bezierAtUTurn - bezierAtCollinear)/2 + bezierAtRight = bezierAtUTurn
+        //coeff2 + bezierAtUTurn/2 - bezierAtCollinear/2 + bezierAtRight = bezierAtUTurn
+        //bezierAtUTurn/2 - bezierAtCollinear/2 + bezierAtRight = bezierAtUTurn - coeff2
+        //bezierAtUTurn/2 - bezierAtCollinear/2 + bezierAtRight - bezierAtUTurn = -coeff2
+        //-bezierAtUTurn/2 - bezierAtCollinear/2 + bezierAtRight = -coeff2
+        const float coeff2 = bezierAtUTurn / 2 + bezierAtCollinear / 2 - bezierAtRight;
+
+        public static Bezier3 GenerateJoinSpline(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent) {
+            float chord = Vector3.Distance(startPos, endPos);
+
+            float dot = Vector3.Dot(startTangent, endTangent) / (startTangent.Length() * endTangent.Length());
+
+            float calculatedMagnitude = (dot * dot * coeff2) + (dot * coeff1) + coeff0;
+
+            float tangentLength = chord * calculatedMagnitude;
+
             Vector3 a = startPos;
             Vector3 b = startPos + startTangent * tangentLength; // Start tangent point
             Vector3 c = endPos + endTangent * tangentLength; // End tangent point
@@ -234,6 +255,10 @@ namespace TranSimCS.Geometry
             Vector3 nNorm = n * invLen;
 
             return v - Vector3.Dot(v, nNorm) * nNorm;
+        }
+
+        public static float Lerp(float start, float end, float amt) {
+            return amt * (end - start) + start;
         }
     }
 }
