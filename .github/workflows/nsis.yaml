@@ -25,6 +25,26 @@ jobs:
       # - name: Build app
       #   run: dotnet publish MyApp.csproj -c Release -o build
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      
+      - name: Restore dependencies
+        run: dotnet restore TranSimCS/TranSimCS.csproj
+      
+      - name: Publish optimized release build
+        run: |
+          dotnet publish TranSimCS/TranSimCS.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:TieredCompilation=true `
+            -p:TieredPGO=true `
+            -p:DebugType=None `
+            -p:DebugSymbols=false `
+            -o publish
+
       - name: Install NSIS
         run: choco install nsis -y
 
