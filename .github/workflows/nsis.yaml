@@ -1,0 +1,40 @@
+name: Build Installer
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-installer:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Optional: build your application first
+      # - name: Setup .NET
+      #   uses: actions/setup-dotnet@v4
+      #   with:
+      #     dotnet-version: '8.0.x'
+      #
+      # - name: Build app
+      #   run: dotnet publish MyApp.csproj -c Release -o build
+
+      - name: Install NSIS
+        run: choco install nsis -y
+
+      - name: Build installer
+        run: |
+          makensis TranSimCS/setup.nsi
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer
+          path: |
+            TranSimCS/Setup*.exe
