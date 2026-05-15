@@ -51,14 +51,36 @@ namespace TranSimCS.Tools {
         }
     }
 
-    public class CircMode: RoadMode {
+    public class CircMode : RoadMode {
         public string Name => "Circular arc";
+
         public void CreateValues(RoadPlan plan) {
             var reflectionVector = plan.endPos - plan.startPos;
-            var latReflectionVector = new Vector3(reflectionVector.Z, reflectionVector.Y, -reflectionVector.X);
             reflectionVector.Normalize();
-            plan.endTangent = -GeometryUtils.ReflectVectorByNormal(plan.startTangent, reflectionVector);
-            plan.endLateral = -GeometryUtils.ReflectVectorByNormal(plan.startLateral, latReflectionVector);
+
+            Vector3 startNormal =
+                Vector3.Normalize(
+                    Vector3.Cross(
+                        plan.startTangent,
+                        plan.startLateral
+                    )
+                );
+
+            plan.endTangent =
+                -GeometryUtils.ReflectVectorByNormal(
+                    plan.startTangent,
+                    reflectionVector
+                );
+
+            plan.endTangent.Normalize();
+
+            plan.endLateral =
+                Vector3.Normalize(
+                    Vector3.Cross(
+                        startNormal,
+                        plan.endTangent
+                    )
+                );
         }
     }
 
