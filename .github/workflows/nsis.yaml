@@ -60,8 +60,10 @@ jobs:
           makensis /VERSION
 
       - name: Build installer
+        shell: pwsh
+        working-directory: TranSimCS
         run: |
-          makensis TranSimCS/setup.nsi
+          ./build.ps1
 
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
