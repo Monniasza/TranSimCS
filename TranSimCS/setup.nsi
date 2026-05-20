@@ -14,12 +14,16 @@
 ; Main constants - define following constants as you want them displayed in your installation wizard
 !define VERSIONMINOR 0
 !define VERSIONMAJOR 0
-!define VERSIONBUILD 1
+!define VERSIONBUILD 2
 !define PRODUCT_NAME "TranSim"
 !define PRODUCT_VERSION "${VERSIONMAJOR}.${VERSIONMINOR}.${VERSIONBUILD}"
 !define PRODUCT_PUBLISHER "Monniasza"
-!define PRODUCT_WEB_SITE "http://www.zwr.fi"
-!define INSTALLSIZE 119132
+!define PRODUCT_WEB_SITE "http://www.transim.xyz"
+
+; INSTALLSIZE is injected externally (CI / build script)
+!ifndef INSTALLSIZE
+  !error "INSTALLSIZE is not defined. Pass it via makensis -DINSTALLSIZE=..."
+!endif
 
 ; Following constants you should never change
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -52,21 +56,21 @@ ShowUnInstDetails show
 Section "MainSection" SEC01
   SetOutPath "$INSTDIR\*.*"
   SetOverwrite ifnewer
-  File /r "bin\Release\net8.0"
+  File /r "bin\Release\"
   File "icon.ico"
   ; Note: my system has a config template, which should manually be edited. This is a nice trick to save your username/password somewhere,
   ; but you can entirely skip this by deleting the following line. 
   ; File /oname=TranSim.exe.config "App.config.template"
 
   ; It is pretty clear what following line does: just rename the file name to your project startup executable.
-  CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\net8.0\TranSimCS.exe" ""
+  CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\TranSimCS.exe" ""
   
   # Start Menu
   createDirectory "$SMPROGRAMS\${PRODUCT_PUBLISHER}"
-  createShortCut "$SMPROGRAMS\${PRODUCT_PUBLISHER}\${PRODUCT_NAME}.lnk" "$INSTDIR\net8.0\TranSimCS.exe" "" "$INSTDIR\icon.ico"
+  createShortCut "$SMPROGRAMS\${PRODUCT_PUBLISHER}\${PRODUCT_NAME}.lnk" "$INSTDIR\TranSimCS.exe" "" "$INSTDIR\icon.ico"
   
   # File associations
-  !insertmacro APP_ASSOCIATE "transim" "transim.savegame" "TranSim world" "$INSTDIR\icon.ico" "Play this world" "$INSTDIR\net8.0\TranSimCS.exe $\"%1$\"" 
+  !insertmacro APP_ASSOCIATE "transim" "transim.savegame" "TranSim world" "$INSTDIR\icon.ico" "Play this world" "$INSTDIR\TranSimCS.exe $\"%1$\"" 
   
   # Registry information for add/remove programs
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayName" "${PRODUCT_PUBLISHER} - ${PRODUCT_NAME}"
