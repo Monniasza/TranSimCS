@@ -58,6 +58,7 @@ namespace TranSimCS.Tools {
         public const string noShift = "disableShift";
         public const string showSnaps = "menuSnaps";
         public const string showChooser = "menuChooser";
+        public const string disableMMBSnap = "disableSnapKeybind";
     }
 
     public class PickerTool(InGameMenu game) : ITool {

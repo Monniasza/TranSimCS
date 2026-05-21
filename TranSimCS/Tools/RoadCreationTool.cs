@@ -254,6 +254,10 @@ namespace TranSimCS.Tools {
                     SegmentAlreadyExists = null;
                     Plane selectionPlane = new Plane(Vector3.UnitY * RoadTools.Height.Value, Vector3.UnitY);
                     endPos = GeometryUtils.IntersectRayPlane(menu.MouseRay, selectionPlane);
+                    if (menu.CheckSnap.Checked) {
+                        //Snap the position
+                        endPos = menu.configuration.SnapGrid.Snap(endPos);
+                    }
 
                     RoadPlan plan = new RoadPlan {
                         startLateral = startLateral,

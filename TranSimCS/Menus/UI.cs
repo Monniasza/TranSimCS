@@ -11,6 +11,11 @@ using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Menus {
     internal static class UI {
+        public static void AddProperty(this Checkbox check, Property<bool> prop) {
+            check.Checked = prop.Value;
+            check.OnCheckStateChange += (cb, isChecked) => prop.Value = isChecked;
+            prop.ValueChanged += (s, e) => check.Checked = e.NewValue;
+        }
         public static Checkbox CreateCheck(InGameMenu menu, Element container, string name, string icon, Color? checkColor = null, Color? uncheckColor = null) {
             var check = new Checkbox(Anchor.AutoInline, new(21, 21), "", false);
             check.AddTooltip(name);

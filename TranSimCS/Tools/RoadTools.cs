@@ -20,6 +20,8 @@ namespace TranSimCS.Tools {
         public Property<float> HeightStep { get; private set; }
         public Property<float> Height {  get; private set; }
         public Property<ChainMode> ChainMode { get; private set; }
+        public Checkbox isYLocal { get; private set; }
+        public Checkbox isInfinite { get; private set; }
 
         public StyleProp<TextureRegion> LoadStyleProp(string name) {
             return new StyleProp<TextureRegion>(new TextureRegion(Game.Game.Content.Load<Texture2D>(name)));
@@ -29,13 +31,17 @@ namespace TranSimCS.Tools {
             : base(Anchor.AutoLeft, new(1, 1), true) {
             Game = game;
 
-            var settingsLabel = new Paragraph(Anchor.AutoInline, 0.5f, "Settings");
+            var settingsLabel = new Paragraph(Anchor.AutoInline, 0.4f, "Settings");
             AddChild(settingsLabel);
             anarchyCheck = CreateCheck("Anarchy", "ui/anarchy2", Color.Orange);
             flattenTilt = CreateCheck("Flatten tilt", "ui/flatTilt");
             flattenTilt.Checked = true;
             flattenIncline = CreateCheck("Flatten inclination", "ui/flatIncline");
             flattenIncline.Checked = true;
+            isYLocal = CreateCheck("Global Y reference", "ui/ylocal");
+            isYLocal.AddProperty(game.configuration.SnapGrid.IsYLocalProp);
+            isInfinite = CreateCheck("Infinite snapping grid", "ui/node");
+            isInfinite.AddProperty(game.configuration.SnapGrid.IsInfiniteProp);
 
             //Modes
             var modesLabel = new Paragraph(Anchor.AutoInlineBottom, 0.5f, "Modes");

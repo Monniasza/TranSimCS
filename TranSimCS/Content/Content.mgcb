@@ -877,6 +877,18 @@
 /processorParam:TextureFormat=Color
 /build:ui/vk.png
 
+#begin ui/ylocal.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:ui/ylocal.png
+
 #begin white.png
 /importer:TextureImporter
 /processor:TextureProcessor

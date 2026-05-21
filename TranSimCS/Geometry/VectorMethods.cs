@@ -17,5 +17,9 @@ namespace TranSimCS.Geometry {
         public static PointD ToPointD(this Vector2 vector) {
             return new PointD((float)vector.X, (float)vector.Y);
         }
+
+        public static Vector3 ToX0Z(this Vector3 vector) {
+            return new(vector.X, 0, vector.Z);
+        }
     }
 }
