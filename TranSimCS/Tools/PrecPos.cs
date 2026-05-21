@@ -145,6 +145,7 @@ namespace TranSimCS.Tools {
             switch (button) {
                 case MouseButton.Left:
                     var mouseOverObj = menu.SelectedObject;
+                    if (mouseOverObj == null) return;
                     Selection = GetPositioningFromSelection(mouseOverObj);
                     break;
                 case MouseButton.Right:
