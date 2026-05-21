@@ -22,6 +22,8 @@ namespace TranSimCS.Tools {
         public Property<ChainMode> ChainMode { get; private set; }
         public Checkbox isYLocal { get; private set; }
         public Checkbox isInfinite { get; private set; }
+        public Property<Alignment> AlignmentProp { get; private set; }
+
 
         public StyleProp<TextureRegion> LoadStyleProp(string name) {
             return new StyleProp<TextureRegion>(new TextureRegion(Game.Game.Content.Load<Texture2D>(name)));
@@ -52,6 +54,14 @@ namespace TranSimCS.Tools {
             CreateModeButton(new SBendMode(), "ui/sbend");
             curvedButton.Checked = true;
             //CreateModeButton("ui/sbend3C", "S-bend, custom direction");
+
+            //Reference modes (L, C, R)
+            AlignmentProp = new(Alignment.Left, "alignment");
+            var alignmentLabel = new Paragraph(Anchor.AutoInlineBottom, 0.5f, "Alignment of road to the cursor");
+            AddChild(alignmentLabel);
+            UI.CreateRadio(game, this, "Left", "ui/alignl", AlignmentProp, Alignment.Left);
+            UI.CreateRadio(game, this, "Center", "ui/alignc", AlignmentProp, Alignment.Center);
+            UI.CreateRadio(game, this, "Right", "ui/alignr", AlignmentProp, Alignment.Right);
 
             //Spec-transfer modes
             var specTransferLabel = new Paragraph(Anchor.AutoInlineBottom, 0.5f, "Lane-spec transfer method");
