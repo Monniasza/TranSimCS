@@ -27,6 +27,13 @@ namespace TranSimCS.Tools {
         public Vector3 endTangent;
         public Vector3 endPos;
         public Vector3 endLateral;
+
+        public void Align(Alignment alignment, float width) {
+            var calculatedAlignments = alignment.GetAlignments();
+            var moveRight = calculatedAlignments.r - 0.5f;
+            startPos += moveRight * startLateral * width;
+            endPos += moveRight * endLateral * width;
+        }
     }
     public interface RoadMode {
         public string Name { get; }
@@ -219,6 +226,7 @@ namespace TranSimCS.Tools {
             if(node != null) {
                 var node0 = node.Value;
                 var lane0 = node0.lane;
+                var alignment = RoadTools.AlignmentProp.Value;
 
                 var startingPositionRef = LineEnd.calcLineEnd(node0.RoadNodeEnd, lane0.MiddlePosition);
                 var startTangent = startingPositionRef.Tangential;
@@ -259,6 +267,9 @@ namespace TranSimCS.Tools {
                         endPos = menu.configuration.SnapGrid.Snap(endPos);
                     }
 
+
+
+
                     RoadPlan plan = new RoadPlan {
                         startLateral = startLateral,
                         endLateral = endLateral,
@@ -268,8 +279,12 @@ namespace TranSimCS.Tools {
                         endTangent = endTangent,
                     };
 
+                    plan.Align(alignment, startWidth);
+
                     //Apply the road mode
                     Mode.CreateValues(plan);
+
+                    plan.Align(alignment.Inverse(), startWidth);
 
                     endTangent = plan.endTangent;
                     endLateral = plan.endLateral;

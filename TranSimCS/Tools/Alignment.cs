@@ -9,5 +9,11 @@ namespace TranSimCS.Tools {
             float r = convertedValue * 0.5f;
             return (1 - r, r);
         }
+
+        public static Alignment Inverse(this Alignment alignment) {
+            int ordinal = (int)alignment;
+            int inverted = 2 - ordinal;
+            return (Alignment)inverted;
+        }
     }
 }
