@@ -27,4 +27,12 @@ namespace TranSimCS.Worlds {
             PositionData = pos;
         }
     }
+
+    /// <summary>
+    /// Adapts a Property&lt;ObjPos&gt; to IPosition.
+    /// </summary>
+    /// <param name="property"></param>
+    public class PositionAdapter(Property<ObjPos> property) : IPosition {
+        public Property<ObjPos> PositionProp => property;
+    }
 }

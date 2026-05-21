@@ -48,6 +48,7 @@ namespace TranSimCS.Tools.Panels {
             this.camera = new CameraIPositionAdapter(menu);
             AddSelectionButton("Nothing", null);
             AddSelectionButton("Camera", camera);
+            AddSelectionButton("Snapping grid", new PositionAdapter(menu.configuration.SnapOriginProp));
         }
 
         private void AddSelectionButton(string title, IPosition? value) {

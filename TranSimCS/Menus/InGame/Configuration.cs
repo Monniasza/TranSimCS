@@ -22,12 +22,14 @@ namespace TranSimCS.Menus.InGame {
         public readonly Property<ITool?> ToolProp;
         public ITool? Tool { get => ToolProp.Value; set => ToolProp.Value = value; }
 
-
+        public readonly Property<ObjPos> SnapOriginProp;
+        public ObjPos SnapOrigin { get => SnapOriginProp.Value; set => SnapOriginProp.Value = value; }
 
         public Configuration() {
             LaneSpecProp = new Property<LaneSpec>(LaneSpec.Default, "laneSpec", this);
             RoadFinishProp = new Property<RoadFinish>(RoadFinish.Embankment, "roadFinish", this);
             ToolProp = new Property<ITool?>(null, "tool", this, Equality.ReferenceEqualComparer<ITool?>());
+            SnapOriginProp = new Property<ObjPos>(new ObjPos(new(0, 1, 0), 0), "snapOrigin", this);
         }
     }
 }

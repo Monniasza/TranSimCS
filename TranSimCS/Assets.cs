@@ -21,6 +21,8 @@ namespace TranSimCS {
         public static Texture2D Arrow { get; private set; }
         public static Texture2D White { get; private set; }
 
+        public static Texture2D Grid { get; private set; }
+
         public static ContentManager Content => Game1.Instance.Content;
 
 
@@ -36,6 +38,7 @@ namespace TranSimCS {
             BuildingWindows = Content.Load<Texture2D>("brickwindow");
             Arrow = Content.Load<Texture2D>("markings/arrow");
             White = Content.Load<Texture2D>("white");
+            Grid = Content.Load<Texture2D>("snapgrid");
         }
     }
 }

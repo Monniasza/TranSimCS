@@ -9,6 +9,7 @@ using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Spline;
 using TranSimCS.Tools;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.Menus.InGame {
     public partial class InGameMenu {
@@ -80,6 +81,19 @@ namespace TranSimCS.Menus.InGame {
             Mesh plusRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Add);
             if (SelectedObject is AddLaneSelection selection)
                 RoadRenderer.CreateAddLane(selection, plusRenderBin, configuration.LaneSpec.Width, roadSegmentHighlightColor, 0.5f);
+
+            //Render the snapping grid
+            if (CheckSnap.Checked) {
+                float scale = 20;
+                float increment = 4;
+                float totalSize = scale * increment;
+                ObjPos snapPos = configuration.SnapOrigin;
+                var refFrame = snapPos.CalcReferenceFrame();
+                Mesh gridRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Grid);
+                Vector3 origin = refFrame.O - totalSize * refFrame.X - totalSize * refFrame.Z;
+                gridRenderBin.DrawParallelogram(origin, refFrame.X * totalSize * 2, refFrame.Z * totalSize * 2, Color.White, new(-scale, -scale, 2 * scale, 2 * scale));
+            }
+            
 
             //Render ground with multiple planes
             var centerPos = renderManager.Camera.Position;
