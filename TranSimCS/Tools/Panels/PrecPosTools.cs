@@ -32,7 +32,7 @@ namespace TranSimCS.Tools.Panels {
         public readonly NumberField pitch;
         public readonly NumberField roll;
 
-        public PrecPosTools(InGameMenu menu) : base(MLEM.Ui.Anchor.CenterLeft, new(1, 1), true) {
+        public PrecPosTools(InGameMenu menu) : base(MLEM.Ui.Anchor.AutoLeft, new(1, 1), true) {
             //Set up properties
             prop = new Property<ObjPos>(ObjPos.Zero, "pos", null);
             Resolver<ObjPos> preferB = Resolvers.PreferB<ObjPos>;
@@ -68,17 +68,17 @@ namespace TranSimCS.Tools.Panels {
                 p.Position = P;
                 return p;
             }, prop);
-            yaw = UI.SetUpReplacementField<ObjPos>("Azimuth", this, x => GeometryUtils.FieldToDegs(x.Azimuth), (p, v) => {
+            yaw = UI.SetUpReplacementField<ObjPos>("Azimuth (forward vs north)", this, x => GeometryUtils.FieldToDegs(x.Azimuth), (p, v) => {
                 p.Azimuth = GeometryUtils.DegsToField(v);
                 return p;
             }, prop);
             
-            pitch = UI.SetUpReplacementField<ObjPos>("Pitch", this, x => MathHelper.ToDegrees(x.Inclination), (p, v) => {
+            pitch = UI.SetUpReplacementField<ObjPos>("Pitch (forward vs horizontal)", this, x => MathHelper.ToDegrees(x.Inclination), (p, v) => {
                 p.Inclination = MathHelper.ToRadians(v);
                 return p;
             }, prop);
 
-            roll = UI.SetUpReplacementField<ObjPos>("Roll", this, x => MathHelper.ToDegrees(x.Tilt), (p, v) => {
+            roll = UI.SetUpReplacementField<ObjPos>("Roll (lateral vs ground)", this, x => MathHelper.ToDegrees(x.Tilt), (p, v) => {
                 p.Tilt = MathHelper.ToRadians(v);
                 return p;
             }, prop);

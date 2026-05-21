@@ -78,6 +78,7 @@ namespace TranSimCS.Tools {
         void ITool.AddAttributes(ISet<string> action) {
             action.Add(ToolAttribs.showPosManip);
             action.Add(ToolAttribs.noShift);
+            action.Add(ToolAttribs.showChooser);
         }
 
         void ITool.OnKeyDown(Keys key) {

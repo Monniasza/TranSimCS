@@ -76,6 +76,7 @@ namespace TranSimCS.Menus.InGame {
         
         //Tools
         public RoadCreationTool RoadCreationTool { get; private set; }
+        public PrecPos PrecPosTool { get; private set; }
         public ReadOnlySet<string> ToolAttributes { get => ToolAttributesProp.Value; set => ToolAttributesProp.Value = value; }
         public Property<ReadOnlySet<string>> ToolAttributesProp = new(new ReadOnlySet<string>(new HashSet<string>()), "attributes", null, Equality.SetEquals<string>());
 
@@ -133,9 +134,12 @@ namespace TranSimCS.Menus.InGame {
 
             //Set up the tool panel
             ToolsPanel = new ToolsPanel(this);
-            
 
+
+            PrecPosTool = new PrecPos(this);
             RoadCreationTool = new RoadCreationTool(this);
+
+
             SetUpToolPictureButton("noTool", null);
             SetUpToolPictureButton("ui/blast2", new RoadDemolitionTool(this));
             SetUpToolPictureButton("addRoadTool", RoadCreationTool);
@@ -146,7 +150,7 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("inspect", new InspectTool(this));
             SetUpToolPictureButton("finish", new RoadFinishTool(this));
             SetUpToolPictureButton("trashdump", new DumpingTool(this));
-            SetUpToolPictureButton("precpos", new PrecPos(this));
+            SetUpToolPictureButton("precpos", PrecPosTool);
             SetUpToolPictureButton("sectionedit", new SecGen(this));
             SetUpToolPictureButton("equidistant", new ToolEquidistant(this));
 

@@ -248,6 +248,8 @@ namespace TranSimCS.Tools {
                     SegmentAlreadyExists = null;
                     NewNodePosition = null;
                 } else if (mouseOverLaneEnd == null) {
+
+
                     //Create a synthetic end
                     SegmentAlreadyExists = null;
                     Plane selectionPlane = new Plane(Vector3.UnitY * RoadTools.Height.Value, Vector3.UnitY);
