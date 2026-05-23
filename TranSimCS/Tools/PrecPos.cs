@@ -74,6 +74,7 @@ namespace TranSimCS.Tools {
             action.Add(ToolAttribs.showPosManip);
             action.Add(ToolAttribs.noShift);
             action.Add(ToolAttribs.showChooser);
+            action.Add(ToolAttribs.disableMMBSnap);
         }
 
         void ITool.OnKeyDown(Keys key) {
