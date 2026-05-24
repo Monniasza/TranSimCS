@@ -27,12 +27,14 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Spline;
 using TranSimCS.Tools;
 using TranSimCS.Tools.Inspect;
+using TranSimCS.Tools.Panels;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Menus.InGame {
     public partial class InGameMenu : Menu {
         public static readonly Plane groundPlane = new Plane(0, 1, 0, -0.1f);
+        public Plane ReferencePlane => configuration.SnapGrid.CreateSnappingPlane(RoadToolsPanel.Height.Value);
 
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
 
@@ -57,6 +59,8 @@ namespace TranSimCS.Menus.InGame {
         public Panel SettingsPanel { get; private set; } = null!;
         public ToolsPanel ToolsPanel { get; private set; } = null!;
         public RootElement ToolPanelRoot { get; private set; } = null!;
+
+        public RoadTools RoadToolsPanel { get; private set; } = null!;
 
         public ToolDescriptionPanel ToolDescPanel { get; private set; } = null!;
         public KeyBindPanel KeyBindPanel { get; private set; } = null!;
@@ -140,9 +144,10 @@ namespace TranSimCS.Menus.InGame {
             //Set up the tool panel
             ToolsPanel = new ToolsPanel(this);
 
-
             PrecPosTool = new PrecPos(this);
             RoadCreationTool = new RoadCreationTool(this);
+
+            RoadToolsPanel = ToolsPanel.GetPanel<RoadTools>(ToolAttribs.showRoadTools);
 
 
             SetUpToolPictureButton("noTool", null);
@@ -165,8 +170,6 @@ namespace TranSimCS.Menus.InGame {
 
             KeyBindPanel = new KeyBindPanel(this);
             UiSystem.Add("keybinds", KeyBindPanel);
-
-            
 
             //Set up the escape menu
             escapeMenu = new EscapeMenu(this);
