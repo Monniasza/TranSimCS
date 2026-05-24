@@ -9,7 +9,7 @@ using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Worlds.Property;
 
-namespace TranSimCS.Tools {
+namespace TranSimCS.Tools.Panels {
     public class RoadTools : Panel {
         public InGameMenu Game { get; private set; }
         public Checkbox flattenTilt { get; private set; }
