@@ -11,6 +11,7 @@ using Iesi.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MLEM.Input;
 using MLEM.Textures;
 using MLEM.Ui;
 using MLEM.Ui.Elements;
@@ -20,6 +21,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.ModelOld;
 using TranSimCS.Polygons;
+using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Spline;
@@ -314,19 +316,21 @@ namespace TranSimCS.Menus.InGame {
             camera.Elevation = newElevation; // Update camera elevation
             renderManager.Camera = camera;
 
+            //Process the tool
+
             //Run the world tool
             var Tool = configuration.Tool;
             if (!IsMouseOverUI) {
-                if (Game.MouseState.LeftButton == ButtonState.Pressed && Game.MouseStateOld.LeftButton == ButtonState.Released) Tool?.OnClick(MLEM.Input.MouseButton.Left);
-                if (Game.MouseState.MiddleButton == ButtonState.Pressed && Game.MouseStateOld.MiddleButton == ButtonState.Released) Tool?.OnClick(MLEM.Input.MouseButton.Middle);
-                if (Game.MouseState.RightButton == ButtonState.Pressed && Game.MouseStateOld.RightButton == ButtonState.Released) Tool?.OnClick(MLEM.Input.MouseButton.Right);
-                if (Game.MouseState.XButton1 == ButtonState.Pressed && Game.MouseStateOld.XButton1 == ButtonState.Released) Tool?.OnClick(MLEM.Input.MouseButton.Extra1);
-                if (Game.MouseState.XButton2 == ButtonState.Pressed && Game.MouseStateOld.XButton2 == ButtonState.Released) Tool?.OnClick(MLEM.Input.MouseButton.Extra2);
-                if (Game.MouseState.LeftButton == ButtonState.Released && Game.MouseStateOld.LeftButton == ButtonState.Pressed) Tool?.OnRelease(MLEM.Input.MouseButton.Left);
-                if (Game.MouseState.MiddleButton == ButtonState.Released && Game.MouseStateOld.MiddleButton == ButtonState.Pressed) Tool?.OnRelease(MLEM.Input.MouseButton.Left);
-                if (Game.MouseState.RightButton == ButtonState.Released && Game.MouseStateOld.RightButton == ButtonState.Pressed) Tool?.OnRelease(MLEM.Input.MouseButton.Left);
-                if (Game.MouseState.XButton1 == ButtonState.Released && Game.MouseStateOld.XButton1 == ButtonState.Pressed) Tool?.OnRelease(MLEM.Input.MouseButton.Left);
-                if (Game.MouseState.XButton2 == ButtonState.Released && Game.MouseStateOld.XButton2 == ButtonState.Pressed) Tool?.OnRelease(MLEM.Input.MouseButton.Left);
+                if (Game.MouseState.LeftButton == ButtonState.Pressed && Game.MouseStateOld.LeftButton == ButtonState.Released) OnMouseDown(MouseButton.Left);
+                if (Game.MouseState.MiddleButton == ButtonState.Pressed && Game.MouseStateOld.MiddleButton == ButtonState.Released) OnMouseDown(MouseButton.Middle);
+                if (Game.MouseState.RightButton == ButtonState.Pressed && Game.MouseStateOld.RightButton == ButtonState.Released) OnMouseDown(MouseButton.Right);
+                if (Game.MouseState.XButton1 == ButtonState.Pressed && Game.MouseStateOld.XButton1 == ButtonState.Released) OnMouseDown(MouseButton.Extra1);
+                if (Game.MouseState.XButton2 == ButtonState.Pressed && Game.MouseStateOld.XButton2 == ButtonState.Released) OnMouseDown(MouseButton.Extra2);
+                if (Game.MouseState.LeftButton == ButtonState.Released && Game.MouseStateOld.LeftButton == ButtonState.Pressed) OnMouseUp(MouseButton.Left);
+                if (Game.MouseState.MiddleButton == ButtonState.Released && Game.MouseStateOld.MiddleButton == ButtonState.Pressed) OnMouseUp(MouseButton.Middle);
+                if (Game.MouseState.RightButton == ButtonState.Released && Game.MouseStateOld.RightButton == ButtonState.Pressed) OnMouseUp(MouseButton.Right);
+                if (Game.MouseState.XButton1 == ButtonState.Released && Game.MouseStateOld.XButton1 == ButtonState.Pressed) OnMouseUp(MouseButton.Extra1);
+                if (Game.MouseState.XButton2 == ButtonState.Released && Game.MouseStateOld.XButton2 == ButtonState.Pressed) OnMouseUp(MouseButton.Extra2);
             }
             foreach (var key in Game.KeyboardState.GetPressedKeys())
                 if (Game.KeyboardStateOld.IsKeyUp(key)) {
@@ -362,6 +366,33 @@ namespace TranSimCS.Menus.InGame {
                 case Keys.Escape:
                     Overlay = (Overlay == null) ? escapeMenu : null;
                     break;
+            }
+        }
+
+        private void OnMouseUp(MouseButton button) {
+            configuration.Tool?.OnRelease(button);
+        }
+        private void OnMouseDown(MouseButton button) {
+            configuration.Tool?.OnClick(button);
+
+            switch (button) {
+                case MouseButton.Middle:
+                    PickNewSnap();
+                    break;
+            }
+        }
+        private void PickNewSnap() {
+            bool isPickASnapSuppressed = ToolAttributes.Contains(ToolAttribs.disableMMBSnap);
+            if (!isPickASnapSuppressed) {
+                //Set the new snap
+                var candidate = SelectedObject;
+                if (candidate is IPosition obj) {
+                    var position = obj.PositionData;
+                    configuration.SnapGrid.Position = position;
+                } else if (candidate is IRoadElement element) {
+                    var candidateNode = element.GetRoadNode();
+                    if (candidateNode != null) configuration.SnapGrid.Position = candidateNode.PositionProp.Value;
+                }
             }
         }
 
