@@ -76,6 +76,7 @@ namespace TranSimCS.Tools {
         }
 
         void ITool.OnClick(MouseButton button) {
+            var refplane = menu.ReferencePlane;
             if (button == MouseButton.Right) {
                 //Cancel the placement
                 Reference = null;
@@ -85,7 +86,8 @@ namespace TranSimCS.Tools {
                 var selectedNode = menu.MouseOverRoad?.SelectedRoadNode;
                 if (selectedNode == null) {
                     //Select a position
-                    var pos = new ObjPos(menu.GroundSelection, 0);
+                    var vectorPos = GeometryUtils.IntersectRayPlane(menu.MouseRay, refplane);
+                    var pos = new ObjPos(vectorPos, 0);
                     NewlyCreatedNode = new RoadNode(menu.World, "", PrePosition);
                 } else {
                     //Select a node
@@ -114,7 +116,8 @@ namespace TranSimCS.Tools {
         }
 
         void ITool.Update(GameTime gameTime) {
-            var selectedPosition = menu.GroundSelection;
+            var refplane = menu.ReferencePlane;
+            var selectedPosition = GeometryUtils.IntersectRayPlane(menu.MouseRay, refplane);
             if(menu.IsSnapEnabled) selectedPosition = menu.configuration.SnapGrid.Snap(selectedPosition);
 
             if (NewlyCreatedNode != null) {
