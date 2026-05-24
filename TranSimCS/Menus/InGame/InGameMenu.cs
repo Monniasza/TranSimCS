@@ -67,6 +67,7 @@ namespace TranSimCS.Menus.InGame {
         public Checkbox CheckSections { get; private set; } = null!;
         public Checkbox CheckSnap {get; private set; } = null!;
         public Checkbox CheckUnits { get; private set; } = null!;
+        public bool IsSnapEnabled { get => CheckSnap.Checked; set => CheckSnap.Checked = value; }
 
         //Overlays
         public RoadConfigurator configurator { get; private set; }

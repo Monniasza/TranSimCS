@@ -20,8 +20,7 @@ namespace TranSimCS.Tools.Panels {
         public Property<float> HeightStep { get; private set; }
         public Property<float> Height {  get; private set; }
         public Property<ChainMode> ChainMode { get; private set; }
-        public Checkbox isYLocal { get; private set; }
-        public Checkbox isInfinite { get; private set; }
+        
         public Property<Alignment> AlignmentProp { get; private set; }
 
 
@@ -40,10 +39,6 @@ namespace TranSimCS.Tools.Panels {
             flattenTilt.Checked = true;
             flattenIncline = CreateCheck("Flatten inclination", "ui/flatIncline");
             flattenIncline.Checked = true;
-            isYLocal = CreateCheck("Global Y reference", "ui/ylocal");
-            isYLocal.AddProperty(game.configuration.SnapGrid.IsYLocalProp);
-            isInfinite = CreateCheck("Infinite snapping grid", "ui/node");
-            isInfinite.AddProperty(game.configuration.SnapGrid.IsInfiniteProp);
 
             //Modes
             var modesLabel = new Paragraph(Anchor.AutoInlineBottom, 0.5f, "Modes");

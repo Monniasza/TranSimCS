@@ -342,6 +342,7 @@ namespace TranSimCS.Tools {
         void ITool.AddAttributes(ISet<string> action) {
             action.Add(ToolAttribs.showFinishes);
             action.Add(ToolAttribs.showRoadTools);
+            action.Add(ToolAttribs.showSnapOptions);
         }
     }
 }
