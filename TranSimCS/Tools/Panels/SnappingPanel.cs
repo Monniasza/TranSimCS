@@ -15,6 +15,7 @@ namespace TranSimCS.Tools.Panels {
         public Checkbox isYLocal { get; private set; }
         public Checkbox isInfinite { get; private set; }
         public NumberField cellSize {  get; private set; }
+        public TextField cellCount { get; private set; }
 
 
         public SnappingPanel(InGameMenu game)
@@ -29,6 +30,7 @@ namespace TranSimCS.Tools.Panels {
             isInfinite.AddProperty(game.configuration.SnapGrid.IsInfiniteProp);
 
             cellSize = UI.SetUpFloatProp("Cell size", this, game.configuration.SnapGrid.CellSizeProp);
+            cellCount = UI.SetUpUIntProp("Snapping cell count", this, game.configuration.SnapGrid.CellCountProp);
         }
 
         public Checkbox CreateCheck(string name, string icon, Color? checkColor = null, Color? uncheckColor = null) {

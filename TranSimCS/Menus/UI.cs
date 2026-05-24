@@ -7,6 +7,7 @@ using MLEM.Ui.Elements;
 using MLEM.Ui.Style;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Roads;
+using TranSimCS.Tools.Panels;
 using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Menus {
@@ -52,7 +53,7 @@ namespace TranSimCS.Menus {
         public static TextField SetUpProp<T>(string title, Panel panel, Property<T> prop, Func<T, string> getter, Func<string, T> setter){
             var textfieldSize = new Vector2(0.5f, 20);
             TextField textfield = new TextField(Anchor.AutoInline, textfieldSize, null, null, getter(prop.Value));
-            textfield.OnTextChange = (field, str) => setter(str);
+            textfield.OnTextChange = (field, str) => prop.Value = setter(str);
             EventHandler<PropertyChangedEventArgs2<T>> handler = (sender, e) => textfield.SetText(getter(prop.Value));
             prop.ValueChanged += handler;
             SetUpProp(title, panel, textfield);
@@ -96,5 +97,9 @@ namespace TranSimCS.Menus {
             return (_) => new MLEM.Textures.TextureRegion(texture2D);
         }
         public static Image.TextureCallback CreateTextureCallback(string name) => CreateTextureCallback(Assets.Content.Load<Texture2D>(name));
+
+        public static TextField SetUpUIntProp(string v, SnappingPanel snappingPanel, Property<uint> cellCountProp) {
+            return SetUpProp<uint>(v, snappingPanel, cellCountProp, x => x.ToString(), uint.Parse);
+        }
     }
 }
