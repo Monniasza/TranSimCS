@@ -32,7 +32,7 @@ namespace TranSimCS.Tools.Panels {
             : base(Anchor.AutoLeft, new(1, 1), true) {
             Game = game;
 
-            var settingsLabel = new Paragraph(Anchor.AutoInline, 0.4f, "Settings");
+            var settingsLabel = new Paragraph(Anchor.AutoInline, 0.5f, "Settings");
             AddChild(settingsLabel);
             anarchyCheck = CreateCheck("Anarchy", "ui/anarchy2", Color.Orange);
             flattenTilt = CreateCheck("Flatten tilt", "ui/flatTilt");

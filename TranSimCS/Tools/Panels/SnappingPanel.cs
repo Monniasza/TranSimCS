@@ -22,7 +22,7 @@ namespace TranSimCS.Tools.Panels {
            : base(Anchor.AutoLeft, new(1, 1), true) {
             this.Game = game;
 
-            var settingsLabel = new Paragraph(Anchor.AutoInline, 0.4f, "Settings");
+            var settingsLabel = new Paragraph(Anchor.AutoInline, 0.5f, "Settings");
             AddChild(settingsLabel);
             isYLocal = CreateCheck("Global Y reference", "ui/ylocal");
             isYLocal.AddProperty(game.configuration.SnapGrid.IsYLocalProp);
