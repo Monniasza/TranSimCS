@@ -97,5 +97,11 @@ namespace TranSimCS.Snapping {
 
             return center + lateral * xComp + normal * yComp + tangent * zComp;
         }
+
+        public Plane CreateSnappingPlane() {
+            var refFrame = Position.CalcReferenceFrame();
+            var refPlane = new Plane(refFrame.O, refFrame.Z);
+            return refPlane;
+        }
     }
 }
