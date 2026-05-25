@@ -25,9 +25,7 @@ namespace TranSimCS.Tools
         void ITool.OnClick(MouseButton button) {
             if (button == MouseButton.Left) {
                 var laneStrip = game.MouseOverRoad?.SelectedLaneStrip;
-                if (laneStrip != null) {
-                    laneStrip.ReverseDirection();
-                }
+                laneStrip?.ReverseDirection();
             }
         }
 
