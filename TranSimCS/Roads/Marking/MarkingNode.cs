@@ -65,15 +65,15 @@ namespace TranSimCS.Roads.Marking {
     }
 
     public class MarkingRenderer {
-        public static void RenderMarkingPoint(MarkingPointData marking, MultiMesh mesh) {
+        public static void RenderMarkingPoint(MarkingPointData marking, MultiMesh mesh, float voffset = 0.1f) {
             var anchor = marking.Anchor;
             float leftBound = 0;
             float rightBound = 0;
             var alignment = marking.Alignment;
             var offset = marking.Offset;
-            ObjPos refpos = default;
-            LaneEnd? laneEnd = anchor.GetLaneEnd();
-            RoadNodeEnd nodeEnd = anchor.GetNodeEnd();
+            ObjPos refpos = ObjPos.Zero;
+            LaneEnd? laneEnd = anchor?.GetLaneEnd();
+            RoadNodeEnd? nodeEnd = anchor?.GetNodeEnd();
             if(nodeEnd != null) refpos = nodeEnd.PositionProp.Value;
             if (laneEnd != null) {
                 leftBound = laneEnd.Value.lane.LeftPosition;
@@ -89,14 +89,30 @@ namespace TranSimCS.Roads.Marking {
             var alignedPos = float.Lerp(leftBound, rightBound, alignment) + offset;
 
             var refframe = refpos.CalcReferenceFrame();
+            if (anchor != null && anchor.ZDiscriminant() < 0) {
+                float width = Math.Abs(rightBound - leftBound);
+                var roadNode = anchor.GetRoadNode();
+                if (roadNode == null || roadNode.Lanes.Count == 0) return;
+                float originalRightBound = anchor.GetRoadNode().LastLane.RightPosition;
+                float originalLeftBound = anchor.GetRoadNode().Lanes[0].LeftPosition;
+                refframe.O += refframe.X * (originalRightBound + originalLeftBound);
+                refframe.X *= -1;
+                refframe.Z *= -1;
+            }
 
-            var sideLen = 0.2f;
+            var sideLen = 0.6f;
 
-            var centerPos = refframe.O + refframe.X * alignedPos;
-            var ulpos = centerPos - (refframe.Z - refframe.X) * (sideLen * 0.5f);
+            var centerPos = refframe.O + refframe.X * alignedPos + refframe.Y * voffset;
+            var sidevector = refframe.X * sideLen * 0.5f;
+            var fwdVector = refframe.Z * sideLen;
 
             var arrowRenderBin = mesh.GetOrCreateRenderBinForced(Assets.Arrow);
-            arrowRenderBin.DrawParallelogram(ulpos, refframe.X * sideLen, -refframe.Z * sideLen, Color.Yellow);
+            arrowRenderBin.DrawQuad(
+                centerPos - sidevector + fwdVector, centerPos + sidevector + fwdVector,
+                centerPos + sidevector, centerPos - sidevector,
+                Color.Magenta
+            );
+            arrowRenderBin.AddTagsToLastTriangles(2, marking);
         }
     }
 }

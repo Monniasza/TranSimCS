@@ -7,6 +7,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Model;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Marking;
+using TranSimCS.Roads.Node;
 using TranSimCS.Spline;
 using TranSimCS.Tools;
 using TranSimCS.Worlds;
@@ -93,6 +95,17 @@ namespace TranSimCS.Menus.InGame {
             //Render road tool
             configuration.Tool?.Draw(time);
 
+            //Render marking points
+            if (CheckPoints.Checked) {
+                List<MarkingPointData> entries = [];
+
+                foreach (RoadNode node in World.Nodes.data)
+                    foreach (var lane in node.Lanes)
+                        foreach (var laneEnd in new LaneEnd[] { lane.Front, lane.Rear })
+                            foreach (var alignment in new float[] { 0, 1 }) entries.Add(new() { Anchor = laneEnd, Alignment = alignment });
+                foreach (var entry in entries) MarkingRenderer.RenderMarkingPoint(entry, renderHelper);
+            }
+
             //Render the render helper
             var tris = 0;
             var verts = 0;
@@ -101,6 +114,8 @@ namespace TranSimCS.Menus.InGame {
                 verts += bin.Vertices.Count;
             }
             renderManager.Render(renderHelper);
+
+            
         }
 
         private void RenderGround(Vector3 posoffset, Mesh renderBin) {
