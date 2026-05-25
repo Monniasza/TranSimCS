@@ -197,5 +197,13 @@ namespace TranSimCS.Roads.Strip {
         public static bool operator !=(LaneStrip? left, LaneStrip? right) {
             return !(left == right);
         }
+        public void ReverseDirection() {
+            var oldStart = StartLane;
+            var oldEnd = EndLane;
+            StartLane = oldEnd;
+            EndLane = oldStart;
+            road?.Mesh.Invalidate();
+            InvalidateMesh();
+        }
     }
 }
