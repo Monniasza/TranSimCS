@@ -14,6 +14,7 @@ namespace TranSimCS.Tools
 
         public (object[], string)[] PromptKeys() => [
             ([MouseButton.Left], "on lane strips to reverse their direction"),
+            ([MouseButton.Right], "on road strips to reverse their direction"),
         ];
 
         void ITool.Draw(GameTime gameTime) {
@@ -26,6 +27,10 @@ namespace TranSimCS.Tools
             if (button == MouseButton.Left) {
                 var laneStrip = game.MouseOverRoad?.SelectedLaneStrip;
                 laneStrip?.ReverseDirection();
+            }
+            if(button == MouseButton.Right) {
+                var roadStrip = game.MouseOverRoad?.SelectedLaneTag?.road;
+                if(roadStrip != null) foreach(var lane in roadStrip.Lanes) lane.ReverseDirection();
             }
         }
 
