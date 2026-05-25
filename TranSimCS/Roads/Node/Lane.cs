@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +13,7 @@ namespace TranSimCS.Roads.Node {
     /// <summary>
     /// A lane defines where vehicles can ride through and in which direction.
     /// </summary>
-    public class Lane: IDraggableObj {
+    public class Lane: IDraggableObj, IRoadElement {
         /// <summary>
         /// The parent <see cref="RoadNode"/>
         /// </summary>
@@ -54,8 +55,42 @@ namespace TranSimCS.Roads.Node {
         internal ISet<LaneStrip> connections = new HashSet<LaneStrip>(); // Set of lane strips that this lane is connected to
         public ISet<LaneStrip> Connections => new ReadOnlySet<LaneStrip>(connections); // Read-only set of lane strips that this lane is connected to
 
+        public Guid Guid => throw new NotImplementedException();
+
         //Dragging
         public void Drag(Vector3 vector, Vector3 dragFrom) => ((IDraggableObj)RoadNode).Drag(vector, dragFrom);
         public void Rotate(int azimuth, float incline, float tilt) => ((IDraggableObj)RoadNode).Rotate(azimuth, incline, tilt);
+
+        public int ZDiscriminant() {
+            return 0;
+        }
+
+        public int XDiscriminant() {
+            return 0;
+        }
+
+        public LaneStrip? GetLaneStrip() {
+            return null;
+        }
+
+        public RoadStrip? GetRoadStrip() {
+            return null;
+        }
+
+        public RoadNode? GetRoadNode() {
+            return RoadNode;
+        }
+
+        public Lane? GetLane() {
+            return this;
+        }
+
+        public LaneEnd? GetLaneEnd() {
+            return null;
+        }
+
+        public RoadNodeEnd? GetNodeEnd() {
+            return null;
+        }
     }
 }

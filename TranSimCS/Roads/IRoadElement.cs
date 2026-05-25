@@ -8,6 +8,17 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads {
+
+    /// <summary>
+    /// Shared interface for various road classes.
+    /// <see cref="Lane"/>
+    /// <see cref="LaneEnd"/>
+    /// <see cref="RoadNode"/>
+    /// <see cref="RoadNodeEnd"/>
+    /// <see cref="RoadStrip"/>
+    /// <see cref="LaneStrip"/>
+    /// <see cref="LaneRange"/>
+    /// </summary>
     public interface IRoadElement: IGuid {
         public int ZDiscriminant();
         public int XDiscriminant();

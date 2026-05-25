@@ -150,5 +150,9 @@ namespace TranSimCS.Roads.Section {
 
             return result.ToArray();
         }
+
+        public RoadNodeEnd? GetNodeEnd() {
+            throw new NotImplementedException();
+        }
     }
 }
