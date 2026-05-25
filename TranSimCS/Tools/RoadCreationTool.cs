@@ -174,7 +174,7 @@ namespace TranSimCS.Tools {
                     node = selectedNode;
                     log.Trace($"Selected node: {selectedNode}");
                 } else {
-                    var world = node.Value.lane.RoadNode.World;
+                    var world = menu.World;
                     var spec = RoadTools.ChainMode.Value.ChainValues(menu);
                     if (selectedNode == null && NewNodePosition != null) {
                         //Create a new node

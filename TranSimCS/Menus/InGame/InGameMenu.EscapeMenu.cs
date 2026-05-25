@@ -55,15 +55,15 @@ namespace TranSimCS.Menus.InGame {
                 parent.Overlay = dialog;
                 TaskCompletionSource<string?> tcs = new();
                 dialog.OnSave += (file) => tcs.TrySetResult(file);
-                string filename = await tcs.Task;
+                string? filename = await tcs.Task;
                 if (filename == null) {
                     parent.Overlay = this;
                     return false;
                 }
                 try {
                     InGameMenu newMenu = new InGameMenu(parent.Game);
+                    newMenu.LoadContent();
                     newMenu.LoadWorldFromFile(filename);
-                    //newMenu.LoadContent();
                     parent.Game.Menu = newMenu;
                 } catch (Exception e) {
                     OptionsDialog.FromError(parent, e, this).Show();
