@@ -162,7 +162,7 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("precpos", PrecPosTool);
             SetUpToolPictureButton("sectionedit", new SecGen(this));
             SetUpToolPictureButton("equidistant", new ToolEquidistant(this));
-            SetUpToolPictureButton("ui/chain", new ReverseLaneDirectionTool(this));
+            SetUpToolPictureButton("reverse", new ReverseLaneDirectionTool(this));
 
             //Set up the tool preview
             ToolDescPanel = new ToolDescriptionPanel(this);
