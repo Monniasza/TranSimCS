@@ -99,7 +99,7 @@ namespace TranSimCS.Menus {
         public static Image.TextureCallback CreateTextureCallback(string name) => CreateTextureCallback(Assets.Content.Load<Texture2D>(name));
 
         public static TextField SetUpUIntProp(string v, SnappingPanel snappingPanel, Property<uint> cellCountProp) {
-            return SetUpProp<uint>(v, snappingPanel, cellCountProp, x => x.ToString(), uint.Parse);
+            return SetUpProp<uint>(v, snappingPanel, cellCountProp, x => x.ToString(), x => (x == "") ? 0 : uint.Parse(x));
         }
     }
 }
