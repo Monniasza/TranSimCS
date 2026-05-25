@@ -112,7 +112,7 @@ namespace TranSimCS.Menus.InGame {
             }
 
             public void ResetWorld() {
-                WorldGenerator.SetUpExampleWorld(parent.World);
+                parent.World.ClearAll();
                 parent.Overlay = null;
             }
 
