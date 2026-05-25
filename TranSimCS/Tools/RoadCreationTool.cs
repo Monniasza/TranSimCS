@@ -130,6 +130,7 @@ namespace TranSimCS.Tools {
             (object[], string) countPrompt = ([Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9], "to set number of lanes");
             List<(object[], string)> keys = [countPrompt];
             keys.Add(([Keys.LeftControl], "to connect inline"));
+            keys.Add(([Keys.LeftAlt], "to reverse lane direction"));
             if (node == null) {
                 keys.Add(([MouseButton.Left], "Select a road node end to create a lane strip."));
                 keys.Add(([MouseButton.Left], "elsewhere to set direction manually"));
@@ -189,7 +190,11 @@ namespace TranSimCS.Tools {
                         world.Nodes.data.Add(newNode);
                     }
                     if(selectedNode != null) {
-                        var strip = world.GetOrMakeLaneStrip(node.Value, selectedNode.Value.OppositeEnd, menu.configuration.RoadFinish);
+                        var startLane = node.Value;
+                        var endLane = selectedNode.Value.OppositeEnd;
+                        if (menu.Game.KeyboardState.IsKeyDown(Keys.LeftAlt))
+                            (startLane, endLane) = (endLane, startLane);
+                        var strip = world.GetOrMakeLaneStrip(startLane, endLane, menu.configuration.RoadFinish);
                         strip.Spec = spec;
                         node = selectedNode;
                     }
