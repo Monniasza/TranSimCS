@@ -1,5 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads;
 
@@ -9,13 +11,21 @@ namespace TranSimCS.Roads.Strip {
         public static void GenerateLaneStripMesh(LaneStrip laneStrip, MultiMesh renderer, float voffset = 0.01f) {
             var tag = laneStrip.Tag;
 
-            var roadBin = renderer.GetOrCreateRenderBinForced(Assets.Road);
-            RoadRenderer.GenerateLaneRangeMesh(tag, roadBin, laneStrip.Spec.Color, voffset, laneStrip); // Generate the lane tag mesh
+            var splines = RoadRenderer.GenerateSplines(tag, voffset); // Generate the splines for the left and right lanes
+
+            /*var roadBin = renderer.GetOrCreateRenderBinForced(Assets.Road);
+            RoadRenderer.GenerateLaneRangeMesh(tag, roadBin, laneStrip.Spec.Color, voffset, laneStrip); // Generate the lane tag mesh*/
+
+            var apshaltBin = renderer.GetOrCreateRenderBinForced(Assets.Asphalt);
+            var leftPoints = GeometryUtils.GenerateSplinePoints(splines.Item1);
+            var rightPoints = GeometryUtils.GenerateSplinePoints(splines.Item2);
+            var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftPoints, rightPoints, GenerateLaneStripVertexGen(laneStrip.Spec));
+            apshaltBin.DrawStrip(generatedVertStripPair);
 
             //Generate arrows
             float aoffset = 0.15f;
             var t = 0.5f;
-            var splines = RoadRenderer.GenerateSplines(tag, voffset); // Generate the splines for the left and right lanes
+            
             var avgspline = (splines.Item2 + splines.Item1) / 2;
             var lpoint = splines.Item1[t];
             var rpoint = splines.Item2[t];
@@ -36,6 +46,17 @@ namespace TranSimCS.Roads.Strip {
             arrowBin.DrawLine(midpoint - displacement, midpoint + displacement, nrm, Color.White, arrowWidth);
 
             //Generate side-lines
+        }
+
+        public static VertexGen2<VertexPositionColorTexture> GenerateLaneStripVertexGen(LaneSpec spec) {
+            (VertexPositionColorTexture, VertexPositionColorTexture) GenerateVertices(Vector3 l, Vector3 r, float distance, int index) {
+                float mutualDistance = Vector3.Distance(l, r) / 2;
+                return (
+                    new VertexPositionColorTexture(l, spec.Color, new(-mutualDistance, distance)),
+                    new VertexPositionColorTexture(r, spec.Color, new( mutualDistance, distance))
+                );
+            }
+            return GenerateVertices;
         }
     }
 }

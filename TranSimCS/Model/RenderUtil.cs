@@ -96,6 +96,9 @@ namespace TranSimCS.Model {
 
             }
         }
+        public static void DrawStrip(this Mesh rb, (VertexPositionColorTexture[], VertexPositionColorTexture[]) vertices) {
+            rb.DrawStrip(vertices.Item1, vertices.Item2);
+        }
 
         public static void DrawLine(this Mesh rb, Vector3 start, Vector3 end, Vector3 normal, Color c, float width = 0.2f) {
             var len = end - start;
