@@ -38,17 +38,15 @@ namespace TranSimCS.Roads.Node {
 
         //Identifiers
         public string Name { get; set; }
-        public TSWorld World { get; internal set; }
 
         // Constructor to initialize the RoadNode with a unique ID, name, position, and world
-        public RoadNode(TSWorld world, string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) :
-            this(world, name, new ObjPos(position, azimuth, inclination, tilt)) { }
-        public RoadNode(TSWorld world, string name, ObjPos positionData, Guid? id = null) {
+        public RoadNode(string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) :
+            this(name, new ObjPos(position, azimuth, inclination, tilt)) { }
+        public RoadNode(string name, ObjPos positionData, Guid? id = null) {
             Guid = id ?? Guid.NewGuid();   
             PositionProp = new(ObjPos.Zero, "Position", this);
             Name = name;
             PositionProp.Value = positionData;
-            World = world;
             RearEnd = new RoadNodeEnd(NodeEnd.Backward, this);
             FrontEnd = new RoadNodeEnd(NodeEnd.Forward, this);
             Mesh = new MeshGenerator<RoadNode>(this, GenerateMesh);

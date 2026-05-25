@@ -88,14 +88,14 @@ namespace TranSimCS.Tools {
                     //Select a position
                     var vectorPos = GeometryUtils.IntersectRayPlane(menu.MouseRay, refplane);
                     var pos = new ObjPos(vectorPos, 0);
-                    NewlyCreatedNode = new RoadNode(menu.World, "", PrePosition);
+                    NewlyCreatedNode = new RoadNode("", PrePosition);
                 } else {
                     //Select a node
                     Reference = selectedNode;
                 }
             } else {
                 //Ready to place: selected reference or newly created node
-                var n = NewlyCreatedNode ?? new RoadNode(menu.World, "", PrePosition);
+                var n = NewlyCreatedNode ?? new RoadNode("", PrePosition);
                 Generator.GenerateLanes(laneCount, n, menu.configuration.LaneSpec   );
                 n.PositionProp.Value = PrePosition;
                 menu.World.Nodes.data.Add(n);

@@ -49,11 +49,13 @@ namespace TranSimCS.Worlds.Stack {
 
         //LISTENERS
         private void ElementAdded(TObj obj) {
+            obj.World = World;
             obj.PropertyChanged += ElementChanged;
             FireAdded(obj);
         }
 
         private void ElementRemoved(TObj obj) {
+            obj.World = null;
             obj.PropertyChanged -= ElementChanged;
             FireRemoved(obj);
         }

@@ -179,7 +179,7 @@ namespace TranSimCS.Tools {
                     var spec = RoadTools.ChainMode.Value.ChainValues(menu);
                     if (selectedNode == null && NewNodePosition != null) {
                         //Create a new node
-                        var newNode = new RoadNode(world, "", NewNodePosition.Value);
+                        var newNode = new RoadNode("", NewNodePosition.Value);
                         var newLane = new Lane {
                             Spec = spec,
                             LeftPosition = 0,

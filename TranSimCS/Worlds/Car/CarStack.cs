@@ -58,7 +58,7 @@ namespace TranSimCS.Worlds.Car {
 
             if (guid == null) throw new JsonException("Missing id property");
             if (pos == null) throw new JsonException($"Missing pos property for car {guid}");
-            Car car = new Car(world);
+            Car car = new();
             car.Guid = guid.Value;
             car.PositionProp.Value = pos.Value;
             car.MeshId = mesh;

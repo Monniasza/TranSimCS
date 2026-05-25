@@ -83,7 +83,7 @@ namespace TranSimCS.Roads.Node {
         public RoadSection GetOrCreateSection() {
             var section = ConnectedSection.Value;
             if (section == null) {
-                section = new RoadSection(Node.World);
+                section = new RoadSection();
                 ConnectedSection.Value = section;
                 Node.World.RoadSections.data.Add(section);
             }

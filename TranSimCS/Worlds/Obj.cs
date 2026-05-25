@@ -71,6 +71,7 @@ namespace TranSimCS.Worlds {
         public bool Equals(Obj? other) {
             return ReferenceEquals(this, other);
         }
+        public TSWorld World { get; internal set; }
     }
 
     //Component-interfaces for objects

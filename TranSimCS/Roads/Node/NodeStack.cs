@@ -52,7 +52,7 @@ namespace TranSimCS.Roads.Node {
             if (guid == null) throw new JsonException("Missing id property");
             if (pos == null) throw new JsonException($"Missing pos property for node {guid}");
 
-            RoadNode node = new RoadNode(World, name, pos.Value, guid);
+            RoadNode node = new RoadNode(name, pos.Value, guid);
             foreach (var lane in lanes) {
                 node.AddLane(lane);
             }

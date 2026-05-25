@@ -1,24 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using TranSimCS.Collections;
-using TranSimCS.Model;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.SceneGraph;
-using TranSimCS.Spline;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Property;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TranSimCS.Roads.Section {
     public class RoadSection : Obj, IObjMesh<RoadSection>{
-        public readonly TSWorld World;
-
         //Added nodes, maintained by the 
         private List<RoadNodeEnd> nodes = new();
         public IList<RoadNodeEnd> Nodes => new ReadOnlyCollection<RoadNodeEnd>(nodes);
@@ -31,8 +23,7 @@ namespace TranSimCS.Roads.Section {
 
         public MeshGenerator<RoadSection> Mesh { get; private set; }
 
-        public RoadSection(TSWorld world) {
-            this.World = world;
+        public RoadSection() {
             MainSlopeNodes = new Property<RoadNodeEndPair>(new(null, null), "slopeNodes", this);
             Mesh = new MeshGenerator<RoadSection>(this, (rs, mesh) => SectionRenderer.GenerateSectionMesh(rs, mesh));
         }

@@ -54,7 +54,7 @@ namespace TranSimCS.Tools.Panels {
             for (int i = 0; i < nodes.Length; i++) {
                 var spec = RandomLaneSpec(random);
                 var pos = RandomPosition(random, radius);
-                RoadNode node = new RoadNode(world, "", pos);
+                RoadNode node = new RoadNode("", pos);
                 Generator.GenerateLanes(1, node, spec);
                 nodes[i] = node;
                 world.Nodes.data.Add(node);

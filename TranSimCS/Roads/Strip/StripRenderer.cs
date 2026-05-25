@@ -13,9 +13,6 @@ namespace TranSimCS.Roads.Strip {
 
             var splines = RoadRenderer.GenerateSplines(tag, voffset); // Generate the splines for the left and right lanes
 
-            /*var roadBin = renderer.GetOrCreateRenderBinForced(Assets.Road);
-            RoadRenderer.GenerateLaneRangeMesh(tag, roadBin, laneStrip.Spec.Color, voffset, laneStrip); // Generate the lane tag mesh*/
-
             var apshaltBin = renderer.GetOrCreateRenderBinForced(Assets.Asphalt);
             var leftPoints = GeometryUtils.GenerateSplinePoints(splines.Item1);
             var rightPoints = GeometryUtils.GenerateSplinePoints(splines.Item2);

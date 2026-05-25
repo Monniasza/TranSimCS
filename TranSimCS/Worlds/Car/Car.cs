@@ -68,15 +68,12 @@ namespace TranSimCS.Worlds.Car {
         public Property<string?> MeshIdProp;
         public string? MeshId { get => MeshIdProp.Value; set => MeshIdProp.Value = value; }
 
-        public readonly TSWorld World;
-
-        public Car(TSWorld world) {
+        public Car() {
             PositionProp = new(ObjPos.Zero, "position", this);
             MeshIdProp = new(null, "meshId", this);
             Mesh = new(this, GenerateMesh);
             MeshIdProp.ValueChanged += MeshIdProp_ValueChanged;
             OnStripProp = new(null, "strip", this, Equality.ReferenceEqualComparer<LaneStrip?>());
-            World = world;
         }
 
         private void MeshIdProp_ValueChanged(object? sender, PropertyChangedEventArgs2<string?> e) {

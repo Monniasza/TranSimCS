@@ -19,7 +19,7 @@ namespace TranSimCS.Save2.Examples {
             var world = new TSWorld();
 
             // Add road nodes
-            var node1 = new RoadNode(world, "Node 1", new Vector3(0, 0, 0), RoadNode.AZIMUTH_NORTH);
+            var node1 = new RoadNode("Node 1", new Vector3(0, 0, 0), RoadNode.AZIMUTH_NORTH);
             var lane1 = new Lane {
                 LeftPosition = -3.5f,
                 RightPosition = 0,
@@ -28,7 +28,7 @@ namespace TranSimCS.Save2.Examples {
             node1.AddLane(lane1);
             world.Nodes.data.Add(node1);
 
-            var node2 = new RoadNode(world, "Node 2", new Vector3(100, 0, 0), RoadNode.AZIMUTH_NORTH);
+            var node2 = new RoadNode("Node 2", new Vector3(100, 0, 0), RoadNode.AZIMUTH_NORTH);
             var lane2 = new Lane {
                 LeftPosition = -3.5f,
                 RightPosition = 0,
@@ -71,7 +71,7 @@ namespace TranSimCS.Save2.Examples {
             var world = new TSWorld();
 
             // Add some data
-            var node = new RoadNode(world, "Test Node", new Vector3(50, 0, 50), RoadNode.AZIMUTH_EAST);
+            var node = new RoadNode("Test Node", new Vector3(50, 0, 50), RoadNode.AZIMUTH_EAST);
             world.Nodes.data.Add(node);
 
             // Save
@@ -95,7 +95,7 @@ namespace TranSimCS.Save2.Examples {
 
             // Add some data
             for (int i = 0; i < 10; i++) {
-                var node = new RoadNode(world, $"Node {i}", new Vector3(i * 10, 0, 0), RoadNode.AZIMUTH_NORTH);
+                var node = new RoadNode($"Node {i}", new Vector3(i * 10, 0, 0), RoadNode.AZIMUTH_NORTH);
                 var lane = new Lane {
                     LeftPosition = -3.5f,
                     RightPosition = 0,
