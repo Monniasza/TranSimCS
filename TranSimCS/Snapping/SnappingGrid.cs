@@ -61,6 +61,8 @@ namespace TranSimCS.Snapping {
         }
 
         public Vector3 Snap(Vector3 input) {
+            if(CellSize == 0) return input;
+
             var splineFrame = Position.CalcReferenceFrame();
             var lateral = splineFrame.X;
             var normal = splineFrame.Y;
