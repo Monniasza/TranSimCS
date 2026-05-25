@@ -119,11 +119,12 @@ namespace TranSimCS.Tools {
         public static readonly ChainMode chained = ChainModeChained.value;
         public static readonly ChainMode custom = ChainModeCustom.value;
         static readonly Vector3 offset = new Vector3(0, 0.01f, 0);
+        public Bezier3 GeneratedSpline { get; private set; }
 
         string ITool.Name => "Road creation tool";
 
         string ITool.Description => node == null ? "Pick a lane"
-            : "Creating a segment";
+            : $"Creating a segment. Chord-length: {GeneratedSpline.ChordLength()}, arc-length: {GeneratedSpline.ArcLength()}";
 
         public (object[], string)[] PromptKeys() {
             (object[], string) countPrompt = ([Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9], "to set number of lanes");
@@ -321,6 +322,9 @@ namespace TranSimCS.Tools {
                 var endDiff = endLateral * endWidth / 2;
                 Bezier3 lbound = GeometryUtils.GenerateJoinSpline(startPos - startDiff, endPos - endDiff, startTangent, -endTangent) + offset;
                 Bezier3 rbound = GeometryUtils.GenerateJoinSpline(startPos + startDiff, endPos + endDiff, startTangent, -endTangent) + offset;
+
+                GeneratedSpline = (lbound + rbound) / 2;
+
                 Mesh renderBin = menu.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
                 RoadRenderer.DrawBezierStrip(lbound, rbound, renderBin, previewColor);
             }
