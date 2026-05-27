@@ -18,6 +18,7 @@ namespace TranSimCS.Roads.Strip {
             var rightPoints = GeometryUtils.GenerateSplinePoints(splines.Item2);
             var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftPoints, rightPoints, GenerateLaneStripVertexGen(laneStrip.Spec));
             apshaltBin.DrawStrip(generatedVertStripPair);
+            apshaltBin.AddTagsToLastTriangles((leftPoints.Length * 2) - 2, laneStrip);
 
             //Generate arrows
             float aoffset = 0.15f;

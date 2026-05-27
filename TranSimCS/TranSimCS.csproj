@@ -72,6 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Menus\Gizmo\" />
+    <Folder Include="Save2\TypeRegistry\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md">
