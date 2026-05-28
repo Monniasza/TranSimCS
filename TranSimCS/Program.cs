@@ -12,6 +12,7 @@ using NLog.Targets;
 using TranSimCS;
 using TranSimCS.Geometry;
 using TranSimCS.Roads;
+using TranSimCS.Roads.StripGenerator;
 using TranSimCS.Save2;
 using TranSimCS.Tools.Inspect;
 using TranSimCS.Worlds;
@@ -58,17 +59,9 @@ public class Program {
 
         log.Info("Running from " + DataRoot);
 
-        //MeshIntersectTriangle bug
-        Vector3 ptA = new(0, 2, 0);
-        Vector3 ptB = new(2, -2, 0);
-        Vector3 ptC = new(-2, -2, 0);
-        Vector3 rayOrigin = new(0, 0, -4);
-        Vector3 rayDirection = Vector3.UnitZ;
-        Ray testRay = new Ray(rayOrigin, rayDirection);
-        var intersects = GeometryUtils.RayIntersectsTriangle(testRay, ptA, ptB, ptC, out var dist);
-        var point = testRay.Position + dist * testRay.Direction;
-        log.Warn($"Test intersection: intersects={intersects}, point={point}, t={dist}");
-        //Test intersection: intersects=true, point=(0, 0, 0), t=4
+        //Add spline generators
+        StripSplineGenerator.typeRegistry.converters["isotropic"] = IgnoreSavedTokenConverter<StripSplineGenerator>.FromConstant(ClassicStripSplineGenerator.Instance);
+        StripSplineGenerator.typeRegistry.converters["anisotropic"] = IgnoreSavedTokenConverter<StripSplineGenerator>.FromConstant(AnisotropicStripSplineGenerator.Instance);
 
         JsonProcessor.Init();
         InspectMethods.Init();

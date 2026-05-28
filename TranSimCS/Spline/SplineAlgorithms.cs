@@ -28,11 +28,11 @@ namespace TranSimCS.Spline {
             // By rearranging, 1/newY = len(originalTangent.xz) / (originalTangent.y * len(anisoTangent.xz))
             // newY = originalTangent.y * len(anisoTangent.xz) / len(originalTangent.xz)
 
-            anisotropicStartTangent.Y = startTangent.Y * anisotropicStartTangent.ToX0Z().Length() / startTangent.ToX0Z().LengthSquared();
-              anisotropicEndTangent.Y =   endTangent.Y *   anisotropicEndTangent.ToX0Z().Length() /   endTangent.ToX0Z().LengthSquared();
+            anisotropicStartTangent.Y = startTangent.Y * anisotropicStartTangent.ToX0Z().Length() / startTangent.ToX0Z().Length();
+              anisotropicEndTangent.Y =   endTangent.Y *   anisotropicEndTangent.ToX0Z().Length() /   endTangent.ToX0Z().Length();
 
-            flattenedSpline.a.Y = start.Y;
-            flattenedSpline.d.Y = end.Y;
+            flattenedSpline.a = start;
+            flattenedSpline.d = end;
             flattenedSpline.b = flattenedSpline.a + anisotropicStartTangent;
             flattenedSpline.c = flattenedSpline.d + anisotropicEndTangent;
 

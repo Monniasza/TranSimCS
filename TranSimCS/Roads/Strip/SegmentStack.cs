@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
+using TranSimCS.Roads.StripGenerator;
 using TranSimCS.Save2;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Stack;
@@ -24,6 +25,7 @@ namespace TranSimCS.Roads.Strip {
             List<LaneStrip> lanes = new List<LaneStrip>();
             Guid? guid = Guid.Empty;
             RoadFinish finish = RoadFinish.Embankment;
+            StripSplineGenerator splineGenerator = ClassicStripSplineGenerator.Instance;
 
             var roadNodeEndConverter = new RoadNodeEndConverter(World);
             var laneStripConverter = new LaneStripConverter(World);
@@ -52,6 +54,9 @@ namespace TranSimCS.Roads.Strip {
                         var finishConverter = new RoadFinishConverter();
                         finish = finishConverter.Read(ref reader0, typeof(RoadFinish), options);
                         break;
+                    case "splineformat":
+                        splineGenerator = StripSplineGenerator.typeRegistry.Read(ref reader0, typeof(StripSplineGenerator), options);
+                        break;
                 }
             });
 
@@ -61,6 +66,7 @@ namespace TranSimCS.Roads.Strip {
             var roadStrip = new RoadStrip(start, end);
             roadStrip.Guid = guid ?? Guid.NewGuid();
             roadStrip.Finish = finish;
+            roadStrip.SplineGenerator = splineGenerator;
 
             foreach (var lane in lanes) {
                 roadStrip.AddLaneStrip(lane);

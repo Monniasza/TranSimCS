@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads.Node;
+using TranSimCS.Roads.StripGenerator;
 using TranSimCS.SceneGraph;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
@@ -36,6 +37,9 @@ namespace TranSimCS.Roads.Strip {
         public LaneEnd? GetLaneEnd() => null;
         public RoadNodeEnd? GetNodeEnd() => null;
 
+        public readonly Property<StripSplineGenerator> SplineGeneratorProp;
+        public StripSplineGenerator SplineGenerator { get => SplineGeneratorProp.Value; set => SplineGeneratorProp.Value = value; }
+
 
         // Properties to hold the start and end nodes and their respective lane indices
         public readonly RoadNodeEnd StartNode; // The starting road node of the connection
@@ -48,6 +52,7 @@ namespace TranSimCS.Roads.Strip {
             StartNode = startNode;
             EndNode = endNode;
             FinishProperty = new(RoadFinish.Embankment, "finish", this);
+            SplineGeneratorProp = new(AnisotropicStripSplineGenerator.Instance, "splineformat", this);
             Mesh = new MeshGenerator<RoadStrip>(this, GenerateMesh);
             Mesh.OnMeshInvalidated += () => InvalidateMesh0(this);
             PropertyChanged += RoadStrip_PropertyChanged;
@@ -169,14 +174,7 @@ namespace TranSimCS.Roads.Strip {
         public Bezier3 GenerateSpline(Vector3 start, Vector3 end) => SplineFrame.CreateFromStartEnd(start, end);
 
         public void CalcSplineFrame() {
-            var start = StartNode.CalcReferenceFrame();
-            var end = EndNode.CalcReferenceFrame();
-
-            var zeroSpline = GeometryUtils.GenerateJoinSpline(start.O, end.O, start.Z, end.Z);
-            var xSpline = GeometryUtils.GenerateJoinSpline(start.O + start.X, end.O - end.X, start.Z, end.Z);
-            var ySpline = GeometryUtils.GenerateJoinSpline(start.O + start.Y, end.O + end.Y, start.Z, end.Z);
-
-            SplineFrame = new SplineFrame(zeroSpline, xSpline - zeroSpline, ySpline - zeroSpline, new Spline.Bezier3());
+            SplineFrame = SplineGenerator.GenerateSplines(this);
         }
         public SplineFrame SplineFrame { get; private set; }
     }
