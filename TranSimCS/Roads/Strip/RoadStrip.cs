@@ -6,6 +6,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads.Node;
 using TranSimCS.SceneGraph;
+using TranSimCS.Spline;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Property;
 using static TranSimCS.Roads.Roads;
@@ -163,6 +164,9 @@ namespace TranSimCS.Roads.Strip {
 
             SegmentRenderer.GenerateRoadSegmentFullMesh(segment, mesh); // Otherwise, render the road segment
         }
+
+        public Bezier3 GenerateSpline(float startT, float endT, float y = 0) => GenerateSpline(new Vector3(startT, 0, y), new Vector3(endT, 0, y));
+        public Bezier3 GenerateSpline(Vector3 start, Vector3 end) => SplineFrame.CreateFromStartEnd(start, end);
 
         public void CalcSplineFrame() {
             var start = StartNode.CalcReferenceFrame();

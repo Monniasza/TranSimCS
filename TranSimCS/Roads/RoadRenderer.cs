@@ -116,45 +116,26 @@ namespace TranSimCS.Roads {
             renderer.AddTagsToLastTriangles(triangleCount, tagToUse); // Add tags to the last triangles in the strip
         }
 
-        public static (Bezier3, Bezier3) GenerateSplines(LaneRange laneTag, float voffset = 0) {
-            return GenerateSplines(laneTag.startLaneIndexL, laneTag.startLaneIndexR, laneTag.startSide, laneTag.endLaneIndexL, laneTag.endLaneIndexR, laneTag.endSide, voffset);
-        }
-
-        public static (Bezier3, Bezier3) GenerateSplines(LaneEnd laneIndexStart, LaneEnd laneIndexEnd, float voffset = 0) {
-            return GenerateSplines(laneIndexStart.lane, laneIndexStart.lane, laneIndexStart.end, laneIndexEnd.lane, laneIndexEnd.lane, laneIndexEnd.end, voffset);
-        }
-
-        public static (Bezier3, Bezier3) GenerateSplines(Lane laneIndexStartL, Lane laneIndexStartR, NodeEnd dirStart, Lane laneIndexEndL, Lane laneIndexEndR, NodeEnd dirEnd, float voffset = 0) {
-            var offset = new Vector3(0, voffset, 0); // Offset for the lane position
+        public static (Bezier3 Left, Bezier3 Right) GenerateSplines(LaneRange laneTag, float voffset = 0) {
+            var laneIndexStartL = laneTag.startLaneIndexL;
+            var laneIndexStartR = laneTag.startLaneIndexR;
+            var dirStart = laneTag.startSide;
+            var laneIndexEndL = laneTag.endLaneIndexL;
+            var laneIndexEndR = laneTag.endLaneIndexR;
+            var dirEnd = laneTag.endSide;
             dirEnd = dirEnd.Negate();
 
-            var n1l = laneIndexStartL.RoadNode; // Starting road node for left lane
-            var n1r = laneIndexStartR.RoadNode; // Starting road node for right lane
-            var n2l = laneIndexEndL.RoadNode; // Ending road node for left lane
-            var n2r = laneIndexEndR.RoadNode; // Ending road node for right lane
-
-            var pos1L = calcLineEnd(n1l, laneIndexStartL.LeftPosition, dirStart);
-            var pos1R = calcLineEnd(n1r, laneIndexStartR.RightPosition, dirStart);
-            var pos2L = calcLineEnd(n2l, laneIndexEndL.LeftPosition, dirEnd.Negate());
-            var pos2R = calcLineEnd(n2r, laneIndexEndR.RightPosition, dirEnd.Negate());
-            LineEnd tmp;
+            var pos1L = laneIndexStartL.LeftPosition;
+            var pos1R = laneIndexStartR.RightPosition;
+            var pos2L = laneIndexEndL.LeftPosition;
+            var pos2R = laneIndexEndR.RightPosition;
 
             //Ensure the node ordering
-
-            if(dirStart == NodeEnd.Backward) {
-                tmp = pos1L;
-                pos1L = pos1R;
-                pos1R = tmp;
-                
-            }
-            if (dirEnd == NodeEnd.Backward) {
-                tmp = pos2L;
-                pos2L = pos2R;
-                pos2R = tmp;
-            }
+            if (dirStart == NodeEnd.Backward) (pos1L, pos1R) = (pos1R, pos1L);
+            if (dirEnd == NodeEnd.Backward) (pos2L, pos2R) = (pos2R, pos2L);
             return (
-                GenerateJoinSpline(pos1L.Position + offset, pos2L.Position + offset, pos1L.Tangential, pos2L.Tangential),
-                GenerateJoinSpline(pos1R.Position + offset, pos2R.Position + offset, pos1R.Tangential, pos2R.Tangential)
+                laneTag.road.GenerateSpline(pos1L, pos2L, voffset),
+                laneTag.road.GenerateSpline(pos1R, pos2R, voffset)
             );
         }
 
