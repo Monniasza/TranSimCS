@@ -69,11 +69,10 @@ namespace TranSimCS.Roads.Node {
             return new Vector2(lbound, rbound);
         }
 
+        //Transform3 _calculatedReferenceFrame;
         public Transform3 CalcReferenceFrame() {
             var frame = PositionProp.Value.CalcReferenceFrame();
-            return End == NodeEnd.Backward ? frame.Around() : frame;
-            //it's to be inverted
-            
+            return End == NodeEnd.Backward ? frame.Around() : frame;            
         }
 
         public void Rotate(int fieldAzimuth, float pitch, float tilt) {

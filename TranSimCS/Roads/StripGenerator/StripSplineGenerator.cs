@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Save2.TypeRegistry;
+using TranSimCS.Spline;
 
 namespace TranSimCS.Roads.StripGenerator {
     public abstract class StripSplineGenerator(string typeId): ITypeRegistered<StripSplineGenerator> {
@@ -12,6 +13,7 @@ namespace TranSimCS.Roads.StripGenerator {
         public static readonly TypeRegistry<StripSplineGenerator> typeRegistry = new();
 
         public (string TypeId, TypeRegistry<StripSplineGenerator> TypeRegistry) TypeInfo() => (typeId, typeRegistry);
+        //public abstract IndexSpline GenerateSplines(RoadStrip road);
         public abstract SplineFrame GenerateSplines(RoadStrip road);
     }
 }

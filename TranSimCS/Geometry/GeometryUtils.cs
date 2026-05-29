@@ -256,8 +256,8 @@ namespace TranSimCS.Geometry
             return v - Vector3.Dot(v, nNorm) * nNorm;
         }
 
-        public static float Lerp(float start, float end, float amt) {
-            return amt * (end - start) + start;
+        public static float UnLerp(float start, float end, float point) {
+            return (start - point) / (start - end);
         }
     }
 }
