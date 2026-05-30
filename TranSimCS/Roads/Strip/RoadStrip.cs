@@ -122,9 +122,7 @@ namespace TranSimCS.Roads.Strip {
                 Debug.Print("Empty lane strip");
                 return null;
             }
-            return new LaneRange(this,
-                StartNode.GetLaneEnd(ls).lane, StartNode.GetLaneEnd(rs).lane, StartNode.End,
-                EndNode.GetLaneEnd(le).lane, EndNode.GetLaneEnd(re).lane, EndNode.End);
+            return new LaneRange(this, StartNode.Range(), EndNode.Range());
         }
 
         //Meshes for the lane connection (can be used for rendering and cached)

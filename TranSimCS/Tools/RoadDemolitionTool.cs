@@ -62,7 +62,7 @@ namespace TranSimCS.Tools {
                 laneDependencies.AddRange(dependencies.SelectMany(x => x.Lanes).Where(x => (x.StartLane.lane == selLane || x.EndLane.lane == selLane)));
                 foreach(var laneDependency in laneDependencies) {
                     var laneTag = laneDependency.Tag;
-                    RoadRenderer.GenerateLaneRangeMesh(laneTag, renderBin, O, v2);
+                    RoadRenderer.GenerateLaneRangeMesh(laneTag(), renderBin, O, v2);
                 }
 
                 //The node/lane itself
@@ -79,7 +79,7 @@ namespace TranSimCS.Tools {
                 var segment = selStrip.road;
                 var segmentTag = segment.FullSizeTag();
                 if (segmentTag != null) RoadRenderer.GenerateLaneRangeMesh(segmentTag.Value, renderBin, R, v1);
-                var stripTag = selStrip.Tag;
+                var stripTag = selStrip.Tag();
                 RoadRenderer.GenerateLaneRangeMesh(stripTag, renderBin, O, v2);
             }
         }

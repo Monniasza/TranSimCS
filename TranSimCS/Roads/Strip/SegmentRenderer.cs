@@ -114,7 +114,7 @@ namespace TranSimCS.Roads.Strip {
             var fstag = connection.FullSizeTag();
             if (fstag == null) return;
             laneRanges.Add(fstag.Value);
-            laneRanges.AddRange(connection.Lanes.Select(lane => lane.Tag));
+            laneRanges.AddRange(connection.Lanes.Select(lane => lane.Tag()));
 
             List<Polygon> polygons = [];
             

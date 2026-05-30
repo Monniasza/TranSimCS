@@ -94,7 +94,12 @@ namespace TranSimCS.Roads.Strip {
             }
         }
 
-        public LaneRange Tag => new LaneRange(road, StartLane.lane, StartLane.lane, StartLane.end, EndLane.lane, EndLane.lane, EndLane.end); // Create a LaneTag for the lane strip, which includes the road and the start and end lanes
+        public LaneRange Tag() {
+            var startRange = StartLane.Range();
+            var endRange = EndLane.Range();
+            if(StartLane.RoadNodeEnd == road.EndNode) DataUtil.Swap(ref startRange, ref endRange);
+            return new LaneRange(road, startRange, endRange);
+        }// Create a LaneTag for the lane strip, which includes the road and the start and end lanes
 
         public LaneStrip(LaneEnd startLane, LaneEnd endLane) {
             StartLane = startLane!; // Starting lane of the lane strip
@@ -126,7 +131,7 @@ namespace TranSimCS.Roads.Strip {
             splineCache = null;
         }
         private (Bezier3, Bezier3) RecalcSplines() {
-            var splines = RoadRenderer.GenerateSplines(Tag);
+            var splines = RoadRenderer.GenerateSplines(Tag());
             splineCache = splines;
             return splines;
         }

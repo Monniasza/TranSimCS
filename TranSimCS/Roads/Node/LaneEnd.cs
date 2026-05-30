@@ -1,4 +1,5 @@
 using System;
+using MonoGame.Extended;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
@@ -33,10 +34,17 @@ namespace TranSimCS.Roads.Node {
         public LaneEnd OppositeEnd => new LaneEnd(end.Negate(), lane);
 
         //BOUNDARIES, RESPECTING THE SIDE
-        public Vector2 Boundaries() {
-            Vector2 bounds = new(lane.LeftPosition, lane.RightPosition);
-            if(end == NodeEnd.Backward) return bounds;
-            return new Vector2(-bounds.Y, -bounds.X);
+        public (float Min, float Max, float Left, float Right) Boundaries() {
+            float min = lane.LeftPosition;
+            float max = lane.RightPosition;
+            float left = min;
+            float right = max;
+            if (end == NodeEnd.Backward) DataUtil.Swap(ref left, ref right);
+            return (min, max, left, right);
+        }
+        public Range<float> Range() {
+            var bounds = Boundaries();
+            return new(bounds.Min, bounds.Max);
         }
 
 

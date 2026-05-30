@@ -10,7 +10,7 @@ namespace TranSimCS.Roads.Strip {
 
         public static void GenerateLaneStripMesh(LaneStrip laneStrip, MultiMesh renderer, float voffset = 0.01f) {
             var tag = laneStrip.Tag;
-            var (Left, Right) = RoadRenderer.GenerateSplines(tag, voffset); // Generate the splines for the left and right lanes
+            var (Left, Right) = RoadRenderer.GenerateSplines(tag(), voffset); // Generate the splines for the left and right lanes
 
             var apshaltBin = renderer.GetOrCreateRenderBinForced(Assets.Asphalt);
             var leftPoints = GeometryUtils.GenerateSplinePoints(Left);

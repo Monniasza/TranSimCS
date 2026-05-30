@@ -72,7 +72,7 @@ namespace TranSimCS.Menus.InGame {
             IntersectionDistance = intersectionDistance;
             SelectedLanePosition = mouseRay.Position + mouseRay.Direction * intersectionDistance;
 
-            SelectedLaneTag = laneStrip.Tag;
+            SelectedLaneTag = laneStrip.Tag();
             SelectedLaneStrip = laneStrip; // Store the selected lane strip
             var splines = RoadRenderer.GenerateSplines(SelectedLaneTag.Value);
             Bezier3 averageBezier = (splines.Item1 + splines.Item2) / 2; // Average the two splines

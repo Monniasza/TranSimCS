@@ -83,5 +83,10 @@ namespace TranSimCS.Roads.Node {
             }
             return section;
         }
+
+        public MonoGame.Extended.Range<float> Range() {
+            var bounds = Bounds();
+            return new(bounds.Min, bounds.Max);
+        }
     }
 }
