@@ -49,21 +49,21 @@ namespace TranSimCS.Spline {
             var end = road.EndNode.Node.PositionProp.Value.CalcReferenceFrame();
             if (road.StartNode.End == NodeEnd.Backward) start.Z *= -1;
             if (road.EndNode.End == NodeEnd.Backward) end.Z *= -1;
-            var startbounds = road.StartNode.Bounds();
-            var endbounds = road.EndNode.Bounds();
+            var (StartMin, StartMax, StartLocalLeft, StartLocalRight) = road.StartNode.Bounds();
+            var (EndMin, EndMax, EndLocalLeft, EndLocalRight) = road.EndNode.Bounds();
 
-            var slPoint = start.O + start.X * startbounds.X;
-            var srPoint = start.O + start.X * startbounds.Y;
-            var elPoint = end.O + end.X * endbounds.Y;
-            var erPoint = end.O + end.X * endbounds.X;
+            var slPoint = start.O + start.X * StartLocalLeft;
+            var srPoint = start.O + start.X * StartLocalRight;
+            var elPoint = end.O + end.X * EndLocalRight;
+            var erPoint = end.O + end.X * EndLocalLeft;
 
             var leftSpline = algorithm(slPoint, start.Z, elPoint, end.Z);
             var rightSpline = algorithm(srPoint, start.Z, erPoint, end.Z);
 
-            IndexPoint sl = new(startbounds.X, leftSpline.b - slPoint);
-            IndexPoint sr = new(startbounds.Y, rightSpline.b - srPoint);
-            IndexPoint el = new(endbounds.Y, leftSpline.c - elPoint);
-            IndexPoint er = new(endbounds.X, rightSpline.c - erPoint);
+            IndexPoint sl = new(StartLocalLeft, leftSpline.b - slPoint);
+            IndexPoint sr = new(StartLocalRight, rightSpline.b - srPoint);
+            IndexPoint el = new(EndLocalRight, leftSpline.c - elPoint);
+            IndexPoint er = new(EndLocalLeft, rightSpline.c - erPoint);
 
             return new(sl, sr, el, er);
         }

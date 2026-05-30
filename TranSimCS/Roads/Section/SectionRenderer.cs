@@ -66,8 +66,8 @@ namespace TranSimCS.Roads.Section {
 
                 if (lbound == ubound) {
                     var bounds = startNode.Bounds();
-                    var lpos = calcLineEnd(startNode, bounds.X).Position;
-                    var rpos = calcLineEnd(startNode, bounds.Y).Position;
+                    var lpos = calcLineEnd(startNode, bounds.LocalLeft).Position;
+                    var rpos = calcLineEnd(startNode, bounds.localRight).Position;
 
                     //One node remaining
                     topSpline = prevSpline;

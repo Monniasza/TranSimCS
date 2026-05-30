@@ -51,22 +51,17 @@ namespace TranSimCS.Roads.Node {
         public Vector3 CenterPosition => Node.CenterPosition;
         public Vector3 CenterOffset => Node.CenterOffset;
 
-        public MonoGame.Extended.Range<float> Range {
-            get {
-                var asVector = Bounds();
-                return new(asVector.X, asVector.Y);
-            }
-        }
-
         public LaneEnd GetLaneEnd(int x) {
             return new LaneEnd(End, Node.Lanes[x]);
         }
 
-        public Vector2 Bounds() {
-            float lbound = Node.Lanes[0].LeftPosition;
-            float rbound = Node.Lanes[Node.Lanes.Count-1].RightPosition;
-            if (End == NodeEnd.Backward) (lbound, rbound) = (rbound, lbound);
-            return new Vector2(lbound, rbound);
+        public (float Min, float Max, float LocalLeft, float localRight) Bounds() {
+            float min = Node.Lanes[0].LeftPosition;
+            float max = Node.Lanes[Node.Lanes.Count-1].RightPosition;
+            float lleft = min;
+            float lright = max;
+            if (End == NodeEnd.Backward) DataUtil.Swap(ref lleft, ref lright);
+            return (min, max, lleft, lright);
         }
 
         //Transform3 _calculatedReferenceFrame;

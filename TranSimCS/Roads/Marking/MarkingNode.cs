@@ -82,8 +82,8 @@ namespace TranSimCS.Roads.Marking {
                     (leftBound, rightBound) = (rightBound, leftBound);
             } else if (nodeEnd != null) {
                 var bounds = nodeEnd.Bounds();
-                leftBound = bounds.X;
-                rightBound = bounds.Y;
+                leftBound = bounds.LocalLeft;
+                rightBound = bounds.localRight;
             }
 
             var alignedPos = float.Lerp(leftBound, rightBound, alignment) + offset;

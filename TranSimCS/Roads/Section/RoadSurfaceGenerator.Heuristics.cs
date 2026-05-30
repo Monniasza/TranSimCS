@@ -55,8 +55,8 @@ namespace TranSimCS.Roads.Section {
                 var nextNode = section.Nodes[(i + 1) % section.Nodes.Count];
                 var startRef = node.CalcReferenceFrame();
                 var endRef = node.CalcReferenceFrame();
-                var startPos = startRef.O + startRef.X * node.Bounds().X;
-                var endPos = endRef.O + endRef.X * nextNode.Bounds().Y;
+                var startPos = startRef.O + startRef.X * node.Bounds().LocalLeft;
+                var endPos = endRef.O + endRef.X * nextNode.Bounds().localRight;
                 var startTangent = startRef.Z;
                 var endTangent = endRef.Z;
                 Bezier3 nextBorder = GeometryUtils.GenerateJoinSpline(startPos, endPos, startTangent, endTangent);
@@ -85,8 +85,8 @@ namespace TranSimCS.Roads.Section {
                     var node = section.Nodes[i];
                     var rf = node.CalcReferenceFrame();
                     var bounds = node.Bounds();
-                    points4degenerated[ i * 2     ] = rf.O + rf.X * bounds.X;
-                    points4degenerated[(i * 2) + 1] = rf.O + rf.X * bounds.Y;
+                    points4degenerated[ i * 2     ] = rf.O + rf.X * bounds.LocalLeft;
+                    points4degenerated[(i * 2) + 1] = rf.O + rf.X * bounds.localRight;
                 }
                 result.GeneratedBorderPoints = points4degenerated;
             }

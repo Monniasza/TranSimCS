@@ -30,8 +30,10 @@ namespace TranSimCS.Roads.Section {
             public Constraint(RoadNodeEnd start, RoadNodeEnd end, float weight = 1, Range<float>? startRange = null, Range<float>? endRange = null) {
                 this.Start = start;
                 this.End = end;
-                this.StartRange = startRange ?? start.Range;
-                this.EndRange = endRange ?? end.Range;
+                var startBounds = start.Bounds();
+                var endBounds = end.Bounds();
+                this.StartRange = startRange ?? new(startBounds.Min, startBounds.Max);
+                this.EndRange = endRange ?? new(endBounds.Min, endBounds.Max);
                 this.Weight = weight;
             }
 
