@@ -25,7 +25,7 @@ namespace TranSimCS.Menus.InGame {
                 var laneRange = roadSelection.SelectedLaneTag.Value;
                 RoadRenderer.GenerateLaneRangeMesh(laneRange, renderBin, laneHighlightColor, 0.5f);
                 var fstag = laneRange.road.FullSizeTag();
-                if (fstag != null) RoadRenderer.GenerateLaneRangeMesh(fstag.Value, renderBin, roadSegmentHighlightColor, 0.45f);
+                RoadRenderer.GenerateLaneRangeMesh(fstag, renderBin, roadSegmentHighlightColor, 0.45f);
                 var splines = RoadRenderer.GenerateSplines(laneRange, 0.55f);
                 Bezier3.TriSection(splines.Item1, minT, maxT, out Bezier3 leftSubBezier1, out Bezier3 leftSubBezier2, out Bezier3 leftSubBezier3);
                 Bezier3.TriSection(splines.Item2, minT, maxT, out Bezier3 rightSubBezier1, out Bezier3 rightSubBezier2, out Bezier3 rightSubBezier3);

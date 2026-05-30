@@ -101,28 +101,8 @@ namespace TranSimCS.Roads.Strip {
         public event EventHandler<RoadStripEventArgs>? OnLaneAdded; // Event triggered when lanes are added or removed
         public event EventHandler<RoadStripEventArgs>? OnLaneRemoved; // Event triggered when lanes are removed
 
-        public LaneRange? FullSizeTag() {
-            int maxIdx = lanes.Count - 1; // Get the maximum index of the lanes
-
-            int ls = int.MaxValue, rs = int.MinValue, le = int.MaxValue, re = int.MinValue;
-            foreach (LaneStrip laneStrip in lanes) {
-                var startIdx = laneStrip.StartLane.lane.Index;
-                var endIdx = laneStrip.EndLane.lane.Index;
-
-                if (laneStrip.StartLane.RoadNodeEnd == EndNode)
-                    (startIdx, endIdx) = (endIdx, startIdx);
-
-                if (startIdx < ls) ls = startIdx;
-                if(startIdx > rs) rs = startIdx;
-                if(endIdx < le) le = endIdx;
-                if(endIdx > re) re = endIdx;
-            }
-
-            if (ls > rs || le > re) {
-                Debug.Print("Empty lane strip");
-                return null;
-            }
-            return new LaneRange(this, StartNode.Range(), EndNode.Range());
+        public LaneRange FullSizeTag() {
+            return new LaneRange(this, new(Bounds.leftStart, Bounds.rightStart), new(Bounds.leftEnd, Bounds.rightEnd));
         }
 
         //Meshes for the lane connection (can be used for rendering and cached)
@@ -150,12 +130,6 @@ namespace TranSimCS.Roads.Strip {
                     .Update(startLane.lane.LeftPosition, endLane.lane.LeftPosition)
                     .Update(startLane.lane.RightPosition, endLane.lane.RightPosition);
             }
-            if(segment.StartNode.End == NodeEnd.Backward) {
-                (bounds.leftStart, bounds.rightStart) = (-bounds.rightStart, -bounds.leftStart);
-            }
-            if (segment.EndNode.End == NodeEnd.Forward) {
-                (bounds.leftEnd, bounds.rightEnd) = (-bounds.rightEnd, -bounds.leftEnd);
-            }
             segment.Bounds = bounds;
             segment.IndexStrip = segment.SplineGenerator.GenerateSplines(segment);
             //Test the generated IndexStrip
@@ -172,7 +146,7 @@ namespace TranSimCS.Roads.Strip {
             SegmentRenderer.GenerateRoadSegmentFullMesh(segment, mesh); // Otherwise, render the road segment
         }
 
-        public Bezier3 GenerateSpline(float startT, float endT, float y = 0) => GenerateSpline(new Vector3(startT, 0, y), new Vector3(endT, 0, y));
+        public Bezier3 GenerateSpline(float startT, float endT, float y = 0) => GenerateSpline(new Vector3(startT, y, 0), new Vector3(endT, y, 0));
         public Bezier3 GenerateSpline(Vector3 start, Vector3 end) => SplineFrame.CreateFromStartEnd(start, end);
 
 

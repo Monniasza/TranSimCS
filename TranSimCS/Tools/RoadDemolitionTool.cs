@@ -52,7 +52,7 @@ namespace TranSimCS.Tools {
                 dependencies.AddRange(bw.ConnectedSegments);
                 foreach (var dependency in dependencies) {
                     var segmentTag = dependency.FullSizeTag();
-                    if (segmentTag != null) RoadRenderer.GenerateLaneRangeMesh(segmentTag.Value, renderBin, R, v1);
+                    RoadRenderer.GenerateLaneRangeMesh(segmentTag, renderBin, R, v1);
                 }
 
                 //Strips
@@ -78,7 +78,7 @@ namespace TranSimCS.Tools {
                 //Deleting segment/strip
                 var segment = selStrip.road;
                 var segmentTag = segment.FullSizeTag();
-                if (segmentTag != null) RoadRenderer.GenerateLaneRangeMesh(segmentTag.Value, renderBin, R, v1);
+                RoadRenderer.GenerateLaneRangeMesh(segmentTag, renderBin, R, v1);
                 var stripTag = selStrip.Tag();
                 RoadRenderer.GenerateLaneRangeMesh(stripTag, renderBin, O, v2);
             }

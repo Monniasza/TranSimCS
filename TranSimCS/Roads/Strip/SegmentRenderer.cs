@@ -19,6 +19,8 @@ namespace TranSimCS.Roads.Strip {
         /// <param name="connection">road segment</param>
         /// <param name="renderHelper">render helper</param>
         public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MultiMesh renderHelper, float voffset = 0) {
+            if(connection == null || connection.Lanes.Count == 0) return;
+
             Mesh roadBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
             foreach (var lane in connection.Lanes)
                 renderHelper.AddAll(lane.GetMesh());
@@ -28,6 +30,16 @@ namespace TranSimCS.Roads.Strip {
             var texture = finish.subsurface.GetTexture();
             var height = finish.depth;
             var breadth = finish.depth * MathF.Tan(finish.angle);
+
+            LaneRange topRange = connection.FullSizeTag();
+            LaneRange bottomRange = new LaneRange(
+                connection,
+                new(topRange.startRange.Min - breadth, topRange.startRange.Max + breadth),
+                new(topRange.endRange.Min - breadth, topRange.endRange.Max + breadth)
+            );
+
+            var (leftTop, rightTop) = RoadRenderer.GenerateSplines(topRange);
+            var (leftDown, rightDown) = RoadRenderer.GenerateSplines(bottomRange, -height);
 
             var splineFrame = connection.SplineFrame;
             var bounds = connection.Bounds;
@@ -43,11 +55,6 @@ namespace TranSimCS.Roads.Strip {
             var bottomLeft = -Vector3.UnitY * height - Vector3.UnitX * breadth;
             var bottomRight = -Vector3.UnitY * height + Vector3.UnitX * breadth;
 
-            var leftTop = splineFrame.CreateFromStartEnd(leftStart, leftEnd);
-            var rightTop = splineFrame.CreateFromStartEnd(rightStart, rightEnd);
-            var leftDown = splineFrame.CreateFromStartEnd(leftStart + bottomLeft, leftEnd + bottomLeft);
-            var rightDown = splineFrame.CreateFromStartEnd(rightStart + bottomRight, rightEnd + bottomRight);
-
             var leftTopPoints = GenerateSplinePoints(leftTop);
             var rightTopPoints = GenerateSplinePoints(rightTop);
             var leftDownPoints = GenerateSplinePoints(leftDown);
@@ -56,7 +63,6 @@ namespace TranSimCS.Roads.Strip {
             var sideLen = new Vector2(height, breadth).Length();
 
             var zeroFn = UniformTexturing.WithFixedU(0);
-
             var sideLenFn = UniformTexturing.WithFixedU(sideLen);
             var avgWidthFn = UniformTexturing.WithFixedU(avgWidth);
 
@@ -86,34 +92,13 @@ namespace TranSimCS.Roads.Strip {
             var leftDownEndPos = leftDownPoints.Last();
             GenerateEndCap(rightUpEndPos, leftUpEndPos, leftDownEndPos, rightDownEndPos, swidth, height, breadth, finishBin);
 
-            //DEBUG: Draw two fences inwards. Left is red, right is green.
-            var leftPath = connection.IndexStrip.Left.Derive(connection.StartNode, connection.EndNode);
-            var rightPath = connection.IndexStrip.Right.Derive(connection.StartNode, connection.EndNode);
-
-            var topLeftPath = leftPath + Vector3.UnitY;
-            var topRightPath = rightPath + Vector3.UnitY;
-
-            var bottomLeftPoints = GeometryUtils.GenerateSplinePoints(leftPath);
-            var bottomRightPoints = GeometryUtils.GenerateSplinePoints(rightPath);
-            var topLeftPoints = GeometryUtils.GenerateSplinePoints(topLeftPath);
-            var topRightPoints = GeometryUtils.GenerateSplinePoints(topRightPath);
-
-            var leftVertices = UniformTexturing.UniformTextured(bottomLeftPoints, UniformTexturing.WithFixedU(1, Color.Red));
-            var rightVertices = UniformTexturing.UniformTextured(bottomRightPoints, UniformTexturing.WithFixedU(0, Color.Lime));
-            var topLeftVertices = UniformTexturing.UniformTextured(topLeftPoints, UniformTexturing.WithFixedU(0, Color.Red));
-            var topRightVertices = UniformTexturing.UniformTextured(topRightPoints, UniformTexturing.WithFixedU(1, Color.Lime));
-
-            roadBin.DrawStrip(topLeftVertices, leftVertices);
-            roadBin.DrawStrip(rightVertices, topRightVertices);
-
             //If the road is only 1 lane, do not render the islands
             if (connection.Lanes.Count < 2) return;
 
             //Find fill polygons for lane strips
             var laneRanges = new List<LaneRange>();
             var fstag = connection.FullSizeTag();
-            if (fstag == null) return;
-            laneRanges.Add(fstag.Value);
+            laneRanges.Add(fstag);
             laneRanges.AddRange(connection.Lanes.Select(lane => lane.Tag()));
 
             List<Polygon> polygons = [];

@@ -71,7 +71,7 @@ namespace TranSimCS.Roads {
             return GenerateLaneQuad(lane.lane.RoadNode, lane.lane.LeftPosition, lane.lane.RightPosition, color ?? altColor, voffset, range.X, range.Y);
         }
         public static LaneQuadPair GenerateLaneQuads(RoadNode node, float lb, float rb, Color color, float voffset = 0) {
-            Vector3 offset = new Vector3(0, voffset, 0);
+            Vector3 offset = new(0, voffset, 0);
             Transform3 transform = node.PositionProp.Value.CalcReferenceFrame();
             var vl = transform.O + lb * transform.X;
             var vr = transform.O + rb * transform.X;
@@ -85,7 +85,7 @@ namespace TranSimCS.Roads {
         }
 
         public static QuadOld GenerateLaneQuad(RoadNode node, float lb, float rb, Color color, float voffset = 0.2f, float minZ = -1, float maxZ = 1) {
-            Vector3 offset = new Vector3(0, voffset, 0);
+            Vector3 offset = new(0, voffset, 0);
             Transform3 transform = node.PositionProp.Value.CalcReferenceFrame();
             var vl = transform.O + lb * transform.X;
             var vr = transform.O + rb * transform.X;
