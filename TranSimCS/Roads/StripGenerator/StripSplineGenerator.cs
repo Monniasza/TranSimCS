@@ -14,6 +14,5 @@ namespace TranSimCS.Roads.StripGenerator {
 
         public (string TypeId, TypeRegistry<StripSplineGenerator> TypeRegistry) TypeInfo() => (typeId, typeRegistry);
         public abstract IndexStrip GenerateSplines(RoadStrip road);
-        //public abstract SplineFrame GenerateSplines(RoadStrip road);
     }
 }
