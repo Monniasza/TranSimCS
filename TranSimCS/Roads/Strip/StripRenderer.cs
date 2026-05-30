@@ -10,12 +10,11 @@ namespace TranSimCS.Roads.Strip {
 
         public static void GenerateLaneStripMesh(LaneStrip laneStrip, MultiMesh renderer, float voffset = 0.01f) {
             var tag = laneStrip.Tag;
-
-            var splines = RoadRenderer.GenerateSplines(tag, voffset); // Generate the splines for the left and right lanes
+            var (Left, Right) = RoadRenderer.GenerateSplines(tag, voffset); // Generate the splines for the left and right lanes
 
             var apshaltBin = renderer.GetOrCreateRenderBinForced(Assets.Asphalt);
-            var leftPoints = GeometryUtils.GenerateSplinePoints(splines.Item1);
-            var rightPoints = GeometryUtils.GenerateSplinePoints(splines.Item2);
+            var leftPoints = GeometryUtils.GenerateSplinePoints(Left);
+            var rightPoints = GeometryUtils.GenerateSplinePoints(Right);
             var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftPoints, rightPoints, GenerateLaneStripVertexGen(laneStrip.Spec));
             apshaltBin.DrawStrip(generatedVertStripPair);
             apshaltBin.AddTagsToLastTriangles((leftPoints.Length * 2) - 2, laneStrip);
@@ -24,9 +23,9 @@ namespace TranSimCS.Roads.Strip {
             float aoffset = 0.15f;
             var t = 0.5f;
             
-            var avgspline = (splines.Item2 + splines.Item1) / 2;
-            var lpoint = splines.Item1[t];
-            var rpoint = splines.Item2[t];
+            var avgspline = (Right + Left) / 2;
+            var lpoint = Left[t];
+            var rpoint = Right[t];
             var midpoint = (lpoint + rpoint) / 2;
             var tangent = avgspline.Tangential(t);
             tangent.Normalize();

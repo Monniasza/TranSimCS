@@ -60,10 +60,20 @@ namespace TranSimCS.Spline {
             var leftSpline = algorithm(slPoint, start.Z, elPoint, end.Z);
             var rightSpline = algorithm(srPoint, start.Z, erPoint, end.Z);
 
-            IndexPoint sl = new(StartLocalLeft, leftSpline.b - slPoint);
-            IndexPoint sr = new(StartLocalRight, rightSpline.b - srPoint);
-            IndexPoint el = new(EndLocalRight, leftSpline.c - elPoint);
-            IndexPoint er = new(EndLocalLeft, rightSpline.c - erPoint);
+            IndexPoint sl = new(StartLocalLeft, leftSpline.b - leftSpline.a);
+            IndexPoint sr = new(StartLocalRight, rightSpline.b - rightSpline.a);
+            IndexPoint el = new(EndLocalRight, leftSpline.c - leftSpline.d);
+            IndexPoint er = new(EndLocalLeft, rightSpline.c - rightSpline.d);
+
+            //Test for NaN values
+            if (!float.IsFinite(sl.Offset)) throw new ArgumentException("start left offset");
+            if (!float.IsFinite(sr.Offset)) throw new ArgumentException("start right offset");
+            if (!float.IsFinite(el.Offset)) throw new ArgumentException("end left offset");
+            if (!float.IsFinite(er.Offset)) throw new ArgumentException("end right offset");
+            VectorMethods.CheckVector(sl.Tangent, "sl.Tangent");
+            VectorMethods.CheckVector(sr.Tangent, "sr.Tangent");
+            VectorMethods.CheckVector(el.Tangent, "el.Tangent");
+            VectorMethods.CheckVector(er.Tangent, "er.Tangent");
 
             return new(sl, sr, el, er);
         }

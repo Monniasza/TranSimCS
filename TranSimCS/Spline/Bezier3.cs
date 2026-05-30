@@ -131,7 +131,7 @@ namespace TranSimCS.Spline
                 Vector3.Lerp(from.d, to.d, t)
             );
         }
-        internal static Bezier3 BiLerp(Bezier3 from, Bezier3 to, float t, float u) {
+        public static Bezier3 BiLerp(Bezier3 from, Bezier3 to, float t, float u) {
             return new(
                 Vector3.Lerp(from.a, to.a, t),
                 Vector3.Lerp(from.b, to.b, t),

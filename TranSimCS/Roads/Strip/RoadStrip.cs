@@ -159,7 +159,10 @@ namespace TranSimCS.Roads.Strip {
                 (bounds.leftEnd, bounds.rightEnd) = (-bounds.rightEnd, -bounds.leftEnd);
             }
             segment.Bounds = bounds;
-            segment.CalcSplineFrame();
+            segment.IndexStrip = segment.SplineGenerator.GenerateSplines(segment);
+            //Test the generated IndexStrip
+            logger.Info($"Current IndexStrip:\n{segment.IndexStrip}");
+            segment.SplineFrame = segment.IndexStrip.ToSplineFrame(segment.StartNode, segment.EndNode);
 
             //Check: If the road segment is a part of a road section, do not create its mesh
             var roadSectionA = segment.StartNode.ConnectedSection.Value;
@@ -176,12 +179,7 @@ namespace TranSimCS.Roads.Strip {
 
 
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
-        public void CalcSplineFrame() {
-            IndexStrip = SplineGenerator.GenerateSplines(this);
-            //Test the generated IndexStrip
-            //logger.Info($"Current IndexStrip:\n{IndexStrip}");
-            SplineFrame = IndexStrip.ToSplineFrame(StartNode, EndNode);
-        }
+
         public SplineFrame SplineFrame { get; private set; }
         public IndexStrip IndexStrip { get; private set; }
     }

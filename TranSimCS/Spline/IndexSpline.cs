@@ -22,60 +22,46 @@ namespace TranSimCS.Spline {
         }
 
         public SplineFrame ToSplineFrame(RoadNodeEnd start, RoadNodeEnd end) {
+            //Derive the index splines
             var derivedLeft = Left.Derive(start, end);
             var derivedRight = Right.Derive(start, end);
 
-            var slTangent = (derivedLeft.b - derivedLeft.a);
-            var srTangent = (derivedRight.b - derivedRight.a);
-            var elTangent = (derivedLeft.c - derivedLeft.d);
-            var erTangent = (derivedRight.c - derivedRight.d);
+            //Find where the node's 0 is
+            var startZeroT = GeometryUtils.UnLerp(Left.Start.Offset, Right.Start.Offset, 0);
+            var endZeroT = GeometryUtils.UnLerp(Left.End.Offset, Right.End.Offset, 0);
+            Bezier3 zeroSpline = Bezier3.BiLerp(derivedLeft, derivedRight, startZeroT, endZeroT);
 
-            var startRelationship = GeometryUtils.UnLerp(Left.Start.Offset, Right.Start.Offset, 0);
-            var endRelationship = GeometryUtils.UnLerp(Left.End.Offset, Right.End.Offset, 0);
+            //Calculate start and end width
+            var startWidth = (Right.Start.Offset - Left.Start.Offset);
+            var endWidth = (Right.End.Offset - Left.End.Offset);
 
-            var startDerivative2 = (Right.Start.Offset - Left.Start.Offset);
-            var endDerivative2 = (Right.End.Offset - Left.End.Offset);
-            var startDerivative = (srTangent - slTangent) / startDerivative2;
-            var endDerivative = (erTangent - elTangent) / endDerivative2;
-            
+            //Calculate the X spline
+            var right2leftSpline = derivedRight - derivedLeft;
+            var xSpline = new Bezier3(
+                right2leftSpline.a / startWidth,
+                right2leftSpline.b / startWidth,
+                right2leftSpline.c / endWidth,
+                right2leftSpline.d / endWidth
+            );
 
-            var startFrame = start.Node.PositionProp.Value.CalcReferenceFrame();
-            var endFrame = end.Node.PositionProp.Value.CalcReferenceFrame();
+            var startReferenceFrame = start.CalcReferenceFrame();
+            var endReferenceFrame = end.CalcReferenceFrame();
 
-            var s0Tangent = Vector3.Lerp(slTangent, srTangent, startRelationship);
-            var e0Tangent = Vector3.Lerp(elTangent, erTangent, endRelationship);            
+            //Calculate the Y spline
+            var startYVector = startReferenceFrame.Y;
+            var endYVector = endReferenceFrame.Y;
 
-            Bezier3 centerSpline = default;
-            centerSpline.a = startFrame.O;
-            centerSpline.b = startFrame.O + s0Tangent;
-            centerSpline.c = endFrame.O + e0Tangent;
-            centerSpline.d = endFrame.O;
-
-            var s0Acceleration = 2 * (centerSpline.a + centerSpline.c - 2 * centerSpline.b);
-            var e0Acceleration = 2 * (centerSpline.d + centerSpline.b - 2 * centerSpline.c);
-
-            var s0Omega = Vector3.Cross(s0Tangent, s0Acceleration).Normalized();
-            var e0Omega = Vector3.Cross(e0Tangent, e0Acceleration).Normalized();
-
-            var s0YTangent = Vector3.Cross(s0Omega, startFrame.Y);
-            var e0YTangent = Vector3.Cross(e0Omega, endFrame.Y);
-
-            Bezier3 lateralSpline = derivedRight - derivedLeft;
-            lateralSpline.a /= startDerivative2;
-            lateralSpline.b /= startDerivative2;
-            lateralSpline.c /= endDerivative2;
-            lateralSpline.d /= endDerivative2;
-
-            Bezier3 normalSpline = default;
-            normalSpline.a = startFrame.Y;
-            normalSpline.b = startFrame.Y + s0YTangent;
-            normalSpline.c = endFrame.Y + e0YTangent;
-            normalSpline.d = endFrame.Y;
+            Bezier3 ySpline = new(
+                startYVector,
+                startYVector,
+                endYVector,
+                endYVector
+            );
 
             SplineFrame result = new SplineFrame();
-            result.CenterSpline = centerSpline;
-            result.XPlusSpline = lateralSpline;
-            result.YPlusSpline = normalSpline;
+            result.CenterSpline = zeroSpline;
+            result.XPlusSpline = xSpline;
+            result.YPlusSpline = ySpline;
             return result;
         }
         public override string? ToString() {
@@ -100,6 +86,14 @@ namespace TranSimCS.Spline {
             result.d = end.O + end.X * End.Offset;
             result.b = result.a + Start.Tangent;
             result.c = result.d + End.Tangent;
+
+            //Check results
+            if (Vector3.DistanceSquared(result.a, result.b) < 0.00001) throw new ArgumentException("Start tangent is 0");
+            if (Vector3.DistanceSquared(result.c, result.d) < 0.00001) throw new ArgumentException("End tangent is 0");
+            VectorMethods.CheckVector(result.a, "A");
+            VectorMethods.CheckVector(result.b, "B");
+            VectorMethods.CheckVector(result.c, "B");
+            VectorMethods.CheckVector(result.d, "B");
             return result;
         }
     }
