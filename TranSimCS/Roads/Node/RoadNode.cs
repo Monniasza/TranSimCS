@@ -157,6 +157,15 @@ namespace TranSimCS.Roads.Node {
                 _centerPos = LineEnd.calcLineEnd(FrontEnd, (leftPos + rightPos) / 2).Position;
             }
         }
+        public Vector2 Bounds() {
+            if (Lanes.Count == 0) {
+                return new(0, 0);
+            } else {
+                var leftPos = Lanes[0].LeftPosition;
+                var rightPos = Lanes[Lanes.Count - 1].RightPosition;
+                return new(leftPos, rightPos);
+            }
+        }
 
         public Vector3? _centerPos;
         // Returns the cached center position, computing it when necessary.
@@ -168,8 +177,5 @@ namespace TranSimCS.Roads.Node {
 
         public Lane? LastLane => _lanes.Count > 0 ? _lanes[^1] : null;
 
-
-
-        
     }
 }

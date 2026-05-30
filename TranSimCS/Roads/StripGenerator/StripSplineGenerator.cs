@@ -13,7 +13,7 @@ namespace TranSimCS.Roads.StripGenerator {
         public static readonly TypeRegistry<StripSplineGenerator> typeRegistry = new();
 
         public (string TypeId, TypeRegistry<StripSplineGenerator> TypeRegistry) TypeInfo() => (typeId, typeRegistry);
-        //public abstract IndexSpline GenerateSplines(RoadStrip road);
-        public abstract SplineFrame GenerateSplines(RoadStrip road);
+        public abstract IndexStrip GenerateSplines(RoadStrip road);
+        //public abstract SplineFrame GenerateSplines(RoadStrip road);
     }
 }

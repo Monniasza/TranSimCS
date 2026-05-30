@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
+using NLog;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads.Node;
@@ -173,9 +174,15 @@ namespace TranSimCS.Roads.Strip {
         public Bezier3 GenerateSpline(float startT, float endT, float y = 0) => GenerateSpline(new Vector3(startT, 0, y), new Vector3(endT, 0, y));
         public Bezier3 GenerateSpline(Vector3 start, Vector3 end) => SplineFrame.CreateFromStartEnd(start, end);
 
+
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         public void CalcSplineFrame() {
-            SplineFrame = SplineGenerator.GenerateSplines(this);
+            IndexStrip = SplineGenerator.GenerateSplines(this);
+            //Test the generated IndexStrip
+            //logger.Info($"Current IndexStrip:\n{IndexStrip}");
+            SplineFrame = IndexStrip.ToSplineFrame(StartNode, EndNode);
         }
         public SplineFrame SplineFrame { get; private set; }
+        public IndexStrip IndexStrip { get; private set; }
     }
 }

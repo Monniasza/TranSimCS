@@ -136,6 +136,26 @@ namespace TranSimCS.Roads.Strip {
                 DrawIsland(Surface.Tiles, Surface.Concrete, renderHelper, splineFrame, path, 0.5f, length);
             }
 
+
+            //DEBUG: Draw two fences inwards. Left is red, right is green.
+            var leftPath = connection.IndexStrip.Left.Derive(connection.StartNode, connection.EndNode);
+            var rightPath = connection.IndexStrip.Right.Derive(connection.StartNode, connection.EndNode);
+
+            var topLeftPath = leftPath + Vector3.UnitY;
+            var topRightPath = rightPath + Vector3.UnitY;
+
+            var bottomLeftPoints = GeometryUtils.GenerateSplinePoints(leftPath);
+            var bottomRightPoints = GeometryUtils.GenerateSplinePoints(rightPath);
+            var topLeftPoints = GeometryUtils.GenerateSplinePoints(topLeftPath);
+            var topRightPoints = GeometryUtils.GenerateSplinePoints(topRightPath);
+
+            var leftVertices = UniformTexturing.UniformTextured(bottomLeftPoints, UniformTexturing.WithFixedU(1, Color.Red));
+            var rightVertices = UniformTexturing.UniformTextured(bottomRightPoints, UniformTexturing.WithFixedU(0, Color.Lime));
+            var topLeftVertices = UniformTexturing.UniformTextured(topLeftPoints, UniformTexturing.WithFixedU(0, Color.Red));
+            var topRightVertices = UniformTexturing.UniformTextured(topRightPoints, UniformTexturing.WithFixedU(1, Color.Lime));
+
+            roadBin.DrawStrip(topLeftVertices, leftVertices);
+            roadBin.DrawStrip(rightVertices, topRightVertices);
         }
 
         public static PathD FlattenPath(IEnumerable<Vector3> points) => new PathD(points.Select(v => new PointD(v.X, v.Z)));

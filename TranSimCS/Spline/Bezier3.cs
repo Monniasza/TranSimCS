@@ -117,6 +117,10 @@ namespace TranSimCS.Spline
             };
         }
 
+        public static Bezier3 operator -(Bezier3 bezier) {
+            return bezier * -1;
+        }
+
         public Bezier3 Inverse() => new(d, c, b, a);
         public Bezier3 SubRange(float from, float to) => LenientSubSection(this, from, to);
         public static Bezier3 Lerp(Bezier3 from, Bezier3 to, float t) {
@@ -125,6 +129,14 @@ namespace TranSimCS.Spline
                 Vector3.Lerp(from.b, to.b, t),
                 Vector3.Lerp(from.c, to.c, t),
                 Vector3.Lerp(from.d, to.d, t)
+            );
+        }
+        internal static Bezier3 BiLerp(Bezier3 from, Bezier3 to, float t, float u) {
+            return new(
+                Vector3.Lerp(from.a, to.a, t),
+                Vector3.Lerp(from.b, to.b, t),
+                Vector3.Lerp(from.c, to.c, u),
+                Vector3.Lerp(from.d, to.d, u)
             );
         }
 
@@ -229,5 +241,7 @@ namespace TranSimCS.Spline
             maxT = MathHelper.Lerp(lowerLimit, upperLimit, maxT); // Scale maxT to the original range
             return FindT(spline, pos, pointsPerCycle, depth - 1, minT, maxT); // Recursively find the closest t value in the range
         }
+
+        
     }
 }
