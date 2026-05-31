@@ -155,7 +155,6 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("ui/blast2", new RoadDemolitionTool(this));
             SetUpToolPictureButton("addRoadTool", RoadCreationTool);
             SetUpToolPictureButton("addNodeTool", new AddNodeTool(this));
-            SetUpToolPictureButton("eyedropper", new PickerTool(this));
             SetUpToolPictureButton("moveTool", new MoveTool(this));
             SetUpToolPictureButton("bucket", new PaintTool(this));
             SetUpToolPictureButton("inspect", new InspectTool(this));
