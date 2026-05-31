@@ -39,4 +39,14 @@ namespace TranSimCS.Property {
             Parent?.FirePropertyEvent(this, propEvent);
         }}
     }
+
+    public class DerivedProperty<TThis, TOrigin>: Property<TThis> {
+        public DerivedProperty(string name, Property<TOrigin> source, Func<TOrigin, TThis> derive, Func<TThis, TOrigin> reverse, IEqualityComparer<TThis> equals = null)
+        : base(derive(source.Value), name, source.Parent, equals) {
+            source.ValueChanged += (s, e) => this.Value = derive(e.NewValue);
+            this.ValueChanged += (s, e) => source.Value = reverse(e.NewValue);
+        }
+    }
+        
+
 }
