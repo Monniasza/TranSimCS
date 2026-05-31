@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using MLEM.Input;
 using TranSimCS.Menus.InGame;
+using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Tools.Panels;
-using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Tools {
     public class RoadFinishTool : ITool {

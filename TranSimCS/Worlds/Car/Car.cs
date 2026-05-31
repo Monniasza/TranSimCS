@@ -11,12 +11,12 @@ using TranSimCS.Collections;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Model.OBJ;
+using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.SceneGraph;
 using TranSimCS.Spline;
-using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Worlds.Car {
     public class Car : Obj, IObjMesh<Car>, IPosition {

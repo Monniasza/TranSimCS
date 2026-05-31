@@ -3,8 +3,8 @@ using Microsoft.Xna.Framework;
 using MLEM.Ui;
 using MLEM.Ui.Elements;
 using MLEM.Ui.Style;
+using TranSimCS.Property;
 using TranSimCS.Roads;
-using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Menus.InGame {
     public class RoadConfigurator : Panel {

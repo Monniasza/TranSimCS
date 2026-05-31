@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Snapping;
 using TranSimCS.Tools;
 using TranSimCS.Worlds;
-using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Menus.InGame {
     /// <summary>

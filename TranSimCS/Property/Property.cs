@@ -4,8 +4,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TranSimCS.Worlds;
 
-namespace TranSimCS.Worlds.Property {
+namespace TranSimCS.Property {
     public class PropertyChangedEventArgs2<T> : EventArgs {
         public T OldValue { get; init; }
         public T NewValue { get; init; }

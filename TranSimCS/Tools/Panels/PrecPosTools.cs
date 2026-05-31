@@ -8,8 +8,8 @@ using MLEM.Ui.Elements;
 using TranSimCS.Geometry;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
+using TranSimCS.Property;
 using TranSimCS.Worlds;
-using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Tools.Panels {
     public class PrecPosTools : Panel {

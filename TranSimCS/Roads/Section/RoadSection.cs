@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Xna.Framework;
 using TranSimCS.Collections;
+using TranSimCS.Property;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
-using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Roads.Section {
     public class RoadSection : Obj, IObjMesh<RoadSection>{

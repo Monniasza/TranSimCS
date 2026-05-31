@@ -7,9 +7,9 @@ using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
+using TranSimCS.Property;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
-using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Snapping {
     public class SnappingGrid : Obj, IPosition, IObjMesh<SnappingGrid> {

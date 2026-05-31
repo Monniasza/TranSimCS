@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Collections;
+using TranSimCS.Property;
 using TranSimCS.Roads.Node;
 using TranSimCS.Tools;
-using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Worlds {
     public partial class TSWorld {

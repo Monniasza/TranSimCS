@@ -5,11 +5,11 @@ using System.Reflection;
 using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
+using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Strip;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
-using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Roads.Node {
     public class NodePositionChangedEventArgs(ObjPos oldPosition, ObjPos newPosition) : EventArgs {

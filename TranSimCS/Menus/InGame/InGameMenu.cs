@@ -21,6 +21,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.ModelOld;
 using TranSimCS.Polygons;
+using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
@@ -29,7 +30,6 @@ using TranSimCS.Tools;
 using TranSimCS.Tools.Inspect;
 using TranSimCS.Tools.Panels;
 using TranSimCS.Worlds;
-using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Menus.InGame {
     public partial class InGameMenu : Menu {

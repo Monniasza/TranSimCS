@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TranSimCS.Worlds.Property {
+namespace TranSimCS.Property {
     public delegate void Resolver<T>(T startA, T startB, out T result);
 
     public static class Resolvers {

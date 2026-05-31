@@ -4,10 +4,10 @@ using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
+using TranSimCS.Property;
 using TranSimCS.Roads.Node;
 using TranSimCS.Tools.Panels;
 using TranSimCS.Worlds;
-using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Tools {
     public class PrecPos: ITool {

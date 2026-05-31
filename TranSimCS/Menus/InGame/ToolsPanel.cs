@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MLEM.Ui;
 using MLEM.Ui.Elements;
-using TranSimCS.Worlds.Property;
+using TranSimCS.Property;
 using TranSimCS.Worlds.Stack;
 
 namespace TranSimCS.Menus.InGame {

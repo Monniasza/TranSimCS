@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Model;
-using TranSimCS.Worlds.Property;
+using TranSimCS.Property;
 
 namespace TranSimCS.ModelOld {
     public class RenderManager {

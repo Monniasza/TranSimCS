@@ -5,12 +5,12 @@ using Microsoft.Xna.Framework;
 using NLog;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
+using TranSimCS.Property;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.StripGenerator;
 using TranSimCS.SceneGraph;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
-using TranSimCS.Worlds.Property;
 using static TranSimCS.Roads.Roads;
 
 namespace TranSimCS.Roads.Strip {

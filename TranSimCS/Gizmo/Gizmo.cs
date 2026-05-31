@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Model;
+using TranSimCS.Property;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
-using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.Gizmo {
     public abstract class Gizmo: Obj, IObjMesh<Gizmo> {

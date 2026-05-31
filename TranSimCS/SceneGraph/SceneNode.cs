@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using TranSimCS.Model;
+using TranSimCS.Property;
 using TranSimCS.Spatial;
-using TranSimCS.Worlds.Property;
 
 namespace TranSimCS.SceneGraph {
     /// <summary>
