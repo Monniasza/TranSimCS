@@ -86,14 +86,6 @@ namespace TranSimCS.Spline {
             result.d = end.O + end.X * End.Offset;
             result.b = result.a + Start.Tangent;
             result.c = result.d + End.Tangent;
-
-            //Check results
-            if (Vector3.DistanceSquared(result.a, result.b) < 0.00001) throw new ArgumentException("Start tangent is 0");
-            if (Vector3.DistanceSquared(result.c, result.d) < 0.00001) throw new ArgumentException("End tangent is 0");
-            VectorMethods.CheckVector(result.a, "A");
-            VectorMethods.CheckVector(result.b, "B");
-            VectorMethods.CheckVector(result.c, "B");
-            VectorMethods.CheckVector(result.d, "B");
             return result;
         }
     }
