@@ -210,5 +210,7 @@ namespace TranSimCS.Roads.Strip {
             road?.Mesh.Invalidate();
             InvalidateMesh();
         }
+
+        public bool IsReverse() => StartLane.RoadNodeEnd == road.EndNode && EndLane != StartLane;
     }
 }

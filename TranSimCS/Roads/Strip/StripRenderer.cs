@@ -28,6 +28,7 @@ namespace TranSimCS.Roads.Strip {
             var rpoint = Right[t];
             var midpoint = (lpoint + rpoint) / 2;
             var tangent = avgspline.Tangential(t);
+            
             tangent.Normalize();
             var fakebinormal = rpoint - lpoint;
             var width = Vector3.Cross(tangent, fakebinormal).Length();
@@ -38,6 +39,7 @@ namespace TranSimCS.Roads.Strip {
             var arrowWidth = width / 2;
             var displacement = tangent * width / 2;
             midpoint += nrm * aoffset;
+            if (laneStrip.IsReverse()) displacement *= -1;
 
             var arrowBin = renderer.GetOrCreateRenderBinForced(Assets.Arrow);
             arrowBin.DrawLine(midpoint - displacement, midpoint + displacement, nrm, Color.White, arrowWidth);

@@ -102,6 +102,7 @@ namespace TranSimCS.Roads.Strip {
         public event EventHandler<RoadStripEventArgs>? OnLaneRemoved; // Event triggered when lanes are removed
 
         public LaneRange FullSizeTag() {
+            var bounds = Bounds;
             return new LaneRange(this, new(Bounds.leftStart, Bounds.rightStart), new(Bounds.leftEnd, Bounds.rightEnd));
         }
 
@@ -129,6 +130,9 @@ namespace TranSimCS.Roads.Strip {
                 bounds = bounds
                     .Update(startLane.lane.LeftPosition, endLane.lane.LeftPosition)
                     .Update(startLane.lane.RightPosition, endLane.lane.RightPosition);
+            }
+            if(bounds.leftStart > bounds.rightStart || bounds.leftEnd > bounds.rightEnd) {
+                bounds.leftStart = bounds.rightStart = bounds.leftStart = bounds.leftEnd = 0;
             }
             segment.Bounds = bounds;
             segment.IndexStrip = segment.SplineGenerator.GenerateSplines(segment);
