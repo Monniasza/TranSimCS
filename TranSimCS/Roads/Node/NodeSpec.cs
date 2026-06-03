@@ -8,7 +8,7 @@ using MonoGame.Extended;
 using TranSimCS.Geometry;
 
 namespace TranSimCS.Roads.Node {
-    public sealed class LaneNode(LaneSpec laneSpec, float centerPos, Guid? guid = null){
+    public sealed class LaneNode(LaneSpec laneSpec, float centerPos, Guid? guid = null): IComparable<LaneNode>{
         public readonly Guid ID = guid ?? Guid.NewGuid();
         public readonly LaneSpec LaneSpec = laneSpec;
         public readonly float CenterPos = centerPos;
@@ -19,6 +19,17 @@ namespace TranSimCS.Roads.Node {
             laneSpec.Width = bounds.Max - bounds.Min;
             return new LaneNode(laneSpec, centerPos);
         }
+
+        public int CompareTo(LaneNode? other) {
+            if(other == null) return 1;
+            if(this == other) return 0;
+            var compareCenters = CenterPos.CompareTo(other.CenterPos);
+            if(compareCenters != 0) return compareCenters;
+            var compareWidths = LaneSpec.Width.CompareTo(other.LaneSpec.Width);
+            if(compareWidths != 0) return compareWidths;
+            return ID.CompareTo(other.ID);
+        }
+
         public Range<float> Bounds {
             get => new(CenterPos - LaneSpec.Width / 2, CenterPos + LaneSpec.Width / 2);
         }
