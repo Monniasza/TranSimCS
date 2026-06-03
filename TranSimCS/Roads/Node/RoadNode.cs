@@ -29,6 +29,8 @@ namespace TranSimCS.Roads.Node {
         public RoadNodeEnd? GetNodeEnd() => null;
 
         public Property<ObjPos> PositionProp { get; private set; }
+        public Property<RoadNodeTangents> LeftBound { get; private set; }
+        public Property<RoadNodeTangents> RightBound { get; private set; }
 
         //Example azimuth values
         public const int AZIMUTH_NORTH = 0; // 0 degrees
@@ -52,6 +54,8 @@ namespace TranSimCS.Roads.Node {
             Mesh = new MeshGenerator<RoadNode>(this, GenerateMesh);
             Mesh.OnMeshInvalidated += InvalidateMesh0;
             PositionProp.ValueChanged += PositionProp_ValueChanged;
+            LeftBound = new(default, "tangentLeft", this);
+            RightBound = new(default, "tangentRight", this);
         }
 
         private void PositionProp_ValueChanged(object? sender, PropertyChangedEventArgs2<ObjPos> e) {
