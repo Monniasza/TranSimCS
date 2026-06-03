@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Xna.Framework;
+using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Property;
@@ -12,12 +13,19 @@ using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Node {
-    public class NodePositionChangedEventArgs(ObjPos oldPosition, ObjPos newPosition) : EventArgs {
-        public ObjPos OldPosition { get; } = oldPosition;
-        public ObjPos NewPosition { get; } = newPosition;
-    }
-
     public class RoadNode: Obj, IPosition, IObjMesh<RoadNode>, IRoadElement {
+        //Node contents
+        public Property<ObjPos> PositionProp { get; private set; }
+        public Property<RoadNodeTangents> LeftBound { get; private set; }
+        public Property<RoadNodeTangents> RightBound { get; private set; }
+        public string Name { get; set; }
+
+        //Cahced/generated contents
+        public MeshGenerator<RoadNode> Mesh { get; init; }
+        public Vector3 CenterPosition { get; private set; }
+        public Range<float> Bounds { get; private set; }
+
+
         //ROAD ELEMENT
         public Lane? GetLane() => null;
         public LaneStrip? GetLaneStrip() => null;
@@ -28,18 +36,11 @@ namespace TranSimCS.Roads.Node {
         public LaneEnd? GetLaneEnd() => null;
         public RoadNodeEnd? GetNodeEnd() => null;
 
-        public Property<ObjPos> PositionProp { get; private set; }
-        public Property<RoadNodeTangents> LeftBound { get; private set; }
-        public Property<RoadNodeTangents> RightBound { get; private set; }
-
         //Example azimuth values
         public const int AZIMUTH_NORTH = 0; // 0 degrees
         public const int AZIMUTH_EAST = 1 << 30; // 90 degrees
         public const int AZIMUTH_SOUTH = 2 << 30; // 180 degrees
         public const int AZIMUTH_WEST = 3 << 30; // 270 degrees
-
-        //Identifiers
-        public string Name { get; set; }
 
         // Constructor to initialize the RoadNode with a unique ID, name, position, and world
         public RoadNode(string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) :
@@ -51,7 +52,7 @@ namespace TranSimCS.Roads.Node {
             PositionProp.Value = positionData;
             RearEnd = new RoadNodeEnd(NodeEnd.Backward, this);
             FrontEnd = new RoadNodeEnd(NodeEnd.Forward, this);
-            Mesh = new MeshGenerator<RoadNode>(this, GenerateMesh);
+            Mesh = new MeshGenerator<RoadNode>(this, (node, mesh) => RoadRenderer.GenerateRoadNodeMesh(node, mesh, 0.4f));
             Mesh.OnMeshInvalidated += InvalidateMesh0;
             PositionProp.ValueChanged += PositionProp_ValueChanged;
             LeftBound = new(default, "tangentLeft", this);
@@ -95,12 +96,10 @@ namespace TranSimCS.Roads.Node {
             var index = _lanes.IndexOf(lane);
             if (index < 0) throw new InvalidOperationException("Lane is not assigned to this road node.");
 
-            var connections = lane.Connections.ToArray();
             lane.RoadNode = null;
 
-            foreach(var connection in connections) {
+            foreach(var connection in lane.Connections) 
                 connection.Destroy();
-            }
             lane.connections.Clear();
 
             _lanes.RemoveAt(index);
@@ -114,9 +113,7 @@ namespace TranSimCS.Roads.Node {
         }
 
         private void ReIndex() {
-            for (int i = 0; i < _lanes.Count; i++) {
-                _lanes[i].Index = i;
-            }
+            for (int i = 0; i < _lanes.Count; i++) _lanes[i].Index = i;
         }
 
         // Clears all lanes by delegating to RemoveLane for each entry.
@@ -125,17 +122,21 @@ namespace TranSimCS.Roads.Node {
             foreach(var lane in lanes) RemoveLane(lane);
         }
 
-        //Node selection mesh
-        public MeshGenerator<RoadNode> Mesh {  get; init; }
-        // Generates the mesh used for node selection rendering.
-        protected static void GenerateMesh(RoadNode node, MultiMesh mesh) {
-            // Use 0.4f offset to render nodes clearly above all other road elements (roads at 0.2f, intersections at 0.3f)
-            RoadRenderer.GenerateRoadNodeMesh(node, mesh, 0.4f);
-        }
-
         // Clears cached data when the base mesh invalidation occurs.
         protected void InvalidateMesh0(){
-            _centerPos = null;
+            //Calculate bounds
+            if (Lanes.Count == 0) {
+                Bounds = new(0, 0);
+            } else {
+                var leftPos = Lanes[0].LeftPosition;
+                var rightPos = Lanes[Lanes.Count - 1].RightPosition;
+                Bounds = new(leftPos, rightPos);
+            }
+
+            //Calculate new center position
+            var refframe = PositionProp.Value.CalcReferenceFrame();
+            CenterPosition = refframe.O + refframe.X * (Bounds.Min + Bounds.Max) * 0.5f;
+
             foreach (var connection in Connections) connection.Mesh.Invalidate();
             RearEnd.ConnectedSection.Value?.Regenerate();
             FrontEnd.ConnectedSection.Value?.Regenerate();
@@ -150,33 +151,6 @@ namespace TranSimCS.Roads.Node {
         //Connections (maintained by the node ends)
         public IEnumerable<RoadStrip> Connections => RearEnd.ConnectedSegments.Union(FrontEnd.ConnectedSegments);
 
-        //Center position
-        // Calculates and caches the node center based on lane positions.
-        private void CalcCenterPos(){
-            if (Lanes.Count == 0) {
-                _centerPos = PositionProp.Value.Position;
-            } else {
-                var leftPos = Lanes[0].LeftPosition;
-                var rightPos = Lanes[Lanes.Count - 1].RightPosition;
-                _centerPos = LineEnd.calcLineEnd(FrontEnd, (leftPos + rightPos) / 2).Position;
-            }
-        }
-        public Vector2 Bounds() {
-            if (Lanes.Count == 0) {
-                return new(0, 0);
-            } else {
-                var leftPos = Lanes[0].LeftPosition;
-                var rightPos = Lanes[Lanes.Count - 1].RightPosition;
-                return new(leftPos, rightPos);
-            }
-        }
-
-        public Vector3? _centerPos;
-        // Returns the cached center position, computing it when necessary.
-        public Vector3 CenterPosition { get {
-            if (_centerPos == null) CalcCenterPos();
-            return _centerPos.Value;
-        } }
         public Vector3 CenterOffset { get; internal set; }
 
         public Lane? LastLane => _lanes.Count > 0 ? _lanes[^1] : null;
