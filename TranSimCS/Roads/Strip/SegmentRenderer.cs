@@ -110,7 +110,12 @@ namespace TranSimCS.Roads.Strip {
             int i = -1;
             foreach(var lane in laneRanges) {
                 i++;
-                var strip = RoadRenderer.GenerateSplines(lane);
+                //Widen the lane range
+                float dwidth = 0.001f;
+                var widened = lane;
+                widened.startRange = new(widened.startRange.Min - dwidth, widened.startRange.Max + dwidth);
+                widened.endRange = new(widened.endRange.Min - dwidth, widened.startRange.Max + dwidth);
+                var strip = RoadRenderer.GenerateSplines(widened);
                 var leftSpline = strip.Item1;
                 var rightSpline = strip.Item2.Inverse();
                 var leftPoints = GenerateSplinePoints(leftSpline);
@@ -129,7 +134,7 @@ namespace TranSimCS.Roads.Strip {
             var lanePolygons = polygons.Skip(1).ToArray();
             Debug.Print($"{lanePolygons.Length} lane polygons");
             //Slightly enlarge the lane polygons to prevent degeneration
-            lanePolygons = lanePolygons.Select(poly => poly.Offset(0.000001)).ToArray();
+            //lanePolygons = lanePolygons.Select(poly => poly.Offset(0.001)).ToArray();
 
             //Perform the separation logic
             var islandsPoly = globalPolygon.SubtractMore(lanePolygons);
