@@ -52,15 +52,9 @@ namespace TranSimCS.Save2 {
             }
         }
 
-        public override void Write(Utf8JsonWriter writer, LaneEnd value, JsonSerializerOptions options) {
-            writer.WriteStartArray();
-            
-            var roadNodeEndConverter = new RoadNodeEndConverter(_world);
-            roadNodeEndConverter.Write(writer, value.RoadNodeEnd, options);
-            
-            writer.WriteNumberValue(value.lane.Index);
-            
-            writer.WriteEndArray();
+        public override void Write(Utf8JsonWriter writer, LaneEnd value, JsonSerializerOptions options) {          
+            var result = (value.end == NodeEnd.Backward ? "-" : "+") + value.lane.Guid;
+            writer.WriteStringValue(result);
         }
     }
 }
