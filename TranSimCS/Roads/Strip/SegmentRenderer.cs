@@ -114,7 +114,7 @@ namespace TranSimCS.Roads.Strip {
                 float dwidth = 0.001f;
                 var widened = lane;
                 widened.startRange = new(widened.startRange.Min - dwidth, widened.startRange.Max + dwidth);
-                widened.endRange = new(widened.endRange.Min - dwidth, widened.startRange.Max + dwidth);
+                widened.endRange = new(widened.endRange.Min - dwidth, widened.endRange.Max + dwidth);
                 var strip = RoadRenderer.GenerateSplines(widened);
                 var leftSpline = strip.Item1;
                 var rightSpline = strip.Item2.Inverse();

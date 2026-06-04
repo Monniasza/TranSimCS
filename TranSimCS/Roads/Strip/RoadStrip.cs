@@ -138,9 +138,15 @@ namespace TranSimCS.Roads.Strip {
                 bounds.leftStart = bounds.rightStart = bounds.leftEnd = bounds.rightEnd = 0;
             }
             segment.Bounds = bounds;
-            segment.IndexStrip = segment.SplineGenerator.GenerateSplines(segment);
-            //Test the generated IndexStrip
-            logger.Info($"Current IndexStrip:\n{segment.IndexStrip}");
+
+            //Generate splines
+            if (segment.IsSingleEnded()) {
+                //The segment has only one end
+                segment.IndexStrip = segment.StartNode.GenerateDegenerateIndexStrips();
+            } else {
+                //The segment joins node-ends
+                segment.IndexStrip = segment.SplineGenerator.GenerateSplines(segment);
+            }
             segment.SplineFrame = segment.IndexStrip.ToSplineFrame(segment.StartNode, segment.EndNode);
 
             //Check: If the road segment is a part of a road section, do not create its mesh
