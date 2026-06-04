@@ -160,7 +160,19 @@ namespace TranSimCS.Roads.Strip {
         }
 
         public Bezier3 GenerateSpline(float startT, float endT, float y = 0) => GenerateSpline(new Vector3(startT, y, 0), new Vector3(endT, y, 0));
-        public Bezier3 GenerateSpline(Vector3 start, Vector3 end) => SplineFrame.CreateFromStartEnd(start, end);
+        public Bezier3 GenerateSpline(Vector3 start, Vector3 end) {
+            if(StartNode == EndNode) {
+                //Generate a solution bypassing the SplineFrame
+                var refframe = StartNode.CalcReferenceFrame();
+                if (StartNode.End == NodeEnd.Backward) refframe.X *= -1;
+                var tfStart = refframe.Transform(start);
+                var tfEnd = refframe.Transform(end);
+                var distance = Vector3.Distance(start, end);
+                var tangent = 0.6667f * refframe.Z * distance;
+                return new(tfStart, tfStart + tangent, tfEnd + tangent, tfEnd);
+            }
+            return SplineFrame.CreateFromStartEnd(start, end);
+        }
 
 
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
