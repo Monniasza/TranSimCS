@@ -35,17 +35,15 @@ namespace TranSimCS.Roads.Node {
 
         //BOUNDARIES, RESPECTING THE SIDE
         public (float Min, float Max, float Left, float Right) Boundaries() {
-            float min = lane.LeftPosition;
-            float max = lane.RightPosition;
+            var minMax = Range();
+            float min = minMax.Min;
+            float max = minMax.Max;
             float left = min;
             float right = max;
             if (end == NodeEnd.Backward) DataUtil.Swap(ref left, ref right);
             return (min, max, left, right);
         }
-        public Range<float> Range() {
-            var bounds = Boundaries();
-            return new(bounds.Min, bounds.Max);
-        }
+        public Range<float> Range() => lane.Bounds;
 
 
         //EQUALITY

@@ -49,7 +49,6 @@ namespace TranSimCS.Roads.Strip {
         private LaneEnd endLane;
         public RoadStrip road { get; internal set;}
 
-
         public LaneSpec _spec; // Specification of the lane strip, including properties like width, type, etc.
 
         public LaneSpec Spec {

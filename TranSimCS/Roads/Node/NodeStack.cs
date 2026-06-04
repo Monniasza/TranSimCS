@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -14,14 +15,46 @@ namespace TranSimCS.Roads.Node {
     /// </summary>
     public class NodeStack : ObjectStack<RoadNode, NodeStack> {
         public readonly TrackerSpatial<RoadNode, NodeStack> trackerSpatial;
+        public readonly ReadOnlyDictionary<Guid, Lane> LaneXRef;
+        internal readonly Dictionary<Guid, Lane> laneXRef;
         public NodeStack(TSWorld world) : base(world) {
             trackerSpatial = new TrackerSpatial<RoadNode, NodeStack> (world);
             stackTrackers.Add(trackerSpatial);
+            laneXRef = new();
+            LaneXRef = new(laneXRef);
+            data.ItemAdded += Data_ItemAdded;
+            data.ItemRemoved += Data_ItemRemoved;
         }
+
+        private void Data_ItemRemoved(RoadNode obj) {
+            //Delete lanes from xref
+            foreach (var lane in obj.Lanes) laneXRef.Remove(lane.Guid, out var _);
+
+            //Un-listen to lane changes
+            obj.LaneAdded += Obj_LaneAdded;
+            obj.LaneRemoved += Obj_LaneRemoved;
+        }
+        private void Data_ItemAdded(RoadNode obj) {
+            //Add lanes to xref
+            foreach(var lane in obj.Lanes) laneXRef[lane.Guid] = lane;
+
+            //Listen to lane changes
+            obj.LaneAdded += Obj_LaneAdded;
+            obj.LaneRemoved += Obj_LaneRemoved;
+        }
+
+        private void Obj_LaneRemoved(object? sender, RoadNode.LaneEventArgs e) {
+            laneXRef.Remove(e.lane.Guid, out var _);
+        }
+
+        private void Obj_LaneAdded(object? sender, RoadNode.LaneEventArgs e) {
+            laneXRef[e.lane.Guid] = e.lane;
+        }
+
         public override RoadNode ReadElementFromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
             Guid? guid = null;
             ObjPos? pos = null;
-            List<Lane> lanes = new List<Lane>();
+            List<LaneNode> lanes = new();
             string name = "";
 
             var objPosConverter = new ObjPosConverter();
@@ -77,7 +110,7 @@ namespace TranSimCS.Roads.Node {
             writer.WriteStartArray();
             var laneConverter = new LaneConverter();
             foreach (var lane in value.Lanes) {
-                laneConverter.Write(writer, lane, options);
+                laneConverter.Write(writer, lane.Definition, options);
             }
             writer.WriteEndArray();
 

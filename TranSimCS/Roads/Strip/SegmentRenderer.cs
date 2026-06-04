@@ -22,8 +22,12 @@ namespace TranSimCS.Roads.Strip {
             if(connection == null || connection.Lanes.Count == 0) return;
 
             Mesh roadBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
-            foreach (var lane in connection.Lanes)
+            foreach (var lane in connection.Lanes) {
+                //It this throws, the strip gets its draw mehod called
+                //throw null;
                 renderHelper.AddAll(lane.GetMesh());
+            }
+                
 
             //Draw the road finish
             var finish = connection.Finish;

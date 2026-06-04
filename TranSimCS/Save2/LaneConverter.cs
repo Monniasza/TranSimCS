@@ -5,11 +5,12 @@ using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 
 namespace TranSimCS.Save2 {
-    public class LaneConverter : JsonConverter<Lane> {
-        public override Lane Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+    public class LaneConverter : JsonConverter<LaneNode> {
+        public override LaneNode Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
             float leftPosition = 0;
             float rightPosition = 0;
             LaneSpec spec = LaneSpec.None;
+            Guid? guid = null;
             var laneSpecConverter = new LaneSpecConverter();
 
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
@@ -25,30 +26,32 @@ namespace TranSimCS.Save2 {
                     case "spec":
                         spec = laneSpecConverter.Read(ref reader0, typeof(LaneSpec), options);
                         break;
+                    case "guid":
+                        guid = reader0.GetGuid();
+                        break;
                 }
             });
 
-            return new Lane() {
-                LeftPosition = leftPosition,
-                RightPosition = rightPosition,
-                Spec = spec
-            };
+            return LaneNode.FromBounds(spec, new(leftPosition, rightPosition), guid);
         }
 
-        public override void Write(Utf8JsonWriter writer, Lane value, JsonSerializerOptions options) {
+        public override void Write(Utf8JsonWriter writer, LaneNode value, JsonSerializerOptions options) {
             if (value == null) {
                 writer.WriteNullValue();
                 return;
             }
 
             writer.WriteStartObject();
-            
-            writer.WriteNumber("left", value.LeftPosition);
-            writer.WriteNumber("right", value.RightPosition);
+            var range = value.Bounds;
+            writer.WriteNumber("left", range.Min);
+            writer.WriteNumber("right", range.Max);
             
             writer.WritePropertyName("spec");
             var laneSpecConverter = new LaneSpecConverter();
-            laneSpecConverter.Write(writer, value.Spec, options);
+            laneSpecConverter.Write(writer, value.LaneSpec, options);
+
+            writer.WritePropertyName("guid");
+            writer.WriteStringValue(value.ID);
             
             writer.WriteEndObject();
         }

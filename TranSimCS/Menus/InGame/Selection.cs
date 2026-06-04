@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using MonoGame.Extended;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
@@ -21,7 +22,7 @@ namespace TranSimCS.Menus.InGame {
             this.nodeEnd = nodeEnd;
         }
 
-        public Vector2 CalculateOffsets(float width) {
+        public Range<float> CalculateOffsets(float width) {
             if(side < 0) 
                 return new(position - width, position);
             return new(position, position + width);
@@ -37,12 +38,9 @@ namespace TranSimCS.Menus.InGame {
         /// <param name="spec">lane spec to use</param>
         /// <returns>a new lane</returns>
         public LaneEnd NewLane(LaneSpec spec) {
-            Lane newLane = new Lane();
             var positions = CalculateOffsets(spec.Width);
-            newLane.LeftPosition = positions.X;
-            newLane.RightPosition = positions.Y;
-            newLane.Spec = spec;
-            nodeEnd.Node.AddLane(newLane);
+            LaneNode laneNode = LaneNode.FromBounds(spec, positions);
+            Lane newLane = nodeEnd.Node.AddLane(laneNode);
             return newLane.GetEnd(nodeEnd.End);
         }
     }

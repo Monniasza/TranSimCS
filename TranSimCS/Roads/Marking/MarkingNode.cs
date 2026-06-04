@@ -30,10 +30,14 @@ namespace TranSimCS.Roads.Marking {
                         data.Anchor = endConverter.Read(ref reader0, typeof(RoadNodeEnd), options);
                         break;
                     case "anchorLane":
-                        if (data.Anchor == null) throw new JsonException("anchorLane needs anchorNode first");
                         if (data.Anchor is LaneEnd) throw new JsonException("anchorLane already set");
-                        var index = reader0.GetInt32();
-                        var laneEnd = data.Anchor.GetRoadNode().Lanes[index];
+                        if (data.Anchor == null) {
+                            LaneEndConverter lec = new(world);
+                            data.Anchor = lec.Read(ref reader0, typeof(LaneEnd), options);
+                        } else {
+                            var index = reader0.GetInt32();
+                            var laneEnd = data.Anchor.GetRoadNode().SortedLanes[index];
+                        }                            
                         break;
                     case "alignment":
                         data.Alignment = reader0.GetSingle();
@@ -76,14 +80,9 @@ namespace TranSimCS.Roads.Marking {
             RoadNodeEnd? nodeEnd = anchor?.GetNodeEnd();
             if(nodeEnd != null) refpos = nodeEnd.PositionProp.Value;
             if (laneEnd != null) {
-                leftBound = laneEnd.Value.lane.LeftPosition;
-                rightBound = laneEnd.Value.lane.RightPosition;
-                if (laneEnd.Value.end == NodeEnd.Backward)
-                    (leftBound, rightBound) = (rightBound, leftBound);
+                (_, _, leftBound, rightBound) = laneEnd.Value.Boundaries();
             } else if (nodeEnd != null) {
-                var bounds = nodeEnd.Bounds();
-                leftBound = bounds.LocalLeft;
-                rightBound = bounds.localRight;
+                (_, _, leftBound, rightBound) = nodeEnd.Bounds();
             }
 
             var alignedPos = float.Lerp(leftBound, rightBound, alignment) + offset;
@@ -93,8 +92,9 @@ namespace TranSimCS.Roads.Marking {
                 float width = Math.Abs(rightBound - leftBound);
                 var roadNode = anchor.GetRoadNode();
                 if (roadNode == null || roadNode.Lanes.Count == 0) return;
-                float originalRightBound = anchor.GetRoadNode().LastLane.RightPosition;
-                float originalLeftBound = anchor.GetRoadNode().Lanes[0].LeftPosition;
+                var originalBounds = anchor.GetRoadNode().Bounds;
+                float originalRightBound = originalBounds.Max;
+                float originalLeftBound = originalBounds.Min;
                 refframe.O += refframe.X * (originalRightBound + originalLeftBound);
                 refframe.X *= -1;
                 refframe.Z *= -1;

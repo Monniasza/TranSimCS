@@ -22,24 +22,18 @@ namespace TranSimCS.Geometry
         => calcLineEnd(node.Node, offset, node.End);
 
         public static (LineEnd, LineEnd) calcBoundingLineEnds(RoadNodeEnd node) {
-            if (node.Node.Lanes.Count == 0) {
-                var leftEnd0 = calcLineEnd(node, 0);
-                return (leftEnd0, leftEnd0);
-            }
-            var leftEnd = calcLineEnd(node, node.Node.Lanes[0].LeftPosition);
-            var rightEnd = calcLineEnd(node, node.Node.Lanes[node.Node.Lanes.Count - 1].RightPosition);
+            var bounds = node.Bounds();
+            var leftEnd = calcLineEnd(node, bounds.Min);
+            var rightEnd = calcLineEnd(node, bounds.Max);
             if (node.End == NodeEnd.Backward)
                 (leftEnd, rightEnd) = (rightEnd, leftEnd);
             return (leftEnd, rightEnd);
         }
         public static LineEnd calcBoundingLineEndFaced(RoadNodeEnd node, int discriminator = 1) {
-            if (node.Node.Lanes.Count == 0) {
-                var leftEnd0 = calcLineEnd(node, 0);
-                return leftEnd0;
-            }
-            if (discriminator < 0 ^ node.End == NodeEnd.Backward)
-                return calcLineEnd(node, node.Node.Lanes[0].LeftPosition);
-            return calcLineEnd(node, node.Node.Lanes[node.Node.Lanes.Count - 1].RightPosition);
+            var (Min, Max, LocalLeft, localRight) = node.Bounds();
+            if (discriminator < 0)
+                return calcLineEnd(node, LocalLeft);
+            return calcLineEnd(node, localRight);
         }
 
         public static LineEnd calcLineEnd(IPosition node, float offset, NodeEnd end) {

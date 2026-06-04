@@ -127,9 +127,12 @@ namespace TranSimCS.Roads.Strip {
                     (startLane, endLane) = (endLane, startLane);
                 }
 
+                var startBounds = startLane.lane.Bounds;
+                var endBounds = endLane.lane.Bounds;
+
                 bounds = bounds
-                    .Update(startLane.lane.LeftPosition, endLane.lane.LeftPosition)
-                    .Update(startLane.lane.RightPosition, endLane.lane.RightPosition);
+                    .Update(startBounds.Min, endBounds.Min)
+                    .Update(startBounds.Max, endBounds.Max);
             }
             if(bounds.leftStart > bounds.rightStart || bounds.leftEnd > bounds.rightEnd) {
                 bounds.leftStart = bounds.rightStart = bounds.leftEnd = bounds.rightEnd = 0;

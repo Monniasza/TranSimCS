@@ -1,7 +1,11 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using Iesi.Collections.Generic;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
 using TranSimCS.Geometry;
@@ -16,15 +20,61 @@ namespace TranSimCS.Roads.Node {
     public class RoadNode: Obj, IPosition, IObjMesh<RoadNode>, IRoadElement {
         //Node contents
         public Property<ObjPos> PositionProp { get; private set; }
-        public Property<RoadNodeTangents> LeftBound { get; private set; }
-        public Property<RoadNodeTangents> RightBound { get; private set; }
+        public Property<RoadNodeTangents> LeftTangent { get; private set; }
+        public Property<RoadNodeTangents> RightTangent { get; private set; }
         public string Name { get; set; }
 
         //Cahced/generated contents
         public MeshGenerator<RoadNode> Mesh { get; init; }
         public Vector3 CenterPosition { get; private set; }
-        public Range<float> Bounds { get; private set; }
+        public Range<float> Bounds => NodeSpec.Range;
+        
 
+        private Dictionary<Guid, Lane> lanesSet;
+        private HashSet<Lane> lanesDict;
+        public readonly ISet<Lane> Lanes;
+        public readonly IDictionary<Guid, Lane> LaneXRef;
+        public IList<Lane> SortedLanes { get; private set; }
+
+        //Events
+        public class LaneEventArgs: EventArgs {
+            public readonly Lane lane;
+            public LaneEventArgs(Lane lane) {
+                this.lane = lane;
+            }
+        }
+        public event EventHandler<LaneEventArgs> LaneAdded;
+        public event EventHandler<LaneEventArgs> LaneRemoved;
+
+        //Bidirectional derived contents
+        private NodeSpec? nodeSpec;
+        public NodeSpec NodeSpec {
+            get {
+                nodeSpec ??= new NodeSpec(Lanes.Select(x => x.Definition));
+                return nodeSpec;
+            }
+            set {
+                //Cross-relate the lanes to change
+                var nodeSpec = value;
+                var lanes2check = Lanes.ToArray();
+                foreach (var lane in lanes2check) {
+                    //Check which lanes have been removed
+                    if (!nodeSpec.LaneXRef.ContainsKey(lane.Guid))
+                        //The lane has been removed
+                        RemoveLane(lane);
+                }
+                foreach(var newLane in nodeSpec) {
+                    if(LaneXRef.TryGetValue(newLane.ID, out var existingLane)) {
+                        //The lane has been changed
+                        existingLane.Definition = newLane;
+                    }else {
+                        //The lane has been added
+                        AddLane(newLane);
+                    }
+                }
+                this.nodeSpec = nodeSpec;
+            }
+        }
 
         //ROAD ELEMENT
         public Lane? GetLane() => null;
@@ -55,10 +105,14 @@ namespace TranSimCS.Roads.Node {
             Mesh = new MeshGenerator<RoadNode>(this, (node, mesh) => RoadRenderer.GenerateRoadNodeMesh(node, mesh, 0.4f));
             Mesh.OnMeshInvalidated += InvalidateMesh0;
             PositionProp.ValueChanged += PositionProp_ValueChanged;
-            LeftBound = new(default, "tangentLeft", this);
-            RightBound = new(default, "tangentRight", this);
-        }
+            LeftTangent = new(default, "tangentLeft", this);
+            RightTangent = new(default, "tangentRight", this);
 
+            lanesSet = new();
+            lanesDict = new();
+            LaneXRef = new ReadOnlyDictionary<Guid, Lane>(lanesSet);
+            Lanes = new ReadOnlySet<Lane>(lanesDict);
+        }
         private void PositionProp_ValueChanged(object? sender, PropertyChangedEventArgs2<ObjPos> e) {
             var value = e.NewValue;
             var pos = value.Position;
@@ -68,70 +122,53 @@ namespace TranSimCS.Roads.Node {
         }
 
         //Lane structure
-        private readonly List<Lane> _lanes = new List<Lane>(); // List to hold lanes associated with this road node
-        public IReadOnlyList<Lane> Lanes => _lanes.AsReadOnly(); // Expose the lanes as a read-only list
         // Adds a lane to this node while maintaining lane ordering and indices.
-        public void AddLane(Lane lane) {
-            if(lane == null) throw new ArgumentNullException(nameof(lane), "Lane cannot be null.");
-            var currentNode = lane.RoadNode;
-            if (currentNode != null) {
-                if (currentNode == this) {
-                    if (_lanes.Contains(lane)) throw new InvalidOperationException("Lane is already assigned to this road node.");
-                } else {
-                    currentNode.RemoveLane(lane);
-                }
-            }
+        public Lane AddLane(LaneNode definition) {
+            if(definition == null) throw new ArgumentNullException(nameof(definition), "Lane cannot be null.");
+            if(LaneXRef.ContainsKey(definition.ID)) throw new InvalidOperationException("Lane is already assigned to this road node.");
+
+            Lane lane = new Lane(this, definition);
             lane.RoadNode = this;
-            var middlePosition = (lane.LeftPosition + lane.RightPosition) / 2; // Calculate the middle position of the lane
-            int index = _lanes.FindIndex(lane1 => lane1.MiddlePosition > middlePosition); // Find the index where the lane should be inserted
-            if (index == -1) index = Lanes.Count;
-            //Shift existing lanes to the right if necessary
-            _lanes.Insert(index, lane);// Add the lane to the list
-            ReIndex();
+
+            lanesSet.Add(definition.ID, lane);
+            lanesDict.Add(lane);
+
+            LaneAdded?.Invoke(this, new LaneEventArgs(lane));
+
             Mesh.Invalidate();
+
+            return lane;
         }
         // Removes a lane from this node and clears related connections.
         public void RemoveLane(Lane lane) {
             if(lane == null) throw new ArgumentNullException(nameof(lane), "Lane cannot be null.");
-            var index = _lanes.IndexOf(lane);
-            if (index < 0) throw new InvalidOperationException("Lane is not assigned to this road node.");
+            if(!Lanes.Contains(lane)) throw new InvalidOperationException("Lane is not assigned to this road node.");
 
+            //Remove all connections to the lane
+            var connections = lane.Connections.ToArray();
+            foreach (var connection in connections) {
+                connection.Destroy();
+            }
+
+            lanesSet.Remove(lane.Guid);
+            lanesDict.Remove(lane);
+            lane.Index = -1;
             lane.RoadNode = null;
 
-            foreach(var connection in lane.Connections) 
-                connection.Destroy();
-            lane.connections.Clear();
+            LaneRemoved?.Invoke(this, new LaneEventArgs(lane));
 
-            _lanes.RemoveAt(index);
-            lane.Index = -1;
-            ReIndex();
-
-            if(Lanes.Count == 0) {
-                World.Nodes.data.Remove(this);
-            }
             Mesh.Invalidate();
         }
 
-        private void ReIndex() {
-            for (int i = 0; i < _lanes.Count; i++) _lanes[i].Index = i;
-        }
-
-        // Clears all lanes by delegating to RemoveLane for each entry.
-        public void ClearLanes() {
-            var lanes = _lanes.ToArray();
-            foreach(var lane in lanes) RemoveLane(lane);
-        }
+        public void ClearLanes() => NodeSpec = NodeSpec.Empty;
 
         // Clears cached data when the base mesh invalidation occurs.
         protected void InvalidateMesh0(){
-            //Calculate bounds
-            if (Lanes.Count == 0) {
-                Bounds = new(0, 0);
-            } else {
-                var leftPos = Lanes[0].LeftPosition;
-                var rightPos = Lanes[Lanes.Count - 1].RightPosition;
-                Bounds = new(leftPos, rightPos);
-            }
+            nodeSpec = null;
+
+            //Sort the lanes
+            SortedLanes = Lanes.OrderBy(x => x.MiddlePosition).ToImmutableList();
+            for (int i = 0; i < SortedLanes.Count; i++) SortedLanes[i].Index = i;
 
             //Calculate new center position
             var refframe = PositionProp.Value.CalcReferenceFrame();
@@ -153,7 +190,7 @@ namespace TranSimCS.Roads.Node {
 
         public Vector3 CenterOffset { get; internal set; }
 
-        public Lane? LastLane => _lanes.Count > 0 ? _lanes[^1] : null;
-
+        public const Lane? nullLane = null;
+        public Lane? LastLane => (lanesDict.Count == 0) ? null : SortedLanes[^1];
     }
 }

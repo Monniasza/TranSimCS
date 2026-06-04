@@ -29,8 +29,9 @@ namespace TranSimCS.Roads {
 
         public static void CreateAddLanes(RoadNode nodeEnd, Mesh mesh, float size = 1, Color? color = null, float voffset = 0.2f) {
             if (nodeEnd.Lanes.Count < 1) return;
-            var leftLimit = nodeEnd.Lanes[0].LeftPosition;
-            var rightLimit = nodeEnd.Lanes[nodeEnd.Lanes.Count - 1].RightPosition;
+            var bounds = nodeEnd.Bounds;
+            var leftLimit = bounds.Min;
+            var rightLimit = bounds.Max;
             CreateAddLane(new AddLaneSelection(-1, leftLimit, nodeEnd.FrontEnd), mesh, size, color, voffset);
             CreateAddLane(new AddLaneSelection(1, rightLimit, nodeEnd.FrontEnd), mesh, size, color, voffset);
             CreateAddLane(new AddLaneSelection(-1, leftLimit, nodeEnd.RearEnd), mesh, size, color, voffset);
@@ -39,13 +40,14 @@ namespace TranSimCS.Roads {
         public static QuadOld CreateAddLane(AddLaneSelection als, Mesh mesh, float size = 1, Color? color = null, float voffset = 0.2f) {
             var zrange = RoadEndToRange(als.nodeEnd.End) * size;
             var xrange = als.CalculateOffsets(size);
-            QuadOld quad = GenerateLaneQuad(als.nodeEnd.Node, xrange.X, xrange.Y, color ?? SemiClearGray, voffset, zrange.X, zrange.Y);
+            QuadOld quad = GenerateLaneQuad(als.nodeEnd.Node, xrange.Min, xrange.Max, color ?? SemiClearGray, voffset, zrange.X, zrange.Y);
             mesh.DrawQuad(quad);
             mesh.AddTagsToLastTriangles(2, als);
             return quad;
         }
         public static QuadOld GenerateRoadNodeSelQuad(RoadNode node, Color color, float voffset = 0.2f) {
-            return GenerateLaneQuad(node, node.Lanes[0].LeftPosition, node.Lanes[node.Lanes.Count - 1].RightPosition, color, voffset);
+            var bounds = node.Bounds;
+            return GenerateLaneQuad(node, bounds.Min, bounds.Max, color, voffset);
         }
         public static void GenerateRoadNodeMesh(RoadNode node, MultiMesh renderBin, float voffset = 0) {
             foreach(var lane in node.Lanes) GenerateLaneMesh(lane, renderBin, voffset);

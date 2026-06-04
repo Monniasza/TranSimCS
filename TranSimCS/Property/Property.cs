@@ -21,6 +21,7 @@ namespace TranSimCS.Property {
         public string name;
         public readonly Obj? Parent;
         public event EventHandler<PropertyChangedEventArgs2<T>> ValueChanged;
+        public event EventHandler<PropertyChangedEventArgs2<T>> ValidateChanges;
         public IEqualityComparer<T> comparer;
 
         public Property(T val, string name, Obj? parent = null, IEqualityComparer<T> equals = null) {
@@ -33,6 +34,7 @@ namespace TranSimCS.Property {
         public T Value { get => _val; set {
             if (comparer.Equals(_val, value)) return;
             var eventArgs = new PropertyChangedEventArgs2<T>(_val, value);
+            ValidateChanges?.Invoke(this, eventArgs);
             _val = value;
             var propEvent = new PropertyChangedEventArgs(name);
             ValueChanged?.Invoke(this, eventArgs);

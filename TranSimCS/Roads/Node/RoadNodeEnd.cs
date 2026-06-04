@@ -52,12 +52,13 @@ namespace TranSimCS.Roads.Node {
         public Vector3 CenterOffset => Node.CenterOffset;
 
         public LaneEnd GetLaneEnd(int x) {
-            return new LaneEnd(End, Node.Lanes[x]);
+            return new LaneEnd(End, Node.SortedLanes[x]);
         }
 
         public (float Min, float Max, float LocalLeft, float localRight) Bounds() {
-            float min = Node.Lanes[0].LeftPosition;
-            float max = Node.Lanes[Node.Lanes.Count-1].RightPosition;
+            var minMax = Range();
+            float min = minMax.Min;
+            float max = minMax.Max;
             float lleft = min;
             float lright = max;
             if (End == NodeEnd.Backward) DataUtil.Swap(ref lleft, ref lright);
@@ -84,9 +85,6 @@ namespace TranSimCS.Roads.Node {
             return section;
         }
 
-        public MonoGame.Extended.Range<float> Range() {
-            var bounds = Bounds();
-            return new(bounds.Min, bounds.Max);
-        }
+        public MonoGame.Extended.Range<float> Range() => Node.Bounds;
     }
 }

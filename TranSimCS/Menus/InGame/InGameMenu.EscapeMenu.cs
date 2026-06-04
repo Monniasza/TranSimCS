@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -66,6 +67,7 @@ namespace TranSimCS.Menus.InGame {
                     newMenu.LoadWorldFromFile(filename);
                     parent.Game.Menu = newMenu;
                 } catch (Exception e) {
+                    if (Debugger.IsAttached) throw; //Re-throw for debugging
                     OptionsDialog.FromError(parent, e, this).Show();
                     Logger.Error(e);
                     return false;

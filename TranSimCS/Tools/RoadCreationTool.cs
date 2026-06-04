@@ -180,13 +180,9 @@ namespace TranSimCS.Tools {
                     if (selectedNode == null && NewNodePosition != null) {
                         //Create a new node
                         var newNode = new RoadNode("", NewNodePosition.Value);
-                        var newLane = new Lane {
-                            Spec = spec,
-                            LeftPosition = 0,
-                            RightPosition = node.Value.lane.Width
-                        };
+                        var lanenode = LaneNode.FromBounds(spec, new(0, node.Value.lane.Width));
+                        var newLane = newNode.AddLane(lanenode);
                         selectedNode = newLane.Front;
-                        newNode.AddLane(newLane);
                         world.Nodes.data.Add(newNode);
                     }
                     if(selectedNode != null) {
