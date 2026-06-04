@@ -277,6 +277,7 @@ namespace TranSimCS.Menus.InGame {
                 log.Trace($"Mouse scroll delta: {mouseScrollDelta}");
                 var zoomDelta = MathF.Pow(2f, mouseScrollDelta / -120f); // Adjust zoom factor based on scroll wheel delta
                 camera.Distance *= zoomDelta; // Update camera distance based on zoom factor
+                camera.Distance = float.Clamp(camera.Distance, 1, 65536);
             }
             if (effect != null) {
                 camera.SetUpEffect(effect, this);

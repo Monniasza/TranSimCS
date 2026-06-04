@@ -111,6 +111,9 @@ namespace TranSimCS.Tools {
         void ITool.Update(GameTime gameTime) {
             //unused
         }
+        void ITool.AddAttributes(ISet<string> action) {
+            action.Add(ToolAttribs.showLaneSpecs);
+        }
     }
 
     public class EditNodeTool : ITool {
