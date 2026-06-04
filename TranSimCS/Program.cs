@@ -21,6 +21,7 @@ using TranSimCS.Worlds.ECS;
 public class Program {
     public static string UserRoot { get; private set; }
     public static string SaveRoot { get; private set; }
+    public static string LogRoot { get; private set; }
 
     public static string DataRoot { get; private set; }
 
@@ -41,15 +42,17 @@ public class Program {
         var appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         UserRoot = Path.Combine(appdata, "TranSim");
         SaveRoot = Path.Combine(UserRoot, "saves");
+        LogRoot = Path.Combine(UserRoot, "logs");
         var exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
         DataRoot = Path.GetDirectoryName(exePath);
         
         Directory.CreateDirectory(UserRoot);
         Directory.CreateDirectory(SaveRoot);
+        Directory.CreateDirectory(LogRoot);
 
         var now = DateTime.Now;
         var nowString = now.ToString();
-        var logPath = Path.Combine(UserRoot, "log"+nowString+".txt");
+        var logPath = Path.Combine(LogRoot, "log"+nowString+".txt");
 
         NLog.LogManager.Setup().LoadConfiguration(builder => {
             builder.ForLogger().FilterMinLevel(LogLevel.Info).WriteToConsole();
