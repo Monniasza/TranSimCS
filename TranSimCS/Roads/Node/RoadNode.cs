@@ -26,15 +26,21 @@ namespace TranSimCS.Roads.Node {
 
         //Cahced/generated contents
         public MeshGenerator<RoadNode> Mesh { get; init; }
-        public Vector3 CenterPosition { get; private set; }
-        public Range<float> Bounds => NodeSpec.Range;
-        
 
+        private RoadNodeCache? _cache;
+        public RoadNodeCache Cache => _cache ??= new RoadNodeCache(this);
+        public Vector3 CenterPosition => Cache.CenterPosition;
+        public Range<float> Bounds => NodeSpec.Range;
+        //NodeSpec
+        public Transform3 ReferenceFrame => Cache.ReferenceFrame;
+        public IList<Lane> SortedLanes => Cache.SortedLanes;
+
+        //Lane contents maintained by the RoadNode
         private Dictionary<Guid, Lane> lanesSet;
         private HashSet<Lane> lanesDict;
         public readonly ISet<Lane> Lanes;
         public readonly IDictionary<Guid, Lane> LaneXRef;
-        public IList<Lane> SortedLanes { get; private set; }
+        
 
         //Events
         public class LaneEventArgs: EventArgs {
@@ -47,12 +53,8 @@ namespace TranSimCS.Roads.Node {
         public event EventHandler<LaneEventArgs> LaneRemoved;
 
         //Bidirectional derived contents
-        private NodeSpec? nodeSpec;
         public NodeSpec NodeSpec {
-            get {
-                nodeSpec ??= new NodeSpec(Lanes.Select(x => x.Definition));
-                return nodeSpec;
-            }
+            get => Cache.NodeSpec;
             set {
                 //Cross-relate the lanes to change
                 var nodeSpec = value;
@@ -72,7 +74,6 @@ namespace TranSimCS.Roads.Node {
                         AddLane(newLane);
                     }
                 }
-                this.nodeSpec = nodeSpec;
             }
         }
 
@@ -92,9 +93,6 @@ namespace TranSimCS.Roads.Node {
         public const int AZIMUTH_SOUTH = 2 << 30; // 180 degrees
         public const int AZIMUTH_WEST = 3 << 30; // 270 degrees
 
-        // Constructor to initialize the RoadNode with a unique ID, name, position, and world
-        public RoadNode(string name, Vector3 position, int azimuth, float inclination = 0, float tilt = 0) :
-            this(name, new ObjPos(position, azimuth, inclination, tilt)) { }
         public RoadNode(string name, ObjPos positionData, Guid? id = null) {
             Guid = id ?? Guid.NewGuid();   
             PositionProp = new(ObjPos.Zero, "Position", this);
@@ -164,15 +162,7 @@ namespace TranSimCS.Roads.Node {
 
         // Clears cached data when the base mesh invalidation occurs.
         protected void InvalidateMesh0(){
-            nodeSpec = null;
-
-            //Sort the lanes
-            SortedLanes = Lanes.OrderBy(x => x.MiddlePosition).ToImmutableList();
-            for (int i = 0; i < SortedLanes.Count; i++) SortedLanes[i].Index = i;
-
-            //Calculate new center position
-            var refframe = PositionProp.Value.CalcReferenceFrame();
-            CenterPosition = refframe.O + refframe.X * (Bounds.Min + Bounds.Max) * 0.5f;
+            _cache = null;
 
             foreach (var connection in Connections) connection.Mesh.Invalidate();
             RearEnd.ConnectedSection.Value?.Regenerate();

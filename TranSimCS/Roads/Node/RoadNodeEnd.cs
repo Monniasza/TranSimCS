@@ -66,8 +66,8 @@ namespace TranSimCS.Roads.Node {
         }
 
         //Transform3 _calculatedReferenceFrame;
-        public Transform3 CalcReferenceFrame() {
-            var frame = PositionProp.Value.CalcReferenceFrame();
+        public Transform3 CalcReferenceFrame() { //TODO this needs to be cached
+            var frame = Node.ReferenceFrame;
             return End == NodeEnd.Backward ? frame.Around() : frame;            
         }
 
