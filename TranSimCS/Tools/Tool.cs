@@ -38,6 +38,7 @@ namespace TranSimCS.Tools {
             ToolsPanel.AddPanel(ToolAttribs.showPosManip, (x => new PrecPosTools(x)));
             ToolsPanel.AddPanel(ToolAttribs.showChooser, (x => new PickAnObjectTab(x)));
             ToolsPanel.AddPanel(ToolAttribs.showSnapOptions, (x => new SnappingPanel(x)));
+            ToolsPanel.AddPanel(ToolAttribs.showLaneSpecs, (x => new RoadConfigurator(x)));
         }
     }
     public static class ToolAttribs {

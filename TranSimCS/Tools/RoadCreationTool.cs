@@ -345,6 +345,7 @@ namespace TranSimCS.Tools {
             action.Add(ToolAttribs.showFinishes);
             action.Add(ToolAttribs.showRoadTools);
             action.Add(ToolAttribs.showSnapOptions);
+            action.Add(ToolAttribs.showLaneSpecs);
         }
     }
 }

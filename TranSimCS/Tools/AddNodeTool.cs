@@ -139,6 +139,7 @@ namespace TranSimCS.Tools {
 
         void ITool.AddAttributes(ISet<string> action) {
             action.Add(ToolAttribs.showSnapOptions);
+            action.Add(ToolAttribs.showLaneSpecs);
         }
     }
 }

@@ -140,10 +140,9 @@ namespace TranSimCS.Menus.InGame {
             CheckSnap = UI.CreateCheck(this, SettingsPanel, "Enable snapping", "ui/snap");
             CheckPoints = UI.CreateCheck(this, SettingsPanel, "Show marking points", "ui/points");
 
-            configurator = new RoadConfigurator(this, configuration.LaneSpecProp, MLEM.Ui.Anchor.Center, new(0.5f, 0.5f));
-
             //Set up the tool panel
             ToolsPanel = new ToolsPanel(this);
+            configurator = ToolsPanel.GetPanel<RoadConfigurator>(ToolAttribs.showLaneSpecs);
 
             PrecPosTool = new PrecPos(this);
             RoadCreationTool = new RoadCreationTool(this);
@@ -365,9 +364,6 @@ namespace TranSimCS.Menus.InGame {
 
         private void OnKeyDown(Keys key) {
             switch (key) {
-                case Keys.T:
-                    ToggleOverlay(configurator);
-                    break;
                 case Keys.Escape:
                     Overlay = (Overlay == null) ? escapeMenu : null;
                     break;
@@ -408,7 +404,6 @@ namespace TranSimCS.Menus.InGame {
         public (object[], string)[] FixedKeys() => [
             ([Keys.Escape], "Pause menu"),
             ([Keys.W, Keys.A, Keys.S, Keys.D], "Move"),
-            ([Keys.T], "Edit lane specs"),
             ([Keys.Left, Keys.Right, Keys.Up, Keys.Down], "Rotate the camera")
         ];
 

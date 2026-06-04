@@ -50,6 +50,7 @@ namespace TranSimCS.Menus.InGame {
             //Add tool panels back
             foreach (var attrib in attribs) {
                 if(panels.TryGetValue(attrib, out var panel)){
+                    panel.Anchor = Anchor.AutoLeft;
                     AddChild(panel);
                     elements++;
                 }
