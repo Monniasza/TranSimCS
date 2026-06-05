@@ -191,6 +191,9 @@ namespace TranSimCS.Geometry
         public static float hypot2sqr(float x, float z) {
             return (x * x + z * z);
         }
+        public static double hypot2sqr(double x, double z) {
+            return (x * x + z * z);
+        }
 
         //NORMAL CALCULATIONS
         /// <summary>

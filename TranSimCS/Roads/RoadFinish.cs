@@ -13,6 +13,7 @@ namespace TranSimCS.Roads {
         Concrete = 3,
         Tiles = 4,
         Cobble = 5,
+        Grass = 6
     }
     public static class Surfaces {
         public static Texture2D? GetTexture(this Surface surface) {
@@ -29,6 +30,8 @@ namespace TranSimCS.Roads {
                     return Assets.Tiles;
                 case Surface.Cobble:
                     return Assets.Cobble;
+                case Surface.Grass:
+                    return Assets.Grass;
                 default:
                     throw new ArgumentException($"Unknown surface: {surface}");
             }

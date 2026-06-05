@@ -11,7 +11,7 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Section {
     public class RoadSection : Obj, IObjMesh<RoadSection>{
-        //Added nodes, maintained by the 
+        //Added nodes, maintained by the road section
         private List<RoadNodeEnd> nodes = new();
         public IList<RoadNodeEnd> Nodes => new ReadOnlyCollection<RoadNodeEnd>(nodes);
 

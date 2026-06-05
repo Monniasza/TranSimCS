@@ -85,7 +85,6 @@ namespace TranSimCS.Roads.Section {
                     leftSpline = preToStartSpline;
                     rightSpline = nextToEndSpline;
 
-
                     //Draw the road strip with vertical offset
                     GenerateIntersectionStrip(mesh, startNode, endNode, accuracy, voffset);
 

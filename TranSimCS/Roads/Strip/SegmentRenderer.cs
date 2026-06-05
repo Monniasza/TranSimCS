@@ -147,7 +147,7 @@ namespace TranSimCS.Roads.Strip {
 
             //Back-transform the paths
             foreach(var path in islandsPoly.path) {
-                DrawIsland(Surface.Tiles, Surface.Concrete, renderHelper, splineFrame, path, 0.5f, length);
+                DrawIsland(Surface.Grass, Surface.Concrete, renderHelper, splineFrame, path, 0.1f, length);
             }
         }
 
@@ -176,8 +176,17 @@ namespace TranSimCS.Roads.Strip {
         }
 
         public static void DrawIsland(Surface surface, Surface sideSurface, MultiMesh mesh, SplineFrame frm, PathD path, float h, float stretch) {
-            if (Clipper.Area(path) < 0) path.Reverse();
+            var area = Clipper.Area(path);
+            if (area < 0) {
+                path.Reverse();
+                area *= -1;
+            }
             var retransformedPointsUp = Retransform(frm, path, h);
+
+            //Reject polygons with a tiny width
+            var perimeter = Polygon.Perimeter(path);
+            var avgWidth = area / perimeter;
+            if (avgWidth < 0.01) return;
 
             if (DebugOptions.DebugIslands) {
                 var retransformedPointsHighUp = Retransform(frm, path, h * 2).ToArray();

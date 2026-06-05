@@ -87,6 +87,16 @@ namespace TranSimCS.Polygons {
             return new Polygon(result, fillRule);
         }
 
+        public static double Perimeter(PathD path) {
+            double sum = 0;
+            for (int i = 0; i < path.Count; i++) {
+                var prev = path[i];
+                var next = path[(i + 1) % path.Count];
+                sum += prev.Distance(next);
+            }
+            return sum;
+        }
+
         //Boolean operators
         public static Polygon operator &(Polygon a, Polygon b) => a.Intersect(b);
         public static Polygon operator |(Polygon a, Polygon b) => a.Union(b);

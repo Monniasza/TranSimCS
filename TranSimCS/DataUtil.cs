@@ -12,5 +12,11 @@ namespace TranSimCS {
         }
 
         public static void Swap<T>(ref T a, ref T b) => (a, b) = (b, a);
+
+        public static void Swap<T>(T[] array, int a, int b) {
+            var tmp = array[a];
+            array[a] = array[b];
+            array[b] = tmp;
+        }
     }
 }
