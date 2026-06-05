@@ -53,7 +53,7 @@ namespace TranSimCS.Menus {
             keyPrompts.Add(key, prompt);
         }
 
-        internal static TextureRegion GetPrompt(object key) {
+        public static TextureRegion GetPrompt(object key) {
             TextureRegion texture = null;
             var success = keyPrompts.TryGetValue(key, out texture);
             if (success) return texture;
