@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Xna.Framework;
 using TranSimCS.Collections;
+using TranSimCS.Model;
 using TranSimCS.Property;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
@@ -10,6 +11,13 @@ using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Section {
+    public sealed class SectionCache {
+        public readonly Transform3 ReferenceFrame;
+        internal SectionCache(RoadSection section) {
+
+        }
+    }
+
     public class RoadSection : Obj, IObjMesh<RoadSection>{
         //Added nodes, maintained by the road section
         private List<RoadNodeEnd> nodes = new();
@@ -20,8 +28,10 @@ namespace TranSimCS.Roads.Section {
 
         //Cached contents
         public MeshGenerator<RoadSection> Mesh { get; private set; }
+        private SectionCache _cache;
         public Vector3 Center { get; private set; }
         public Vector3 Normal { get; private set; }
+        public Mesh Surface { get; private set; }
 
         public RoadSection() {
             MainSlopeNodes = new Property<RoadNodeEndPair>(new(null, null), "slopeNodes", this);

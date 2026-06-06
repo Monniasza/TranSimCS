@@ -15,7 +15,7 @@ using static TranSimCS.Geometry.LineEnd;
 namespace TranSimCS.Roads.Section {
     internal static class SectionRenderer {
 
-        public static void GenerateIntersectionStrip(Mesh mesh, RoadNodeEnd start, RoadNodeEnd end, int accuracy = 17, float voffset = 0f) {
+        public static void GenerateIntersectionStrip(Mesh mesh, RoadNodeEnd start, RoadNodeEnd end, int accuracy = 17) {
             //Generate bounding edges
             var startLeft = calcBoundingLineEndFaced(start, -1);
             var startRight = calcBoundingLineEndFaced(start, 1);
@@ -27,8 +27,7 @@ namespace TranSimCS.Roads.Section {
             var wovenStrip = WeaveStrip(leftEdge, rightEdge);
 
             // Apply vertical offset to prevent Z-fighting with ground
-            var offset = new Vector3(0, voffset, 0);
-            var stripVerts = wovenStrip.Select(p => CreateVertex(p + offset)).ToArray();
+            var stripVerts = wovenStrip.Select(CreateVertex).ToArray();
 
             mesh.DrawStrip(stripVerts);
         }
@@ -46,11 +45,11 @@ namespace TranSimCS.Roads.Section {
             return GenerateJoinSpline(startPos.Ray, endPos.Ray);
         }
 
-        public static void GenerateSubrangeVerts(Mesh mesh, RoadNodeEnd[] nodes, int discriminant, int accuracy = 17, float voffset = 0f) {
+        public static void GenerateSubrangeVerts(Mesh mesh, RoadNodeEnd[] nodes, int discriminant, int accuracy = 17) {
             var lbound = 1;
             var ubound = nodes.Length - 2;
 
-            var prevSpline = GenerateRoadEdge(nodes[0], nodes[nodes.Length - 1], -1).Inverse();
+            var prevSpline = GenerateRoadEdge(nodes[0], nodes[^1], -1).Inverse();
 
             while (lbound <= ubound) {
                 var preNode = nodes[lbound - 1];
@@ -58,61 +57,41 @@ namespace TranSimCS.Roads.Section {
                 var endNode = nodes[ubound];
                 var nextNode = nodes[ubound + 1];
                 var color = Color.White;
-                ISpline<Vector3> topSpline;
-                ISpline<Vector3> bottomSpline;
-                ISpline<Vector3> leftSpline;
-                ISpline<Vector3> rightSpline;
 
                 var preToStartSpline = GenerateRoadEdge(preNode, startNode, -1);
                 var nextToEndSpline = GenerateRoadEdge(nextNode, endNode, 1);
 
-                if (lbound == ubound) {
+                ISpline<Vector3> bottomSpline;
+                var leftSpline = preToStartSpline;
+                var rightSpline = nextToEndSpline;
+                var topSpline = prevSpline;
+
+                if (lbound == ubound) { //One node remaining
                     var bounds = startNode.Bounds();
                     var lpos = calcLineEnd(startNode, bounds.LocalLeft).Position;
                     var rpos = calcLineEnd(startNode, bounds.LocalRight).Position;
-
-                    //One node remaining
-                    topSpline = prevSpline;
                     bottomSpline = new LineSegment(rpos, lpos);
-                    leftSpline = preToStartSpline;
-                    rightSpline = nextToEndSpline;
-                } else {
-                    //More nodes remaining
+                } else { //More nodes remaining
                     var innerSpline = GenerateRoadEdge(startNode, endNode, -1);
                     var outerSpline = GenerateRoadEdge(startNode, endNode, 1);
 
                     //Calculations for the fill patch
-                    topSpline = prevSpline;
                     bottomSpline = outerSpline;
-                    leftSpline = preToStartSpline;
-                    rightSpline = nextToEndSpline;
+                    prevSpline = innerSpline;
 
                     //Draw the road strip with vertical offset
-                    GenerateIntersectionStrip(mesh, startNode, endNode, accuracy, voffset);
-
-                    prevSpline = innerSpline;
+                    GenerateIntersectionStrip(mesh, startNode, endNode, accuracy);
                 }
                 topSpline = topSpline.Inverse();
 
-                if (DebugOptions.DebugSectionFences) {
-                    //Debug fences
-                    var h = Vector3.UnitY * 5;
-                    RenderPatch.DrawDebugFence(mesh, topSpline, h, Color.Red);
-                    RenderPatch.DrawDebugFence(mesh, bottomSpline, h, Color.Maroon);
-                    RenderPatch.DrawDebugFence(mesh, leftSpline, h, Color.Lime);
-                    RenderPatch.DrawDebugFence(mesh, rightSpline, h, Color.Green);
-                }
-
                 //Render the last-node or the inter-strip patch with vertical offset
-                var offset = new Vector3(0, voffset, 0);
-                RenderPatch.RenderCoonsPatch(mesh, bottomSpline, topSpline, leftSpline.Inverse(), rightSpline.Inverse(), (p, uv) => CreateVertex(p + offset, color), accuracy, accuracy);
+                RenderPatch.RenderCoonsPatch(mesh, bottomSpline, topSpline, leftSpline.Inverse(), rightSpline.Inverse(), (p, uv) => CreateVertex(p, color), accuracy, accuracy);
 
-                lbound++;
-                ubound--;
+                lbound++; ubound--;
             }
         }
 
-        internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh, int accuracy = 17, float voffset = 0.01f) {
+        internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh, int accuracy = 17) {
             if (roadSection.Nodes.Count < 1) return; //Guard agains empty sections
 
             var mesh = multimesh.GetOrCreateRenderBinForced(Assets.Asphalt);
@@ -129,73 +108,29 @@ namespace TranSimCS.Roads.Section {
             var endNode = circularList;
             while (endNode.val != end) endNode = endNode.Next;
 
-            //Alternate approach: Try out the new triangulation algorithm
-            Vector3[] ends = new Vector3[roadSection.Nodes.Count * accuracy];
-            var endsNode = circularList;
-            for(int i = 0; i <  roadSection.Nodes.Count; i++) {
-                var roadNode = endsNode.val;
-                endsNode = endsNode.Next;
-                var nextNode = endsNode.val;
-
-                var bounds1 = roadNode.Bounds();
-                var refframe1 = roadNode.Node.ReferenceFrame;
-                if (roadNode.End == NodeEnd.Backward) refframe1.Z *= -1;
-                var bounds2 = nextNode.Bounds();
-                var refframe2 = nextNode.Node.ReferenceFrame;
-                if (nextNode.End == NodeEnd.Backward) refframe2.Z *= -1;
-                var prevPos = refframe1.O + refframe1.X * bounds1.LocalLeft;
-                var nextPos = refframe2.O + refframe2.X * bounds2.LocalRight;
-
-                var generatedSpline = GeometryUtils.GenerateJoinSpline(prevPos, nextPos, refframe1.Z, refframe2.Z);
-                var points = GeometryUtils.GenerateSplinePoints(generatedSpline, accuracy);
-                Array.Copy(points, 0, ends, i*accuracy, points.Length);
-            }
-
-            var triangulation = TriangulateNonPlanarPolygons.Triangulate(ends);
-            var verts = new VertexPositionColorTexture[triangulation.Vertices.Count];
-            for (int i = 0; i < verts.Length; i++) {
-                var pos = triangulation.Vertices[i];
-                var moved = pos - triangulation.ReferenceFrame.O;
-                var u = Vector3.Dot(moved, triangulation.ReferenceFrame.X);
-                var v = Vector3.Dot(moved, triangulation.ReferenceFrame.Z);
-                var color = Color.White;
-                verts[i] = new(pos, color, new(u, v));
-            }
-
-            mesh.DrawModel(verts, triangulation.Indices);
-            mesh.AddTagsToLastTriangles(triangulation.TriangleCount, roadSection);
-            return; //Cut off the old algorithm
-
             //Categorize the nodes into categories: left or right of the main. Since they're already sorted, there's no need to sort.
-            var rightNodes = new List<RoadNodeEnd>();
-            var rightNode = startNode;
-            while (rightNode != endNode) {
-                rightNodes.Add(rightNode.val);
-                rightNode = rightNode.Next;
-            }
-            rightNodes.Add(rightNode.val);
-
-            var leftNodes = new List<RoadNodeEnd>();
-            var leftNode = endNode;
-            while (leftNode != startNode) {
-                leftNodes.Add(leftNode.val);
-                leftNode = leftNode.Next;
-            }
-            leftNodes.Add(leftNode.val);
-
+            var rightNodes = CollectNodes(startNode, endNode);
+            var leftNodes = CollectNodes(endNode, startNode);
 
             //Generate the main strip with vertical offset to prevent Z-fighting
-            GenerateIntersectionStrip(mesh, start, end, accuracy, voffset);
-
-
+            GenerateIntersectionStrip(mesh, start, end, accuracy);
             //Generate other vertices on the right
-            GenerateSubrangeVerts(mesh, rightNodes.ToArray(), 1, accuracy, voffset);
-
-
+            GenerateSubrangeVerts(mesh, rightNodes.ToArray(), 1, accuracy);
             //Generate other vertices on the left
-            GenerateSubrangeVerts(mesh, leftNodes.ToArray(), -1, accuracy, voffset);
+            GenerateSubrangeVerts(mesh, leftNodes.ToArray(), -1, accuracy);
 
             mesh.AddTagsToLastTriangles(-1, roadSection);
+        }
+
+        private static List<RoadNodeEnd> CollectNodes(DLNode<RoadNodeEnd> from, DLNode<RoadNodeEnd> to) {
+            var result = new List<RoadNodeEnd>();
+            var i = from;
+            while (i != to) {
+                result.Add(i.val);
+                i = i.Next;
+            }
+            result.Add(i.val);
+            return result;
         }
     }
 }

@@ -82,9 +82,7 @@ namespace TranSimCS.Geometry
         }
 
         public static Vector3[] GenerateSplinePoints(Vector3 startPos, Vector3 endPos, Vector3 startTangent, Vector3 endTangent, int numPoints = 32)
-        {
-            return GenerateSplinePoints(GenerateJoinSpline(startPos, endPos, startTangent, endTangent), numPoints);
-        }
+            => GenerateSplinePoints(GenerateJoinSpline(startPos, endPos, startTangent, endTangent), numPoints);
 
         public static float CountLength(Vector3[] points) {
             float length = 0;
