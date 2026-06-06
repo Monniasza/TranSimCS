@@ -15,13 +15,13 @@ namespace TranSimCS.Roads.Section {
         private List<RoadNodeEnd> nodes = new();
         public IList<RoadNodeEnd> Nodes => new ReadOnlyCollection<RoadNodeEnd>(nodes);
 
-        //Main slope nodes
+        //Section contents
         public readonly Property<RoadNodeEndPair> MainSlopeNodes;
 
+        //Cached contents
+        public MeshGenerator<RoadSection> Mesh { get; private set; }
         public Vector3 Center { get; private set; }
         public Vector3 Normal { get; private set; }
-
-        public MeshGenerator<RoadSection> Mesh { get; private set; }
 
         public RoadSection() {
             MainSlopeNodes = new Property<RoadNodeEndPair>(new(null, null), "slopeNodes", this);
