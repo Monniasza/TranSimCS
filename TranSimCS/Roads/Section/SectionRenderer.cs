@@ -91,17 +91,8 @@ namespace TranSimCS.Roads.Section {
             }
         }
 
-        internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh, int accuracy = 17) {
-            if (roadSection.Nodes.Count < 1) return; //Guard agains empty sections
-
-            var mesh = multimesh.GetOrCreateRenderBinForced(Assets.Asphalt);
-
+        private static void GenerateSectionBySlope(Mesh surfaceMesh, RoadSection roadSection, RoadNodeEnd start, RoadNodeEnd end, int accuracy = 17) {
             //Rotate the list so the 1st main end lies on the index 0
-            var endsPair = roadSection.MainSlopeNodes.Value;
-            var start = endsPair.Start;
-            var end = endsPair.End;
-
-            //Find the nodes in the circular list
             var circularList = DLNode<RoadNodeEnd>.CreateCircular(roadSection.Nodes);
             var startNode = circularList;
             while (startNode.val != start) startNode = startNode.Next;
@@ -113,12 +104,64 @@ namespace TranSimCS.Roads.Section {
             var leftNodes = CollectNodes(endNode, startNode);
 
             //Generate the main strip with vertical offset to prevent Z-fighting
-            GenerateIntersectionStrip(mesh, start, end, accuracy);
+            GenerateIntersectionStrip(surfaceMesh, start, end, accuracy);
             //Generate other vertices on the right
-            GenerateSubrangeVerts(mesh, rightNodes.ToArray(), 1, accuracy);
+            GenerateSubrangeVerts(surfaceMesh, rightNodes.ToArray(), 1, accuracy);
             //Generate other vertices on the left
-            GenerateSubrangeVerts(mesh, leftNodes.ToArray(), -1, accuracy);
+            GenerateSubrangeVerts(surfaceMesh, leftNodes.ToArray(), -1, accuracy);
+        }
 
+        private static void GenerateSectionWithoutSlope(Mesh surfaceMesh, RoadSection roadSection, int accuracy = 17) {
+            var nodes = roadSection.Nodes;
+            var perimeter = new List<VertexPositionColorTexture>();
+
+            for (int i = 0; i < nodes.Count; i++) {
+                var node = nodes[i];
+                var next = nodes[(i + 1) % nodes.Count];
+                var bounds = node.Bounds();
+                var left = calcLineEnd(node, bounds.LocalLeft).Position;
+                var right = calcLineEnd(node, bounds.LocalRight).Position;
+
+                if (perimeter.Count == 0)
+                    perimeter.Add(CreateVertex(left));
+                perimeter.Add(CreateVertex(right));
+
+                var edge = GenerateRoadEdge(node, next, 1);
+                var points = GenerateSplinePoints(edge, accuracy);
+                for (int j = 1; j < points.Length; j++)
+                    perimeter.Add(CreateVertex(points[j]));
+            }
+
+            if (perimeter.Count < 3) return;
+
+            var center = CreateVertex(roadSection.Center);
+            surfaceMesh.DrawCenteredPoly(center, perimeter.ToArray());
+        }
+
+        internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh, int accuracy = 17) {
+            if (roadSection.Nodes.Count < 1) return; //Guard agains empty sections
+
+            var mesh = multimesh.GetOrCreateRenderBinForced(Assets.Asphalt);
+            var surfaceMesh = new Mesh();
+
+            var endsPair = roadSection.MainSlopeNodes.Value;
+            var hasSlope = endsPair.Start != null
+                && endsPair.End != null
+                && endsPair.Start != endsPair.End
+                && roadSection.Nodes.Contains(endsPair.Start)
+                && roadSection.Nodes.Contains(endsPair.End);
+
+            if (hasSlope) {
+                GenerateSectionBySlope(surfaceMesh, roadSection, endsPair.Start, endsPair.End, accuracy);
+            } else if (roadSection.Nodes.Count > 2) {
+                GenerateSectionWithoutSlope(surfaceMesh, roadSection, accuracy);
+            } else if (roadSection.Nodes.Count == 2) {
+                GenerateIntersectionStrip(surfaceMesh, roadSection.Nodes[0], roadSection.Nodes[1], accuracy);
+            } else {
+                GenerateSectionWithoutSlope(surfaceMesh, roadSection, accuracy);
+            }
+
+            mesh.DrawModel(surfaceMesh);
             mesh.AddTagsToLastTriangles(-1, roadSection);
         }
 
