@@ -37,11 +37,15 @@ namespace TranSimCS.Model {
             Indices.Add(index);
             InvalidateAccelerationStructure();
         }
-        public void AddIndices(int[] indices) => Indices.AddRange(indices);
+        public void AddIndices(int[] indices) {
+            Indices.AddRange(indices);
+            InvalidateAccelerationStructure();
+        }
 
         public int AddVerts(VertexPositionColorTexture[] verts) {
             int index = Vertices.Count;
             Vertices.AddRange(verts);
+            InvalidateAccelerationStructure();
             return index;
 
         }

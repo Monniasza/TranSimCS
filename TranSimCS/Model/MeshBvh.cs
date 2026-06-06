@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
@@ -96,37 +97,62 @@ namespace TranSimCS.Model {
             return new BoundingBox(min, max);
         }
 
-        public bool RayIntersect(Ray ray, out int triangleId, out float distance) {
+        public bool RayIntersect(Ray ray, out int triangleId, out float distance) =>
+            RayIntersect(ray, float.PositiveInfinity, out triangleId, out distance);
+
+        public bool RayIntersect(Ray ray, float maxDistance, out int triangleId, out float distance) {
             triangleId = -1;
-            distance = float.MaxValue;
+            distance = maxDistance;
             if (nodes.Length == 0) return false;
-            Span<int> stack = nodes.Length <= 128 ? stackalloc int[128] : new int[nodes.Length];
-            int stackSize = 0;
-            stack[stackSize++] = 0;
-            var verts = mesh.Vertices;
-            var indices = mesh.Indices;
-            while (stackSize > 0) {
-                var node = nodes[stack[--stackSize]];
-                var hit = ray.Intersects(node.Bounds);
-                if (!hit.HasValue || hit.Value > distance) continue;
-                if (node.IsLeaf) {
-                    for (int i = 0; i < node.Count; i++) {
-                        var tri = triangles[node.Start + i];
-                        if (GeometryUtils.RayIntersectsTriangle(ray,
-                            verts[indices[tri.BaseIndex]].Position,
-                            verts[indices[tri.BaseIndex + 1]].Position,
-                            verts[indices[tri.BaseIndex + 2]].Position,
-                            out float triDist, 1e-6f, distance) && triDist < distance) {
-                            distance = triDist;
-                            triangleId = tri.Id;
+            int[]? rentedStack = null;
+            try {
+                Span<int> stack = nodes.Length <= 128
+                    ? stackalloc int[128]
+                    : (rentedStack = ArrayPool<int>.Shared.Rent(nodes.Length)).AsSpan(0, nodes.Length);
+                int stackSize = 0;
+                stack[stackSize++] = 0;
+                var verts = mesh.Vertices;
+                var indices = mesh.Indices;
+                while (stackSize > 0) {
+                    var node = nodes[stack[--stackSize]];
+                    var hit = ray.Intersects(node.Bounds);
+                    if (!hit.HasValue || hit.Value > distance) continue;
+                    if (node.IsLeaf) {
+                        for (int i = 0; i < node.Count; i++) {
+                            var tri = triangles[node.Start + i];
+                            if (GeometryUtils.RayIntersectsTriangle(ray,
+                                verts[indices[tri.BaseIndex]].Position,
+                                verts[indices[tri.BaseIndex + 1]].Position,
+                                verts[indices[tri.BaseIndex + 2]].Position,
+                                out float triDist, 1e-6f, distance) && triDist < distance) {
+                                distance = triDist;
+                                triangleId = tri.Id;
+                            }
                         }
+                    } else {
+                        if (node.Left >= 0) stack[stackSize++] = node.Left;
+                        if (node.Right >= 0) stack[stackSize++] = node.Right;
                     }
-                } else {
-                    if (node.Left >= 0) stack[stackSize++] = node.Left;
-                    if (node.Right >= 0) stack[stackSize++] = node.Right;
                 }
+                return triangleId >= 0;
+            } finally {
+                if (rentedStack is not null) ArrayPool<int>.Shared.Return(rentedStack);
             }
-            return triangleId >= 0;
+        }
+
+        public bool TryProjectPoint(Vector3 point, Vector3 direction, out Vector3 projectedPoint, out int triangleId, out float distance, float maxDistance = float.PositiveInfinity) {
+            var lengthSquared = direction.LengthSquared();
+            if (lengthSquared <= 1e-12f)
+                throw new ArgumentException("Projection direction must be non-zero.", nameof(direction));
+
+            direction /= MathF.Sqrt(lengthSquared);
+            if (RayIntersect(new Ray(point, direction), maxDistance, out triangleId, out distance)) {
+                projectedPoint = point + direction * distance;
+                return true;
+            }
+
+            projectedPoint = default;
+            return false;
         }
     }
 }

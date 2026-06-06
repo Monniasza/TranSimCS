@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using NLog;
 using TranSimCS.Geometry;
 
@@ -73,6 +75,53 @@ namespace TranSimCS.Model {
             intersectionDistance = intersectionDistance0;
             return tag;
         }
+
+        public static bool TryProjectPoint(this Mesh target, Vector3 point, Vector3 normal, out Vector3 projectedPoint, out int triangleId, out float distance, float maxDistance = float.PositiveInfinity) {
+            ArgumentNullException.ThrowIfNull(target);
+            return target.GetAccelerationStructure().TryProjectPoint(point, normal, out projectedPoint, out triangleId, out distance, maxDistance);
+        }
+
+        public static bool TryProjectVertex(this Mesh target, VertexPositionColorTexture vertex, Vector3 normal, out VertexPositionColorTexture projectedVertex, out int triangleId, out float distance, float maxDistance = float.PositiveInfinity) {
+            if (TryProjectPoint(target, vertex.Position, normal, out var projectedPoint, out triangleId, out distance, maxDistance)) {
+                projectedVertex = new VertexPositionColorTexture(projectedPoint, vertex.Color, vertex.TextureCoordinate);
+                return true;
+            }
+
+            projectedVertex = default;
+            return false;
+        }
+
+        public static Mesh ProjectOnto(this Mesh projection, Mesh target, Vector3 normal, float maxDistance = float.PositiveInfinity) {
+            ArgumentNullException.ThrowIfNull(projection);
+            ArgumentNullException.ThrowIfNull(target);
+
+            var lengthSquared = normal.LengthSquared();
+            if (lengthSquared <= 1e-12f)
+                throw new ArgumentException("Projection normal must be non-zero.", nameof(normal));
+
+            var direction = normal / MathF.Sqrt(lengthSquared);
+            var targetBvh = target.GetAccelerationStructure();
+            var projectedVertices = new List<VertexPositionColorTexture>(projection.Vertices.Count);
+            var missedVertices = 0;
+
+            foreach (var vertex in projection.Vertices) {
+                if (targetBvh.RayIntersect(new Ray(vertex.Position, direction), maxDistance, out _, out var distance)) {
+                    projectedVertices.Add(new VertexPositionColorTexture(
+                        vertex.Position + direction * distance,
+                        vertex.Color,
+                        vertex.TextureCoordinate));
+                } else {
+                    missedVertices++;
+                    projectedVertices.Add(vertex);
+                }
+            }
+
+            if (missedVertices > 0)
+                throw new InvalidOperationException($"Cannot project mesh: {missedVertices} of {projection.Vertices.Count} vertices did not hit the target mesh.");
+
+            return new Mesh(projectedVertices, projection.Indices, projection.Tags);
+        }
+
         public static T[] TriangleFan<T>(IList<T> polygon) {
             int tricount = polygon.Count - 2;
             T[] values = new T[tricount * 3];
