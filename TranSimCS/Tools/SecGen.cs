@@ -22,7 +22,7 @@ namespace TranSimCS.Tools {
 
         public string Name => "Create and modify road sections";
 
-        public string Description => "throw new NotImplementedException();";
+        public string Description => "";
 
         public void Draw(GameTime gameTime) {
             //unused
