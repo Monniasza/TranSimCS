@@ -8,6 +8,7 @@ using MLEM.Input;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Section;
 using TranSimCS.Tools.Panels;
 
 namespace TranSimCS.Tools {
@@ -28,16 +29,24 @@ namespace TranSimCS.Tools {
 
         private RoadFinishTab tab;
 
-        public void OnClick(MouseButton button) {
+        private Property<RoadFinish>? GetRoadFinishProp() {
             var selectedRoadStrip = menu.MouseOverRoad?.SelectedLaneTag?.road;
+            if (selectedRoadStrip != null) 
+                return selectedRoadStrip.FinishProperty;
+            var section = menu.SelectedObject as RoadSection;
+            return section?.FinishProperty;
+        }
+
+        public void OnClick(MouseButton button) {
+            var finishProp = GetRoadFinishProp();
             switch (button) {
                 case MouseButton.Left:
                     //Set the finish
-                    selectedRoadStrip?.Finish = Finish;
+                    finishProp?.Value = Finish;
                     break;
                 case MouseButton.Right:
                     //Pick a finish
-                    if(selectedRoadStrip != null) Finish = selectedRoadStrip.Finish;
+                    if (finishProp != null) Finish = finishProp.Value;
                     break;
             }
         }
