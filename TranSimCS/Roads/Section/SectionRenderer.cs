@@ -128,7 +128,8 @@ namespace TranSimCS.Roads.Section {
 
                 var edge = GenerateRoadEdge(node, next, 1);
                 var points = GenerateSplinePoints(edge, accuracy);
-                for (int j = 1; j < points.Length; j++)
+                var end = i == nodes.Count - 1 ? points.Length - 1 : points.Length;
+                for (int j = 1; j < end; j++)
                     perimeter.Add(CreateVertex(points[j]));
             }
 
