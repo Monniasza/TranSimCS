@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Save2;
 using TranSimCS.Worlds;
@@ -21,6 +22,7 @@ namespace TranSimCS.Roads.Section {
             Guid? guid = null;
             RoadNodeEnd? start = null;
             RoadNodeEnd? end = null;
+            RoadFinish finish = RoadFinish.Embankment;
             var list = new List<RoadNodeEnd>();
             var nodeEndConverter = new RoadNodeEndConverter(World);
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propName) => {
@@ -42,7 +44,10 @@ namespace TranSimCS.Roads.Section {
                             list.Add(node);
                         });
                         break;
-                    //TODO finish
+                    case "finish":
+                        var finishConverter = new RoadFinishConverter();
+                        finish = finishConverter.Read(ref reader0, typeof(RoadFinish), options);
+                        break;
                 }
             });
             if (guid == null) JsonProcessor.Fail(reader, "Missing id property");
@@ -51,6 +56,7 @@ namespace TranSimCS.Roads.Section {
             if (list.Count == 0) JsonProcessor.Fail(reader, $"No attached nodes for section {guid}");
             RoadSection section = new RoadSection();
             section.Guid = guid.Value;
+            section.Finish = finish;
             foreach (var node in list) 
                 node.ConnectedSection.Value = section;
             section.MainSlopeNodes.Value = new(start, end);
@@ -75,7 +81,9 @@ namespace TranSimCS.Roads.Section {
             writer.WritePropertyName("end");
             nodeEndConverter.Write(writer, obj.MainSlopeNodes.Value.End, options);
 
-            //TODO finish
+            var finishConverter = new RoadFinishConverter();
+            writer.WritePropertyName("finish");
+            finishConverter.Write(writer, obj.Finish, options);
 
             writer.WriteEndObject();
         }

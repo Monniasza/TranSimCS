@@ -7,6 +7,7 @@ using TranSimCS.Debugging;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Render;
+using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Spline;
 using static TranSimCS.Geometry.GeometryUtils;
@@ -112,28 +113,11 @@ namespace TranSimCS.Roads.Section {
         }
 
         private static void GenerateSectionWithoutSlope(Mesh surfaceMesh, RoadSection roadSection, int accuracy = 17) {
-            var nodes = roadSection.Nodes;
-            var perimeter = new List<VertexPositionColorTexture>();
+            var perimeter = GenerateSectionPerimeter(roadSection, accuracy)
+                .Select(CreateVertex)
+                .ToArray();
 
-            for (int i = 0; i < nodes.Count; i++) {
-                var node = nodes[i];
-                var next = nodes[(i + 1) % nodes.Count];
-                var bounds = node.Bounds();
-                var left = calcLineEnd(node, bounds.LocalLeft).Position;
-                var right = calcLineEnd(node, bounds.LocalRight).Position;
-
-                if (perimeter.Count == 0)
-                    perimeter.Add(CreateVertex(left));
-                perimeter.Add(CreateVertex(right));
-
-                var edge = GenerateRoadEdge(node, next, 1);
-                var points = GenerateSplinePoints(edge, accuracy);
-                var end = i == nodes.Count - 1 ? points.Length - 1 : points.Length;
-                for (int j = 1; j < end; j++)
-                    perimeter.Add(CreateVertex(points[j]));
-            }
-
-            if (perimeter.Count < 3) return;
+            if (perimeter.Length < 3) return;
 
             var center = CreateVertex(roadSection.Center);
             surfaceMesh.DrawCenteredPoly(center, perimeter.ToArray());
@@ -164,6 +148,100 @@ namespace TranSimCS.Roads.Section {
 
             mesh.DrawModel(surfaceMesh);
             mesh.AddTagsToLastTriangles(-1, roadSection);
+
+            GenerateSectionFinish(roadSection, multimesh, accuracy);
+        }
+
+        private static Vector3[] GenerateSectionPerimeter(RoadSection roadSection, int accuracy = 17) {
+            var nodes = roadSection.Nodes;
+            var perimeter = new List<Vector3>();
+
+            for (int i = 0; i < nodes.Count; i++) {
+                var node = nodes[i];
+                var next = nodes[(i + 1) % nodes.Count];
+                var bounds = node.Bounds();
+                var left = calcLineEnd(node, bounds.LocalLeft).Position;
+                var right = calcLineEnd(node, bounds.LocalRight).Position;
+
+                if (perimeter.Count == 0)
+                    perimeter.Add(left);
+                perimeter.Add(right);
+
+                var edge = GenerateRoadEdge(node, next, 1);
+                var points = GenerateSplinePoints(edge, accuracy);
+                var end = i == nodes.Count - 1 ? points.Length - 1 : points.Length;
+                for (int j = 1; j < end; j++)
+                    perimeter.Add(points[j]);
+            }
+
+            return perimeter.ToArray();
+        }
+
+        private static void GenerateSectionFinish(RoadSection roadSection, MultiMesh multimesh, int accuracy = 17) {
+            var finish = roadSection.Finish;
+            var texture = finish.subsurface.GetTexture();
+            if (texture == null || finish.depth <= 0) return;
+
+            var topPoints = GenerateSectionPerimeter(roadSection, accuracy);
+            if (topPoints.Length < 3) return;
+
+            var normal = roadSection.Normal;
+            if (normal.LengthSquared() < 1e-6f) normal = Vector3.Up;
+            else normal.Normalize();
+
+            var height = finish.depth;
+            var breadth = finish.depth * MathF.Tan(finish.angle);
+            var bottomPoints = GenerateBottomPerimeter(topPoints, roadSection.Center, normal, height, breadth);
+
+            var sideLen = new Vector2(height, breadth).Length();
+            var topVertexer = UniformTexturing.WithFixedU(0);
+            var bottomVertexer = UniformTexturing.WithFixedU(sideLen);
+            var topVerts = UniformTexturing.UniformTextured(topPoints, topVertexer);
+            var bottomVerts = UniformTexturing.UniformTextured(bottomPoints, bottomVertexer);
+
+            var finishMesh = multimesh.GetOrCreateRenderBinForced(texture);
+            finishMesh.DrawClosedStrip(topVerts, bottomVerts);
+
+            var bottomCenter = roadSection.Center - normal * height;
+            finishMesh.DrawCenteredPoly(
+                CreateVertex(bottomCenter),
+                bottomPoints.AsEnumerable().Reverse().Select(CreateVertex).ToArray()
+            );
+        }
+
+        private static Vector3[] GenerateBottomPerimeter(Vector3[] topPoints, Vector3 center, Vector3 normal, float height, float breadth) {
+            var result = new Vector3[topPoints.Length];
+
+            for (int i = 0; i < topPoints.Length; i++) {
+                var point = topPoints[i];
+                var prev = topPoints[(i - 1 + topPoints.Length) % topPoints.Length];
+                var next = topPoints[(i + 1) % topPoints.Length];
+
+                var radial = point - center;
+                radial -= normal * Vector3.Dot(radial, normal);
+
+                Vector3 outward;
+                if (radial.LengthSquared() > 1e-6f) {
+                    outward = radial;
+                } else {
+                    var tangent = next - prev;
+                    outward = Vector3.Cross(tangent, normal);
+                }
+
+                if (outward.LengthSquared() < 1e-6f) outward = Vector3.UnitX;
+                outward.Normalize();
+
+                var tangentOutward = Vector3.Cross(next - prev, normal);
+                if (tangentOutward.LengthSquared() > 1e-6f) {
+                    tangentOutward.Normalize();
+                    if (Vector3.Dot(tangentOutward, outward) < 0) tangentOutward *= -1;
+                    outward = tangentOutward;
+                }
+
+                result[i] = point - normal * height + outward * breadth;
+            }
+
+            return result;
         }
 
         private static List<RoadNodeEnd> CollectNodes(DLNode<RoadNodeEnd> from, DLNode<RoadNodeEnd> to) {

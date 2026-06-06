@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using TranSimCS.Collections;
 using TranSimCS.Model;
 using TranSimCS.Property;
+using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.SceneGraph;
@@ -25,6 +26,8 @@ namespace TranSimCS.Roads.Section {
 
         //Section contents
         public readonly Property<RoadNodeEndPair> MainSlopeNodes;
+        public readonly Property<RoadFinish> FinishProperty;
+        public RoadFinish Finish { get => FinishProperty.Value; set => FinishProperty.Value = value; }
 
         //Cached contents
         public MeshGenerator<RoadSection> Mesh { get; private set; }
@@ -35,7 +38,13 @@ namespace TranSimCS.Roads.Section {
 
         public RoadSection() {
             MainSlopeNodes = new Property<RoadNodeEndPair>(new(null, null), "slopeNodes", this);
+            FinishProperty = new(RoadFinish.Embankment, "finish", this);
             Mesh = new MeshGenerator<RoadSection>(this, (rs, mesh) => SectionRenderer.GenerateSectionMesh(rs, mesh));
+            PropertyChanged += RoadSection_PropertyChanged;
+        }
+
+        private void RoadSection_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) {
+            Mesh.Invalidate();
         }
         internal void OnConnect(RoadNodeEnd node) {
             nodes.Add(node);
