@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Debugging;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
@@ -111,7 +113,7 @@ namespace TranSimCS.Roads.Section {
         }
 
         internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh, int accuracy = 17, float voffset = 0.01f) {
-            if (roadSection.Nodes.Count == 0) return; //Guard agains empty sections
+            if (roadSection.Nodes.Count < 1) return; //Guard agains empty sections
 
             var mesh = multimesh.GetOrCreateRenderBinForced(Assets.Asphalt);
 
@@ -126,6 +128,43 @@ namespace TranSimCS.Roads.Section {
             while (startNode.val != start) startNode = startNode.Next;
             var endNode = circularList;
             while (endNode.val != end) endNode = endNode.Next;
+
+            //Alternate approach: Try out the new triangulation algorithm
+            Vector3[] ends = new Vector3[roadSection.Nodes.Count * accuracy];
+            var endsNode = circularList;
+            for(int i = 0; i <  roadSection.Nodes.Count; i++) {
+                var roadNode = endsNode.val;
+                endsNode = endsNode.Next;
+                var nextNode = endsNode.val;
+
+                var bounds1 = roadNode.Bounds();
+                var refframe1 = roadNode.Node.ReferenceFrame;
+                if (roadNode.End == NodeEnd.Backward) refframe1.Z *= -1;
+                var bounds2 = nextNode.Bounds();
+                var refframe2 = nextNode.Node.ReferenceFrame;
+                if (nextNode.End == NodeEnd.Backward) refframe2.Z *= -1;
+                var prevPos = refframe1.O + refframe1.X * bounds1.LocalLeft;
+                var nextPos = refframe2.O + refframe2.X * bounds2.localRight;
+
+                var generatedSpline = GeometryUtils.GenerateJoinSpline(prevPos, nextPos, refframe1.Z, refframe2.Z);
+                var points = GeometryUtils.GenerateSplinePoints(generatedSpline, accuracy);
+                Array.Copy(points, 0, ends, i*accuracy, points.Length);
+            }
+
+            var triangulation = TriangulateNonPlanarPolygons.Triangulate(ends);
+            var verts = new VertexPositionColorTexture[triangulation.Vertices.Count];
+            for (int i = 0; i < verts.Length; i++) {
+                var pos = triangulation.Vertices[i];
+                var moved = pos - triangulation.ReferenceFrame.O;
+                var u = Vector3.Dot(moved, triangulation.ReferenceFrame.X);
+                var v = Vector3.Dot(moved, triangulation.ReferenceFrame.Z);
+                var color = Color.White;
+                verts[i] = new(pos, color, new(u, v));
+            }
+
+            mesh.DrawModel(verts, triangulation.Indices);
+            mesh.AddTagsToLastTriangles(triangulation.TriangleCount, roadSection);
+            return; //Cut off the old algorithm
 
             //Categorize the nodes into categories: left or right of the main. Since they're already sorted, there's no need to sort.
             var rightNodes = new List<RoadNodeEnd>();
