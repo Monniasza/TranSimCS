@@ -47,12 +47,13 @@ namespace TranSimCS.Roads.Strip {
             //Generate side-lines
         }
 
-        public static VertexGen2<VertexPositionColorTexture> GenerateLaneStripVertexGen(LaneSpec spec) {
+        public static VertexGen2<VertexPositionColorTexture> GenerateLaneStripVertexGen(LaneSpec spec) => GenerateLaneStripVertexGen(spec.Color);
+        public static VertexGen2<VertexPositionColorTexture> GenerateLaneStripVertexGen(Color c) {
             (VertexPositionColorTexture, VertexPositionColorTexture) GenerateVertices(Vector3 l, Vector3 r, float distance, int index) {
                 float mutualDistance = Vector3.Distance(l, r) / 2;
                 return (
-                    new VertexPositionColorTexture(l, spec.Color, new(-mutualDistance, distance)),
-                    new VertexPositionColorTexture(r, spec.Color, new( mutualDistance, distance))
+                    new VertexPositionColorTexture(l, c, new(-mutualDistance, distance)),
+                    new VertexPositionColorTexture(r, c, new(mutualDistance, distance))
                 );
             }
             return GenerateVertices;

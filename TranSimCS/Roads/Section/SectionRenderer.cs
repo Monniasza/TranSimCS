@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Debugging;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
+using TranSimCS.ModelOld;
 using TranSimCS.Render;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
@@ -152,6 +153,70 @@ namespace TranSimCS.Roads.Section {
             GenerateSectionFinish(roadSection, multimesh, accuracy);
         }
 
+        
+
+        private static void GenerateSectionFinish(RoadSection roadSection, MultiMesh multimesh, int accuracy = 17) {
+            var finish = roadSection.Finish;
+            var texture = finish.subsurface.GetTexture();
+            if (texture == null || finish.depth <= 0) return;
+
+            var normal = roadSection.Normal;
+            if (normal.LengthSquared() < 1e-6f) normal = Vector3.Up;
+            else normal.Normalize();
+
+            var height = finish.depth;
+            var breadth = finish.depth * MathF.Tan(finish.angle);
+
+            var sideLen = new Vector2(height, breadth).Length();
+            var topVertexer = UniformTexturing.WithFixedU(0);
+            var bottomVertexer = UniformTexturing.WithFixedU(sideLen);
+            var finishMesh = multimesh.GetOrCreateRenderBinForced(texture);
+
+            //Generate the splines
+            var splineCount = roadSection.Nodes.Count;
+            var perimeterPointCount = splineCount * accuracy;
+            for(int i = 0; i < splineCount; i++) {
+                var h = (i + 1) % splineCount;
+                var prev = roadSection.Nodes[i];
+                var next = roadSection.Nodes[h];
+                var topSpline = GenerateRoadEdge(next, prev, 1);
+                var topPoints = GeometryUtils.GenerateSplinePoints(topSpline, accuracy);
+                //Generate bottom points
+                var bottomPoints = new Vector3[accuracy];
+                for (int j = 0; j < accuracy; j++) {
+                    var amount = j / (accuracy - 1f);
+                    var tangent = topSpline.Tangential(amount);
+                    var lateral = Vector3.Cross(normal, tangent).Normalized();
+                    bottomPoints[j] = topPoints[j] + lateral * breadth - normal * height;
+                }
+
+                var generatedSplines = UniformTexturing.UniformTexturedTwin(topPoints, bottomPoints, UniformTexturing.PairStrip(0, sideLen, Color.White));
+                finishMesh.DrawStrip(generatedSplines);
+            }
+
+            //Generate endcaps
+            for (int i = 0; i < splineCount; i++) {
+                var node = roadSection.Nodes[i];
+                var refframe = node.Node.ReferenceFrame;
+                var bounds = node.Bounds();
+                var mulbreadth = breadth;
+                if (node.End == NodeEnd.Backward) mulbreadth *= -1;
+                var p0 = refframe.O + refframe.X * bounds.LocalLeft;
+                var p1 = refframe.O + refframe.X * bounds.LocalRight;
+                var p2 = refframe.O + refframe.X * (bounds.LocalRight + mulbreadth) - refframe.Y * height;
+                var p3 = refframe.O + refframe.X * (bounds.LocalLeft - mulbreadth) - refframe.Y * height;
+                var u0 = new Vector2(bounds.Min, 0);
+                var u1 = new Vector2(bounds.Max, 0);
+                var u2 = new Vector2(bounds.Max + breadth, height);
+                var u3 = new Vector2(bounds.Min - breadth, height);
+                VertexPositionColorTexture v0 = new(p0, Color.White, u0);
+                VertexPositionColorTexture v1 = new(p1, Color.White, u1);
+                VertexPositionColorTexture v2 = new(p2, Color.White, u2);
+                VertexPositionColorTexture v3 = new(p3, Color.White, u3);
+                finishMesh.DrawQuad(v0, v1, v2, v3);
+            }
+        }
+
         private static Vector3[] GenerateSectionPerimeter(RoadSection roadSection, int accuracy = 17) {
             var nodes = roadSection.Nodes;
             var perimeter = new List<Vector3>();
@@ -175,73 +240,6 @@ namespace TranSimCS.Roads.Section {
             }
 
             return perimeter.ToArray();
-        }
-
-        private static void GenerateSectionFinish(RoadSection roadSection, MultiMesh multimesh, int accuracy = 17) {
-            var finish = roadSection.Finish;
-            var texture = finish.subsurface.GetTexture();
-            if (texture == null || finish.depth <= 0) return;
-
-            var topPoints = GenerateSectionPerimeter(roadSection, accuracy);
-            if (topPoints.Length < 3) return;
-
-            var normal = roadSection.Normal;
-            if (normal.LengthSquared() < 1e-6f) normal = Vector3.Up;
-            else normal.Normalize();
-
-            var height = finish.depth;
-            var breadth = finish.depth * MathF.Tan(finish.angle);
-            var bottomPoints = GenerateBottomPerimeter(topPoints, roadSection.Center, normal, height, breadth);
-
-            var sideLen = new Vector2(height, breadth).Length();
-            var topVertexer = UniformTexturing.WithFixedU(0);
-            var bottomVertexer = UniformTexturing.WithFixedU(sideLen);
-            var topVerts = UniformTexturing.UniformTextured(topPoints, topVertexer);
-            var bottomVerts = UniformTexturing.UniformTextured(bottomPoints, bottomVertexer);
-
-            var finishMesh = multimesh.GetOrCreateRenderBinForced(texture);
-            finishMesh.DrawClosedStrip(topVerts, bottomVerts);
-
-            var bottomCenter = roadSection.Center - normal * height;
-            finishMesh.DrawCenteredPoly(
-                CreateVertex(bottomCenter),
-                bottomPoints.AsEnumerable().Reverse().Select(CreateVertex).ToArray()
-            );
-        }
-
-        private static Vector3[] GenerateBottomPerimeter(Vector3[] topPoints, Vector3 center, Vector3 normal, float height, float breadth) {
-            var result = new Vector3[topPoints.Length];
-
-            for (int i = 0; i < topPoints.Length; i++) {
-                var point = topPoints[i];
-                var prev = topPoints[(i - 1 + topPoints.Length) % topPoints.Length];
-                var next = topPoints[(i + 1) % topPoints.Length];
-
-                var radial = point - center;
-                radial -= normal * Vector3.Dot(radial, normal);
-
-                Vector3 outward;
-                if (radial.LengthSquared() > 1e-6f) {
-                    outward = radial;
-                } else {
-                    var tangent = next - prev;
-                    outward = Vector3.Cross(tangent, normal);
-                }
-
-                if (outward.LengthSquared() < 1e-6f) outward = Vector3.UnitX;
-                outward.Normalize();
-
-                var tangentOutward = Vector3.Cross(next - prev, normal);
-                if (tangentOutward.LengthSquared() > 1e-6f) {
-                    tangentOutward.Normalize();
-                    if (Vector3.Dot(tangentOutward, outward) < 0) tangentOutward *= -1;
-                    outward = tangentOutward;
-                }
-
-                result[i] = point - normal * height + outward * breadth;
-            }
-
-            return result;
         }
 
         private static List<RoadNodeEnd> CollectNodes(DLNode<RoadNodeEnd> from, DLNode<RoadNodeEnd> to) {
