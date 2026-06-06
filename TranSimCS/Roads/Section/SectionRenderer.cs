@@ -69,7 +69,7 @@ namespace TranSimCS.Roads.Section {
                 if (lbound == ubound) {
                     var bounds = startNode.Bounds();
                     var lpos = calcLineEnd(startNode, bounds.LocalLeft).Position;
-                    var rpos = calcLineEnd(startNode, bounds.localRight).Position;
+                    var rpos = calcLineEnd(startNode, bounds.LocalRight).Position;
 
                     //One node remaining
                     topSpline = prevSpline;
@@ -144,7 +144,7 @@ namespace TranSimCS.Roads.Section {
                 var refframe2 = nextNode.Node.ReferenceFrame;
                 if (nextNode.End == NodeEnd.Backward) refframe2.Z *= -1;
                 var prevPos = refframe1.O + refframe1.X * bounds1.LocalLeft;
-                var nextPos = refframe2.O + refframe2.X * bounds2.localRight;
+                var nextPos = refframe2.O + refframe2.X * bounds2.LocalRight;
 
                 var generatedSpline = GeometryUtils.GenerateJoinSpline(prevPos, nextPos, refframe1.Z, refframe2.Z);
                 var points = GeometryUtils.GenerateSplinePoints(generatedSpline, accuracy);

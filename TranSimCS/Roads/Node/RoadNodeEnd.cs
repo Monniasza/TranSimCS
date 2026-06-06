@@ -55,7 +55,7 @@ namespace TranSimCS.Roads.Node {
             return new LaneEnd(End, Node.SortedLanes[x]);
         }
 
-        public (float Min, float Max, float LocalLeft, float localRight) Bounds() {
+        public (float Min, float Max, float LocalLeft, float LocalRight) Bounds() {
             var minMax = Range();
             float min = minMax.Min;
             float max = minMax.Max;

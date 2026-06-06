@@ -30,10 +30,10 @@ namespace TranSimCS.Geometry
             return (leftEnd, rightEnd);
         }
         public static LineEnd calcBoundingLineEndFaced(RoadNodeEnd node, int discriminator = 1) {
-            var (Min, Max, LocalLeft, localRight) = node.Bounds();
+            var (Min, Max, LocalLeft, LocalRight) = node.Bounds();
             if (discriminator < 0)
                 return calcLineEnd(node, LocalLeft);
-            return calcLineEnd(node, localRight);
+            return calcLineEnd(node, LocalRight);
         }
 
         public static LineEnd calcLineEnd(IPosition node, float offset, NodeEnd end) {
