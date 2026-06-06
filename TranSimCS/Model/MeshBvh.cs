@@ -98,9 +98,17 @@ namespace TranSimCS.Model {
         }
 
         public bool RayIntersect(Ray ray, out int triangleId, out float distance) =>
-            RayIntersect(ray, float.PositiveInfinity, out triangleId, out distance);
+            RayIntersect(ray, 0, float.PositiveInfinity, out triangleId, out distance);
 
-        public bool RayIntersect(Ray ray, float maxDistance, out int triangleId, out float distance) {
+        public bool RayIntersect(Ray ray, float maxDistance, out int triangleId, out float distance) =>
+            RayIntersect(ray, 0, maxDistance, out triangleId, out distance);
+
+        public bool RayIntersect(Ray ray, float minDistance, float maxDistance, out int triangleId, out float distance) {
+            if (minDistance < 0)
+                throw new ArgumentOutOfRangeException(nameof(minDistance), "Minimum distance must be non-negative.");
+            if (maxDistance < minDistance)
+                throw new ArgumentOutOfRangeException(nameof(maxDistance), "Maximum distance must be greater than or equal to the minimum distance.");
+
             triangleId = -1;
             distance = maxDistance;
             if (nodes.Length == 0) return false;
@@ -124,7 +132,7 @@ namespace TranSimCS.Model {
                                 verts[indices[tri.BaseIndex]].Position,
                                 verts[indices[tri.BaseIndex + 1]].Position,
                                 verts[indices[tri.BaseIndex + 2]].Position,
-                                out float triDist, 1e-6f, distance) && triDist < distance) {
+                                out float triDist, minDistance, distance) && triDist < distance) {
                                 distance = triDist;
                                 triangleId = tri.Id;
                             }
@@ -140,13 +148,13 @@ namespace TranSimCS.Model {
             }
         }
 
-        public bool TryProjectPoint(Vector3 point, Vector3 direction, out Vector3 projectedPoint, out int triangleId, out float distance, float maxDistance = float.PositiveInfinity) {
+        public bool TryProjectPoint(Vector3 point, Vector3 direction, out Vector3 projectedPoint, out int triangleId, out float distance, float maxDistance = float.PositiveInfinity, float minDistance = 0) {
             var lengthSquared = direction.LengthSquared();
             if (lengthSquared <= 1e-12f)
                 throw new ArgumentException("Projection direction must be non-zero.", nameof(direction));
 
             direction /= MathF.Sqrt(lengthSquared);
-            if (RayIntersect(new Ray(point, direction), maxDistance, out triangleId, out distance)) {
+            if (RayIntersect(new Ray(point, direction), minDistance, maxDistance, out triangleId, out distance)) {
                 projectedPoint = point + direction * distance;
                 return true;
             }

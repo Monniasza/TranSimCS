@@ -76,13 +76,13 @@ namespace TranSimCS.Model {
             return tag;
         }
 
-        public static bool TryProjectPoint(this Mesh target, Vector3 point, Vector3 normal, out Vector3 projectedPoint, out int triangleId, out float distance, float maxDistance = float.PositiveInfinity) {
+        public static bool TryProjectPoint(this Mesh target, Vector3 point, Vector3 normal, out Vector3 projectedPoint, out int triangleId, out float distance, float maxDistance = float.PositiveInfinity, float minDistance = 0) {
             ArgumentNullException.ThrowIfNull(target);
-            return target.GetAccelerationStructure().TryProjectPoint(point, normal, out projectedPoint, out triangleId, out distance, maxDistance);
+            return target.GetAccelerationStructure().TryProjectPoint(point, normal, out projectedPoint, out triangleId, out distance, maxDistance, minDistance);
         }
 
-        public static bool TryProjectVertex(this Mesh target, VertexPositionColorTexture vertex, Vector3 normal, out VertexPositionColorTexture projectedVertex, out int triangleId, out float distance, float maxDistance = float.PositiveInfinity) {
-            if (TryProjectPoint(target, vertex.Position, normal, out var projectedPoint, out triangleId, out distance, maxDistance)) {
+        public static bool TryProjectVertex(this Mesh target, VertexPositionColorTexture vertex, Vector3 normal, out VertexPositionColorTexture projectedVertex, out int triangleId, out float distance, float maxDistance = float.PositiveInfinity, float minDistance = 0) {
+            if (TryProjectPoint(target, vertex.Position, normal, out var projectedPoint, out triangleId, out distance, maxDistance, minDistance)) {
                 projectedVertex = new VertexPositionColorTexture(projectedPoint, vertex.Color, vertex.TextureCoordinate);
                 return true;
             }
@@ -91,7 +91,7 @@ namespace TranSimCS.Model {
             return false;
         }
 
-        public static Mesh ProjectOnto(this Mesh projection, Mesh target, Vector3 normal, float maxDistance = float.PositiveInfinity) {
+        public static Mesh ProjectOnto(this Mesh projection, Mesh target, Vector3 normal, float maxDistance = float.PositiveInfinity, float minDistance = 0) {
             ArgumentNullException.ThrowIfNull(projection);
             ArgumentNullException.ThrowIfNull(target);
 
@@ -105,7 +105,7 @@ namespace TranSimCS.Model {
             var missedVertices = 0;
 
             foreach (var vertex in projection.Vertices) {
-                if (targetBvh.RayIntersect(new Ray(vertex.Position, direction), maxDistance, out _, out var distance)) {
+                if (targetBvh.RayIntersect(new Ray(vertex.Position, direction), minDistance, maxDistance, out _, out var distance)) {
                     projectedVertices.Add(new VertexPositionColorTexture(
                         vertex.Position + direction * distance,
                         vertex.Color,
