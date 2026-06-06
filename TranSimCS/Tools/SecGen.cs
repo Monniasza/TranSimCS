@@ -53,7 +53,7 @@ namespace TranSimCS.Tools {
             //unused
         }
         void ITool.AddAttributes(ISet<string> action) {
-            //unused
+            action.Add(ToolAttribs.showFinishes);
         }
         void ITool.OnClick(MouseButton button) {
             if (section == null && button == MouseButton.Left) {
@@ -66,6 +66,7 @@ namespace TranSimCS.Tools {
                     var node = element.GetNodeEnd();
                     if (node == null) return;
                     section = node.GetOrCreateSection();
+                    section.Finish = Menu.configuration.RoadFinish;
                 }
                 return;
             }else if(section != null) {
