@@ -68,7 +68,7 @@ namespace TranSimCS.Tools.Panels {
             //Height adjustment
             HeightStep = new Property<float>(10, "heightStep");
             heightStepField = UI.SetUpFloatProp("Height step [m]", this, HeightStep);
-            Height = new Property<float>(0.1f, "height");
+            Height = new Property<float>(0f, "height");
             HeightField = UI.SetUpFloatProp("Height [m]", this, Height);
         }
 

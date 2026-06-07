@@ -8,7 +8,7 @@ using TranSimCS.Roads;
 namespace TranSimCS.Roads.Strip {
     public static class StripRenderer {
 
-        public static void GenerateLaneStripMesh(LaneStrip laneStrip, MultiMesh renderer, float voffset = 0.01f) {
+        public static void GenerateLaneStripMesh(LaneStrip laneStrip, MultiMesh renderer, float voffset = 0) {
             var tag = laneStrip.Tag();
             var (Left, Right) = RoadRenderer.GenerateSplines(tag, voffset); // Generate the splines for the left and right lanes
 
