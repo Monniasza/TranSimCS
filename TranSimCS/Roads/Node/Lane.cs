@@ -56,22 +56,17 @@ namespace TranSimCS.Roads.Node {
             DefinitionProp.ValidateChanges += (s, e) => {
                 ArgumentNullException.ThrowIfNull(e.NewValue, nameof(definition));
             };
+            DefinitionProp.ValueChanged += (s, e) => {
+                node.Mesh.Invalidate();
+            };
         }
         //Positioning utilities
-        public void Align(float t, float pos, float width = -1) {
-            if (width < 0) width = Width;
-            LeftPosition = pos - t * width;
-            RightPosition = LeftPosition + width;
-        }
-        public LaneEnd GetEnd(NodeEnd end) {
-            return end.GetConditional(Rear, Front);
-        }
+        public LaneEnd GetEnd(NodeEnd end) => end.GetConditional(Rear, Front);
 
         //Indexing
         internal ISet<LaneStrip> connections = new HashSet<LaneStrip>(); // Set of lane strips that this lane is connected to
         public ISet<LaneStrip> Connections => new ReadOnlySet<LaneStrip>(connections); // Read-only set of lane strips that this lane is connected to
 
-        
         //Dragging
         public void Drag(Vector3 vector, Vector3 dragFrom) => ((IDraggableObj)RoadNode).Drag(vector, dragFrom);
         public void Rotate(int azimuth, float incline, float tilt) => ((IDraggableObj)RoadNode).Rotate(azimuth, incline, tilt);

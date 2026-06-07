@@ -9,6 +9,8 @@ using TranSimCS.Debugging;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Polygons;
+using TranSimCS.Roads.Node;
+using TranSimCS.Spline;
 using static TranSimCS.Geometry.GeometryUtils;
 
 namespace TranSimCS.Roads.Strip {
@@ -96,6 +98,37 @@ namespace TranSimCS.Roads.Strip {
             var leftDownEndPos = leftDownPoints.Last();
             GenerateEndCap(rightUpEndPos, leftUpEndPos, leftDownEndPos, rightDownEndPos, swidth, height, breadth, finishBin);
 
+            //Calculate length of the road
+            var lengthL = CountLength(leftTopPoints);
+            var lengthR = CountLength(rightTopPoints);
+            var length = lengthL + lengthR;
+
+            //If this segment is single-ended, draw the inner island
+            if (connection.IsSingleEnded()) {
+
+                float[] array = [bounds.leftStart, bounds.rightStart, bounds.leftEnd, bounds.rightEnd];
+                Array.Sort(array);
+                float a = array[1];
+                float b = array[2];
+                if (a < b ^ connection.StartNode.End == NodeEnd.Backward)
+                    DataUtil.Swap(ref a, ref b);
+                var d = MathF.Abs(a - b) * 0.6667f;
+                //var d = 3;
+                var spline = new Bezier3(
+                    new(b, 0, 0), new(b, 0, d), new(a, 0, d), new(a, 0, 0)
+                );
+                var points = GeometryUtils.GenerateSplinePoints(spline);
+                var refframe = connection.StartNode.CalcReferenceFrame();
+                if (connection.StartNode.End == NodeEnd.Backward) refframe.X *= -1;
+                var nodeSplineFrame = new SplineFrame();
+                nodeSplineFrame.CenterSpline = new(refframe.O, refframe.O + refframe.Z);
+                nodeSplineFrame.XPlusSpline = new(refframe.X);
+                nodeSplineFrame.YPlusSpline = new(refframe.Y);
+
+                var pointsFlat = FlattenPath(points);
+                DrawIsland(Surface.Grass, Surface.Concrete, renderHelper, nodeSplineFrame, new PathD(pointsFlat), 0.1f, length);
+            }
+
             //If the road is only 1 lane, do not render the islands
             if (connection.Lanes.Count < 2) return;
 
@@ -139,11 +172,6 @@ namespace TranSimCS.Roads.Strip {
             //Perform the separation logic
             var islandsPoly = globalPolygon.SubtractMore(lanePolygons);
             Debug.Print($"Island: {islandsPoly.path.Count}");
-
-            //Calculate length of the road
-            var lengthL = CountLength(leftTopPoints);
-            var lengthR = CountLength(rightTopPoints);
-            var length = lengthL + lengthR;
 
             //Back-transform the paths
             foreach(var path in islandsPoly.path) {
@@ -223,6 +251,7 @@ namespace TranSimCS.Roads.Strip {
                 ((Mesh)topRenderBin).DrawModel(vertices, triangulation);
             }
         }
+
         public static IEnumerable<Vector3> Retransform(SplineFrame frame, IEnumerable<PointD> pts, float z = 0) {
             return pts.Select(pt => frame.Transform(new((float)pt.x, z, (float)pt.y)));
         }

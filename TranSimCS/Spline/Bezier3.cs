@@ -32,6 +32,13 @@ namespace TranSimCS.Spline
             this.c = c;
             this.d = d;
         }
+
+        public Bezier3(Vector3 a, Vector3 d) {
+            this.a = a;
+            this.b = Vector3.Lerp(a, d, 0.3333f);
+            this.c = Vector3.Lerp(a, d, 0.6667f);
+            this.d = d;
+        }
         public Bezier3(Vector3 a) {
             this.a = a;
             b = a;
