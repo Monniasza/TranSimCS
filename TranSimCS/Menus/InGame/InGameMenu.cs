@@ -258,12 +258,10 @@ namespace TranSimCS.Menus.InGame {
                 var hovering = meshes.Find(MouseRay, out var selectedNode, out distance, out selection);
             }
             SelectedObject = selection;
-            if (selection is LaneStrip laneStrip) {
+            if (selection is LaneStrip laneStrip) 
                 MouseOverRoad = new RoadSelection(laneStrip, distance, ray); // Create a new road selection with the lane tag and intersection distance
-            }
-            if (selection is LaneEnd lane) {
+            if (selection is LaneEnd lane) 
                 MouseOverRoad = new RoadSelection(lane, distance, ray);
-            }
             if (MouseOverRoad != null) SelectedObject = MouseOverRoad.hitObject;
 
             //Handle scroll wheel input for zooming in and out
