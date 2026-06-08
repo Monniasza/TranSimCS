@@ -7,11 +7,10 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NLog.Targets;
 using TranSimCS.Collections;
-using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.ModelOld;
 
-namespace TranSimCS {
+namespace TranSimCS.Geometry {
     public struct Transform3 {
         public Vector3 X, Y, Z, O;
         public Transform3(Vector3 x, Vector3 y, Vector3 z, Vector3 o) {
@@ -28,7 +27,7 @@ namespace TranSimCS {
         }
 
         public readonly Vector3 Transform(Vector3 input) {
-            return (input.X * X) + (input.Y * Y) + (input.Z * Z) + O;
+            return input.X * X + input.Y * Y + input.Z * Z + O;
         }
         public readonly VertexPositionColorTexture Transform(VertexPositionColorTexture input) {
             return new VertexPositionColorTexture(Transform(input.Position), input.Color, input.TextureCoordinate);

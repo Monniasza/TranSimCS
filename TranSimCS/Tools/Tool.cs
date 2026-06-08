@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
+using TranSimCS.Tools.LaneEditor;
 using TranSimCS.Tools.Panels;
 using static MLEM.Ui.Elements.Paragraph;
 
@@ -39,6 +40,7 @@ namespace TranSimCS.Tools {
             ToolsPanel.AddPanel(ToolAttribs.showChooser, (x => new PickAnObjectTab(x)));
             ToolsPanel.AddPanel(ToolAttribs.showSnapOptions, (x => new SnappingPanel(x)));
             ToolsPanel.AddPanel(ToolAttribs.showLaneSpecs, (x => new RoadConfigurator(x)));
+            ToolsPanel.AddPanel(ToolAttribs.showLaneManip, (x => new LaneTools(x)));
         }
     }
     public static class ToolAttribs {
@@ -56,6 +58,7 @@ namespace TranSimCS.Tools {
         public const string showChooser = "menuChooser";
         public const string disableMMBSnap = "disableSnapKeybind";
         public const string showSnapOptions = "menuSnap";
+        public const string showLaneManip = "menuLane";
     }
 
     public class PaintTool(InGameMenu game) : ITool {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Xna.Framework;
 using TranSimCS.Collections;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Property;
 using TranSimCS.Roads;

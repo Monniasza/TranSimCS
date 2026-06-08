@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Iesi.Collections.Generic;
 using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 using TranSimCS.Property;
 using TranSimCS.Roads.Section;
 using TranSimCS.Roads.Strip;

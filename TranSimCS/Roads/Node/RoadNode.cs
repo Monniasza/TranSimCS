@@ -15,6 +15,7 @@ using TranSimCS.Roads;
 using TranSimCS.Roads.Strip;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
+using Transform3 = TranSimCS.Geometry.Transform3;
 
 namespace TranSimCS.Roads.Node {
     public class RoadNode: Obj, IPosition, IObjMesh<RoadNode>, IRoadElement {

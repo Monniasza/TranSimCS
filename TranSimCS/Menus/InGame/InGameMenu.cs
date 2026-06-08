@@ -28,6 +28,7 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Spline;
 using TranSimCS.Tools;
 using TranSimCS.Tools.Inspect;
+using TranSimCS.Tools.LaneEditor;
 using TranSimCS.Tools.Panels;
 using TranSimCS.Worlds;
 
@@ -161,6 +162,7 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("precpos", PrecPosTool);
             SetUpToolPictureButton("sectionedit", new SecGen(this));
             SetUpToolPictureButton("reverse", new ReverseLaneDirectionTool(this));
+            SetUpToolPictureButton("ui/preceditor", new LaneEditorTool(this));
 
             //Set up the tool preview
             ToolDescPanel = new ToolDescriptionPanel(this);

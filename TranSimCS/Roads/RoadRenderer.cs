@@ -54,7 +54,9 @@ namespace TranSimCS.Roads {
         }
         public static void GenerateLaneMesh(Lane lane, MultiMesh mesh, float voffset = 0) {
             Mesh renderBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
-
+            GenerateLaneMesh(lane, renderBin, voffset);
+        }
+        public static void GenerateLaneMesh(Lane lane, Mesh renderBin, float voffset = 0) {
             var quads = GenerateLaneQuad(lane, voffset);
             renderBin.DrawQuad(quads.Front);
             renderBin.AddTagsToLastTriangles(2, lane.Front);
