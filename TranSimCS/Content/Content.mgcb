@@ -625,6 +625,18 @@
 /processorParam:TextureFormat=Color
 /build:trashdump.png
 
+#begin ui/addlane.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:ui/addlane.png
+
 #begin ui/alignc.png
 /importer:TextureImporter
 /processor:TextureProcessor

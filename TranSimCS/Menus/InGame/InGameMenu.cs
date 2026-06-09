@@ -73,6 +73,7 @@ namespace TranSimCS.Menus.InGame {
         public Checkbox CheckSnap {get; private set; } = null!;
         public Checkbox CheckUnits { get; private set; } = null!;
         public Checkbox CheckPoints { get; private set; } = null!;
+        public Checkbox CheckAddLanes { get; private set; } = null!;
         public bool IsSnapEnabled { get => CheckSnap.Checked; set => CheckSnap.Checked = value; }
 
         //Overlays
@@ -140,6 +141,8 @@ namespace TranSimCS.Menus.InGame {
             CheckSections.Checked = true;
             CheckSnap = UI.CreateCheck(this, SettingsPanel, "Enable snapping", "ui/snap");
             CheckPoints = UI.CreateCheck(this, SettingsPanel, "Show marking points", "ui/points");
+            CheckAddLanes = UI.CreateCheck(this, SettingsPanel, "Show lane addition buttons", "ui/addlane");
+            CheckAddLanes.Checked = true;
 
             //Set up the tool panel
             ToolsPanel = new ToolsPanel(this);

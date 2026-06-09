@@ -336,7 +336,8 @@ namespace TranSimCS.Tools {
         }
 
         void ITool.AddSelectors(MultiMesh addTo, MultiMesh visibleSelectors) {
-            SelectionUtils.AddAddLaneSelectors(menu);
+            if(menu.CheckAddLanes.Checked)
+                SelectionUtils.AddAddLaneSelectors(menu);
         }
 
         public RoadTools RoadTools { get; private set; }
