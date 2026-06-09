@@ -15,6 +15,7 @@ namespace TranSimCS.Tools.LaneEditor {
         public Property<Lane?> PickedLaneProp;
         public Property<float> SnappingIncrementProp;
         public Property<bool> SnappingEnabledProp;
+        public Property<bool> SnappingIsAbsoluteProp;
 
         public Lane? PickedLane {
             get => PickedLaneProp.Value;
@@ -27,6 +28,10 @@ namespace TranSimCS.Tools.LaneEditor {
         public bool SnappingCheckEnabled {
             get => SnappingEnabledProp.Value;
             set => SnappingEnabledProp.Value = value;
+        }
+        public bool SnappingIsAbsolute {
+            get => SnappingIsAbsoluteProp.Value;
+            set => SnappingIsAbsoluteProp.Value = value;
         }
         public float SnappingResult {
             get => SnappingCheckEnabled ? SnappingIncrementProp.Value : 0;
@@ -45,6 +50,7 @@ namespace TranSimCS.Tools.LaneEditor {
             PickedLaneProp.ValueChanged += PickedLaneProp_ValueChanged;
             SnappingIncrementProp = new(0.25f, "increment");
             SnappingEnabledProp = new(false, "enableSnap");
+            SnappingIsAbsoluteProp = new(true, "absolute");
             
             Paragraph leftLabel = new Paragraph(Anchor.AutoLeft, 0.5f, "Left border");
             Paragraph rightLabel = new Paragraph(Anchor.AutoLeft, 0.5f, "Right border");
@@ -55,13 +61,18 @@ namespace TranSimCS.Tools.LaneEditor {
             snapLabel.AddTooltip("0 to disable");
             NumberField snapField = new NumberField(Anchor.AutoInline, new(0.5f, 20), null, 0.25f);
 
+            Checkbox snapAbsolute = new Checkbox(Anchor.AutoLeft, new(0.5f, 20), "Snap to absolute", true);
+
             AddChild(snapLabel);
             AddChild(snapField);
+            AddChild(snapAbsolute);
 
             SnappingIncrementProp.ValueChanged += (s, e) => snapField.Value = e.NewValue;
             SnappingEnabledProp.ValueChanged += (s, e) => snapLabel.Checked = e.NewValue;
+            SnappingIsAbsoluteProp.ValueChanged += (s, e) => snapAbsolute.Checked = e.NewValue;
             snapLabel.OnCheckStateChange += (s, v) => SnappingCheckEnabled = v;
             snapField.ValueChanged += (s, v) => SnappingSetting = v;
+            snapAbsolute.OnCheckStateChange += (s, v) => SnappingIsAbsolute = v;
         }
 
         private void PickedLaneProp_ValueChanged(object? sender, PropertyChangedEventArgs2<Lane?> e) {

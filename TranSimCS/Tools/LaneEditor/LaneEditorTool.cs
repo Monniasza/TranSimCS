@@ -78,6 +78,23 @@ namespace TranSimCS.Tools.LaneEditor {
             if(pressedNow & !pressedBefore) {
                 DeltaX = 0;
                 DraggedLane = menu.MouseOverRoad?.SelectedLane;
+                if (laneTools.SnappingIsAbsolute && DraggedLane != null) {
+                    var bounds = DraggedLane.Bounds;
+                    var newLeft = bounds.Min;
+                    var newRight = bounds.Max;
+                    var snapIncrement = laneTools.SnappingResult;
+                    if (snapIncrement != 0) {
+                        newLeft = snapIncrement * MathF.Round(newLeft / snapIncrement);
+                        newRight = snapIncrement * MathF.Round(newRight / snapIncrement);
+                    }
+                    var difference = (newLeft + newRight - bounds.Min - bounds.Max) / 2;
+
+                    if(newLeft <= newRight) {
+                        DraggedLane.Bounds = new(newLeft, newRight);
+                        DeltaX += difference;
+                    }
+                    
+                }
             }
 
             var selectedLane = DraggedLane;
@@ -94,25 +111,26 @@ namespace TranSimCS.Tools.LaneEditor {
                 DeltaX += (newX - oldX);
 
                 //Snap the values
+                //Handle relative snapping
                 var dx = DeltaX;
                 var snapIncrement = laneTools.SnappingResult;
-                if(snapIncrement != 0) {
+                if (snapIncrement != 0) {
                     var sgn = MathF.Sign(dx);
                     dx = MathF.Abs(dx);
                     dx = sgn * snapIncrement * MathF.Floor(dx / snapIncrement);
                 }
-                
-                if(dx != 0) {
+
+                if (dx != 0) {
                     var bounds = selectedLane.Bounds;
                     var newLeft = bounds.Min;
                     var newRight = bounds.Max;
                     if (lmbNew) {
-                         newLeft += dx;
-                        if(!rmbNew && newLeft > newRight) newLeft = newRight;
+                        newLeft += dx;
+                        if (!rmbNew && newLeft > newRight) newLeft = newRight;
                     }
                     if (rmbNew) {
                         newRight += dx;
-                        if(!lmbNew && newRight < newLeft) newRight = newLeft;
+                        if (!lmbNew && newRight < newLeft) newRight = newLeft;
                     }
                     selectedLane.Bounds = new MonoGame.Extended.Range<float>(newLeft, newRight);
                     DeltaX -= dx;
