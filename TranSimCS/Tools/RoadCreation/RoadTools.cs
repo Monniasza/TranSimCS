@@ -9,7 +9,7 @@ using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
 
-namespace TranSimCS.Tools.Panels {
+namespace TranSimCS.Tools.RoadCreation {
     public class RoadTools : Panel {
         public InGameMenu Game { get; private set; }
         public Checkbox flattenTilt { get; private set; }
@@ -48,6 +48,9 @@ namespace TranSimCS.Tools.Panels {
             var curvedButton = CreateModeButton(new CircMode(), "ui/curved");
             CreateModeButton(new SBendMode(), "ui/sbend");
             curvedButton.Checked = true;
+            CreateModeButton(new FromReferenceMode(), "ui/snap");
+
+
             //CreateModeButton("ui/sbend3C", "S-bend, custom direction");
 
             //Reference modes (L, C, R)

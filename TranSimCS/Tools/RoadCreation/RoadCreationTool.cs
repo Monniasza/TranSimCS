@@ -15,10 +15,9 @@ using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Spline;
-using TranSimCS.Tools.Panels;
 using TranSimCS.Worlds;
 
-namespace TranSimCS.Tools {
+namespace TranSimCS.Tools.RoadCreation {
     public class RoadPlan {
         public Vector3 startTangent;
         public Vector3 startPos;
@@ -28,6 +27,8 @@ namespace TranSimCS.Tools {
         public Vector3 endPos;
         public Vector3 endLateral;
 
+        public InGameMenu menu;
+
         public void Align(Alignment alignment, float width) {
             var calculatedAlignments = alignment.GetAlignments();
             var moveRight = calculatedAlignments.r - 0.5f;
@@ -35,61 +36,8 @@ namespace TranSimCS.Tools {
             endPos += moveRight * endLateral * width;
         }
     }
-    public interface RoadMode {
-        public string Name { get; }
-        public void CreateValues(RoadPlan plan);
-    }
 
-    public class StraightMode : RoadMode {
-        public string Name => "Straight";
-        public void CreateValues(RoadPlan plan) {
-            plan.endLateral = plan.startLateral;
-            plan.endTangent = plan.startTangent;
-            Ray ray = new Ray(plan.startPos, plan.startTangent);
-            var endPos = GeometryUtils.FindNearest(ray, plan.endPos, out var _);
-            plan.endPos = endPos;
-        }
-    }
-    public class SBendMode: RoadMode {
-        public string Name => "S-bend, same-direction";
-        public void CreateValues(RoadPlan plan) {
-            plan.endLateral = plan.startLateral;
-            plan.endTangent = plan.startTangent;
-        }
-    }
-
-    public class CircMode : RoadMode {
-        public string Name => "Circular arc";
-
-        public void CreateValues(RoadPlan plan) {
-            var reflectionVector = plan.endPos - plan.startPos;
-            reflectionVector.Normalize();
-
-            Vector3 startNormal =
-                Vector3.Normalize(
-                    Vector3.Cross(
-                        plan.startTangent,
-                        plan.startLateral
-                    )
-                );
-
-            plan.endTangent =
-                -GeometryUtils.ReflectVectorByNormal(
-                    plan.startTangent,
-                    reflectionVector
-                );
-
-            plan.endTangent.Normalize();
-
-            plan.endLateral =
-                Vector3.Normalize(
-                    Vector3.Cross(
-                        startNormal,
-                        plan.endTangent
-                    )
-                );
-        }
-    }
+    
 
     public interface ChainMode: IEquatable<ChainMode?> {
         public string Name { get; }
@@ -276,6 +224,7 @@ namespace TranSimCS.Tools {
                         endPos = endPos,
                         startTangent = startTangent,
                         endTangent = endTangent,
+                        menu = menu
                     };
 
                     plan.Align(alignment, startWidth);

@@ -30,6 +30,7 @@ using TranSimCS.Tools;
 using TranSimCS.Tools.Inspect;
 using TranSimCS.Tools.LaneEditor;
 using TranSimCS.Tools.Panels;
+using TranSimCS.Tools.RoadCreation;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Menus.InGame {

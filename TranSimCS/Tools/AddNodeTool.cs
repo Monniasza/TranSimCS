@@ -52,8 +52,6 @@ namespace TranSimCS.Tools {
             var height = frame.Y * 0.01f;
             var startPoint = frame.O + height;
             var startPoint2 = startPoint + height;
-            var tw = frame.X * 0.1f;
-            var bw = frame.X * 0.2f;
             var rl = frame.Z * 5;
 
             Mesh bin = menu.renderHelper.GetOrCreateRenderBinForced(Assets.Road);

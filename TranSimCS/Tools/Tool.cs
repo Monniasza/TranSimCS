@@ -11,6 +11,7 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Tools.LaneEditor;
 using TranSimCS.Tools.Panels;
+using TranSimCS.Tools.RoadCreation;
 using static MLEM.Ui.Elements.Paragraph;
 
 namespace TranSimCS.Tools {
@@ -31,7 +32,7 @@ namespace TranSimCS.Tools {
         public void OnClose() { }
 
         public void AddAttributes(ISet<string> action) {}
-
+        
         public static void Init() {
             ToolsPanel.AddPanel(ToolAttribs.showRoadTools, (x => new RoadTools(x)));
             ToolsPanel.AddPanel(ToolAttribs.showFinishes, (x => new RoadFinishTab(x)));
