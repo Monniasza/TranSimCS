@@ -9,9 +9,7 @@ using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
-using TranSimCS.Tools.LaneEditor;
 using TranSimCS.Tools.Panels;
-using TranSimCS.Tools.RoadCreation;
 using static MLEM.Ui.Elements.Paragraph;
 
 namespace TranSimCS.Tools {
@@ -36,7 +34,6 @@ namespace TranSimCS.Tools {
         public static void Init() {
             ToolsPanel.AddPanel(ToolAttribs.showRoadTools, (x => new RoadTools(x)));
             ToolsPanel.AddPanel(ToolAttribs.showFinishes, (x => new FinishTools(x)));
-            ToolsPanel.AddPanel(ToolAttribs.showDumpTools, (x => new DumpingMenu(x)));
             ToolsPanel.AddPanel(ToolAttribs.showPosManip, (x => new PrecPosTools(x)));
             ToolsPanel.AddPanel(ToolAttribs.showChooser, (x => new PickAnObjectTab(x)));
             ToolsPanel.AddPanel(ToolAttribs.showSnapOptions, (x => new SnappingPanel(x)));
