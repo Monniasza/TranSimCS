@@ -136,8 +136,8 @@ namespace TranSimCS.Roads {
             var pos2L = laneRange.endRange.Max;
             var pos2R = laneRange.endRange.Min;
             //Ensure the node ordering
-            if (laneRange.road.StartNode.End == NodeEnd.Backward) (pos1L, pos1R) = (-pos1R, -pos1L);
-            if (laneRange.road.EndNode.End == NodeEnd.Backward) (pos2L, pos2R) = (-pos2R, -pos2L);
+            if (laneRange.road.StartNode.End == NodeEnd.Backward) (pos1L, pos1R) = (pos1R, pos1L);
+            if (laneRange.road.EndNode.End == NodeEnd.Forward) (pos2L, pos2R) = (pos2R, pos2L);
             return (pos1L, pos1R, pos2L, pos2R);
         }
 

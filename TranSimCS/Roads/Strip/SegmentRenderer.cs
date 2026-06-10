@@ -129,11 +129,6 @@ namespace TranSimCS.Roads.Strip {
                 DrawIsland(Surface.Grass, Surface.Concrete, renderHelper, nodeSplineFrame, new PathD(pointsFlat), 0.1f, length);
             }
 
-            //Test SplineFrames
-            if (DebugOptions.DebugSplineFrames) {
-
-            }
-
             //If the road is only 1 lane, do not render the islands
             if (connection.Lanes.Count < 2) return;
             RenderRoadSegmentPolygons(connection, renderHelper, length);
@@ -155,27 +150,22 @@ namespace TranSimCS.Roads.Strip {
                 var widened = lane;
                 widened.startRange = new(widened.startRange.Min - dwidth, widened.startRange.Max + dwidth);
                 widened.endRange = new(widened.endRange.Min - dwidth, widened.endRange.Max + dwidth);
-
-                //widened.startRange = connection.StartNode.End.ConvertConventions(widened.startRange);
-                //widened.endRange = connection.EndNode.End.ConvertConventions(widened.endRange);
-
-                var (pos1L, pos1R, pos2L, pos2R) = RoadRenderer.GetPositionsForGenerateSplines(widened);
-                /*var pos1L = widened.startRange.Min;
+                widened.startRange = connection.StartNode.End.ConvertConventions(widened.startRange);
+                widened.endRange = connection.EndNode.OppositeEnd.End.ConvertConventions(widened.endRange);
+                var pos1L = widened.startRange.Min;
                 var pos1R = widened.startRange.Max;
                 var pos2L = widened.endRange.Min;
-                var pos2R = widened.endRange.Max;*/
-
-
+                var pos2R = widened.endRange.Max;
                 int numberOfPoints = 32;
                 var path = new PathD();
                 for(int i = 0; i < numberOfPoints; i++) {
                     var t = (float)i / (numberOfPoints-1);
-                    path.Add(new(MathHelper.SmoothStep(pos1R, pos2L, t), t));
+                    path.Add(new(MathHelper.SmoothStep(pos1R, pos2R, t), t));
                 }
                 for (int i = 0; i < numberOfPoints; i++) {
                     var t = (float)i / (numberOfPoints - 1);
                     t = 1 - t;
-                    path.Add(new(MathHelper.SmoothStep(pos1L, pos2R, t), t));
+                    path.Add(new(MathHelper.SmoothStep(pos1L, pos2L, t), t));
                 }
                 var polygon = new Polygon(path, FillRule.EvenOdd);
                 polygons.Add(polygon);
@@ -191,8 +181,7 @@ namespace TranSimCS.Roads.Strip {
             
 
             //Back-transform the paths
-            //foreach (var path in islandsPoly.path)
-            foreach (var path in globalPolygon.path) //Render the full-road island as a test
+            foreach (var path in islandsPoly.path)
                 DrawIsland(Surface.Grass, Surface.Concrete, renderHelper, splineFrame, path, 0.1f, length);
             
         }
