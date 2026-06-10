@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Clipper2Lib;
+using LanguageExt.UnitsOfMeasure;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Debugging;
@@ -25,12 +26,9 @@ namespace TranSimCS.Roads.Strip {
 
             Mesh roadBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
             foreach (var lane in connection.Lanes) {
-                //It this throws, the strip gets its draw mehod called
-                //throw null;
                 renderHelper.AddAll(lane.GetMesh());
             }
                 
-
             //Draw the road finish
             var finish = connection.Finish;
             var texture = finish.subsurface.GetTexture();
@@ -105,7 +103,6 @@ namespace TranSimCS.Roads.Strip {
 
             //If this segment is single-ended, draw the inner island
             if (connection.IsSingleEnded()) {
-
                 float[] array = [bounds.leftStart, bounds.rightStart, bounds.leftEnd, bounds.rightEnd];
                 Array.Sort(array);
                 float a = array[1];
@@ -131,6 +128,11 @@ namespace TranSimCS.Roads.Strip {
 
             //If the road is only 1 lane, do not render the islands
             if (connection.Lanes.Count < 2) return;
+            RenderRoadSegmentPolygons(connection, renderHelper, length);
+        }
+
+        public static void RenderRoadSegmentPolygons(RoadStrip connection, MultiMesh renderHelper, float length) {
+            var splineFrame = connection.SplineFrame;
 
             //Find fill polygons for lane strips
             var laneRanges = new List<LaneRange>();
@@ -139,24 +141,19 @@ namespace TranSimCS.Roads.Strip {
             laneRanges.AddRange(connection.Lanes.Select(lane => lane.Tag()));
 
             List<Polygon> polygons = [];
-            
-            int i = -1;
-            foreach(var lane in laneRanges) {
-                i++;
+            foreach (var lane in laneRanges) {
                 //Widen the lane range
                 float dwidth = 0.001f;
                 var widened = lane;
                 widened.startRange = new(widened.startRange.Min - dwidth, widened.startRange.Max + dwidth);
                 widened.endRange = new(widened.endRange.Min - dwidth, widened.endRange.Max + dwidth);
                 var strip = RoadRenderer.GenerateSplines(widened);
-                var leftSpline = strip.Item1;
-                var rightSpline = strip.Item2.Inverse();
+                var leftSpline = strip.Left;
+                var rightSpline = strip.Right.Inverse();
                 var leftPoints = GenerateSplinePoints(leftSpline);
                 var rightPoints = GenerateSplinePoints(rightSpline);
                 var mergedPoints = leftPoints.Concat(rightPoints);
-                var mergedPoint = mergedPoints.First();
-                Debug.Print($"Point: {mergedPoint}");
-                var unraveledPoints = mergedPoints.Select(pt => splineFrame.UnTransform(pt));
+                var unraveledPoints = mergedPoints.Select(pt => splineFrame.UnTransform(pt)); //It seems that UnTransform is not perfect and misplaces points
                 var path = FlattenPath(unraveledPoints);
                 var polygon = new Polygon(path, FillRule.EvenOdd);
                 polygons.Add(polygon);
@@ -165,37 +162,18 @@ namespace TranSimCS.Roads.Strip {
             //Create the global polygon
             var globalPolygon = polygons[0];
             var lanePolygons = polygons.Skip(1).ToArray();
-            Debug.Print($"{lanePolygons.Length} lane polygons");
-            //Slightly enlarge the lane polygons to prevent degeneration
-            //lanePolygons = lanePolygons.Select(poly => poly.Offset(0.001)).ToArray();
 
             //Perform the separation logic
             var islandsPoly = globalPolygon.SubtractMore(lanePolygons);
-            Debug.Print($"Island: {islandsPoly.path.Count}");
 
             //Back-transform the paths
-            foreach(var path in islandsPoly.path) {
+            foreach (var path in islandsPoly.path) {
                 DrawIsland(Surface.Grass, Surface.Concrete, renderHelper, splineFrame, path, 0.1f, length);
             }
         }
 
         public static PathD FlattenPath(IEnumerable<Vector3> points) => new PathD(points.Select(v => new PointD(v.X, v.Z)));
 
-        public static void DebugPolygon(MultiMesh mesh, Polygon polygon, Color c, Vector3 position, float stretch = 50) {
-            //Debug.Print("DebugPolygon");
-            var renderBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
-            foreach (var loop in polygon.path) {
-                //Debug.Print("DebugPolygon loop");
-                for (int i = 0; i < loop.Count; i++) {   
-                    var prev = loop[i];
-                    var next = loop[(i + 1) % loop.Count];
-                    var p1 = UnmapPolyPoint(prev, stretch);
-                    var p2 = UnmapPolyPoint(next, stretch);
-                    //Debug.Print($"DebugPolygon vert {i} @ {p1}");
-                    renderBin.DrawLine(p1, p2, Vector3.UnitY, c);
-                }
-            }
-        }
         public static Vector3 UnmapPolyPoint(PointD p, float stretch = 50) {
             float x = (float)p.x - 200;
             float y = 0.1f;

@@ -128,20 +128,6 @@ namespace TranSimCS.Roads {
             //Ensure the node ordering
             if (laneTag.road.StartNode.End == NodeEnd.Backward) (pos1L, pos1R) = (pos1R, pos1L);
             if (laneTag.road.EndNode.End == NodeEnd.Backward) (pos2L, pos2R) = (pos2R, pos2L);
-            /*if (laneTag.road.StartNode == laneTag.road.EndNode){
-                //Degenerate case: Both have the same end
-                var theNode = laneTag.road.StartNode;
-                var refframe = theNode.CalcReferenceFrame();
-                if (theNode.End == NodeEnd.Backward) refframe.X *= -1;
-                var p1l = refframe.O + pos1L * refframe.X;
-                var p1r = refframe.O + pos1R * refframe.X;
-                var p2l = refframe.O + pos2L * refframe.X;
-                var p2r = refframe.O + pos2R * refframe.X;
-                return (
-                    GeometryUtils.GenerateJoinSpline(p1l, p2l, refframe.Z, refframe.Z),
-                    GeometryUtils.GenerateJoinSpline(p1r, p2r, refframe.Z, refframe.Z)
-                );
-            }*/
             return (
                 laneTag.road.GenerateSpline(pos1L, pos2L, voffset),
                 laneTag.road.GenerateSpline(pos1R, pos2R, voffset)
