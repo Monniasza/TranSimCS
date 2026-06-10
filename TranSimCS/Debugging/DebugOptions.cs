@@ -8,5 +8,6 @@ namespace TranSimCS.Debugging {
     public static class DebugOptions {
         public static readonly bool DebugIslands = true;
         public static readonly bool DebugSectionFences = false;
+        public static readonly bool DebugSplineFrames = true;
     }
 }

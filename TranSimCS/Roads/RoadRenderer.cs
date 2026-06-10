@@ -120,17 +120,32 @@ namespace TranSimCS.Roads {
             renderer.AddTagsToLastTriangles(triangleCount, tagToUse); // Add tags to the last triangles in the strip
         }
 
-        public static (Bezier3 Left, Bezier3 Right) GenerateSplines(LaneRange laneTag, float voffset = 0) {
-            var pos1L = laneTag.startRange.Min;
-            var pos1R = laneTag.startRange.Max;
-            var pos2L = laneTag.endRange.Max;
-            var pos2R = laneTag.endRange.Min;
+        public static (float pos1L, float pos1R, float pos2L, float pos2R) GetPositionsForGenerateSplines(LaneRange laneRange) {
+            var pos1L = laneRange.startRange.Min;
+            var pos1R = laneRange.startRange.Max;
+            var pos2L = laneRange.endRange.Max;
+            var pos2R = laneRange.endRange.Min;
             //Ensure the node ordering
-            if (laneTag.road.StartNode.End == NodeEnd.Backward) (pos1L, pos1R) = (pos1R, pos1L);
-            if (laneTag.road.EndNode.End == NodeEnd.Backward) (pos2L, pos2R) = (pos2R, pos2L);
+            if (laneRange.road.StartNode.End == NodeEnd.Backward) (pos1L, pos1R) = (pos1R, pos1L);
+            if (laneRange.road.EndNode.End == NodeEnd.Backward) (pos2L, pos2R) = (pos2R, pos2L);
+            return (pos1L, pos1R, pos2L, pos2R);
+        }
+        public static (float pos1L, float pos1R, float pos2L, float pos2R) GetPositionsForGenerateSplines2(LaneRange laneRange) {
+            var pos1L = laneRange.startRange.Min;
+            var pos1R = laneRange.startRange.Max;
+            var pos2L = laneRange.endRange.Max;
+            var pos2R = laneRange.endRange.Min;
+            //Ensure the node ordering
+            if (laneRange.road.StartNode.End == NodeEnd.Backward) (pos1L, pos1R) = (-pos1R, -pos1L);
+            if (laneRange.road.EndNode.End == NodeEnd.Backward) (pos2L, pos2R) = (-pos2R, -pos2L);
+            return (pos1L, pos1R, pos2L, pos2R);
+        }
+
+        public static (Bezier3 Left, Bezier3 Right) GenerateSplines(LaneRange laneRange, float voffset = 0) {
+            var (pos1L, pos1R, pos2L, pos2R) = GetPositionsForGenerateSplines(laneRange);
             return (
-                laneTag.road.GenerateSpline(pos1L, pos2L, voffset),
-                laneTag.road.GenerateSpline(pos1R, pos2R, voffset)
+                laneRange.road.GenerateSpline(pos1L, pos2L, voffset),
+                laneRange.road.GenerateSpline(pos1R, pos2R, voffset)
             );
         }
 

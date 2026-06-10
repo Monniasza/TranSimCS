@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Clipper2Lib;
 using LanguageExt.UnitsOfMeasure;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended.Collections;
 using TranSimCS.Debugging;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
@@ -126,6 +128,11 @@ namespace TranSimCS.Roads.Strip {
                 DrawIsland(Surface.Grass, Surface.Concrete, renderHelper, nodeSplineFrame, new PathD(pointsFlat), 0.1f, length);
             }
 
+            //Test SplineFrames
+            if (DebugOptions.DebugSplineFrames) {
+
+            }
+
             //If the road is only 1 lane, do not render the islands
             if (connection.Lanes.Count < 2) return;
             RenderRoadSegmentPolygons(connection, renderHelper, length);
@@ -147,14 +154,19 @@ namespace TranSimCS.Roads.Strip {
                 var widened = lane;
                 widened.startRange = new(widened.startRange.Min - dwidth, widened.startRange.Max + dwidth);
                 widened.endRange = new(widened.endRange.Min - dwidth, widened.endRange.Max + dwidth);
-                var strip = RoadRenderer.GenerateSplines(widened);
-                var leftSpline = strip.Left;
-                var rightSpline = strip.Right.Inverse();
-                var leftPoints = GenerateSplinePoints(leftSpline);
-                var rightPoints = GenerateSplinePoints(rightSpline);
-                var mergedPoints = leftPoints.Concat(rightPoints);
-                var unraveledPoints = mergedPoints.Select(pt => splineFrame.UnTransform(pt)); //It seems that UnTransform is not perfect and misplaces points
-                var path = FlattenPath(unraveledPoints);
+
+                var (pos1L, pos1R, pos2L, pos2R) = RoadRenderer.GetPositionsForGenerateSplines(widened);
+                int numberOfPoints = 32;
+                var path = new PathD();
+                for(int i = 0; i < numberOfPoints; i++) {
+                    var t = (float)i / (numberOfPoints-1);
+                    path.Add(new(MathHelper.SmoothStep(pos1R, pos2R, t), t));
+                }
+                for (int i = 0; i < numberOfPoints; i++) {
+                    var t = (float)i / (numberOfPoints - 1);
+                    t = 1 - t;
+                    path.Add(new(MathHelper.SmoothStep(pos1L, pos2L, t), t));
+                }
                 var polygon = new Polygon(path, FillRule.EvenOdd);
                 polygons.Add(polygon);
             }
@@ -166,20 +178,16 @@ namespace TranSimCS.Roads.Strip {
             //Perform the separation logic
             var islandsPoly = globalPolygon.SubtractMore(lanePolygons);
 
+            
+
             //Back-transform the paths
-            foreach (var path in islandsPoly.path) {
+            //foreach (var path in islandsPoly.path)
+            foreach (var path in globalPolygon.path) //Render the full-road island as a test
                 DrawIsland(Surface.Grass, Surface.Concrete, renderHelper, splineFrame, path, 0.1f, length);
-            }
+            
         }
 
         public static PathD FlattenPath(IEnumerable<Vector3> points) => new PathD(points.Select(v => new PointD(v.X, v.Z)));
-
-        public static Vector3 UnmapPolyPoint(PointD p, float stretch = 50) {
-            float x = (float)p.x - 200;
-            float y = 0.1f;
-            float z = (float)p.y;
-            return new Vector3(x, y, z * stretch - 60);
-        }
 
         public static void DrawIsland(Surface surface, Surface sideSurface, MultiMesh mesh, SplineFrame frm, PathD path, float h, float stretch) {
             var area = Clipper.Area(path);
@@ -192,7 +200,7 @@ namespace TranSimCS.Roads.Strip {
             //Reject polygons with a tiny width
             var perimeter = Polygon.Perimeter(path);
             var avgWidth = area / perimeter;
-            if (avgWidth < 0.01) return;
+            //if (avgWidth < 0.01) return;
 
             if (DebugOptions.DebugIslands) {
                 var retransformedPointsHighUp = Retransform(frm, path, h * 2).ToArray();
@@ -216,12 +224,9 @@ namespace TranSimCS.Roads.Strip {
             if(mesh.TryGetOrCreateRenderBin(surface.GetTexture(), out var topRenderBin)) {
                 //Triangulate first in 2D
                 var transformedPath = path.Select(p => new PointD(p.x, p.y * stretch)).ToArray();
-                //transformedPath.Reverse();
-                //var triangulation = Triangulate2D.TriangulatePolygon(transformedPath).ToArray();
                 var triangulation = Triangulate2D.LongitudinalTriangulate(transformedPath);
                 var requiredTriCount = (path.Count - 2) * 3;
                 Debug.Print($"Requested idx count: {requiredTriCount} triangulation: {triangulation.Length}");
-                
 
                 //Fill the top
                 var vertices = retransformedPointsUp.Select(CreateVertex).ToArray();
