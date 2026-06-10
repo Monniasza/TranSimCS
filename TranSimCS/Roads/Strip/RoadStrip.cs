@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using NLog;
-using TranSimCS.Geometry;
+using TranSimCS.Geometry.SplineFrames;
 using TranSimCS.Model;
 using TranSimCS.Property;
 using TranSimCS.Roads.Node;

@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Collections;
 using TranSimCS.Debugging;
 using TranSimCS.Geometry;
+using TranSimCS.Geometry.SplineFrames;
 using TranSimCS.Model;
 using TranSimCS.Polygons;
 using TranSimCS.Roads.Node;
@@ -139,7 +140,7 @@ namespace TranSimCS.Roads.Strip {
         }
 
         public static void RenderRoadSegmentPolygons(RoadStrip connection, MultiMesh renderHelper, float length) {
-            var splineFrame = connection.SplineFrame;
+            var splineFrame = connection.SplineFrame.ConvertConventions(connection.StartNode.End, connection.EndNode.End);
 
             //Find fill polygons for lane strips
             var laneRanges = new List<LaneRange>();
@@ -155,17 +156,26 @@ namespace TranSimCS.Roads.Strip {
                 widened.startRange = new(widened.startRange.Min - dwidth, widened.startRange.Max + dwidth);
                 widened.endRange = new(widened.endRange.Min - dwidth, widened.endRange.Max + dwidth);
 
+                //widened.startRange = connection.StartNode.End.ConvertConventions(widened.startRange);
+                //widened.endRange = connection.EndNode.End.ConvertConventions(widened.endRange);
+
                 var (pos1L, pos1R, pos2L, pos2R) = RoadRenderer.GetPositionsForGenerateSplines(widened);
+                /*var pos1L = widened.startRange.Min;
+                var pos1R = widened.startRange.Max;
+                var pos2L = widened.endRange.Min;
+                var pos2R = widened.endRange.Max;*/
+
+
                 int numberOfPoints = 32;
                 var path = new PathD();
                 for(int i = 0; i < numberOfPoints; i++) {
                     var t = (float)i / (numberOfPoints-1);
-                    path.Add(new(MathHelper.SmoothStep(pos1R, pos2R, t), t));
+                    path.Add(new(MathHelper.SmoothStep(pos1R, pos2L, t), t));
                 }
                 for (int i = 0; i < numberOfPoints; i++) {
                     var t = (float)i / (numberOfPoints - 1);
                     t = 1 - t;
-                    path.Add(new(MathHelper.SmoothStep(pos1L, pos2L, t), t));
+                    path.Add(new(MathHelper.SmoothStep(pos1L, pos2R, t), t));
                 }
                 var polygon = new Polygon(path, FillRule.EvenOdd);
                 polygons.Add(polygon);
@@ -236,7 +246,7 @@ namespace TranSimCS.Roads.Strip {
         }
 
         public static IEnumerable<Vector3> Retransform(SplineFrame frame, IEnumerable<PointD> pts, float z = 0) {
-            return pts.Select(pt => frame.Transform(new((float)pt.x, z, (float)pt.y)));
+            return pts.Select(pt => frame.TransformNodeConvention(new((float)pt.x, z, (float)pt.y)));
         }
 
         public static void GenerateEndCap(Vector3 ul, Vector3 ur, Vector3 dr, Vector3 dl, float width, float height, float expand, Mesh mesh) {

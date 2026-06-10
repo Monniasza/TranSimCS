@@ -6,27 +6,26 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Roads.Node;
 using TranSimCS.Spline;
 
-namespace TranSimCS.Roads {
+namespace TranSimCS.Geometry.SplineFrames {
     public struct SplineFrame {
         public Bezier3 CenterSpline;
         public Bezier3 XPlusSpline;
         public Bezier3 YPlusSpline;
-        public Bezier3 ZPlusSpline;
 
-        public SplineFrame(Bezier3 centerSpline, Bezier3 xPlusSpline, Bezier3 yPlusSpline, Bezier3 zPlusSpline) {
+        public SplineFrame(Bezier3 centerSpline, Bezier3 xPlusSpline, Bezier3 yPlusSpline) {
             CenterSpline = centerSpline;
             XPlusSpline = xPlusSpline;
             YPlusSpline = yPlusSpline;
-            ZPlusSpline = zPlusSpline;
         }
 
         public Bezier3 CreateFromStartEnd(Vector3 relStart, Vector3 relEnddd) {
-            var A = CenterSpline.a + relStart.X * XPlusSpline.a + relStart.Y * YPlusSpline.a + relStart.Z * ZPlusSpline.a;
-            var B = CenterSpline.b + relStart.X * XPlusSpline.b + relStart.Y * YPlusSpline.b + relStart.Z * ZPlusSpline.b;
-            var C = CenterSpline.c + relEnddd.X * XPlusSpline.c + relEnddd.Y * YPlusSpline.c + relEnddd.Z * ZPlusSpline.c;
-            var D = CenterSpline.d + relEnddd.X * XPlusSpline.d + relEnddd.Y * YPlusSpline.d + relEnddd.Z * ZPlusSpline.d;
+            var A = CenterSpline.a + relStart.X * XPlusSpline.a + relStart.Y * YPlusSpline.a;
+            var B = CenterSpline.b + relStart.X * XPlusSpline.b + relStart.Y * YPlusSpline.b;
+            var C = CenterSpline.c + relEnddd.X * XPlusSpline.c + relEnddd.Y * YPlusSpline.c;
+            var D = CenterSpline.d + relEnddd.X * XPlusSpline.d + relEnddd.Y * YPlusSpline.d;
             return new Bezier3 (A, B, C, D);
         }
         public Bezier3 CreateFromPosition(Vector3 position) => CreateFromStartEnd(position, position);
@@ -63,7 +62,8 @@ namespace TranSimCS.Roads {
             var y = Vector3.Dot(d, vY);
             return new Vector3(x, y, midpoint);
         }
-        public Vector3 Transform(Vector3 input) {
+
+        public Vector3 TransformNodeConvention(Vector3 input) {
             var pO = CenterSpline[input.Z];
             var pX = XPlusSpline[input.Z];
             var pY = YPlusSpline[input.Z];
@@ -71,9 +71,26 @@ namespace TranSimCS.Roads {
         }
 
 
-        public static float SignedDistance(Vector3 position, Vector3 normal, Vector3 subject) {
-            normal.Normalize();
-            return Vector3.Dot((subject - position), normal);
+        public static float SignedDistance(Vector3 position, Vector3 normal, Vector3 subject) =>
+            Vector3.Dot(subject - position, normal.Normalized());
+
+        /// <summary>
+        /// Converts between node and transform conventions
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
+        public SplineFrame ConvertConventions(NodeEnd start, NodeEnd end) {
+            SplineFrame frame = this;
+            if(start == NodeEnd.Backward) {
+                frame.XPlusSpline.a *= -1;
+                frame.XPlusSpline.b *= -1;
+            }
+            if (end == NodeEnd.Forward) {
+                frame.XPlusSpline.c *= -1;
+                frame.XPlusSpline.d *= -1;
+            }
+            return frame;
         }
     }
 }

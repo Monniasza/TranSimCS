@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
-using TranSimCS.Roads;
+using TranSimCS.Geometry.SplineFrames;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 
