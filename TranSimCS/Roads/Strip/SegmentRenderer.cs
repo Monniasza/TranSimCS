@@ -177,9 +177,6 @@ namespace TranSimCS.Roads.Strip {
 
             //Perform the separation logic
             var islandsPoly = globalPolygon.SubtractMore(lanePolygons);
-
-            
-
             //Back-transform the paths
             foreach (var path in islandsPoly.path)
                 DrawIsland(Surface.Grass, Surface.Concrete, renderHelper, splineFrame, path, 0.1f, length);
