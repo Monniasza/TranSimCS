@@ -7,15 +7,15 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
 using TranSimCS.Roads;
 
-namespace TranSimCS.Tools.Panels {
-    public class RoadConfigurator : Panel {
+namespace TranSimCS.Tools {
+    public class LaneSpecTools : Panel {
         public readonly Property<LaneSpec> laneSpecProp;
         private Panel indicator;
         public readonly Checkbox[] checks;
         public TextField inR, inG, inB, inA;
-        public RoadConfigurator(InGameMenu menu)
+        public LaneSpecTools(InGameMenu menu)
             : base(Anchor.AutoLeft, new (1, 1), true) {
-            this.laneSpecProp = menu.configuration.LaneSpecProp;
+            laneSpecProp = menu.configuration.LaneSpecProp;
 
             //Color selector
             inR = SetUpProp("Red: ", this, ls => ls.Color.R.ToString(), (s) => {

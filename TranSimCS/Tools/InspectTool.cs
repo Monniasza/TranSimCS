@@ -13,7 +13,7 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 
-namespace TranSimCS.Tools.Inspect {
+namespace TranSimCS.Tools {
     public class InspectTool(InGameMenu game) : ITool {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
 

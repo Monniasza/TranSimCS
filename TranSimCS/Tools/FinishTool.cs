@@ -12,12 +12,12 @@ using TranSimCS.Roads.Section;
 using TranSimCS.Tools.Panels;
 
 namespace TranSimCS.Tools {
-    public class RoadFinishTool : ITool {
+    public class FinishTool : ITool {
         private InGameMenu menu;
-        public RoadFinishTool(InGameMenu menu) {
+        public FinishTool(InGameMenu menu) {
             this.menu = menu;
             FinishProp = menu.configuration.RoadFinishProp;
-            tab = menu.ToolsPanel.GetPanel<RoadFinishTab>(ToolAttribs.showFinishes);
+            tab = menu.ToolsPanel.GetPanel<FinishTools>(ToolAttribs.showFinishes);
         }
 
         public string Name => "Edit road finishes";
@@ -27,7 +27,7 @@ namespace TranSimCS.Tools {
         public Property<RoadFinish> FinishProp;
         public RoadFinish Finish { get => FinishProp.Value; set => FinishProp.Value = value; }
 
-        private RoadFinishTab tab;
+        private FinishTools tab;
 
         private Property<RoadFinish>? GetRoadFinishProp() {
             var selectedRoadStrip = menu.MouseOverRoad?.SelectedLaneTag?.road;

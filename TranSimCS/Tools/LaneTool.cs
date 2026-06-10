@@ -13,17 +13,17 @@ using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 
-namespace TranSimCS.Tools.LaneEditor {
-    public class LaneEditorTool: ITool {
+namespace TranSimCS.Tools {
+    public class LaneTool: ITool {
         public string Name => "Lane Editor";
 
         public string Description => "Manipulate lanes precisely";
 
-        public LaneEditorTool(InGameMenu menu) {
+        public LaneTool(InGameMenu menu) {
             this.menu = menu;
-            this.laneTools = menu.ToolsPanel.GetPanel<LaneTools>(ToolAttribs.showLaneManip);
-            this.DeltaXProp = new(0, "deltax");
-            this.DraggedLaneProp = new(null, "lane");
+            laneTools = menu.ToolsPanel.GetPanel<LaneTools>(ToolAttribs.showLaneManip);
+            DeltaXProp = new(0, "deltax");
+            DraggedLaneProp = new(null, "lane");
         }
 
         public readonly InGameMenu menu;
@@ -93,7 +93,6 @@ namespace TranSimCS.Tools.LaneEditor {
                         DraggedLane.Bounds = new(newLeft, newRight);
                         DeltaX += difference;
                     }
-                    
                 }
             }
 
@@ -108,7 +107,7 @@ namespace TranSimCS.Tools.LaneEditor {
                 var newPos = GeometryUtils.IntersectRayPlane(nextMouse, plane);
                 var oldX = Vector3.Dot(oldPos - refframe.O, refframe.X);
                 var newX = Vector3.Dot(newPos - refframe.O, refframe.X);
-                DeltaX += (newX - oldX);
+                DeltaX += newX - oldX;
 
                 //Snap the values
                 //Handle relative snapping

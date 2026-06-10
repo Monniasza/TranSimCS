@@ -12,11 +12,11 @@ using TranSimCS.Roads.Section;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Tools {
-    public class SecGen: ITool {
+    public class SectionTool: ITool {
         public readonly InGameMenu Menu;
         public RoadSection? section;
 
-        public SecGen(InGameMenu world) {
+        public SectionTool(InGameMenu world) {
             Menu = world;
         }
 

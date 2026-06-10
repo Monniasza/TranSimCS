@@ -8,7 +8,7 @@ using TranSimCS.Collections;
 using TranSimCS.Geometry;
 using TranSimCS.Worlds;
 
-namespace TranSimCS.Tools.Inspect {
+namespace TranSimCS.Tools {
     public static class InspectMethods {
         public static ObservableList<Inspector> inspectors = [];
 

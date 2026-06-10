@@ -6,18 +6,17 @@ using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
 using TranSimCS.Roads.Node;
-using TranSimCS.Tools.Panels;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Tools {
-    public class PrecPos: ITool {
+    public class PrecPosTool: ITool {
 
         public readonly InGameMenu menu;
         public readonly PrecPosTools tools;
         public readonly Property<IPosition?> selectionProp;
         public IPosition? Selection { get => selectionProp.Value; set => selectionProp.Value = value; }
 
-        public PrecPos(InGameMenu menu) {
+        public PrecPosTool(InGameMenu menu) {
             this.menu = menu;
             this.tools = menu.ToolsPanel.GetPanel<PrecPosTools>(ToolAttribs.showPosManip);
             this.selectionProp = new(null, "sel", null, Equality.ReferenceEqualComparer<IPosition?>());

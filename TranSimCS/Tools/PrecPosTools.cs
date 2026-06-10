@@ -11,7 +11,7 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
 using TranSimCS.Worlds;
 
-namespace TranSimCS.Tools.Panels {
+namespace TranSimCS.Tools {
     public class PrecPosTools : Panel {
         public readonly Property<float> heightProp;
         public readonly NumberField heightIncrement;
@@ -35,7 +35,7 @@ namespace TranSimCS.Tools.Panels {
         public PrecPosTools(InGameMenu menu) : base(MLEM.Ui.Anchor.AutoLeft, new(1, 1), true) {
             //Set up properties
             prop = new Property<ObjPos>(ObjPos.Zero, "pos", null);
-            Resolver<ObjPos> preferB = Resolvers.PreferB<ObjPos>;
+            Resolver<ObjPos> preferB = Resolvers.PreferB;
             link = new(preferB, preferB);
             link.A = prop;
 
@@ -50,35 +50,35 @@ namespace TranSimCS.Tools.Panels {
             tiltIncrement = UI.SetUpFloatProp("Tilt increment", this, tiltProp);
 
             //Set up positioning fields
-            x = UI.SetUpReplacementField<ObjPos>("X position (W-E)", this, x => x.Position.X, (p, v) => {
+            x = UI.SetUpReplacementField("X position (W-E)", this, x => x.Position.X, (p, v) => {
                 var P = p.Position;
                 P.X = v;
                 p.Position = P;
                 return p; 
             }, prop);
-            y = UI.SetUpReplacementField<ObjPos>("Y position (height)", this, x => x.Position.Y, (p, v) => {
+            y = UI.SetUpReplacementField("Y position (height)", this, x => x.Position.Y, (p, v) => {
                 var P = p.Position;
                 P.Y = v;
                 p.Position = P;
                 return p;
             }, prop);
-            z = UI.SetUpReplacementField<ObjPos>("Z position (S-N)", this, x => x.Position.Z, (p, v) => {
+            z = UI.SetUpReplacementField("Z position (S-N)", this, x => x.Position.Z, (p, v) => {
                 var P = p.Position;
                 P.Z = v;
                 p.Position = P;
                 return p;
             }, prop);
-            yaw = UI.SetUpReplacementField<ObjPos>("Azimuth (forward vs north)", this, x => GeometryUtils.FieldToDegs(x.Azimuth), (p, v) => {
+            yaw = UI.SetUpReplacementField("Azimuth (forward vs north)", this, x => GeometryUtils.FieldToDegs(x.Azimuth), (p, v) => {
                 p.Azimuth = GeometryUtils.DegsToField(v);
                 return p;
             }, prop);
             
-            pitch = UI.SetUpReplacementField<ObjPos>("Pitch (forward vs horizontal)", this, x => MathHelper.ToDegrees(x.Inclination), (p, v) => {
+            pitch = UI.SetUpReplacementField("Pitch (forward vs horizontal)", this, x => MathHelper.ToDegrees(x.Inclination), (p, v) => {
                 p.Inclination = MathHelper.ToRadians(v);
                 return p;
             }, prop);
 
-            roll = UI.SetUpReplacementField<ObjPos>("Roll (lateral vs ground)", this, x => MathHelper.ToDegrees(x.Tilt), (p, v) => {
+            roll = UI.SetUpReplacementField("Roll (lateral vs ground)", this, x => MathHelper.ToDegrees(x.Tilt), (p, v) => {
                 p.Tilt = MathHelper.ToRadians(v);
                 return p;
             }, prop);

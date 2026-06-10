@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 
-namespace TranSimCS.Tools.RoadCreation {
+namespace TranSimCS.Tools {
     public interface RoadMode {
         public string Name { get; }
         public void CreateValues(RoadPlan plan);

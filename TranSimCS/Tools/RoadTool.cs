@@ -17,7 +17,7 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
-namespace TranSimCS.Tools.RoadCreation {
+namespace TranSimCS.Tools {
     public class RoadPlan {
         public Vector3 startTangent;
         public Vector3 startPos;
@@ -61,7 +61,7 @@ namespace TranSimCS.Tools.RoadCreation {
         public LaneSpec ChainValues(InGameMenu game) => game.configurator.laneSpecProp.Value;
     }
 
-    public class RoadCreationTool: ITool {
+    public class RoadTool: ITool {
         private static Logger log = LogManager.GetCurrentClassLogger();
 
         public static readonly ChainMode chained = ChainModeChained.value;
@@ -94,7 +94,7 @@ namespace TranSimCS.Tools.RoadCreation {
         public RoadMode Mode { get; set; } = new CircMode();
 
         public readonly InGameMenu menu;
-        public RoadCreationTool(InGameMenu menu) {
+        public RoadTool(InGameMenu menu) {
             this.menu = menu;
             RoadTools = menu.ToolsPanel.GetPanel<RoadTools>(ToolAttribs.showRoadTools);
         }

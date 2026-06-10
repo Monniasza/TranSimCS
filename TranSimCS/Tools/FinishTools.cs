@@ -6,13 +6,13 @@ using TranSimCS.Property;
 using TranSimCS.Roads;
 
 namespace TranSimCS.Tools.Panels {
-    public class RoadFinishTab: Panel{
+    public class FinishTools: Panel{
         private Property<RoadFinish> Finish;
         private NumberField heightField;
         private NumberField angleField;
         private EnumDropdown<Surface> surfaceDropdown;
 
-        public RoadFinishTab(InGameMenu menu): base(MLEM.Ui.Anchor.CenterLeft, new (1, 1), true) {
+        public FinishTools(InGameMenu menu): base(MLEM.Ui.Anchor.CenterLeft, new (1, 1), true) {
             var finish = menu.configuration.RoadFinishProp;
             Finish = finish;
 

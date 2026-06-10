@@ -9,7 +9,7 @@ using MLEM.Ui;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 
-namespace TranSimCS.Tools.Panels {
+namespace TranSimCS.Tools {
     public class SnappingPanel: Panel {
         public InGameMenu Game { get; private set; }
         public Checkbox isYLocal { get; private set; }
@@ -20,7 +20,7 @@ namespace TranSimCS.Tools.Panels {
 
         public SnappingPanel(InGameMenu game)
            : base(Anchor.AutoLeft, new(1, 1), true) {
-            this.Game = game;
+            Game = game;
 
             var settingsLabel = new Paragraph(Anchor.AutoInline, 0.5f, "Settings");
             AddChild(settingsLabel);

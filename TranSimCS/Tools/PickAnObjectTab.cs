@@ -7,7 +7,7 @@ using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Worlds;
 
-namespace TranSimCS.Tools.Panels {
+namespace TranSimCS.Tools {
     public class PickAnObjectTab: Panel{
 
         public readonly InGameMenu menu;
@@ -45,7 +45,7 @@ namespace TranSimCS.Tools.Panels {
 
         public PickAnObjectTab(InGameMenu menu): base(MLEM.Ui.Anchor.AutoLeft, new (1, 1), true) {
             this.menu = menu;
-            this.camera = new CameraIPositionAdapter(menu);
+            camera = new CameraIPositionAdapter(menu);
             AddSelectionButton("Nothing", null);
             AddSelectionButton("Camera", camera);
             AddSelectionButton("Snapping grid", menu.configuration.SnapGrid);
@@ -53,7 +53,7 @@ namespace TranSimCS.Tools.Panels {
 
         private void AddSelectionButton(string title, IPosition? value) {
             Button button = new Button(MLEM.Ui.Anchor.AutoLeft, new(1f, 20), title);
-            button.OnPressed = (e => menu.PrecPosTool.Selection = value);
+            button.OnPressed = e => menu.PrecPosTool.Selection = value;
             AddChild(button);
         }
     }

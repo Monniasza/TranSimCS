@@ -8,7 +8,7 @@ using MLEM.Ui.Style;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
 using TranSimCS.Roads;
-using TranSimCS.Tools.Panels;
+using TranSimCS.Tools;
 
 namespace TranSimCS.Menus {
     internal static class UI {

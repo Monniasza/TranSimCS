@@ -29,8 +29,6 @@ using TranSimCS.Spline;
 using TranSimCS.Tools;
 using TranSimCS.Tools.Inspect;
 using TranSimCS.Tools.LaneEditor;
-using TranSimCS.Tools.Panels;
-using TranSimCS.Tools.RoadCreation;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Menus.InGame {
@@ -78,7 +76,7 @@ namespace TranSimCS.Menus.InGame {
         public bool IsSnapEnabled { get => CheckSnap.Checked; set => CheckSnap.Checked = value; }
 
         //Overlays
-        public RoadConfigurator configurator { get; private set; }
+        public LaneSpecTools configurator { get; private set; }
         public EscapeMenu escapeMenu { get; private set; }
 
         //Colors
@@ -87,8 +85,8 @@ namespace TranSimCS.Menus.InGame {
         private Color roadSegmentHighlightColor = new Color(0, 128, 255, 100); //Color for highlighting selected road segments
         
         //Tools
-        public RoadCreationTool RoadCreationTool { get; private set; }
-        public PrecPos PrecPosTool { get; private set; }
+        public RoadTool RoadCreationTool { get; private set; }
+        public PrecPosTool PrecPosTool { get; private set; }
         public ReadOnlySet<string> ToolAttributes { get => ToolAttributesProp.Value; set => ToolAttributesProp.Value = value; }
         public Property<ReadOnlySet<string>> ToolAttributesProp = new(new ReadOnlySet<string>(new HashSet<string>()), "attributes", null, Equality.SetEquals<string>());
 
@@ -147,26 +145,26 @@ namespace TranSimCS.Menus.InGame {
 
             //Set up the tool panel
             ToolsPanel = new ToolsPanel(this);
-            configurator = ToolsPanel.GetPanel<RoadConfigurator>(ToolAttribs.showLaneSpecs);
+            configurator = ToolsPanel.GetPanel<LaneSpecTools>(ToolAttribs.showLaneSpecs);
 
-            PrecPosTool = new PrecPos(this);
-            RoadCreationTool = new RoadCreationTool(this);
+            PrecPosTool = new PrecPosTool(this);
+            RoadCreationTool = new RoadTool(this);
 
             RoadToolsPanel = ToolsPanel.GetPanel<RoadTools>(ToolAttribs.showRoadTools);
 
 
             SetUpToolPictureButton("noTool", null);
-            SetUpToolPictureButton("ui/blast2", new RoadDemolitionTool(this));
+            SetUpToolPictureButton("ui/blast2", new DemolitionTool(this));
             SetUpToolPictureButton("addRoadTool", RoadCreationTool);
             SetUpToolPictureButton("addNodeTool", new AddNodeTool(this));
             SetUpToolPictureButton("moveTool", new MoveTool(this));
-            SetUpToolPictureButton("bucket", new PaintTool(this));
+            SetUpToolPictureButton("bucket", new LaneSpecTool(this));
             SetUpToolPictureButton("inspect", new InspectTool(this));
-            SetUpToolPictureButton("finish", new RoadFinishTool(this));
+            SetUpToolPictureButton("finish", new FinishTool(this));
             SetUpToolPictureButton("precpos", PrecPosTool);
-            SetUpToolPictureButton("sectionedit", new SecGen(this));
+            SetUpToolPictureButton("sectionedit", new SectionTool(this));
             SetUpToolPictureButton("reverse", new ReverseLaneDirectionTool(this));
-            SetUpToolPictureButton("ui/preceditor", new LaneEditorTool(this));
+            SetUpToolPictureButton("ui/preceditor", new LaneTool(this));
 
             //Set up the tool preview
             ToolDescPanel = new ToolDescriptionPanel(this);

@@ -10,7 +10,7 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
 using TranSimCS.Roads.Node;
 
-namespace TranSimCS.Tools.LaneEditor {
+namespace TranSimCS.Tools {
     public class LaneTools: Panel {
         public Property<Lane?> PickedLaneProp;
         public Property<float> SnappingIncrementProp;

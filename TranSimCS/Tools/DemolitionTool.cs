@@ -14,7 +14,7 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Tools {
-    public class RoadDemolitionTool(InGameMenu game) : ITool {
+    public class DemolitionTool(InGameMenu game) : ITool {
 
         private static Logger log = LogManager.GetCurrentClassLogger();
         string ITool.Name => "Road Demolition Tool";
