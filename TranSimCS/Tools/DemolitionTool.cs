@@ -15,10 +15,9 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.Tools {
     public class DemolitionTool(InGameMenu game) : ITool {
-
         private static Logger log = LogManager.GetCurrentClassLogger();
-        string ITool.Name => "Road Demolition Tool";
 
+        string ITool.Name => "Road Demolition Tool";
         string ITool.Description => "Demolish objects and subcomponents";
 
         public void Draw(GameTime gameTime) {
@@ -136,18 +135,6 @@ namespace TranSimCS.Tools {
             }
 
             game.MouseOverRoad = MouseOverRoad;
-        }
-
-        void ITool.OnKeyDown(Keys key) {
-            //unused
-        }
-
-        void ITool.OnKeyUp(Keys key) {
-            //unused
-        }
-
-        void ITool.OnRelease(MouseButton button) {
-            //unused
         }
 
         void ITool.AddAttributes(ISet<string> set) {

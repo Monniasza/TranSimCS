@@ -63,11 +63,18 @@ namespace TranSimCS.Tools {
 
     public class RoadTool: ITool {
         private static Logger log = LogManager.GetCurrentClassLogger();
-
         public static readonly ChainMode chained = ChainModeChained.value;
         public static readonly ChainMode custom = ChainModeCustom.value;
         static readonly Vector3 offset = new Vector3(0, 0.01f, 0);
+
+        public readonly InGameMenu menu;
+        public readonly RoadTools RoadTools;
+
         public Bezier3 GeneratedSpline { get; private set; }
+        public LaneEnd? node { get; set; }
+        public LaneStrip? SegmentAlreadyExists { get; private set; } = null;
+        public ObjPos? NewNodePosition { get; private set; }
+        public RoadMode Mode { get; set; } = new CircMode();
 
         string ITool.Name => "Road creation tool";
 
@@ -88,12 +95,7 @@ namespace TranSimCS.Tools {
             return keys.ToArray();
         }
 
-        public LaneEnd? node { get; set; }
-        public LaneStrip? SegmentAlreadyExists { get; private set; } = null;
-        public ObjPos? NewNodePosition { get; private set; }
-        public RoadMode Mode { get; set; } = new CircMode();
-
-        public readonly InGameMenu menu;
+        
         public RoadTool(InGameMenu menu) {
             this.menu = menu;
             RoadTools = menu.ToolsPanel.GetPanel<RoadTools>(ToolAttribs.showRoadTools);
@@ -157,18 +159,6 @@ namespace TranSimCS.Tools {
                     RoadTools.Height.Value -= RoadTools.HeightStep.Value;
                     break;
             }
-        }
-
-        void ITool.OnKeyUp(Keys key) {
-            //unused
-        }
-
-        void ITool.OnRelease(MouseButton button) {
-            //unused
-        }
-
-        public void Update(GameTime gameTime) {
-            //unused
         }
 
         public void Draw(GameTime gameTime) {
@@ -280,16 +270,11 @@ namespace TranSimCS.Tools {
             }
         }
 
-        public void Draw2D(GameTime gameTime) {
-            //unused
-        }
-
         void ITool.AddSelectors(MultiMesh addTo, MultiMesh visibleSelectors) {
             if(menu.CheckAddLanes.Checked)
                 SelectionUtils.AddAddLaneSelectors(menu);
         }
 
-        public RoadTools RoadTools { get; private set; }
 
         void ITool.AddAttributes(ISet<string> action) {
             action.Add(ToolAttribs.showFinishes);

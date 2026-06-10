@@ -95,14 +95,6 @@ namespace TranSimCS.Tools {
             if (key >= Keys.D1 && key <= Keys.D9) laneCount = key - Keys.D0;
         }
 
-        void ITool.OnKeyUp(Keys key) {
-            //unused
-        }
-
-        void ITool.OnRelease(MouseButton button) {
-            //unused
-        }
-
         void ITool.Update(GameTime gameTime) {
             var refplane = menu.ReferencePlane;
             var selectedPosition = GeometryUtils.IntersectRayPlane(menu.MouseRay, refplane);
