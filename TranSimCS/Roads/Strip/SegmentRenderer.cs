@@ -196,7 +196,7 @@ namespace TranSimCS.Roads.Strip {
             //Reject polygons with a tiny width
             var perimeter = Polygon.Perimeter(path);
             var avgWidth = area / perimeter;
-            //if (avgWidth < 0.01) return;
+            if (avgWidth < 0.01) return;
 
             if (DebugOptions.DebugIslands) {
                 var retransformedPointsHighUp = Retransform(frm, path, h * 2).ToArray();
