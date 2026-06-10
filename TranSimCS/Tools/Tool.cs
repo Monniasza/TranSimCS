@@ -58,42 +58,4 @@ namespace TranSimCS.Tools {
         public const string showSnapOptions = "menuSnap";
         public const string showLaneManip = "menuLane";
     }
-
-    public class EditNodeTool : ITool {
-        public string Name => "Edit road nodes";
-
-        public string Description => "";
-
-        public (object[], string)[] PromptKeys() => [
-            ([MouseButton.Left], "dummy"),
-        ];
-
-        public void Draw(GameTime gameTime) {
-            throw new NotImplementedException();
-        }
-
-        public void Draw2D(GameTime gameTime) {
-            throw new NotImplementedException();
-        }
-
-        public void OnClick(MouseButton button) {
-            throw new NotImplementedException();
-        }
-
-        public void OnKeyDown(Keys key) {
-            throw new NotImplementedException();
-        }
-
-        public void OnKeyUp(Keys key) {
-            throw new NotImplementedException();
-        }
-
-        public void OnRelease(MouseButton button) {
-            throw new NotImplementedException();
-        }
-
-        public void Update(GameTime gameTime) {
-            throw new NotImplementedException();
-        }
-    }
 }
