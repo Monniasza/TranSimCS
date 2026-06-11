@@ -196,7 +196,6 @@ namespace TranSimCS.Roads.Strip {
             //Back-transform the paths
             foreach (var path in islandsPoly.path)
                 DrawIsland(Surface.Grass, Surface.Concrete, renderHelper, splineFrame, path, 0.1f, length);
-            
         }
 
         public static PathD FlattenPath(IEnumerable<Vector3> points) => new PathD(points.Select(v => new PointD(v.X, v.Z)));
