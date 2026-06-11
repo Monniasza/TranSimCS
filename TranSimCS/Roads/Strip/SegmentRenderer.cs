@@ -160,12 +160,12 @@ namespace TranSimCS.Roads.Strip {
                 var path = new PathD();
                 for(int i = 0; i < numberOfPoints; i++) {
                     var t = (float)i / (numberOfPoints-1);
-                    path.Add(new(MathHelper.SmoothStep(pos1R, pos2R, t), t));
+                    path.Add(new(MathHelper.SmoothStep(pos1R, pos2R, t), t * length));
                 }
                 for (int i = 0; i < numberOfPoints; i++) {
                     var t = (float)i / (numberOfPoints - 1);
                     t = 1 - t;
-                    path.Add(new(MathHelper.SmoothStep(pos1L, pos2L, t), t));
+                    path.Add(new(MathHelper.SmoothStep(pos1L, pos2L, t), t * length));
                 }
                 var polygon = new Polygon(path, FillRule.EvenOdd);
                 polygons.Add(polygon);
@@ -177,6 +177,7 @@ namespace TranSimCS.Roads.Strip {
 
             //Perform the separation logic
             var islandsPoly = globalPolygon.SubtractMore(lanePolygons);
+
             //Back-transform the paths
             foreach (var path in islandsPoly.path)
                 DrawIsland(Surface.Grass, Surface.Concrete, renderHelper, splineFrame, path, 0.1f, length);
@@ -191,15 +192,15 @@ namespace TranSimCS.Roads.Strip {
                 path.Reverse();
                 area *= -1;
             }
-            var retransformedPointsUp = Retransform(frm, path, h);
-
             //Reject polygons with a tiny width
             var perimeter = Polygon.Perimeter(path);
             var avgWidth = area / perimeter;
             if (avgWidth < 0.01) return;
 
+            var untransformedPath = path.Select(p => new PointD(p.x, p.y / stretch)).ToArray();
+
             if (DebugOptions.DebugIslands) {
-                var retransformedPointsHighUp = Retransform(frm, path, h * 2).ToArray();
+                var retransformedPointsHighUp = Retransform(frm, untransformedPath, h * 2).ToArray();
                 var roadBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
                 for (int i = 0; i < retransformedPointsHighUp.Length; i++) {
                     var prev = retransformedPointsHighUp[i];
@@ -208,10 +209,9 @@ namespace TranSimCS.Roads.Strip {
                 }
             }
 
-            var averagePosition = retransformedPointsUp.Aggregate((x, y) => x + y);
-
-            if(mesh.TryGetOrCreateRenderBin(sideSurface.GetTexture(), out var sideRenderBin)) {
-                var retransformedPoints = Retransform(frm, path, 0);
+            var retransformedPointsUp = Retransform(frm, untransformedPath, h);
+            if (mesh.TryGetOrCreateRenderBin(sideSurface.GetTexture(), out var sideRenderBin)) {
+                var retransformedPoints = Retransform(frm, untransformedPath, 0);
                 var retransformedPointsCyclic = retransformedPoints.Append(retransformedPoints.First()).ToArray();
                 var retransformedPointsUpCyclic = retransformedPointsUp.Append(retransformedPointsUp.First()).ToArray();
                 var texturedStrip = UniformTexturing.UniformTexturedTwin(retransformedPointsCyclic, retransformedPointsUpCyclic, UniformTexturing.PairStrip());
@@ -219,8 +219,7 @@ namespace TranSimCS.Roads.Strip {
             }
             if(mesh.TryGetOrCreateRenderBin(surface.GetTexture(), out var topRenderBin)) {
                 //Triangulate first in 2D
-                var transformedPath = path.Select(p => new PointD(p.x, p.y * stretch)).ToArray();
-                var triangulation = Triangulate2D.LongitudinalTriangulate(transformedPath);
+                var triangulation = Triangulate2D.LongitudinalTriangulate(path.ToArray());
                 var requiredTriCount = (path.Count - 2) * 3;
                 Debug.Print($"Requested idx count: {requiredTriCount} triangulation: {triangulation.Length}");
 
