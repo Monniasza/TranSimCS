@@ -4,9 +4,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Clipper2Lib;
+using LanguageExt.ClassInstances;
 using LanguageExt.UnitsOfMeasure;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended;
 using MonoGame.Extended.Collections;
 using TranSimCS.Debugging;
 using TranSimCS.Geometry;
@@ -105,33 +107,46 @@ namespace TranSimCS.Roads.Strip {
             var length = lengthL + lengthR;
 
             //If this segment is single-ended, draw the inner island
-            if (connection.IsSingleEnded()) {
-                float[] array = [bounds.leftStart, bounds.rightStart, bounds.leftEnd, bounds.rightEnd];
-                Array.Sort(array);
-                float a = array[1];
-                float b = array[2];
-                if (a < b ^ connection.StartNode.End == NodeEnd.Backward)
-                    DataUtil.Swap(ref a, ref b);
-                var d = MathF.Abs(a - b) * 0.6667f;
-                //var d = 3;
-                var spline = new Bezier3(
-                    new(b, 0, 0), new(b, 0, d), new(a, 0, d), new(a, 0, 0)
-                );
-                var points = GeometryUtils.GenerateSplinePoints(spline);
-                var refframe = connection.StartNode.CalcReferenceFrame();
-                if (connection.StartNode.End == NodeEnd.Backward) refframe.X *= -1;
-                var nodeSplineFrame = new SplineFrame();
-                nodeSplineFrame.CenterSpline = new(refframe.O, refframe.O + refframe.Z);
-                nodeSplineFrame.XPlusSpline = new(refframe.X);
-                nodeSplineFrame.YPlusSpline = new(refframe.Y);
+            if (connection.IsSingleEnded()) 
+                RenderSingleEndedInnerCircle(connection, renderHelper, length);
+            
+            //If the road is only 1 lane, do not render the islands
+            if (connection.Lanes.Count >= 2)
+                RenderRoadSegmentPolygons(connection, renderHelper, length);
+        }
 
-                var pointsFlat = FlattenPath(points);
-                DrawIsland(Surface.Grass, Surface.Concrete, renderHelper, nodeSplineFrame, new PathD(pointsFlat), 0.1f, length);
+        public static void RenderSingleEndedInnerCircle(RoadStrip connection, MultiMesh renderHelper, float length) {
+            //Conpute the limits of the road segment
+            Range<float> leftBounds = default, rightBounds = default;
+            foreach (LaneStrip lane in connection.Lanes) {
+                var boundsA = lane.StartLane.Range();
+                var boundsB = lane.EndLane.Range();
+                var centerA = boundsA.Middle();
+                var centerB = boundsB.Middle();
+                if (centerA > centerB) DataUtil.Swap(ref boundsA, ref boundsB);
+                leftBounds = leftBounds.Union(boundsA);
+                rightBounds = rightBounds.Union(boundsB);
             }
 
-            //If the road is only 1 lane, do not render the islands
-            if (connection.Lanes.Count < 2) return;
-            RenderRoadSegmentPolygons(connection, renderHelper, length);
+            float a = leftBounds.Max;
+            float b = rightBounds.Min;
+            
+            if (connection.StartNode.End == NodeEnd.Backward)
+                (a, b) = (-b, -a);
+            var width = b - a;
+            var d = width * 0.6666666666666666666666666667f;
+            var spline = new Bezier3(
+                new(b, 0, 0), new(b, 0, d), new(a, 0, d), new(a, 0, 0)
+            );
+            var points = GeometryUtils.GenerateSplinePoints(spline);
+            var refframe = connection.StartNode.CalcReferenceFrame();
+            var nodeSplineFrame = new SplineFrame();
+            nodeSplineFrame.CenterSpline = new(refframe.O, refframe.O + refframe.Z);
+            nodeSplineFrame.XPlusSpline = new(refframe.X);
+            nodeSplineFrame.YPlusSpline = new(refframe.Y);
+
+            var pointsFlat = FlattenPath(points);
+            DrawIsland(Surface.Grass, Surface.Concrete, renderHelper, nodeSplineFrame, new PathD(pointsFlat), 0.1f, 1);
         }
 
         public static void RenderRoadSegmentPolygons(RoadStrip connection, MultiMesh renderHelper, float length) {
