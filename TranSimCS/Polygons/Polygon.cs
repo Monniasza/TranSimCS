@@ -30,19 +30,19 @@ namespace TranSimCS.Polygons {
         }
 
         public Polygon Intersect(Polygon other) {
-            var result = Clipper.Intersect(path, other.path, fillRule);
+            var result = Clipper.Intersect(path, other.path, fillRule, 6);
             return new Polygon(result, fillRule);
         }
         public Polygon Union(Polygon other) {
-            var result = Clipper.Union(path, other.path, fillRule);
+            var result = Clipper.Union(path, other.path, fillRule, 6);
             return new Polygon(result, fillRule);
         }
         public Polygon Subtract(Polygon other) {
-            var result = Clipper.Difference(path, other.path, fillRule);
+            var result = Clipper.Difference(path, other.path, fillRule, 6);
             return new Polygon(result, fillRule);
         }
         public Polygon Xor(Polygon other) {
-            var result = Clipper.Xor(path, other.path, fillRule);
+            var result = Clipper.Xor(path, other.path, fillRule, 6);
             return new Polygon (result, fillRule);
         }
 
