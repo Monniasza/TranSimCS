@@ -17,12 +17,15 @@ namespace TranSimCS.Property {
                 if (_backingProp != null) _backingProp.ValueChanged -= HandleBackingValueChanged;
                 _backingProp = newBacking;
                 if (_backingProp != null) _backingProp.ValueChanged += HandleBackingValueChanged;
-                this.Value = _backingProp.Value; // Update local value
+
+                // Synchronize the current value if both backing properties are available
+                if (_backingProp != null) {
+                    this.Value = source.Value.Value;
+                }
             };
 
-            if (_backingProp != null) {
-                _backingProp.ValueChanged += HandleBackingValueChanged;
-            }
+            if (_backingProp != null) _backingProp.ValueChanged += HandleBackingValueChanged;
+            
         }
 
         private void HandleBackingValueChanged(object? sender, PropertyChangedEventArgs2<T> e) {
