@@ -25,7 +25,7 @@ namespace TranSimCS.Tools {
         }
 
         private void SelectionProp_ValueChanged(object? sender, PropertyChangedEventArgs2<IPosition?> e) {
-            tools.link.B = e.NewValue?.PositionProp;
+            tools.movedObjectRef.Value = e.NewValue?.PositionProp;
         }
 
         string ITool.Name => "Fine-tune positioning and orientation";

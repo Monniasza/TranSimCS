@@ -18,5 +18,9 @@ namespace TranSimCS {
             array[a] = array[b];
             array[b] = tmp;
         }
+
+        public static T? OrDefault<T>(T? value) {
+            return value ?? default;
+        }
     }
 }

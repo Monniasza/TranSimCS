@@ -23,8 +23,8 @@ namespace TranSimCS.Tools {
         public readonly NumberField tiltIncrement;
 
         //VALUES
-        public readonly Property<ObjPos> prop;
-        public readonly LinkProps<ObjPos> link;
+        public readonly Property<IProperty<ObjPos>> movedObjectRef;
+        public readonly ChangeableBackedProperty<ObjPos> prop;
         public readonly NumberField x;
         public readonly NumberField y;
         public readonly NumberField z;
@@ -34,10 +34,8 @@ namespace TranSimCS.Tools {
 
         public PrecPosTools(InGameMenu menu) : base(MLEM.Ui.Anchor.AutoLeft, new(1, 1), true) {
             //Set up properties
-            prop = new Property<ObjPos>(ObjPos.Zero, "pos", null);
-            Resolver<ObjPos> preferB = Resolvers.PreferB;
-            link = new(preferB, preferB);
-            link.A = prop;
+            movedObjectRef = new(null, "objref");
+            prop = new("pos", movedObjectRef);
 
             //Set up fields
             heightProp = new(1, "incpY");
