@@ -25,6 +25,8 @@ namespace TranSimCS.Property {
                     this.Value = _backingProp.Value;
             };
 
+            ValueChanged += (s, e) => _backingProp?.Value = e.NewValue;
+
             if (_backingProp != null) _backingProp.ValueChanged += HandleBackingValueChanged;
             
         }
