@@ -69,7 +69,7 @@ namespace TranSimCS.Roads.Strip {
             set {
                 if (_spec == value) return;
                 InvalidateMesh();
-                road.Mesh.Invalidate();
+                road?.Mesh.Invalidate();
                 _spec = value;
             }
         }
