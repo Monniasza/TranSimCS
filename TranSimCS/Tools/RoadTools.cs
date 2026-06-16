@@ -20,7 +20,6 @@ namespace TranSimCS.Tools {
         public Property<float> HeightStep { get; private set; }
         public Property<float> Height {  get; private set; }
         public Property<ChainMode> ChainMode { get; private set; }
-        
         public Property<Alignment> AlignmentProp { get; private set; }
 
 
@@ -49,7 +48,6 @@ namespace TranSimCS.Tools {
             CreateModeButton(new SBendMode(), "ui/sbend");
             curvedButton.Checked = true;
             CreateModeButton(new FromReferenceMode(), "ui/snap");
-
 
             //CreateModeButton("ui/sbend3C", "S-bend, custom direction");
 

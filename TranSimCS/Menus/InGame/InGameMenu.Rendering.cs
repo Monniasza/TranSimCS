@@ -82,7 +82,7 @@ namespace TranSimCS.Menus.InGame {
             //If the add lane button is selected, draw it
             Mesh plusRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Add);
             if (SelectedObject is AddLaneSelection selection)
-                RoadRenderer.CreateAddLane(selection, plusRenderBin, configuration.LaneSpec.Width, roadSegmentHighlightColor, 0.5f);
+                RoadRenderer.CreateAddLane(selection, plusRenderBin, RoadTool.GetActualLaneSpec(this).Width, roadSegmentHighlightColor, 0.5f);
 
             //Render the snapping grid
             if (CheckSnap.Checked) renderHelper.AddAll(configuration.SnapGrid.Mesh.GetMesh());

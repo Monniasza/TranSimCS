@@ -116,7 +116,7 @@ namespace TranSimCS.Tools {
                 var selectedNode = GetLaneEnd();
                 if (menu.SelectedObject is AddLaneSelection als) {
                     //The user wants to create a new lane
-                    var newLaneEnd = als.NewLane(menu.configuration.LaneSpec);
+                    var newLaneEnd = als.NewLane(GetActualLaneSpec(menu));
                     var spec = RoadTools.ChainMode.Value.ChainValues(menu);
                     selectedNode = newLaneEnd;
                     newLaneEnd.lane.Spec = spec;
@@ -187,7 +187,7 @@ namespace TranSimCS.Tools {
                 if (menu.SelectedObject is AddLaneSelection als) {
                     //The user wants to create a new lane
                     var mouseOverNodeEnd = als.nodeEnd;
-                    endWidth = menu.configuration.LaneSpec.Width;
+                    endWidth = GetActualLaneSpec(menu).Width;
                     var range = als.CalculateOffset(endWidth/2);
                     var end = LineEnd.calcLineEnd(mouseOverNodeEnd, range);
                     endTangent = end.Tangential;
@@ -281,6 +281,11 @@ namespace TranSimCS.Tools {
             action.Add(ToolAttribs.showRoadTools);
             action.Add(ToolAttribs.showSnapOptions);
             action.Add(ToolAttribs.showLaneSpecs);
+        }
+
+        public static LaneSpec GetActualLaneSpec(InGameMenu menu) {
+            var roadTab = menu.ToolsPanel.GetPanel<RoadTools>(ToolAttribs.showRoadTools);
+            return roadTab.ChainMode.Value.ChainValues(menu);
         }
     }
 }
