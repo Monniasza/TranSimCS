@@ -17,13 +17,14 @@ namespace TranSimCS.Tools {
         public int Buildings;
         public int Cars;
 
-        public String Format() => $"""
+        public string Format() => $"""
             Vertices: {Vertices}
             Triangles: {Triangles}
             Materials: {Materials}
             Lanes: {Lanes}
             Nodes: {Nodes}
             Segments: {Segments}
+            Strips: {Strips}
             Sections: {Sections}
             Buildings: {Buildings}
             Cars: {Cars}
