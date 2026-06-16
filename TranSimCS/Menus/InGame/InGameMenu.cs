@@ -163,6 +163,7 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("sectionedit", new SectionTool(this));
             SetUpToolPictureButton("reverse", new ReverseLaneDirectionTool(this));
             SetUpToolPictureButton("ui/preceditor", new LaneTool(this));
+            SetUpToolPictureButton("stats", new StatTool(this));
 
             //Set up the tool preview
             ToolDescPanel = new ToolDescriptionPanel(this);

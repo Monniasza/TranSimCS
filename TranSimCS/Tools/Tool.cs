@@ -54,5 +54,6 @@ namespace TranSimCS.Tools {
         public const string disableMMBSnap = "disableSnapKeybind";
         public const string showSnapOptions = "menuSnap";
         public const string showLaneManip = "menuLane";
+        public const string showStats = "menuStats";
     }
 }

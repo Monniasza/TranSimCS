@@ -15,6 +15,8 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.Menus.InGame {
     public partial class InGameMenu {
+        public Stats Stats { get; private set; }
+
         private void DrawHighlights(GameTime time) {
             Mesh renderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
 
@@ -53,31 +55,44 @@ namespace TranSimCS.Menus.InGame {
 
 
         public override void Draw(GameTime time) {
+            //Clear stats
+            Stats stats = default;
+
             //Clear the screen to a solid color and clear the render helper
             renderHelper.Clear();
 
             // Draw the asphalt texture for the road
-            foreach (var roadSegment in World.RoadSegments.data) renderHelper.AddAll(roadSegment.Mesh.GetMesh());
+            stats.Segments = World.RoadSegments.data.Count;
+            foreach (var roadSegment in World.RoadSegments.data) {
+                stats.Strips += roadSegment.Lanes.Count;
+                renderHelper.AddAll(roadSegment.Mesh.GetMesh());
+            }
 
             //Draw road sections
+            stats.Sections = World.RoadSections.data.Count;
             foreach (var section in World.RoadSections.data) renderHelper.AddAll(section.Mesh.GetMesh());
 
             //Draw buildings
+            stats.Buildings = World.Buildings.data.Count;
             foreach (var building in World.Buildings.data) renderHelper.AddAll(building.Mesh.GetMesh());
 
             //Draw cars
+            stats.Cars = World.Cars.data.Count;
             foreach (var car in World.Cars.data) renderHelper.AddAll(car.Mesh.GetMesh());
 
             bool suppressHighlights = ToolAttributes.Contains(ToolAttribs.noHighlights);
             if (!suppressHighlights) DrawHighlights(time);
 
             //Draw node selectors
-            if (CheckNodes.Checked)
-                foreach (var node in World.Nodes.data)
-                    renderHelper.AddAll(node.Mesh.GetMesh());
+            stats.Nodes = World.Nodes.data.Count;
+            foreach (var node in World.Nodes.data) {
+                stats.Lanes += node.Lanes.Count;
+                if (CheckNodes.Checked) renderHelper.AddAll(node.Mesh.GetMesh());
+            }
+                
 
             //Draw SelectorObjects
-            renderHelper.AddAll(SelectorObjects);            
+            renderHelper.AddAll(SelectorObjects);
 
             //If the add lane button is selected, draw it
             Mesh plusRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Add);
@@ -113,9 +128,13 @@ namespace TranSimCS.Menus.InGame {
                 tris += (bin.Indices.Count) / 3;
                 verts += bin.Vertices.Count;
             }
+            stats.Triangles = tris;
+            stats.Vertices = verts;
+            stats.Materials = renderHelper.RenderBins.Count;
+
             renderManager.Render(renderHelper);
 
-            
+            Stats = stats;
         }
 
         private void RenderGround(Vector3 posoffset, Mesh renderBin) {
