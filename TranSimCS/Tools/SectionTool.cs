@@ -57,19 +57,19 @@ namespace TranSimCS.Tools {
         }
         void ITool.OnClick(MouseButton button) {
             if (section == null && button == MouseButton.Left) {
-                
+                var asSection = Menu.MouseOver?.As<RoadSection>();
+                if(asSection != null) {
+                    section = asSection;
+                    return;
+                }
 
                 //Add a section
-                var hitObject = Menu.MouseOver?.Tag;
-                if(hitObject is RoadSection s) {
-                    section = s;
-                }
-                if(hitObject is IRoadElement element) {
-                    var node = element.GetNodeEnd();
-                    if (node == null) return;
-                    section = node.GetOrCreateSection();
-                    section.Finish = Menu.configuration.RoadFinish;
-                }
+                var element = Menu.MouseOver?.AsRoadElement();
+                if (element == null) return;
+                var node = element.GetNodeEnd();
+                if (node == null) return;
+                section = node.GetOrCreateSection();
+                section.Finish = Menu.configuration.RoadFinish;
                 return;
             }else if(section != null) {
                 var hitObject = Menu.MouseOver?.SelectedObj;
