@@ -10,8 +10,8 @@ using TranSimCS.Model;
 namespace TranSimCS.Menus.InGame {
     //Selection-related stuff
     public partial class InGameMenu {
-        public RoadSelection? MouseOverRoad { get; set; } = null; // Store the selected road selection
-        public object? SelectedObject = null;
+        public Selection? MouseOver { get; private set; } = null;
+
         public Vector3 IntersectWithGround(Ray ray) {
             return GeometryUtils.IntersectRayPlane(ray, groundPlane);
         }

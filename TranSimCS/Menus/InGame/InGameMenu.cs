@@ -254,17 +254,9 @@ namespace TranSimCS.Menus.InGame {
         private void HandleInputs(GameTime time, KeyboardState keyboardState, float secondsElapsed, Ray ray) {
             //Selection logic
             float distance = float.MaxValue;
-            object? selection = null;
-            if (!IsMouseOverUI) {
-                var meshes = World.RootGraph;
-                var hovering = meshes.Find(MouseRay, out var selectedNode, out distance, out selection);
-            }
-            SelectedObject = selection;
-            if (selection is LaneStrip laneStrip) 
-                MouseOverRoad = new RoadSelection(laneStrip, distance, ray); // Create a new road selection with the lane tag and intersection distance
-            if (selection is LaneEnd lane) 
-                MouseOverRoad = new RoadSelection(lane, distance, ray);
-            if (MouseOverRoad != null) SelectedObject = MouseOverRoad.hitObject;
+            MouseOver = null;
+            if (!IsMouseOverUI) 
+                MouseOver = Selection.CalculateSelection(World.RootGraph, MouseRay);
 
             //Handle scroll wheel input for zooming in and out
             var effect = renderManager.effect;

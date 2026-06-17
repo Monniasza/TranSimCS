@@ -15,7 +15,7 @@ namespace TranSimCS.Menus.InGame {
         public Vector3 Coordinates;
         public float Distance;
 
-        public Selection CalculateSelection(SceneNode node, Ray ray) {
+        public static Selection CalculateSelection(SceneNode node, Ray ray) {
             SceneNode hitNode = null;
             float distance = float.PositiveInfinity;
             Vector3 coordinates = new Vector3(float.NaN);
