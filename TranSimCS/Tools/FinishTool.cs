@@ -21,7 +21,6 @@ namespace TranSimCS.Tools {
         }
 
         public string Name => "Edit road finishes";
-
         public string Description => "";
 
         public Property<RoadFinish> FinishProp;
@@ -30,11 +29,11 @@ namespace TranSimCS.Tools {
         private FinishTools tab;
 
         private Property<RoadFinish>? GetRoadFinishProp() {
-            var selectedRoadStrip = menu.MouseOverRoad?.SelectedLaneTag?.road;
-            if (selectedRoadStrip != null) 
-                return selectedRoadStrip.FinishProperty;
-            var section = menu.SelectedObject as RoadSection;
-            return section?.FinishProperty;
+            var attempt1 = (menu.MouseOver?.SelectedObj as IRoadFinish)?.FinishProperty;
+            if(attempt1 != null) return attempt1;
+            var attempt2 = (menu.MouseOver?.Tag as IRoadFinish)?.FinishProperty;
+            if(attempt2 != null) return attempt2;
+            return null;
         }
 
         public void OnClick(MouseButton button) {

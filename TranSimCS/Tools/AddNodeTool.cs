@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using TranSimCS.Geometry;
+using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.ModelOld;
@@ -71,7 +72,7 @@ namespace TranSimCS.Tools {
                 NewlyCreatedNode = null;
             } else if (NewlyCreatedNode == null && Reference == null) {
                 //State: starting state
-                var selectedNode = menu.MouseOverRoad?.SelectedRoadNode;
+                var selectedNode = (menu.MouseOver?.SelectedObj) as RoadNode;
                 if (selectedNode == null) {
                     //Select a position
                     var vectorPos = GeometryUtils.IntersectRayPlane(menu.MouseRay, refplane);

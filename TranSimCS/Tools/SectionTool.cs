@@ -57,8 +57,10 @@ namespace TranSimCS.Tools {
         }
         void ITool.OnClick(MouseButton button) {
             if (section == null && button == MouseButton.Left) {
+                
+
                 //Add a section
-                var hitObject = Menu.SelectedObject;
+                var hitObject = Menu.MouseOver?.Tag;
                 if(hitObject is RoadSection s) {
                     section = s;
                 }
@@ -70,15 +72,13 @@ namespace TranSimCS.Tools {
                 }
                 return;
             }else if(section != null) {
-                var hitObject = Menu.SelectedObject;
+                var hitObject = Menu.MouseOver?.SelectedObj;
                 switch (button) {
                     case MouseButton.Left:
                         //Add/remove a node
-                        if (hitObject is IRoadElement element) {
-                            var node = element.GetNodeEnd();
-                            if (node == null) return;
-                            node.ConnectedSection.Value = node.ConnectedSection.Value == section ? null : section;
-                        }
+                        var nodeEnd = Menu.MouseOver?.GetRoadNodeEnd();
+                        if (nodeEnd == null) return;
+                        nodeEnd.ConnectedSection.Value = nodeEnd.ConnectedSection.Value == section ? null : section;
                         break;
                     case MouseButton.Middle:
                         //Set a slope node

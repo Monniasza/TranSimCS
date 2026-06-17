@@ -9,6 +9,7 @@ using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Marking;
 using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Strip;
 using TranSimCS.Spline;
 using TranSimCS.Tools;
 using TranSimCS.Worlds;
@@ -20,34 +21,26 @@ namespace TranSimCS.Menus.InGame {
         private void DrawHighlights(GameTime time) {
             Mesh renderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
 
-            //If a road segment is selected, draw the selection
-            var roadSelection = MouseOverRoad;
-            if (roadSelection?.SelectedLaneTag != null) {
-                // Draw the selected lane tag with a different color
-                var laneRange = roadSelection.SelectedLaneTag.Value;
-                RoadRenderer.GenerateLaneRangeMesh(laneRange, renderBin, laneHighlightColor, 0.5f);
-                var fstag = laneRange.road.FullSizeTag();
+            var roadStrip = MouseOver?.GetRoadStrip();
+            if((MouseOver?.SelectedObj is RoadStrip strip)) {
+                var fstag = strip.FullSizeTag();
                 RoadRenderer.GenerateLaneRangeMesh(fstag, renderBin, roadSegmentHighlightColor, 0.45f);
-                var splines = RoadRenderer.GenerateSplines(laneRange, 0.55f);
-                Bezier3.TriSection(splines.Item1, minT, maxT, out Bezier3 leftSubBezier1, out Bezier3 leftSubBezier2, out Bezier3 leftSubBezier3);
-                Bezier3.TriSection(splines.Item2, minT, maxT, out Bezier3 rightSubBezier1, out Bezier3 rightSubBezier2, out Bezier3 rightSubBezier3);
+            }
 
-                // Draw the left and right bezier curves of the selected lane tag
-                if (roadSelection.SelectedLaneT < minT) {
-                    RoadRenderer.DrawBezierStrip(leftSubBezier1, rightSubBezier1, renderBin, laneHighlightColor2);
-                } else if (roadSelection.SelectedLaneT < maxT) {
-                    RoadRenderer.DrawBezierStrip(leftSubBezier2, rightSubBezier2, renderBin, laneHighlightColor2);
-                } else {
-                    RoadRenderer.DrawBezierStrip(leftSubBezier3, rightSubBezier3, renderBin, laneHighlightColor2);
-                }
+            //If a road segment is selected, draw the selection
+            if ((MouseOver?.Tag) is LaneStrip laneStrip) {
+                // Draw the selected lane tag with a different color
+                var laneTag = laneStrip.Tag();
+                RoadRenderer.GenerateLaneRangeMesh(laneTag, renderBin, laneHighlightColor, 0.5f);
             }
 
             //Draw the selected road node
-            if (roadSelection?.SelectedLaneEnd != null && roadSelection.SelectedLaneStrip == null) {
+            var selectedObj = MouseOver?.Tag;
+            if (selectedObj is IRoadElement element && element.GetLaneEnd() != null && element.GetRoadStrip() == null) {
                 //Lane selected, road strip not
-                var lane = roadSelection.SelectedLaneEnd.Value;
-                var quad = RoadRenderer.GenerateLaneQuad(lane, 0.5f, Color.Yellow);
-                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(lane.lane.RoadNode, roadSegmentHighlightColor, 0.45f);
+                var lane = element.GetLaneEnd();
+                var quad = RoadRenderer.GenerateLaneQuad(lane.Value, 0.5f, Color.Yellow);
+                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(element.GetRoadNode(), roadSegmentHighlightColor, 0.45f);
                 renderBin.DrawQuad(quad);
                 renderBin.DrawQuad(nodeQuad);
             }
@@ -96,7 +89,7 @@ namespace TranSimCS.Menus.InGame {
 
             //If the add lane button is selected, draw it
             Mesh plusRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Add);
-            if (SelectedObject is AddLaneSelection selection)
+            if (MouseOver?.Tag is AddLaneSelection selection)
                 RoadRenderer.CreateAddLane(selection, plusRenderBin, RoadTool.GetActualLaneSpec(this).Width, roadSegmentHighlightColor, 0.5f);
 
             //Render the snapping grid

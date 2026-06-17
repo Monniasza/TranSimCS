@@ -200,7 +200,6 @@ namespace TranSimCS.Menus.InGame {
 
             //Reset values
             IsMouseOverUI = false;
-            MouseOverRoad = null; // Reset the selected road selection
 
             //Pull attributes from the tool
             var attribs = new HashSet<string>();
@@ -378,7 +377,7 @@ namespace TranSimCS.Menus.InGame {
             bool isPickASnapSuppressed = ToolAttributes.Contains(ToolAttribs.disableMMBSnap);
             if (!isPickASnapSuppressed) {
                 //Set the new snap
-                var candidate = SelectedObject;
+                var candidate = MouseOver?.SelectedObj;
                 if (candidate is IPosition obj) {
                     var position = obj.PositionData;
                     configuration.SnapGrid.Position = position;

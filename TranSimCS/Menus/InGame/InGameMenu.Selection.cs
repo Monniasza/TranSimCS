@@ -10,7 +10,7 @@ using TranSimCS.Model;
 namespace TranSimCS.Menus.InGame {
     //Selection-related stuff
     public partial class InGameMenu {
-        public Selection? MouseOver { get; private set; } = null;
+        public Selection? MouseOver { get; internal set; } = null;
 
         public Vector3 IntersectWithGround(Ray ray) {
             return GeometryUtils.IntersectRayPlane(ray, groundPlane);

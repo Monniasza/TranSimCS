@@ -102,8 +102,9 @@ namespace TranSimCS.Tools {
         }
 
         private LaneEnd? GetLaneEnd() {
-            var le = menu.MouseOverRoad?.SelectedLaneEnd;
-            var segment = menu.MouseOverRoad?.SelectedLaneStrip;
+            var candidate = menu.MouseOver?.Tag;
+            if (candidate == null) return null;
+            var le = (candidate as IRoadElement)?.GetLaneEnd();
             if (le == null) return null;
             var le1 = le.Value;
             if (menu.Game.KeyboardState.IsKeyDown(Keys.LeftControl)) le1 = le1.OppositeEnd;
@@ -114,7 +115,7 @@ namespace TranSimCS.Tools {
         void ITool.OnClick(MouseButton button) {
             if(button == MouseButton.Left) {
                 var selectedNode = GetLaneEnd();
-                if (menu.SelectedObject is AddLaneSelection als) {
+                if (menu.MouseOver?.Tag is AddLaneSelection als) {
                     //The user wants to create a new lane
                     var newLaneEnd = als.NewLane(GetActualLaneSpec(menu));
                     var spec = RoadTools.ChainMode.Value.ChainValues(menu);
@@ -184,7 +185,7 @@ namespace TranSimCS.Tools {
                 var mouseOverLaneEnd = GetLaneEnd();
                 var mouseOverLane = mouseOverLaneEnd?.lane;
 
-                if (menu.SelectedObject is AddLaneSelection als) {
+                if (menu.MouseOver?.Tag is AddLaneSelection als) {
                     //The user wants to create a new lane
                     var mouseOverNodeEnd = als.nodeEnd;
                     endWidth = GetActualLaneSpec(menu).Width;
@@ -196,8 +197,6 @@ namespace TranSimCS.Tools {
                     SegmentAlreadyExists = null;
                     NewNodePosition = null;
                 } else if (mouseOverLaneEnd == null) {
-
-
                     //Create a synthetic end
                     SegmentAlreadyExists = null;
                     Plane selectionPlane = menu.ReferencePlane;

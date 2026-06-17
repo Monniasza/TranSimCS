@@ -47,14 +47,11 @@ namespace TranSimCS.Tools {
             var rmb = game.Game.MouseState.RightButton == ButtonState.Pressed;
             var lmbOld = game.Game.MouseStateOld.LeftButton == ButtonState.Released;
             var rmbOld = game.Game.MouseStateOld.RightButton == ButtonState.Released;
-
-
             var gs = game.GroundSelection;
             if (lmb | rmb) {
                 if((lmbOld & lmb) | (rmbOld & rmb)) {
                     //Object newly clicked
-                    //ObjToDrag = game.MouseOverRoad?.SelectedRoadNode;
-                    var candidate = game.SelectedObject;
+                    var candidate = game.MouseOver?.SelectedObj;
                     if (candidate is IDraggableObj drag) ObjToDrag = drag;
                 } else if (ObjToDrag != null) {
                     //Object is held

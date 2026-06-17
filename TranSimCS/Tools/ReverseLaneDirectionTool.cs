@@ -25,11 +25,11 @@ namespace TranSimCS.Tools
 
         void ITool.OnClick(MouseButton button) {
             if (button == MouseButton.Left) {
-                var laneStrip = game.MouseOverRoad?.SelectedLaneStrip;
+                var laneStrip = game.MouseOver?.GetLaneStrip();
                 laneStrip?.ReverseDirection();
             }
             if(button == MouseButton.Right) {
-                var roadStrip = game.MouseOverRoad?.SelectedLaneTag?.road;
+                var roadStrip = game.MouseOver?.GetRoadStrip();
                 if(roadStrip != null) foreach(var lane in roadStrip.Lanes) lane.ReverseDirection();
             }
         }

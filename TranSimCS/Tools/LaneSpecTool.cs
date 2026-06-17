@@ -27,16 +27,16 @@ namespace TranSimCS.Tools {
         void ITool.OnClick(MouseButton button) {
             if(button == MouseButton.Left) {
                 var laneSpec = game.configuration.LaneSpec;
-                var selection = game.MouseOverRoad;
-                var lane = selection?.SelectedLane;
+                var selection = game.MouseOver;
+                var lane = selection?.GetLane();
                 if(lane != null) lane.Spec = laneSpec;
-                var strip = selection?.SelectedLaneStrip;
+                var strip = selection?.GetLaneStrip();
                 if (strip != null) strip.Spec = laneSpec;
             }
             if (button == MouseButton.Right) {
-                var selection = game.MouseOverRoad;
-                var laneSpec = selection?.SelectedLaneStrip?.Spec;
-                var nodeSpec = selection?.SelectedLane?.Spec;
+                var selection = game.MouseOver;
+                var laneSpec = selection?.GetLaneStrip()?.Spec;
+                var nodeSpec = selection?.GetLane()?.Spec;
                 var spec = nodeSpec ?? laneSpec;
                 if (spec == null) return;
                 game.configuration.LaneSpec = spec.Value;

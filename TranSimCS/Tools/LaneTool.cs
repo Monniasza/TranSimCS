@@ -77,7 +77,7 @@ namespace TranSimCS.Tools {
 
             if(pressedNow & !pressedBefore) {
                 DeltaX = 0;
-                DraggedLane = menu.MouseOverRoad?.SelectedLane;
+                DraggedLane = menu.MouseOver?.GetLane();
                 if (laneTools.SnappingIsAbsolute && DraggedLane != null) {
                     var bounds = DraggedLane.Bounds;
                     var newLeft = bounds.Min;

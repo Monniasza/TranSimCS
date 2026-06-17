@@ -13,7 +13,7 @@ using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Section {
-    public class RoadSection : Obj, IObjMesh<RoadSection>{
+    public class RoadSection : Obj, IObjMesh<RoadSection>, IRoadFinish{
         //Added nodes, maintained by the road section
         private List<RoadNodeEnd> nodes = new();
         public IList<RoadNodeEnd> Nodes => new ReadOnlyCollection<RoadNodeEnd>(nodes);
@@ -22,6 +22,7 @@ namespace TranSimCS.Roads.Section {
         public readonly Property<RoadNodeEndPair> MainSlopeNodes;
         public readonly Property<RoadFinish> FinishProperty;
         public RoadFinish Finish { get => FinishProperty.Value; set => FinishProperty.Value = value; }
+        Property<RoadFinish> IRoadFinish.FinishProperty => FinishProperty;
 
         //Cached contents
         public MeshGenerator<RoadSection> Mesh { get; private set; }

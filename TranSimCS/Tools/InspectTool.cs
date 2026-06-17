@@ -62,26 +62,12 @@ namespace TranSimCS.Tools {
 
         public void Update(GameTime gameTime) {
             //TODO: Add expandability for more inspectors
-            var obj = game.SelectedObject;
+            var obj = game.MouseOver?.SelectedObj;
             string? elementType = null;
 
-            if(obj is LaneRange lr) {
+            if(obj is RoadStrip lr) {
                 //Selected a road
-                var road = lr.road;
                 elementType = "Road strip";
-                Description = $"Inspect objects.";
-            }
-            if (obj is LaneStrip ls) {
-                //Selected a road
-                var road = ls.road;
-                elementType = "Road strip";
-                Description = $"Inspect objects.";
-            }
-            if (obj is LaneEnd le) {
-                //Selected a road
-                var node = le.lane.RoadNode;
-                elementType = "Road node";
-                Description = $"Inspect objects.";
             }
 
             StringBuilder sb = new StringBuilder();

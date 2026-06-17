@@ -107,7 +107,7 @@ namespace TranSimCS.SceneGraph {
         /// <param name="tag">set to <see cref="null"/></param>
         /// <returns></returns>
         public static bool Reject(SceneNode that, out SceneNode? node, out float dist, out object? tag) {
-            node = that;
+            node = null;
             dist = float.MaxValue;
             tag = null;
             return false;

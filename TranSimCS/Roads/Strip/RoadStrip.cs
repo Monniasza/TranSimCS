@@ -27,7 +27,7 @@ namespace TranSimCS.Roads.Strip {
     /// <remarks>A <see cref="RoadStrip"/> defines the relationship between two road nodes, specifying
     /// the lanes involved at each node and their respective indices. It also includes properties for lane
     /// specifications and rendering-related data, such as meshes for visualization.</remarks>
-    public class RoadStrip: Obj, IObjMesh<RoadStrip>, IRoadElement {
+    public class RoadStrip: Obj, IObjMesh<RoadStrip>, IRoadElement, IRoadFinish, IDraggableObj {
         //ROAD ELEMENT
         public Lane? GetLane() => null;
         public LaneStrip? GetLaneStrip() => null;
@@ -48,6 +48,7 @@ namespace TranSimCS.Roads.Strip {
 
         public readonly Property<RoadFinish> FinishProperty;
         public RoadFinish Finish { get => FinishProperty.Value; set => FinishProperty.Value = value; }
+        Property<RoadFinish> IRoadFinish.FinishProperty => FinishProperty;
 
         public RoadStrip(RoadNodeEnd startNode, RoadNodeEnd endNode) {
             StartNode = startNode;
@@ -174,6 +175,19 @@ namespace TranSimCS.Roads.Strip {
             return SplineFrame.CreateFromStartEnd(start, end);
         }
 
+        public void Drag(Vector3 vector, Vector3 dragFrom) {
+            IDraggableObj start = StartNode;
+            IDraggableObj end = EndNode;
+            start.Drag(vector, dragFrom);
+            end.Drag(vector, dragFrom);
+        }
+
+        public void Rotate(int fieldAzimuth, float pitch, float tilt) {
+            IDraggableObj start = StartNode;
+            IDraggableObj end = EndNode;
+            start.Rotate(fieldAzimuth, pitch, tilt);
+            end.Rotate(fieldAzimuth, pitch, tilt);
+        }
 
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 

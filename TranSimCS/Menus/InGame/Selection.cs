@@ -9,6 +9,14 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.Menus.InGame {
     public struct Selection {
+        public static Selection Invalid => new Selection {
+            SceneNode = null,
+            SelectedObj = null,
+            Tag = null,
+            Coordinates = new(float.NaN),
+            Distance = float.PositiveInfinity
+        };
+
         public SceneNode? SceneNode;
         public Obj? SelectedObj;
         public object? Tag;
@@ -25,8 +33,8 @@ namespace TranSimCS.Menus.InGame {
 
             var isHit = node.Find(ray, out hitNode, out distance, out tag);
             if (isHit) coordinates = ray.Position + distance * ray.Direction;
-            if (hitNode is SceneLeaf leaf) result.SelectedObj = leaf.obj;
-
+            if (hitNode is SceneLeaf leaf) result.SelectedObj = leaf.obj; //SelectedObj remains null
+            else if (hitNode != null) throw new ArgumentException("non-leaf hit node");
             result.SceneNode = hitNode;
             result.Tag = tag;
             result.Distance = distance;
@@ -34,4 +42,5 @@ namespace TranSimCS.Menus.InGame {
 
             return result;
         }
+    }
 }
