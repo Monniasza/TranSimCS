@@ -11,10 +11,14 @@ namespace TranSimCS.SceneGraph {
     public class SceneLeaf: SceneNode{
 
         public readonly IMeshSource meshGenerator;
+        public readonly Obj obj;
 
-        public SceneLeaf(IMeshSource meshGenerator) {
+        public SceneLeaf(IMeshSource meshGenerator, Obj obj) {
+            ArgumentNullException.ThrowIfNull(meshGenerator, nameof(meshGenerator));
+
             this.meshGenerator = meshGenerator;
             meshGenerator.OnMeshInvalidated += MeshGenerator_OnRemoveMesh;
+            this.obj = obj;
         }
 
         private void MeshGenerator_OnRemoveMesh() {

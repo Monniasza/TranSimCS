@@ -9,10 +9,29 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.Menus.InGame {
     public struct Selection {
-        public SceneNode SceneNode;
-        public Obj SelectedObj;
+        public SceneNode? SceneNode;
+        public Obj? SelectedObj;
         public object? Tag;
         public Vector3 Coordinates;
         public float Distance;
-    }
+
+        public Selection CalculateSelection(SceneNode node, Ray ray) {
+            SceneNode hitNode = null;
+            float distance = float.PositiveInfinity;
+            Vector3 coordinates = new Vector3(float.NaN);
+            object? tag = null;
+
+            Selection result = new();
+
+            var isHit = node.Find(ray, out hitNode, out distance, out tag);
+            if (isHit) coordinates = ray.Position + distance * ray.Direction;
+            if (hitNode is SceneLeaf leaf) result.SelectedObj = leaf.obj;
+
+            result.SceneNode = hitNode;
+            result.Tag = tag;
+            result.Distance = distance;
+            result.Coordinates = coordinates;
+
+            return result;
+        }
 }

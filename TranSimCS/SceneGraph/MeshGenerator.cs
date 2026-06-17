@@ -18,7 +18,7 @@ namespace TranSimCS.SceneGraph {
         public readonly Action<T, MultiMesh> func;
 
         public MeshGenerator(T obj, Action<T, MultiMesh> func) {
-            Leaf = new SceneLeaf(this);
+            Leaf = new SceneLeaf(this, obj);
             this.obj = obj;
             this.func = func;
             obj.PropertyChanged += (s, e) => Invalidate();
