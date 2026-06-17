@@ -20,10 +20,7 @@ namespace TranSimCS.Polygons {
             var clipper = new ClipperD();
 
             clipper.AddSubject(input);
-            clipper.Execute(
-                ClipType.Union,
-                fillRule,
-                tree);
+            clipper.Execute(ClipType.Union, fillRule, tree);
 
             var result = new List<PolygonIsland>();
 

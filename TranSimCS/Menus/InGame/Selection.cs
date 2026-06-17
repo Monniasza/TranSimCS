@@ -4,106 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
-using MonoGame.Extended;
-using TranSimCS.Roads;
-using TranSimCS.Roads.Node;
-using TranSimCS.Roads.Strip;
-using TranSimCS.Spline;
+using TranSimCS.SceneGraph;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.Menus.InGame {
-    public struct AddLaneSelection {
-        public sbyte side; //-1 for left, 1 for right
-        public float position;
-        public RoadNodeEnd nodeEnd;
-
-        public AddLaneSelection(sbyte side, float position, RoadNodeEnd nodeEnd) {
-            this.side = side;
-            this.position = position;
-            this.nodeEnd = nodeEnd;
-        }
-
-        public Range<float> CalculateOffsets(float width) {
-            if(side < 0) 
-                return new(position - width, position);
-            return new(position, position + width);
-        }
-        public float CalculateOffset(float width) {
-            if(side < 0) return position - width;
-            return position + width;
-        }
-        /// <summary>
-        /// Creates the new lane for this add-lane button. This becomes invalid after addition for new lane creations.
-        /// The newly created lane is already added to the node
-        /// </summary>
-        /// <param name="spec">lane spec to use</param>
-        /// <returns>a new lane</returns>
-        public LaneEnd NewLane(LaneSpec spec) {
-            var positions = CalculateOffsets(spec.Width);
-            LaneNode laneNode = LaneNode.FromBounds(spec, positions);
-            Lane newLane = nodeEnd.Node.AddLane(laneNode);
-            return newLane.GetEnd(nodeEnd.End);
-        }
-    }
-    public class RoadSelection {
-        //In all cases
-        public Ray MouseRay; // Ray from the mouse position in the world
-        public Vector3 SelectedLanePosition; // Position of the selected lane tag, if any
-        public float IntersectionDistance = 0.1f; // Distance to check for intersection with the road segments
-        public object hitObject;
-
-        //Optional selections
-        public LaneRange? SelectedLaneTag; // Lane tag that was selected by the mouse ray
-        public float SelectedLaneT = 0.5f; // T value for the selected lane tag, if any
-        public Bezier3? selectedLaneBezier; // Bezier curve for the selected lane tag
-        public SegmentHalf? SelectedRoadHalf; // The road half that the selected lane tag belongs to
-        public LaneStrip? SelectedLaneStrip; // The lane strip that the selected lane tag belongs to
-        public NodeEnd? SelectedNodeSide;
-        public LaneEnd? SelectedLaneEnd;
-        public Lane SelectedLane;
-        public RoadNode SelectedRoadNode;
-
-        public LaneStripEnd? LaneStripEnd => (SelectedRoadHalf == null || SelectedLaneStrip == null) ? null : new LaneStripEnd(SelectedLaneStrip, SelectedRoadHalf.Value);
-
-        public RoadSelection(LaneStrip laneStrip, float intersectionDistance, Ray mouseRay) {
-            hitObject = laneStrip;
-            MouseRay = mouseRay;
-            IntersectionDistance = intersectionDistance;
-            SelectedLanePosition = mouseRay.Position + mouseRay.Direction * intersectionDistance;
-
-            SelectedLaneTag = laneStrip.Tag();
-            SelectedLaneStrip = laneStrip; // Store the selected lane strip
-            var splines = RoadRenderer.GenerateSplines(SelectedLaneTag.Value);
-            Bezier3 averageBezier = (splines.Item1 + splines.Item2) / 2; // Average the two splines
-            SelectedLaneT = Bezier3.FindT(averageBezier, SelectedLanePosition); // Get the T value for the selected lane position
-            selectedLaneBezier = averageBezier; // Store the selected lane bezier curve
-            SelectedLaneEnd =
-                SelectedLaneT < InGameMenu.minT ? laneStrip?.StartLane :
-                SelectedLaneT > InGameMenu.maxT ? laneStrip?.EndLane.OppositeEnd : null;
-            SelectedLane = SelectedLaneEnd?.lane; //somewhat this is null
-             SelectedRoadHalf =
-                SelectedLaneT < InGameMenu.minT ? SegmentHalf.Start : 
-                SelectedLaneT > InGameMenu.maxT ? SegmentHalf.End : null; // Determine which half of the road the selected lane tag belongs to
-            SelectedRoadNode = SelectedLane?.RoadNode;
-            SelectedNodeSide = SelectedLaneEnd?.end;
-
-            hitObject = LaneStripEnd ?? hitObject;
-        }
-
-        public RoadSelection(LaneEnd lane, float intersectionDistance, Ray mouseRay) {
-            hitObject = lane;
-            MouseRay = mouseRay;
-            IntersectionDistance = intersectionDistance;
-            SelectedLanePosition = mouseRay.Position + mouseRay.Direction * intersectionDistance;
-
-            SelectedLaneTag = null;
-            SelectedLaneStrip = null; // Store the selected lane strip
-            selectedLaneBezier = null; // Store the selected lane bezier curve
-            SelectedLaneT = -1; // Get the T value for the selected lane position
-            SelectedRoadHalf = null; // Determine which half of the road the selected lane tag belongs to
-            SelectedLane = lane.lane;
-            SelectedRoadNode = lane.lane.RoadNode;
-            SelectedLaneEnd = lane;
-            SelectedNodeSide = lane.end;
-        }
+    public struct Selection {
+        public SceneNode SceneNode;
+        public Obj SelectedObj;
+        public object? Tag;
+        public Vector3 Coordinates;
+        public float Distance;
     }
 }
