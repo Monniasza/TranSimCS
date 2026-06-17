@@ -21,16 +21,7 @@ namespace TranSimCS.Tools {
         }
 
         public string Name => "Create and modify road sections";
-
-        public string Description => "";
-
-        public void Draw(GameTime gameTime) {
-            //unused
-        }
-
-        public void Draw2D(GameTime gameTime) {
-            //unused
-        }
+        public string Description => (section == null) ? "Pick a node or a section to start editing" : "Editing a road section";
 
         public (object[], string)[] PromptKeys() {
             if(section == null) {
@@ -47,10 +38,6 @@ namespace TranSimCS.Tools {
                 ];
             }
             
-        }
-
-        public void Update(GameTime gameTime) {
-            //unused
         }
         void ITool.AddAttributes(ISet<string> action) {
             action.Add(ToolAttribs.showFinishes);
