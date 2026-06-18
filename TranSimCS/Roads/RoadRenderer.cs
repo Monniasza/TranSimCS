@@ -13,6 +13,7 @@ using TranSimCS.Render;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Section;
 using TranSimCS.Roads.Strip;
+using TranSimCS.Setting;
 using TranSimCS.Spline;
 using static TranSimCS.Geometry.GeometryUtils;
 using static TranSimCS.Geometry.LineEnd;
@@ -101,11 +102,12 @@ namespace TranSimCS.Roads {
         }
 
         public static void GenerateLaneRangeMesh(LaneRange range, Mesh renderer, Color color, float voffset = 0.3f, object? tag = null) {
+            var accuracy = Settings.RoadAccuracy;
             var strips = GenerateSplines(range, voffset); // Generate the splines for the left and right lanes
 
             //Generate border curves
-            Vector3[] leftBorder = GenerateSplinePoints(strips.Item1);
-            Vector3[] rightBorder = GenerateSplinePoints(strips.Item2);
+            Vector3[] leftBorder = GenerateSplinePoints(strips.Item1, accuracy);
+            Vector3[] rightBorder = GenerateSplinePoints(strips.Item2, accuracy);
 
             var leftBorder2 = GeneratePositionsFromVectors(0, color, leftBorder);
             var rightBorder2 = GeneratePositionsFromVectors(1, color, rightBorder);
@@ -149,9 +151,10 @@ namespace TranSimCS.Roads {
             );
         }
 
-        public static void DrawBezierStrip(Bezier3 lbound, Bezier3 rbound, Mesh renderer, Color color) {
-            Vector3[] leftBorder = GenerateSplinePoints(lbound, 10);
-            Vector3[] rightBorder = GenerateSplinePoints(rbound, 10);
+        public static void DrawBezierStrip(Bezier3 lbound, Bezier3 rbound, Mesh renderer, Color color, int accuracy = -1) {
+            if (accuracy < 2) accuracy = Settings.RoadAccuracy;
+            Vector3[] leftBorder = GenerateSplinePoints(lbound, accuracy);
+            Vector3[] rightBorder = GenerateSplinePoints(rbound, accuracy);
 
             var leftBorder2 = GeneratePositionsFromVectors(0, color, leftBorder);
             var rightBorder2 = GeneratePositionsFromVectors(1, color, rightBorder);

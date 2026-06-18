@@ -16,6 +16,7 @@ using TranSimCS.Geometry.SplineFrames;
 using TranSimCS.Model;
 using TranSimCS.Polygons;
 using TranSimCS.Roads.Node;
+using TranSimCS.Setting;
 using TranSimCS.Spline;
 using static TranSimCS.Geometry.GeometryUtils;
 
@@ -28,6 +29,7 @@ namespace TranSimCS.Roads.Strip {
         /// <param name="renderHelper">render helper</param>
         public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MultiMesh renderHelper, float voffset = 0) {
             if(connection == null || connection.Lanes.Count == 0) return;
+            var accuracy = Settings.RoadAccuracy;
 
             Mesh roadBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
             foreach (var lane in connection.Lanes) {
@@ -64,10 +66,10 @@ namespace TranSimCS.Roads.Strip {
             var bottomLeft = -Vector3.UnitY * height - Vector3.UnitX * breadth;
             var bottomRight = -Vector3.UnitY * height + Vector3.UnitX * breadth;
 
-            var leftTopPoints = GenerateSplinePoints(leftTop);
-            var rightTopPoints = GenerateSplinePoints(rightTop);
-            var leftDownPoints = GenerateSplinePoints(leftDown);
-            var rightDownPoints = GenerateSplinePoints(rightDown);
+            var leftTopPoints = GenerateSplinePoints(leftTop, accuracy);
+            var rightTopPoints = GenerateSplinePoints(rightTop, accuracy);
+            var leftDownPoints = GenerateSplinePoints(leftDown, accuracy);
+            var rightDownPoints = GenerateSplinePoints(rightDown, accuracy);
 
             var sideLen = new Vector2(height, breadth).Length();
 
@@ -116,6 +118,7 @@ namespace TranSimCS.Roads.Strip {
         }
 
         public static void RenderSingleEndedInnerCircle(RoadStrip connection, MultiMesh renderHelper, float length) {
+            var accuracy = Settings.RoadAccuracy;
             //Conpute the limits of the road segment
             Range<float> leftBounds = default, rightBounds = default;
             foreach (LaneStrip lane in connection.Lanes) {
@@ -138,7 +141,7 @@ namespace TranSimCS.Roads.Strip {
             var spline = new Bezier3(
                 new(b, 0, 0), new(b, 0, d), new(a, 0, d), new(a, 0, 0)
             );
-            var points = GeometryUtils.GenerateSplinePoints(spline);
+            var points = GeometryUtils.GenerateSplinePoints(spline, accuracy);
             var refframe = connection.StartNode.CalcReferenceFrame();
             var nodeSplineFrame = new SplineFrame();
             nodeSplineFrame.CenterSpline = new(refframe.O, refframe.O + refframe.Z);
@@ -171,7 +174,7 @@ namespace TranSimCS.Roads.Strip {
                 var pos1R = widened.startRange.Max;
                 var pos2L = widened.endRange.Min;
                 var pos2R = widened.endRange.Max;
-                int numberOfPoints = 32;
+                int numberOfPoints = Settings.RoadAccuracy;
                 var path = new PathD();
                 for(int i = 0; i < numberOfPoints; i++) {
                     var t = (float)i / (numberOfPoints-1);

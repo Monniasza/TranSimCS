@@ -10,6 +10,7 @@ using TranSimCS.ModelOld;
 using TranSimCS.Render;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
+using TranSimCS.Setting;
 using TranSimCS.Spline;
 using static TranSimCS.Geometry.GeometryUtils;
 using static TranSimCS.Geometry.LineEnd;
@@ -124,8 +125,10 @@ namespace TranSimCS.Roads.Section {
             surfaceMesh.DrawCenteredPoly(center, perimeter.ToArray());
         }
 
-        internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh, int accuracy = 17) {
+        internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh, int accuracy = -1) {
             if (roadSection.Nodes.Count < 1) return; //Guard agains empty sections
+
+            if (accuracy < 0) accuracy = Settings.RoadAccuracy;
 
             var mesh = multimesh.GetOrCreateRenderBinForced(Assets.Asphalt);
             var surfaceMesh = new Mesh();

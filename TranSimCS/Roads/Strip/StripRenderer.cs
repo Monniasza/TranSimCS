@@ -4,20 +4,21 @@ using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads;
+using TranSimCS.Setting;
 
 namespace TranSimCS.Roads.Strip {
     public static class StripRenderer {
 
         public static void GenerateLaneStripMesh(LaneStrip laneStrip, MultiMesh renderer, float voffset = 0) {
+            var accuracy = Settings.RoadAccuracy;
             var tag = laneStrip.Tag();
             var (Left, Right) = RoadRenderer.GenerateSplines(tag, voffset); // Generate the splines for the left and right lanes
 
             var apshaltBin = renderer.GetOrCreateRenderBinForced(Assets.Asphalt);
-            var leftPoints = GeometryUtils.GenerateSplinePoints(Left);
-            var rightPoints = GeometryUtils.GenerateSplinePoints(Right);
+            var leftPoints = GeometryUtils.GenerateSplinePoints(Left, accuracy);
+            var rightPoints = GeometryUtils.GenerateSplinePoints(Right, accuracy);
             var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftPoints, rightPoints, GenerateLaneStripVertexGen(laneStrip.Spec));
             apshaltBin.DrawStrip(generatedVertStripPair);
-            //apshaltBin.AddTagsToLastTriangles((leftPoints.Length * 2) - 2, laneStrip);
 
             //Generate arrows
             float aoffset = 0.15f;
