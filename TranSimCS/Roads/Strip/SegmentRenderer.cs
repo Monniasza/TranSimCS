@@ -22,6 +22,12 @@ using static TranSimCS.Geometry.GeometryUtils;
 
 namespace TranSimCS.Roads.Strip {
     public static class SegmentRenderer {
+        /*
+         * TODO: Works poorly on single-ended road nodes.
+         * Split into 2 strategies, each with their own algorithms
+         */
+
+
         /// <summary>
         /// Generates the mesh for a road segment.
         /// </summary>
