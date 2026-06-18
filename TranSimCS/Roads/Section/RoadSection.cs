@@ -39,13 +39,6 @@ namespace TranSimCS.Roads.Section {
         internal void OnConnect(RoadNodeEnd node) {
             nodes.Add(node);
 
-            if (nodes.Count == 1) {
-                MainSlopeNodes.Value = new(node, node);
-            } else if (nodes.Count == 2) {
-                MainSlopeNodes.Value = new(MainSlopeNodes.Value.Start, node);
-            }
-
-            node.Node.PropertyChanged += Node_PropertyChanged;
             Regenerate();
         }
 
@@ -54,41 +47,13 @@ namespace TranSimCS.Roads.Section {
             node.Node.PropertyChanged -= Node_PropertyChanged;
 
             //If there are fewer than 2 node, demolish this
-            if(nodes.Count < 2) {
-                World.RoadSections.data.Remove(this);
-            }
+            if(nodes.Count < 2) World.RoadSections.data.Remove(this);
 
             // If one of the main-slope road node ends was disconnected, select the closest one to the existing other half
-            SegmentHalf? affectedHalf = null;
-            var pair = MainSlopeNodes.Value;
-
-            if (pair.Start == node) affectedHalf = SegmentHalf.Start;
-            if (pair.End == node) affectedHalf = SegmentHalf.End;
-
-            if (affectedHalf != null) {
-                RoadNodeEnd otherEnd = affectedHalf == SegmentHalf.Start ? pair.End : pair.Start;
-                var replacement = otherEnd;
-                var closestDistance = float.PositiveInfinity;
-
-                // Reference for nearest search should be the existing other half if present, otherwise the disconnected node's position
-                var referencePos = otherEnd?.CenterPosition ?? node.CenterPosition;
-
-                foreach (var candidate in nodes) {
-                    if (candidate == otherEnd) continue;
-                    var candidatePos = candidate.CenterPosition;
-                    var distance = Vector3.DistanceSquared(candidatePos, referencePos);
-                    if (distance < closestDistance) {
-                        replacement = candidate;
-                        closestDistance = distance;
-                    }
-                }
-                    
-                if (affectedHalf == SegmentHalf.Start) pair.Start = replacement;
-                if (affectedHalf == SegmentHalf.End) pair.End = replacement;
-
-                // Write back the updated pair to the property (struct copy)
-                MainSlopeNodes.Value = pair;
-            }
+            var mainSlope = MainSlopeNodes.Value;
+            if(mainSlope.Start == node) mainSlope.Start = null;
+            if(mainSlope.End == node) mainSlope.End = null;
+            MainSlopeNodes.Value = mainSlope;
 
             Regenerate();
         }
