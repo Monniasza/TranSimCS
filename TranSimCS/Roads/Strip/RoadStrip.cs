@@ -57,22 +57,11 @@ namespace TranSimCS.Roads.Strip {
             SplineGeneratorProp = new(AnisotropicStripSplineGenerator.Instance, "splineformat", this);
             Mesh = new MeshGenerator<RoadStrip>(this, GenerateMesh);
             Mesh.OnMeshInvalidated += () => InvalidateMesh0(this);
-            PropertyChanged += RoadStrip_PropertyChanged;
+            PropertyChanged += (s, e) => Mesh.Invalidate();
         }
 
-        private void RoadStrip_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) {
-            Mesh.Invalidate();
-        }
+        public RoadNodeEnd GetHalf(SegmentHalf selectedRoadHalf) => selectedRoadHalf.GetConditional(StartNode, EndNode);
 
-        public RoadNodeEnd GetHalf(SegmentHalf selectedRoadHalf) {
-            if (selectedRoadHalf == SegmentHalf.Start) {
-                return StartNode; // Return the start node if the selected half is Start
-            } else if (selectedRoadHalf == SegmentHalf.End) {
-                return EndNode; // Return the end node if the selected half is End
-            } else {
-                throw new ArgumentException("Invalid segment half specified."); // Throw an exception for invalid segment half
-            }
-        }
         public bool CheckEnds(RoadNodeEnd first, RoadNodeEnd second) {
             return first == StartNode && second == EndNode || first == EndNode && second == StartNode;
         }

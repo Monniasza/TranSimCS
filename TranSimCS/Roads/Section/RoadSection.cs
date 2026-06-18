@@ -31,15 +31,11 @@ namespace TranSimCS.Roads.Section {
         public Mesh Surface { get; private set; }
 
         public RoadSection() {
-            MainSlopeNodes = new Property<RoadNodeEndPair>(new(null, null), "slopeNodes", this);
+            MainSlopeNodes = new(default, "slopeNodes", this);
             FinishProperty = new(RoadFinish.Embankment, "finish", this);
             Mesh = new MeshGenerator<RoadSection>(this, (rs, mesh) => SectionRenderer.GenerateSectionMesh(rs, mesh));
-            PropertyChanged += RoadSection_PropertyChanged;
         }
 
-        private void RoadSection_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) {
-            Mesh.Invalidate();
-        }
         internal void OnConnect(RoadNodeEnd node) {
             nodes.Add(node);
 
@@ -86,7 +82,7 @@ namespace TranSimCS.Roads.Section {
                         closestDistance = distance;
                     }
                 }
-
+                    
                 if (affectedHalf == SegmentHalf.Start) pair.Start = replacement;
                 if (affectedHalf == SegmentHalf.End) pair.End = replacement;
 
@@ -97,9 +93,7 @@ namespace TranSimCS.Roads.Section {
             Regenerate();
         }
 
-        private void Node_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
-            Regenerate();
-        }
+        private void Node_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) => Regenerate();
 
 
         public void Regenerate() {
@@ -162,10 +156,6 @@ namespace TranSimCS.Roads.Section {
             foreach(var road in roadStrips) result.AddRange(road.Lanes);
 
             return result.ToArray();
-        }
-
-        public RoadNodeEnd? GetNodeEnd() {
-            throw new NotImplementedException();
         }
     }
 }
