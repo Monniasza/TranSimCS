@@ -1,0 +1,58 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using MLEM.Ui.Elements;
+using MLEM.Ui;
+using TranSimCS.Menus.InGame;
+using TranSimCS.Property;
+using TranSimCS.Setting;
+using TranSimCS.Worlds;
+
+namespace TranSimCS.Tools {
+    public class GlobalSettingsTab: Panel {
+        public GlobalSettingsTab(InGameMenu menu) : base(MLEM.Ui.Anchor.AutoLeft, new(1, 1), true) {
+            var regenerateAllButton = new Button(Anchor.AutoLeft, new(1f, 20), "Regenerate all meshes", "Applied meshing settings and fixes stale meshes");
+            regenerateAllButton.OnPressed += (e) => {
+                var world = menu.World;
+                var objects = new List<IObjMesh>();
+                objects.AddRange(world.Nodes.data);
+                objects.AddRange(world.Cars.data);
+                objects.AddRange(world.RoadSections.data);
+                objects.AddRange(world.RoadSegments.data);
+                objects.AddRange(world.Buildings.data);
+                foreach (var obj in objects) obj.InvalidateMesh();
+            };
+            AddChild(regenerateAllButton);
+
+            AddSetting(this, "Road spline accuracy", int.Parse, x => x.ToString(), Settings.RoadAccuracyProp);
+        }
+
+        public static void AddSetting<T>(Panel panel, String name, Func<string, T> fromString, Func<T, string> toString, Property<T> prop) {
+            var label = new Paragraph(Anchor.AutoLeft, 0.5f, name);
+            panel.AddChild(label);
+
+            var textField = new TextField(Anchor.AutoInline, new(0.5f, 20));
+            textField.AddTooltip("Enter to confirm. RMB to cancel. Cancels when the property is changed");
+            panel.AddChild(textField);
+
+            void Revert() => textField.SetText(toString(prop.Value));
+
+            textField.OnEnterPressed = (e) => {
+                //Confirm
+                try {
+                    var newValue = fromString(textField.Text);
+                    prop.Value = newValue;
+                } catch {
+                    Revert();
+                }
+            };
+
+            //When RMB is pressed, revert the value
+            textField.OnSecondaryPressed = (e) => Revert();
+            prop.ValueChanged += (s, e) => Revert();
+            Revert();
+        }
+    }
+}

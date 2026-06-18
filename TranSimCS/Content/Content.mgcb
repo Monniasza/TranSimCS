@@ -949,6 +949,18 @@
 /processorParam:TextureFormat=Color
 /build:ui/sbend3C.png
 
+#begin ui/settings.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:ui/settings.png
+
 #begin ui/snap.png
 /importer:TextureImporter
 /processor:TextureProcessor

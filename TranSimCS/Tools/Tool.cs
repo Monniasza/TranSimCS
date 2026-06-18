@@ -36,6 +36,7 @@ namespace TranSimCS.Tools {
             ToolsPanel.AddPanel(ToolAttribs.showSnapOptions, (x => new SnappingPanel(x)));
             ToolsPanel.AddPanel(ToolAttribs.showLaneSpecs, (x => new LaneSpecTools(x)));
             ToolsPanel.AddPanel(ToolAttribs.showLaneManip, (x => new LaneTools(x)));
+            ToolsPanel.AddPanel(ToolAttribs.showSettings, (x => new GlobalSettingsTab(x)));
         }
     }
     public static class ToolAttribs {
@@ -55,5 +56,6 @@ namespace TranSimCS.Tools {
         public const string showSnapOptions = "menuSnap";
         public const string showLaneManip = "menuLane";
         public const string showStats = "menuStats";
+        public const string showSettings = "menuSettings";
     }
 }

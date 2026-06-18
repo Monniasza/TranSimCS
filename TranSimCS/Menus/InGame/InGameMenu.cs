@@ -53,7 +53,7 @@ namespace TranSimCS.Menus.InGame {
 
         //UI
         public Panel RootPanel {  get; private set; } = null!;
-        public Panel ToolPanel {  get; private set; } = null!;
+        public Panel ToolBar {  get; private set; } = null!;
         public Panel SettingsPanel { get; private set; } = null!;
         public ToolsPanel ToolsPanel { get; private set; } = null!;
         public RootElement ToolPanelRoot { get; private set; } = null!;
@@ -122,8 +122,8 @@ namespace TranSimCS.Menus.InGame {
             RootPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1, 120));
             ToolPanelRoot = UiSystem.Add("lower", RootPanel);
 
-            ToolPanel = new Panel(MLEM.Ui.Anchor.TopCenter, new(1f, 48));
-            RootPanel.AddChild(ToolPanel);
+            ToolBar = new Panel(MLEM.Ui.Anchor.TopCenter, new(1f, 48));
+            RootPanel.AddChild(ToolBar);
 
             SettingsPanel = new Panel(MLEM.Ui.Anchor.BottomCenter, new(1f, 40));
             RootPanel.AddChild(SettingsPanel);
@@ -150,7 +150,7 @@ namespace TranSimCS.Menus.InGame {
 
             RoadToolsPanel = ToolsPanel.GetPanel<RoadTools>(ToolAttribs.showRoadTools);
 
-
+            SetUpToolPictureButton("ui/settings", new GlobalSettingsTool());
             SetUpToolPictureButton("noTool", null);
             SetUpToolPictureButton("ui/blast2", new DemolitionTool(this));
             SetUpToolPictureButton("addRoadTool", RoadCreationTool);
@@ -180,7 +180,7 @@ namespace TranSimCS.Menus.InGame {
             var button = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(40, 40), UI.CreateTextureCallback(Game.Content.Load<Texture2D>(texture)), MLEM.Ui.Anchor.Center, new(32, 32));
             if(callback != null) 
                 button.OnPressed = (e) => callback.Invoke();
-            ToolPanel.AddChild(button);
+            ToolBar.AddChild(button);
             return button;
         }
         private (PictureButton, ITool) SetUpToolPictureButton(String texture, ITool tool) {
