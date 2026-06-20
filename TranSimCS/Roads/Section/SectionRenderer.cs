@@ -51,52 +51,6 @@ namespace TranSimCS.Roads.Section {
             return GenerateJoinSpline(startPos.Ray, endPos.Ray);
         }
 
-        public static void GenerateSubrangeVerts(Mesh mesh, RoadNodeEnd[] nodes, int discriminant, int accuracy = 17) {
-            var lbound = 1;
-            var ubound = nodes.Length - 2;
-
-            var prevSpline = GenerateRoadEdge(nodes[0], nodes[^1], -1).Inverse();
-
-            while (lbound <= ubound) {
-                var preNode = nodes[lbound - 1];
-                var startNode = nodes[lbound];
-                var endNode = nodes[ubound];
-                var nextNode = nodes[ubound + 1];
-                var color = Color.White;
-
-                var preToStartSpline = GenerateRoadEdge(preNode, startNode, -1);
-                var nextToEndSpline = GenerateRoadEdge(nextNode, endNode, 1);
-
-                ISpline<Vector3> bottomSpline;
-                var leftSpline = preToStartSpline;
-                var rightSpline = nextToEndSpline;
-                var topSpline = prevSpline;
-
-                if (lbound == ubound) { //One node remaining
-                    var bounds = startNode.Bounds();
-                    var lpos = calcLineEnd(startNode, bounds.LocalLeft).Position;
-                    var rpos = calcLineEnd(startNode, bounds.LocalRight).Position;
-                    bottomSpline = new LineSegment(rpos, lpos);
-                } else { //More nodes remaining
-                    var innerSpline = GenerateRoadEdge(startNode, endNode, -1);
-                    var outerSpline = GenerateRoadEdge(startNode, endNode, 1);
-
-                    //Calculations for the fill patch
-                    bottomSpline = outerSpline;
-                    prevSpline = innerSpline;
-
-                    //Draw the road strip with vertical offset
-                    GenerateIntersectionStrip(mesh, startNode, endNode, accuracy);
-                }
-                topSpline = topSpline.Inverse();
-
-                //Render the last-node or the inter-strip patch with vertical offset
-                RenderPatch.RenderCoonsPatch(mesh, bottomSpline, topSpline, leftSpline.Inverse(), rightSpline.Inverse(), (p, uv) => CreateVertex(p, color), accuracy, accuracy);
-
-                lbound++; ubound--;
-            }
-        }
-
         private static void GenerateSectionBySlope(Mesh surfaceMesh, RoadSection roadSection, RoadNodeEnd start, RoadNodeEnd end, int accuracy = 17) {
             //Rotate the list so the 1st main end lies on the index 0
             var circularList = DLNode<RoadNodeEnd>.CreateCircular(roadSection.Nodes);
@@ -111,21 +65,19 @@ namespace TranSimCS.Roads.Section {
 
             //Generate the main strip with vertical offset to prevent Z-fighting
             GenerateIntersectionStrip(surfaceMesh, start, end, accuracy);
-            //Generate other vertices on the right
-            GenerateSubrangeVerts(surfaceMesh, rightNodes.ToArray(), 1, accuracy);
-            //Generate other vertices on the left
-            GenerateSubrangeVerts(surfaceMesh, leftNodes.ToArray(), -1, accuracy);
+            GenerateSectionWithoutSlope(surfaceMesh, leftNodes.ToArray(), accuracy);
+            GenerateSectionWithoutSlope(surfaceMesh, rightNodes.ToArray(), accuracy);
         }
 
-        private static void GenerateSectionWithoutSlope(Mesh surfaceMesh, RoadSection roadSection, int accuracy = 17) {
-            var perimeter = GenerateSectionPerimeter(roadSection, accuracy)
-                .Select(CreateVertex)
-                .ToArray();
-
-            if (perimeter.Length < 3) return;
-
-            var center = CreateVertex(roadSection.Center);
-            surfaceMesh.DrawCenteredPoly(center, perimeter.ToArray());
+        private static void GenerateSectionWithoutSlope(Mesh surfaceMesh, RoadSection roadSection, int accuracy = 17)
+            => GenerateSectionWithoutSlope(surfaceMesh, roadSection.Nodes.ToArray(), accuracy);
+        private static void GenerateSectionWithoutSlope(Mesh surfaceMesh, RoadNodeEnd[] nodes, int accuracy) {
+            if(nodes.Length == 0) return;
+            Vector3 center = Vector3.Zero;
+            for (int i = 0; i < nodes.Length; i++) center += nodes[i].CenterPosition;
+            center /= nodes.Length;
+            var perimeter = GenerateSectionPerimeter(nodes, accuracy);
+            surfaceMesh.DrawCenteredPoly(CreateVertex(center), perimeter.Select(CreateVertex).ToArray());
         }
 
         internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh, int accuracy = -1) {
@@ -197,10 +149,9 @@ namespace TranSimCS.Roads.Section {
                     var tangent = topSpline.Tangential(amount);
                     var lateral = Vector3.Cross(normal, tangent).Normalized();
                     bottomPoints[j] = topPoints[j] + (lateral * breadth) - (normal * height);
-
-                    logger.Info($"Point, lateral, tangent, amount #{j}: {bottomPoints[j]}, {lateral}, {tangent.Normalized()}, {amount}");
                 }
                 
+                //THE PROBLEM: If a bend is tight, the bottom spline inverts and goes backwards
 
                 var generatedSplines = UniformTexturing.UniformTexturedTwin(topPoints, bottomPoints, UniformTexturing.PairStrip(0, sideLen, Color.White));
                 finishMesh.DrawStrip(generatedSplines);
@@ -229,13 +180,14 @@ namespace TranSimCS.Roads.Section {
             }
         }
 
-        private static Vector3[] GenerateSectionPerimeter(RoadSection roadSection, int accuracy = 17) {
-            var nodes = roadSection.Nodes;
+        private static Vector3[] GenerateSectionPerimeter(RoadSection roadSection, int accuracy = 17)
+            => GenerateSectionPerimeter(roadSection.Nodes.ToArray(), accuracy);
+        private static Vector3[] GenerateSectionPerimeter(RoadNodeEnd[] nodes, int accuracy) {
             var perimeter = new List<Vector3>();
 
-            for (int i = 0; i < nodes.Count; i++) {
+            for (int i = 0; i < nodes.Length; i++) {
                 var node = nodes[i];
-                var next = nodes[(i + 1) % nodes.Count];
+                var next = nodes[(i + 1) % nodes.Length];
                 var bounds = node.Bounds();
                 var left = calcLineEnd(node, bounds.LocalLeft).Position;
                 var right = calcLineEnd(node, bounds.LocalRight).Position;
@@ -246,13 +198,13 @@ namespace TranSimCS.Roads.Section {
 
                 var edge = GenerateRoadEdge(node, next, 1);
                 var points = GenerateSplinePoints(edge, accuracy);
-                var end = i == nodes.Count - 1 ? points.Length - 1 : points.Length;
+                var end = i == nodes.Length - 1 ? points.Length - 1 : points.Length;
                 for (int j = 1; j < end; j++)
                     perimeter.Add(points[j]);
             }
-
             return perimeter.ToArray();
         }
+
 
         private static List<RoadNodeEnd> CollectNodes(DLNode<RoadNodeEnd> from, DLNode<RoadNodeEnd> to) {
             var result = new List<RoadNodeEnd>();
