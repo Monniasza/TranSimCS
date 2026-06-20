@@ -254,6 +254,12 @@ namespace TranSimCS
             s.RadioUncheckedColor = Color.Gray;
             s.RadioCheckColor = Color.White;
 
+            s.ScrollBarBackColor = Colors.SmokedGlass;
+            s.ScrollBarBackground = panel9patch;
+            s.ScrollBarScrollerColor = Colors.SemiClearAzure;
+            s.ScrollBarScrollerTexture = panel9patch;
+            s.PanelScrollerSize = new(12, 1);
+
             s.SelectionIndicator = outline;
 
             return s;
