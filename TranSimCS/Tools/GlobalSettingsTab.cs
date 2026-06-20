@@ -29,9 +29,13 @@ namespace TranSimCS.Tools {
 
             AddSetting(this, "Road spline accuracy", int.Parse, x => x.ToString(), Settings.RoadAccuracyProp);
 
-            var invertNormalsCheck = new Checkbox(Anchor.AutoLeft, new(20, 20), "Invert all normals");
+            var invertNormalsCheck = new Checkbox(Anchor.AutoLeft, new(1, 20), "Invert all normals");
             UI.AddProperty(invertNormalsCheck, Settings.InvertAllNormalsProp);
             AddChild(invertNormalsCheck);
+
+            var showGroundCheck = new Checkbox(Anchor.AutoLeft, new(1, 20), "Show ground");
+            UI.AddProperty(showGroundCheck, Settings.ShowGroundProp);
+            AddChild(showGroundCheck);
         }
 
         public static void AddSetting<T>(Panel panel, String name, Func<string, T> fromString, Func<T, string> toString, Property<T> prop) {

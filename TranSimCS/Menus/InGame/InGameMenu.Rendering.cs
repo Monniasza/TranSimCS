@@ -10,6 +10,7 @@ using TranSimCS.Roads;
 using TranSimCS.Roads.Marking;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
+using TranSimCS.Setting;
 using TranSimCS.Spline;
 using TranSimCS.Tools;
 using TranSimCS.Worlds;
@@ -98,7 +99,7 @@ namespace TranSimCS.Menus.InGame {
             //Render ground with multiple planes
             var centerPos = renderManager.Camera.Position;
             Mesh grassBin = renderHelper.GetOrCreateRenderBinForced(Assets.Grass);
-            RenderGround(centerPos, grassBin);
+            if(Settings.ShowGround) RenderGround(centerPos, grassBin);
 
             //Render road tool
             configuration.Tool?.Draw(time);

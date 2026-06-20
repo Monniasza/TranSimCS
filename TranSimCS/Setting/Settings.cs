@@ -16,33 +16,40 @@ namespace TranSimCS.Setting {
         public static readonly Property<bool> InvertAllNormalsProp;
         public static bool InvertAllNormals { get => InvertAllNormalsProp.Value; set => InvertAllNormalsProp.Value = value; }
 
+        public static readonly Property<bool> ShowGroundProp;
+        public static bool ShowGround { get => ShowGroundProp.Value; set => ShowGroundProp.Value = value; }
+
         static Settings(){
             RoadAccuracyProp = new(65, "roadAccuracy", null);
             RoadAccuracyProp.ValidateChanges += (s, e) => {
                 if (e.NewValue < 2) throw new ArgumentException("Accuracy must be at least 2");
             };
             InvertAllNormalsProp = new(false, "invertNormals");
-
+            ShowGroundProp = new(true, "showGround");
         }
 
         public static SettingsData GetAll() => new SettingsData() {
             RoadAccuracy = RoadAccuracy,
-            InvertAllNormals = InvertAllNormals
+            InvertAllNormals = InvertAllNormals,
+            ShowGround = ShowGround
         };
         public static void SetAll(SettingsData data) {
             RoadAccuracy = data.RoadAccuracy;
             InvertAllNormals = data.InvertAllNormals;
+            ShowGround = data.ShowGround;
         }
     }
 
     public struct SettingsData {
         public static SettingsData Default => new() {
             RoadAccuracy = 65,
-            InvertAllNormals = false
+            InvertAllNormals = false,
+            ShowGround = true
         };
 
         public int RoadAccuracy;
         public bool InvertAllNormals;
+        public bool ShowGround;
     }
 
     public class SettingsDataConverter : JsonConverter<SettingsData> {
@@ -57,6 +64,10 @@ namespace TranSimCS.Setting {
                     case "invertNormals":
                         reader0.Read();
                         data.InvertAllNormals = reader0.GetBoolean();
+                        break;
+                    case "showGround":
+                        reader0.Read();
+                        data.ShowGround = reader0.GetBoolean();
                         break;
                     default:
                         reader0.Skip();
@@ -74,6 +85,9 @@ namespace TranSimCS.Setting {
 
             writer.WritePropertyName("invertNormals");
             writer.WriteBooleanValue(value.InvertAllNormals);
+
+            writer.WritePropertyName("showGround");
+            writer.WriteBooleanValue(value.ShowGround);
 
             writer.WriteEndObject();
         }
