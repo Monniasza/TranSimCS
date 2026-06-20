@@ -17,10 +17,10 @@ namespace TranSimCS.Menus {
             check.OnCheckStateChange += (cb, isChecked) => prop.Value = isChecked;
             prop.ValueChanged += (s, e) => check.Checked = e.NewValue;
         }
-        public static Checkbox CreateCheck(InGameMenu menu, Element container, string name, string icon, Color? checkColor = null, Color? uncheckColor = null) {
+        public static Checkbox CreateCheck(InGameMenu menu, Element container, string name, string? icon = null, Color? checkColor = null, Color? uncheckColor = null) {
             var check = new Checkbox(Anchor.AutoInline, new(21, 21), "", false);
             check.AddTooltip(name);
-            check.Checkmark = LoadStyleProp(menu, icon);
+            check.Checkmark = LoadStyleProp(menu, icon ?? Assets.CrossIcon);
             check.UncheckColor = uncheckColor ?? Color.Gray;
             check.CheckColor = checkColor ?? Color.White;
             container.AddChild(check);

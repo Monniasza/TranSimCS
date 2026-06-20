@@ -20,8 +20,9 @@ namespace TranSimCS {
         public static Texture2D BuildingWindows { get; private set; }
         public static Texture2D Arrow { get; private set; }
         public static Texture2D White { get; private set; }
-
         public static Texture2D Grid { get; private set; }
+
+        public static readonly string CrossIcon = "ui/check";
 
         public static ContentManager Content => Game1.Instance.Content;
 

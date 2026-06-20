@@ -39,6 +39,10 @@ namespace TranSimCS.Model {
             return verts;
         }
         public static (T[], T[]) UniformTexturedTwin<T>(Vector3[] l, Vector3[] r, VertexGen2<T> vertexer) {
+            ArgumentNullException.ThrowIfNull(l, nameof(l));
+            ArgumentNullException.ThrowIfNull(r, nameof(r));
+            if (l.Length != r.Length) throw new ArgumentException("Lengths are not equal");
+
             T[] lverts = new T[l.Length];
             T[] rverts = new T[l.Length];
 

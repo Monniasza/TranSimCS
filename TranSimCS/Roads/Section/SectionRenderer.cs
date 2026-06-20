@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using NLog;
 using TranSimCS.Debugging;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
@@ -17,6 +18,8 @@ using static TranSimCS.Geometry.LineEnd;
 
 namespace TranSimCS.Roads.Section {
     internal static class SectionRenderer {
+
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public static void GenerateIntersectionStrip(Mesh mesh, RoadNodeEnd start, RoadNodeEnd end, int accuracy = 17) {
             //Generate bounding edges
@@ -182,16 +185,22 @@ namespace TranSimCS.Roads.Section {
                 var h = (i + 1) % splineCount;
                 var prev = roadSection.Nodes[i];
                 var next = roadSection.Nodes[h];
+
                 var topSpline = GenerateRoadEdge(next, prev, 1);
                 var topPoints = GeometryUtils.GenerateSplinePoints(topSpline, accuracy);
+
                 //Generate bottom points
                 var bottomPoints = new Vector3[accuracy];
+                logger.Info($"Generating edge {i} for a road section");
                 for (int j = 0; j < accuracy; j++) {
                     var amount = j / (accuracy - 1f);
                     var tangent = topSpline.Tangential(amount);
                     var lateral = Vector3.Cross(normal, tangent).Normalized();
-                    bottomPoints[j] = topPoints[j] + lateral * breadth - normal * height;
+                    bottomPoints[j] = topPoints[j] + (lateral * breadth) - (normal * height);
+
+                    logger.Info($"Point, lateral, tangent, amount #{j}: {bottomPoints[j]}, {lateral}, {tangent.Normalized()}, {amount}");
                 }
+                
 
                 var generatedSplines = UniformTexturing.UniformTexturedTwin(topPoints, bottomPoints, UniformTexturing.PairStrip(0, sideLen, Color.White));
                 finishMesh.DrawStrip(generatedSplines);

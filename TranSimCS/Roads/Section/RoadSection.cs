@@ -38,6 +38,7 @@ namespace TranSimCS.Roads.Section {
 
         internal void OnConnect(RoadNodeEnd node) {
             nodes.Add(node);
+            node.Node.PropertyChanged += Node_PropertyChanged;
 
             Regenerate();
         }
@@ -66,18 +67,20 @@ namespace TranSimCS.Roads.Section {
 
             if (nodes.Count == 0) return;
 
+
+
+
             //Find the center of mass and the normal
-            Center = Vector3.Zero;
-            Normal = Vector3.Zero;
+            var center = Vector3.Zero;
+            var normal = Vector3.Zero;
             foreach (var node in nodes) {
                 var frame = node.PositionProp.Value;
                 var mat = frame.CalcReferenceFrame();
-                Normal += mat.Y;
-                Center += node.CenterPosition;
+                normal += mat.Y;
+                center += node.CenterPosition;
             }
-            Center /= nodes.Count;
-            if (Normal.LengthSquared() > 1e-6f) Normal.Normalize();
-            else Normal = Vector3.Up;
+            Center = (nodes.Count == 0) ? new(0, 0, 0) : center / nodes.Count;
+            Normal = (normal.LengthSquared() > 1e-6f) ? normal.Normalized() : Vector3.UnitY;
 
             //Sort the nodes clockwise
             Comparison<RoadNodeEnd> comparer = CompareNodes2;

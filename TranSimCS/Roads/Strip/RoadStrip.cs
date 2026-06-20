@@ -38,14 +38,14 @@ namespace TranSimCS.Roads.Strip {
         public LaneEnd? GetLaneEnd() => null;
         public RoadNodeEnd? GetNodeEnd() => null;
 
+        //Events
+
+
+        //Road strip contents
         public readonly Property<StripSplineGenerator> SplineGeneratorProp;
         public StripSplineGenerator SplineGenerator { get => SplineGeneratorProp.Value; set => SplineGeneratorProp.Value = value; }
-
-
-        // Properties to hold the start and end nodes and their respective lane indices
-        public readonly RoadNodeEnd StartNode; // The starting road node of the connection
+        public readonly RoadNodeEnd StartNode;
         public readonly RoadNodeEnd EndNode;
-
         public readonly Property<RoadFinish> FinishProperty;
         public RoadFinish Finish { get => FinishProperty.Value; set => FinishProperty.Value = value; }
         Property<RoadFinish> IRoadFinish.FinishProperty => FinishProperty;

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Model;
 using TranSimCS.Property;
+using TranSimCS.Setting;
 
 namespace TranSimCS.ModelOld {
     public class RenderManager {
@@ -64,11 +65,13 @@ namespace TranSimCS.ModelOld {
                 TriCount += renderBin.Indices.Count / 3;
                 VertCount += renderBin.Vertices.Count;
                 if (renderBin.Vertices.Count == 0 || renderBin.Indices.Count == 0) continue;
-
                 // Ensure pooled arrays are large enough, then copy list contents without allocating
                 EnsureScratchCapacity(renderBin.Vertices.Count, renderBin.Indices.Count);
                 renderBin.Vertices.CopyTo(_vertexScratch, 0);
                 renderBin.Indices.CopyTo(_indexScratch, 0);
+
+                //If requested, invert all normals
+                if (Settings.InvertAllNormals) RenderUtil.InvertNormals(_indexScratch, renderBin.Indices.Count);
 
                 foreach (var pass in effect.CurrentTechnique.Passes) {
                     pass.Apply();

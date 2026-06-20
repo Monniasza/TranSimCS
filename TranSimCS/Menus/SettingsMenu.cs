@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 
 namespace TranSimCS.Menus {
-    public class Settings : Menu {
-        public Settings(Game1 game) : base(game) {
+    public class SettingsMenu : Menu {
+        public SettingsMenu(Game1 game) : base(game) {
 
         }
 

@@ -9,6 +9,7 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
 using TranSimCS.Setting;
 using TranSimCS.Worlds;
+using TranSimCS.Menus;
 
 namespace TranSimCS.Tools {
     public class GlobalSettingsTab: Panel {
@@ -27,6 +28,10 @@ namespace TranSimCS.Tools {
             AddChild(regenerateAllButton);
 
             AddSetting(this, "Road spline accuracy", int.Parse, x => x.ToString(), Settings.RoadAccuracyProp);
+
+            var invertNormalsCheck = new Checkbox(Anchor.AutoLeft, new(20, 20), "Invert all normals");
+            UI.AddProperty(invertNormalsCheck, Settings.InvertAllNormalsProp);
+            AddChild(invertNormalsCheck);
         }
 
         public static void AddSetting<T>(Panel panel, String name, Func<string, T> fromString, Func<T, string> toString, Property<T> prop) {

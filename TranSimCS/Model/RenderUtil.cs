@@ -175,8 +175,9 @@ namespace TranSimCS.Model {
             }
         }
 
-        public static void InvertNormals<T>(T[] indices) {
-            for(int i = 0; i < indices.Length; i += 3) {
+        public static void InvertNormals<T>(T[] indices, int length = -1) {
+            if(length < 0) length = indices.Length;
+            for(int i = 0; i < length; i += 3) {
                 (indices[i + 1], indices[i])
               = (indices[i], indices[i + 1]);
             }
