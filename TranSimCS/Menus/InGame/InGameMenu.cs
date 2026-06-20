@@ -19,7 +19,6 @@ using MonoGame.Extended.Collections;
 using NLog;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
-using TranSimCS.ModelOld;
 using TranSimCS.Polygons;
 using TranSimCS.Property;
 using TranSimCS.Roads;

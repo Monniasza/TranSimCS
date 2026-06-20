@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using TranSimCS.Model;
 using TranSimCS.Property;
 using TranSimCS.Setting;
 
-namespace TranSimCS.ModelOld {
+namespace TranSimCS.Model {
     public class RenderManager {
         public readonly Property<Camera> CameraProp;
         public readonly GraphicsDevice gpu;
@@ -61,17 +61,30 @@ namespace TranSimCS.ModelOld {
             foreach (var row in mesh.RenderBins) {
                 var renderBin = row.Value;
                 var texture = row.Key;
+
+                var verts = renderBin.Vertices.Count;
+                var tris = renderBin.Indices.Count / 3;
+
                 effect.Texture = texture;
                 TriCount += renderBin.Indices.Count / 3;
                 VertCount += renderBin.Vertices.Count;
                 if (renderBin.Vertices.Count == 0 || renderBin.Indices.Count == 0) continue;
                 // Ensure pooled arrays are large enough, then copy list contents without allocating
                 EnsureScratchCapacity(renderBin.Vertices.Count, renderBin.Indices.Count);
-                renderBin.Vertices.CopyTo(_vertexScratch, 0);
                 renderBin.Indices.CopyTo(_indexScratch, 0);
 
                 //If requested, invert all normals
                 if (Settings.InvertAllNormals) RenderUtil.InvertNormals(_indexScratch, renderBin.Indices.Count);
+
+                //Premultiply alphas
+                for(int i = 0; i < verts; i++) {
+                    var vert = renderBin.Vertices[i];
+                    var color = vert.Color;
+                    var rgbVector = color.ToVector3();
+                    rgbVector *= (color.A / 255f);
+                    vert.Color = color;
+                    _vertexScratch[i] = vert;
+                }
 
                 foreach (var pass in effect.CurrentTechnique.Passes) {
                     pass.Apply();
