@@ -6,9 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Iesi.Collections.Generic;
-using Microsoft.Xna.Framework;
 using NLog;
-using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 
 namespace TranSimCS.Worlds {
@@ -72,20 +70,5 @@ namespace TranSimCS.Worlds {
             return ReferenceEquals(this, other);
         }
         public TSWorld World { get; internal set; }
-    }
-
-    //Component-interfaces for objects
-    public interface IDraggableObj {
-        /// <summary>
-        /// Moves the object by the specified amount
-        /// </summary>
-        /// <param name="vector">amount to move</param>
-        /// <param name="dragFrom"></param>
-        public void Drag(Vector3 vector, Vector3 dragFrom);
-        public Plane DragPlane() => InGameMenu.groundPlane;
-
-        public void Rotate(int fieldAzimuth, float pitch, float tilt);
-    }
-
-    
+    }    
 }

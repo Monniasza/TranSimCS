@@ -68,8 +68,7 @@ namespace TranSimCS.Roads.Node {
         public ISet<LaneStrip> Connections => new ReadOnlySet<LaneStrip>(connections); // Read-only set of lane strips that this lane is connected to
 
         //Dragging
-        public void Drag(Vector3 vector, Vector3 dragFrom) => ((IDraggableObj)RoadNode).Drag(vector, dragFrom);
-        public void Rotate(int azimuth, float incline, float tilt) => ((IDraggableObj)RoadNode).Rotate(azimuth, incline, tilt);
+        IPosition[] IDraggableObj.DraggableComponents() => [RoadNode];
 
         public int ZDiscriminant() {
             return 0;

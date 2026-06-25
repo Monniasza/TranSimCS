@@ -18,8 +18,7 @@ namespace TranSimCS.Roads.Strip {
         public LaneEnd laneEnd => strip.GetHalf(half);
 
         //DRAGGING
-        public void Drag(Vector3 vector, Vector3 dragFrom) => laneEnd.Drag(vector, dragFrom);
-        public void Rotate(int fieldAzimuth, float pitch, float tilt) => laneEnd.Rotate(fieldAzimuth, pitch, tilt);
+        IPosition[] IDraggableObj.DraggableComponents() => ((IDraggableObj)strip).DraggableComponents();
 
         //ROAD ELEMENT
         public Guid Guid => strip.road.Guid;
@@ -31,6 +30,8 @@ namespace TranSimCS.Roads.Strip {
         public int ZDiscriminant() => half.Discriminant();
         public LaneEnd? GetLaneEnd() => laneEnd;
         public RoadNodeEnd? GetNodeEnd() => null;
+
+        public IPosition[] DraggableComponents() => ((IDraggableObj)strip).DraggableComponents();
     }
 
     public class LaneStrip : IEquatable<LaneStrip?>, IDraggableObj, IRoadElement {
@@ -156,11 +157,7 @@ namespace TranSimCS.Roads.Strip {
         }
 
         //Dragging
-        void IDraggableObj.Drag(Vector3 vector, Vector3 dragFrom) {
-            StartLane.Drag(vector, dragFrom);
-            EndLane.Drag(vector, dragFrom);
-        }
-
+        IPosition[] IDraggableObj.DraggableComponents() => [StartLane.RoadNodeEnd, EndLane.RoadNodeEnd];
 
         public override bool Equals(object? obj) {
             return Equals(obj as LaneStrip);

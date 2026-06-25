@@ -63,16 +63,16 @@ namespace TranSimCS.Tools {
 
                     if (lmb & !rmb) {
                         //Drag
-                        ObjToDrag?.Drag(delta, dragFrom);
+                        ObjToDrag?.Drag(delta);
                     }
                     if (rmb & !lmb) {
                         //Azimuth
-                        ObjToDrag?.Rotate(GeometryUtils.RadiansToField(angles.X), 0, 0);
-                        ObjToDrag?.Drag(Vector3.UnitY * mousedelta.Y / -100, dragFrom);
+                        ObjToDrag?.RotateOld(GeometryUtils.RadiansToField(angles.X), 0, 0);
+                        ObjToDrag?.Drag(Vector3.UnitY * mousedelta.Y / -100);
                     }
                     if(lmb & rmb) {
                         //Tilt/inclination
-                        ObjToDrag?.Rotate(0, angles.Y, angles.X);
+                        ObjToDrag?.RotateOld(0, angles.Y, angles.X);
                     }
                 }
                 DragFrom = gs;

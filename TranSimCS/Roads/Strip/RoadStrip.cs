@@ -164,19 +164,7 @@ namespace TranSimCS.Roads.Strip {
             return SplineFrame.CreateFromStartEnd(start, end);
         }
 
-        public void Drag(Vector3 vector, Vector3 dragFrom) {
-            IDraggableObj start = StartNode;
-            IDraggableObj end = EndNode;
-            start.Drag(vector, dragFrom);
-            end.Drag(vector, dragFrom);
-        }
-
-        public void Rotate(int fieldAzimuth, float pitch, float tilt) {
-            IDraggableObj start = StartNode;
-            IDraggableObj end = EndNode;
-            start.Rotate(fieldAzimuth, pitch, tilt);
-            end.Rotate(fieldAzimuth, pitch, tilt);
-        }
+        IPosition[] IDraggableObj.DraggableComponents() => [StartNode, EndNode];
 
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 

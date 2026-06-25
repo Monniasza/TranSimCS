@@ -72,10 +72,6 @@ namespace TranSimCS.Roads.Node {
             return End == NodeEnd.Backward ? frame.Around() : frame;            
         }
 
-        public void Rotate(int fieldAzimuth, float pitch, float tilt) {
-            ((IDraggableObj)Node).Rotate(fieldAzimuth, pitch, tilt);
-        }
-
         public RoadSection GetOrCreateSection() {
             var section = ConnectedSection.Value;
             if (section == null) {

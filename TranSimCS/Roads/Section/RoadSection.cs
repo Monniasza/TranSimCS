@@ -126,22 +126,6 @@ namespace TranSimCS.Roads.Section {
 
             return result.ToArray();
         }
-
-        void IDraggableObj.Drag(Vector3 vector, Vector3 dragFrom) {
-            foreach(var node in Nodes.ToArray()) ((IDraggableObj)node).Drag(vector, dragFrom);
-        }
-        void IDraggableObj.Rotate(int fieldAzimuth, float pitch, float tilt) {
-            var rotateTransform = Matrix.CreateFromYawPitchRoll(GeometryUtils.FieldToRadians(fieldAzimuth), pitch, tilt);
-            foreach(var node in Nodes.ToArray()) {
-                var relpos = node.PositionProp.Value.Position - Center;
-                var newpos = Vector3.Transform(relpos, rotateTransform);
-
-                var deltapos = newpos - relpos;
-
-                IDraggableObj draggable = node;
-                node.Rotate(fieldAzimuth, pitch, tilt);
-                draggable.Drag(deltapos, Center);
-            }
-        }
+        IPosition[] IDraggableObj.DraggableComponents() => Nodes.ToArray();
     }
 }

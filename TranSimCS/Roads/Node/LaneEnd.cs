@@ -23,8 +23,7 @@ namespace TranSimCS.Roads.Node {
 
 
         //DRAGGING
-        public void Drag(Vector3 vector, Vector3 dragFrom) => lane.Drag(vector, dragFrom);
-        public void Rotate(int fieldAzimuth, float pitch, float tilt) => lane.Rotate(fieldAzimuth, pitch, tilt);
+        IPosition[] IDraggableObj.DraggableComponents() => [RoadNodeEnd];
         
         //DATA
         public NodeEnd end = End;

@@ -113,7 +113,7 @@ namespace TranSimCS.Tools {
             var pitchRads = MathHelper.ToRadians(pitch);
             var yawFields = GeometryUtils.DegsToField(yaw);
             var obj = Selection;
-            obj?.Rotate(yawFields, pitchRads, rollRads);
+            obj?.RotateOld(yawFields, pitchRads, rollRads);
         }
 
         public void Move(Vector3 vec, bool rel) {
@@ -133,7 +133,7 @@ namespace TranSimCS.Tools {
                 vec = tr.Transform(vec);
             }
 
-            obj.Drag(vec, Vector3.Zero);
+            obj.Drag(vec);
         }
 
         void ITool.OnClick(MouseButton button) {

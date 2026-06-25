@@ -11,21 +11,8 @@ namespace TranSimCS.Worlds {
         /// The position property of the object.
         /// </summary>
         Property<ObjPos> PositionProp { get; }
-        public ObjPos PositionData { get => PositionProp.Value; set => PositionProp.Value = value; }
-
-        void IDraggableObj.Drag(Vector3 vector, Vector3 dragFrom) {
-            var posdata = PositionData;
-            posdata.Position += vector;
-            PositionData = posdata;
-        }
-
-        void IDraggableObj.Rotate(int fieldAzimuth, float pitch, float tilt) {
-            var pos = PositionData;
-            pos.Azimuth += fieldAzimuth;
-            pos.Inclination += pitch;
-            pos.Tilt += tilt;
-            PositionData = pos;
-        }
+        public ObjPos PositionData { get => PositionProp.Value; set => PositionProp.Value = value;}
+        IPosition[] IDraggableObj.DraggableComponents() => [this];
     }
 
     /// <summary>
