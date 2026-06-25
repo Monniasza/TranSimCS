@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Collections;
 
-namespace TranSimCS.ModelOld {
+namespace TranSimCS.Model {
     public struct Quad<T>(T a, T b, T c, T d, object? tag = null): IEnumerable<T> {
         public T A = a;
         public T B = b;

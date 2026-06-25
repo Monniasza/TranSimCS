@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using TranSimCS.Collections;
 using TranSimCS.Geometry;
@@ -13,7 +14,7 @@ using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Section {
-    public class RoadSection : Obj, IObjMesh<RoadSection>, IRoadFinish{
+    public class RoadSection : Obj, IObjMesh<RoadSection>, IRoadFinish, IDraggableObj{
         //Added nodes, maintained by the road section
         private List<RoadNodeEnd> nodes = new();
         public IList<RoadNodeEnd> Nodes => new ReadOnlyCollection<RoadNodeEnd>(nodes);
@@ -124,6 +125,23 @@ namespace TranSimCS.Roads.Section {
             foreach(var road in roadStrips) result.AddRange(road.Lanes);
 
             return result.ToArray();
+        }
+
+        void IDraggableObj.Drag(Vector3 vector, Vector3 dragFrom) {
+            foreach(var node in Nodes.ToArray()) ((IDraggableObj)node).Drag(vector, dragFrom);
+        }
+        void IDraggableObj.Rotate(int fieldAzimuth, float pitch, float tilt) {
+            var rotateTransform = Matrix.CreateFromYawPitchRoll(GeometryUtils.FieldToRadians(fieldAzimuth), pitch, tilt);
+            foreach(var node in Nodes.ToArray()) {
+                var relpos = node.PositionProp.Value.Position - Center;
+                var newpos = Vector3.Transform(relpos, rotateTransform);
+
+                var deltapos = newpos - relpos;
+
+                IDraggableObj draggable = node;
+                node.Rotate(fieldAzimuth, pitch, tilt);
+                draggable.Drag(deltapos, Center);
+            }
         }
     }
 }
