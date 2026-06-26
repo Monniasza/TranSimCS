@@ -39,7 +39,7 @@ namespace TranSimCS.Worlds {
             log.Trace($"Road node id {node.Guid} name {node.Name} removed");
         }
 
-        private void RoadNodePositionChanged(object sender, PropertyChangedEventArgs2<ObjPos> e) {
+        private void RoadNodePositionChanged(object sender, PropertyChangedEventArgs2<PositionEulerAngles> e) {
             if (sender is RoadNode node) {
                 foreach (var segment in node.Connections) {
                     segment.Mesh.Invalidate(); // Invalidate the mesh of the segment if the node position changes

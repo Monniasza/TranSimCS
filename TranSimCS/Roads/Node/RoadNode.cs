@@ -20,7 +20,7 @@ using Transform3 = TranSimCS.Geometry.Transform3;
 namespace TranSimCS.Roads.Node {
     public class RoadNode: Obj, IPosition, IObjMesh<RoadNode>, IRoadElement {
         //Node contents
-        public Property<ObjPos> PositionProp { get; private set; }
+        public Property<PositionEulerAngles> PositionProp { get; private set; }
         public Property<RoadNodeTangents> LeftTangent { get; private set; }
         public Property<RoadNodeTangents> RightTangent { get; private set; }
         public string Name { get; set; }
@@ -94,9 +94,9 @@ namespace TranSimCS.Roads.Node {
         public const int AZIMUTH_SOUTH = 2 << 30; // 180 degrees
         public const int AZIMUTH_WEST = 3 << 30; // 270 degrees
 
-        public RoadNode(string name, ObjPos positionData, Guid? id = null) {
+        public RoadNode(string name, PositionEulerAngles positionData, Guid? id = null) {
             Guid = id ?? Guid.NewGuid();   
-            PositionProp = new(ObjPos.Zero, "Position", this);
+            PositionProp = new(PositionEulerAngles.Zero, "Position", this);
             Name = name;
             PositionProp.Value = positionData;
             RearEnd = new RoadNodeEnd(NodeEnd.Backward, this);
@@ -112,7 +112,7 @@ namespace TranSimCS.Roads.Node {
             LaneXRef = new ReadOnlyDictionary<Guid, Lane>(lanesSet);
             Lanes = new ReadOnlySet<Lane>(lanesDict);
         }
-        private void PositionProp_ValueChanged(object? sender, PropertyChangedEventArgs2<ObjPos> e) {
+        private void PositionProp_ValueChanged(object? sender, PropertyChangedEventArgs2<PositionEulerAngles> e) {
             var value = e.NewValue;
             var pos = value.Position;
             if (float.IsNaN(pos.X)) throw new ArgumentException("X === NaN");

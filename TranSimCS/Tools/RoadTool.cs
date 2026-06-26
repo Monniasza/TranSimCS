@@ -73,7 +73,7 @@ namespace TranSimCS.Tools {
         public Bezier3 GeneratedSpline { get; private set; }
         public LaneEnd? node { get; set; }
         public LaneStrip? SegmentAlreadyExists { get; private set; } = null;
-        public ObjPos? NewNodePosition { get; private set; }
+        public PositionEulerAngles? NewNodePosition { get; private set; }
         public RoadMode Mode { get; set; } = new CircMode();
 
         string ITool.Name => "Road creation tool";
@@ -236,7 +236,7 @@ namespace TranSimCS.Tools {
 
                     //Flatten tilt or inclination
                     //Calculate the NodePosition
-                    var newNodePosition = ObjPos.FromPosTangentLateral(endLeftPos, endTangent, endLateral);
+                    var newNodePosition = PositionEulerAngles.FromPosTangentLateral(endLeftPos, endTangent, endLateral);
                     NewNodePosition = newNodePosition;
                     if (RoadTools.flattenTilt.Checked) newNodePosition.Tilt = 0;
                     if (RoadTools.flattenIncline.Checked) newNodePosition.Inclination = 0;

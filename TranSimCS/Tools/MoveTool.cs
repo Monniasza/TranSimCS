@@ -19,6 +19,11 @@ namespace TranSimCS.Tools {
 
         public IDraggableObj? ObjToDrag { get; private set; }
 
+        public struct MoveNode {
+            public IPosition Object;
+            public TransformQ ObjPos;
+        }
+
         void ITool.Draw(GameTime gameTime) {
             //unused
         }

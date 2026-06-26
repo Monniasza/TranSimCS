@@ -23,8 +23,8 @@ namespace TranSimCS.Tools {
         public readonly NumberField tiltIncrement;
 
         //VALUES
-        public readonly Property<IProperty<ObjPos>> movedObjectRef;
-        public readonly ChangeableBackedProperty<ObjPos> prop;
+        public readonly Property<IProperty<PositionEulerAngles>> movedObjectRef;
+        public readonly ChangeableBackedProperty<PositionEulerAngles> prop;
         public readonly NumberField x;
         public readonly NumberField y;
         public readonly NumberField z;

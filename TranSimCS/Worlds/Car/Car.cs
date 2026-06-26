@@ -62,14 +62,14 @@ namespace TranSimCS.Worlds.Car {
 
         public MeshGenerator<Car> Mesh { get; }
 
-        public Property<ObjPos> PositionProp { get; }
+        public Property<PositionEulerAngles> PositionProp { get; }
         public MultiMesh? BodyMesh { get; private set; }
 
         public Property<string?> MeshIdProp;
         public string? MeshId { get => MeshIdProp.Value; set => MeshIdProp.Value = value; }
 
         public Car() {
-            PositionProp = new(ObjPos.Zero, "position", this);
+            PositionProp = new(PositionEulerAngles.Zero, "position", this);
             MeshIdProp = new(null, "meshId", this);
             Mesh = new(this, GenerateMesh);
             MeshIdProp.ValueChanged += MeshIdProp_ValueChanged;
@@ -102,7 +102,7 @@ namespace TranSimCS.Worlds.Car {
         public Vector3 Velocity {
             get => PositionProp.Value.GetTangential() * Speed;
             set {
-                var atan3 = ObjPos.Atan3(value);
+                var atan3 = PositionEulerAngles.Atan3(value);
                 var pr = PositionProp.Value;
                 pr.Azimuth = GeometryUtils.RadiansToField(atan3.Azimuth);
                 pr.Inclination = atan3.Inclination;
@@ -159,7 +159,7 @@ namespace TranSimCS.Worlds.Car {
             }
 
             xyz = spline[newT];
-            var newCoords = ObjPos.FromPosTangentLateral(xyz, tangential, lateral);
+            var newCoords = PositionEulerAngles.FromPosTangentLateral(xyz, tangential, lateral);
             PositionProp.Value = newCoords;
 
         }

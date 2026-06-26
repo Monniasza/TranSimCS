@@ -40,7 +40,7 @@ namespace TranSimCS.Tools {
         public RoadNode Reference { get; set; }
 
         //Preview variables
-        public ObjPos PrePosition { get; set; }
+        public PositionEulerAngles PrePosition { get; set; }
         public int laneCount = 1;
 
         void ITool.Draw(GameTime gameTime) {
@@ -76,7 +76,7 @@ namespace TranSimCS.Tools {
                 if (selectedNode == null) {
                     //Select a position
                     var vectorPos = GeometryUtils.IntersectRayPlane(menu.MouseRay, refplane);
-                    var pos = new ObjPos(vectorPos, 0);
+                    var pos = new PositionEulerAngles(vectorPos, 0);
                     NewlyCreatedNode = new RoadNode("", PrePosition);
                 } else {
                     //Select a node
@@ -112,7 +112,7 @@ namespace TranSimCS.Tools {
                 PrePosition = pp;
             } else {
 
-                var pp = Reference?.PositionProp?.Value ?? ObjPos.Zero;
+                var pp = Reference?.PositionProp?.Value ?? PositionEulerAngles.Zero;
                 pp.Position = selectedPosition;
                 PrePosition = pp;
             }

@@ -75,7 +75,7 @@ namespace TranSimCS.Roads.Marking {
             float rightBound = 0;
             var alignment = marking.Alignment;
             var offset = marking.Offset;
-            ObjPos refpos = ObjPos.Zero;
+            PositionEulerAngles refpos = PositionEulerAngles.Zero;
             LaneEnd? laneEnd = anchor?.GetLaneEnd();
             RoadNodeEnd? nodeEnd = anchor?.GetNodeEnd();
             if(nodeEnd != null) refpos = nodeEnd.PositionProp.Value;

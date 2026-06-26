@@ -7,10 +7,10 @@ using NLog;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Save2 {
-    public class ObjPosConverter : JsonConverter<ObjPos> {
+    public class ObjPosConverter : JsonConverter<PositionEulerAngles> {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
 
-        public override ObjPos Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        public override PositionEulerAngles Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
             Vector3 position = default;
             int azimuth = 0;
             float inclination = 0f;
@@ -38,12 +38,12 @@ namespace TranSimCS.Save2 {
                 }
             });
 
-            return new ObjPos(position, azimuth, inclination, tilt);
+            return new PositionEulerAngles(position, azimuth, inclination, tilt);
 
             throw new JsonException("Unexpected end of JSON");
         }
 
-        public override void Write(Utf8JsonWriter writer, ObjPos value, JsonSerializerOptions options) {
+        public override void Write(Utf8JsonWriter writer, PositionEulerAngles value, JsonSerializerOptions options) {
             writer.WriteStartObject();
             
             writer.WritePropertyName("position");

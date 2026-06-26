@@ -19,7 +19,7 @@ namespace TranSimCS.Worlds.Building {
         }
 
         public override BuildingUnit ReadElementFromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
-            ObjPos? pos = null;
+            PositionEulerAngles? pos = null;
             Vector3i? size = null;
             Guid? guid = null;
             var objPosConverter = new ObjPosConverter();
@@ -31,7 +31,7 @@ namespace TranSimCS.Worlds.Building {
                         guid = Guid.Parse(reader0.GetString()!);
                         break;
                     case "pos":
-                        pos = objPosConverter.Read(ref reader0, typeof(ObjPos), options);
+                        pos = objPosConverter.Read(ref reader0, typeof(PositionEulerAngles), options);
                         break;
                     case "size":
                         size = vectorConverter.Read(ref reader0, typeof(Vector3i), options);

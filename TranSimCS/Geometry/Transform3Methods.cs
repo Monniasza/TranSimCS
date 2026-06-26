@@ -14,7 +14,7 @@ namespace TranSimCS.Geometry {
             return new Plane(transform.O, transform.Y);
         }
 
-        public static TransformQ ToTransformQ(this ObjPos transform) {
+        public static TransformQ ToTransformQ(this PositionEulerAngles transform) {
             return new TransformQ(
                 transform.Position,
                 Quaternion.CreateFromYawPitchRoll(
@@ -29,7 +29,7 @@ namespace TranSimCS.Geometry {
                 out Vector3 position);
             return new TransformQ(position, rotation);
         }
-        public static ObjPos ToObjPos(this TransformQ transform) {
+        public static PositionEulerAngles ToObjPos(this TransformQ transform) {
 
             Matrix m = Matrix.CreateFromQuaternion(transform.Rotation);
 
@@ -42,7 +42,7 @@ namespace TranSimCS.Geometry {
                 normal,
                 tangent);
 
-            return new ObjPos(
+            return new PositionEulerAngles(
                 transform.Position,
                 GeometryUtils.RadiansToField(ypr.X),
                 ypr.Y,

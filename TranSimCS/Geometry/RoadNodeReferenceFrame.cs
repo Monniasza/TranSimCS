@@ -36,11 +36,11 @@ namespace TranSimCS.Geometry {
             Width = width;
         }
 
-        public static RoadNodeReferenceFrame Calculate(ObjPos position, float width = 0) {
+        public static RoadNodeReferenceFrame Calculate(PositionEulerAngles position, float width = 0) {
             var transform = position.CalcReferenceFrame();
             return new RoadNodeReferenceFrame(transform, width);
         }
-        public static RoadNodeReferenceFrame Calculate(ObjPos position, float width = 0, NodeEnd end = NodeEnd.Forward) {
+        public static RoadNodeReferenceFrame Calculate(PositionEulerAngles position, float width = 0, NodeEnd end = NodeEnd.Forward) {
             var transform = Calculate(position, width);
             if (end == NodeEnd.Backward) transform = transform.FromOtherSide();
             return transform;

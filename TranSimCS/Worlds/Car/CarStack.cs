@@ -25,7 +25,7 @@ namespace TranSimCS.Worlds.Car {
 
         public override Car ReadElementFromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
             Guid? guid = null;
-            ObjPos? pos = null;
+            PositionEulerAngles? pos = null;
             string? mesh = null;
             float speed = 0;
             LaneStrip? strip = null;
@@ -40,7 +40,7 @@ namespace TranSimCS.Worlds.Car {
                         guid = Guid.Parse(reader0.GetString()!);
                         break;
                     case "pos":
-                        pos = objPosConverter.Read(ref reader0, typeof(ObjPos), options);
+                        pos = objPosConverter.Read(ref reader0, typeof(PositionEulerAngles), options);
                         break;
                     case "mesh":
                         reader0.Read();

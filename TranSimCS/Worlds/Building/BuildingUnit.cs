@@ -14,12 +14,12 @@ using TranSimCS.SceneGraph;
 
 namespace TranSimCS.Worlds.Building {
     public class BuildingUnit : Obj, IPosition, IObjMesh<BuildingUnit> {
-        public Property<ObjPos> PositionProp { get; }
+        public Property<PositionEulerAngles> PositionProp { get; }
         public Property<Vector3i> UnitSizeProp { get; }
         public MeshGenerator<BuildingUnit> Mesh { get; }
 
         public BuildingUnit() {
-            PositionProp = new Property<ObjPos>(ObjPos.Zero, "pos", this);
+            PositionProp = new Property<PositionEulerAngles>(PositionEulerAngles.Zero, "pos", this);
             UnitSizeProp = new Property<Vector3i>(new(8, 2, 4), "size", this);
             Mesh = new MeshGenerator<BuildingUnit>(this, GenerateMesh);
         }

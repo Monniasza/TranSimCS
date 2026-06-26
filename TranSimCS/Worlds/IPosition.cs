@@ -10,8 +10,8 @@ namespace TranSimCS.Worlds {
         /// <summary>
         /// The position property of the object.
         /// </summary>
-        Property<ObjPos> PositionProp { get; }
-        public ObjPos PositionData { get => PositionProp.Value; set => PositionProp.Value = value;}
+        Property<PositionEulerAngles> PositionProp { get; }
+        public PositionEulerAngles PositionData { get => PositionProp.Value; set => PositionProp.Value = value;}
         IPosition[] IDraggableObj.DraggableComponents() => [this];
     }
 
@@ -19,7 +19,7 @@ namespace TranSimCS.Worlds {
     /// Adapts a Property&lt;ObjPos&gt; to IPosition.
     /// </summary>
     /// <param name="property"></param>
-    public class PositionAdapter(Property<ObjPos> property) : IPosition {
-        public Property<ObjPos> PositionProp => property;
+    public class PositionAdapter(Property<PositionEulerAngles> property) : IPosition {
+        public Property<PositionEulerAngles> PositionProp => property;
     }
 }

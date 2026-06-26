@@ -16,7 +16,7 @@ namespace TranSimCS.Tools {
             private readonly Property<Camera> CameraProp;
             public CameraIPositionAdapter(InGameMenu menu) {
                 CameraProp = menu.renderManager.CameraProp;
-                PositionProp = new(ObjPos.Zero, "pos");
+                PositionProp = new(PositionEulerAngles.Zero, "pos");
                 Camera2Pos(CameraProp.Value);
                 CameraProp.ValueChanged += (s, e) => Camera2Pos(e.NewValue);
                 PositionProp.ValueChanged += (s, e) => Pos2Camera(e.NewValue);
@@ -30,7 +30,7 @@ namespace TranSimCS.Tools {
                 position.Tilt = 0;
                 PositionProp.Value = position;
             }
-            private void Pos2Camera(ObjPos position) {
+            private void Pos2Camera(PositionEulerAngles position) {
                 var camera = CameraProp.Value;
                 camera.Position = position.Position;
                 camera.Azimuth = GeometryUtils.FieldToRadians(position.Azimuth);
@@ -38,7 +38,7 @@ namespace TranSimCS.Tools {
                 CameraProp.Value = camera;
             }
 
-            public Property<ObjPos> PositionProp { get; private set; }
+            public Property<PositionEulerAngles> PositionProp { get; private set; }
         }
 
         public readonly IPosition camera;

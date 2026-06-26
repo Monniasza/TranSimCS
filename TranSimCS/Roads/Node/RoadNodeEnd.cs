@@ -48,7 +48,7 @@ namespace TranSimCS.Roads.Node {
         public readonly Property<RoadSection?> ConnectedSection;
 
         //Position
-        public Property<ObjPos> PositionProp => Node.PositionProp;
+        public Property<PositionEulerAngles> PositionProp => Node.PositionProp;
         public Vector3 CenterPosition => Node.CenterPosition;
         public Vector3 CenterOffset => Node.CenterOffset;
 

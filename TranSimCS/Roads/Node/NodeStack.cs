@@ -53,7 +53,7 @@ namespace TranSimCS.Roads.Node {
 
         public override RoadNode ReadElementFromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
             Guid? guid = null;
-            ObjPos? pos = null;
+            PositionEulerAngles? pos = null;
             List<LaneNode> lanes = new();
             string name = "";
 
@@ -67,7 +67,7 @@ namespace TranSimCS.Roads.Node {
                         guid = Guid.Parse(reader0.GetString()!);
                         break;
                     case "pos":
-                        pos = objPosConverter.Read(ref reader0, typeof(ObjPos), options);
+                        pos = objPosConverter.Read(ref reader0, typeof(PositionEulerAngles), options);
                         break;
                     case "lanes":
                         JsonProcessor.ReadJsonArrayProperties(ref reader0, (ref reader1, _) => {

@@ -13,7 +13,7 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.Snapping {
     public class SnappingGrid : Obj, IPosition, IObjMesh<SnappingGrid> {
-        public Property<ObjPos> PositionProp { get; private set; }
+        public Property<PositionEulerAngles> PositionProp { get; private set; }
         /// <summary>
         /// Size of each snapping cell in meters
         /// </summary>
@@ -34,7 +34,7 @@ namespace TranSimCS.Snapping {
 
         public float CellSize { get => CellSizeProp.Value; set => CellSizeProp.Value = value; }
         public uint CellCount { get => CellCountProp.Value; set => CellCountProp.Value = value; }
-        public ObjPos Position { get => PositionProp.Value; set => PositionProp.Value = value; }
+        public PositionEulerAngles Position { get => PositionProp.Value; set => PositionProp.Value = value; }
         public bool IsYLocal { get => IsYLocalProp.Value; set => IsYLocalProp.Value = value; }
         public bool IsInfinite { get => IsInfiniteProp.Value; set => IsInfiniteProp.Value = value; }
 
@@ -53,7 +53,7 @@ namespace TranSimCS.Snapping {
             float scale = CellCount;
             float increment = CellSize;
             float totalSize = scale * increment;
-            ObjPos snapPos = Position;
+            PositionEulerAngles snapPos = Position;
             var refFrame = snapPos.CalcReferenceFrame();
             Mesh gridRenderBin = mesh.GetOrCreateRenderBinForced(Assets.Grid);
             refFrame.O -= 0.001f * refFrame.Y; //Sink the grid a little bit so it doesn't Z-fight with 0-height road elements

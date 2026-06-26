@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace TranSimCS.Worlds.ECS {
     public struct PositionComponent {
-        public ObjPos position;
+        public PositionEulerAngles position;
     }
 }

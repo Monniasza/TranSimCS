@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 
 namespace TranSimCS.Worlds {
-    public struct ObjPos: IEquatable<ObjPos> {
+    public struct PositionEulerAngles: IEquatable<PositionEulerAngles> {
         //Position
         public Vector3 Position { get; set; } // World position of the node
 
@@ -13,9 +13,9 @@ namespace TranSimCS.Worlds {
         public float Tilt { get; set; } // Tilt angle in radians
 
 
-        public static ObjPos Zero => new ObjPos(Vector3.Zero, 0);
+        public static PositionEulerAngles Zero => new PositionEulerAngles(Vector3.Zero, 0);
 
-        public ObjPos(Vector3 position, int azimuth, float inclination = 0f, float tilt = 0f) {
+        public PositionEulerAngles(Vector3 position, int azimuth, float inclination = 0f, float tilt = 0f) {
             Position = position;
             Azimuth = azimuth;
             Inclination = inclination;
@@ -23,7 +23,7 @@ namespace TranSimCS.Worlds {
         }
 
         public override bool Equals(object? obj) {
-            if (obj is ObjPos other) {
+            if (obj is PositionEulerAngles other) {
                 return Position.Equals(other.Position) &&
                        Azimuth == other.Azimuth &&
                        Inclination.Equals(other.Inclination) &&
@@ -39,31 +39,31 @@ namespace TranSimCS.Worlds {
             hash.Add(Tilt);
             return hash.ToHashCode(); // Generate a hash code based on the properties of the node position
         }
-        public static bool operator ==(ObjPos left, ObjPos right) {
+        public static bool operator ==(PositionEulerAngles left, PositionEulerAngles right) {
             return left.Equals(right);
         }
-        public static bool operator !=(ObjPos left, ObjPos right) {
+        public static bool operator !=(PositionEulerAngles left, PositionEulerAngles right) {
             return !(left == right);
         }
 
         public Transform3 CalcReferenceFrame() => new(CalcReferenceMatrix());
 
-        public static ObjPos FromPosTangentTilt(Vector3 pos, Vector3 tangent, float tilt) {
+        public static PositionEulerAngles FromPosTangentTilt(Vector3 pos, Vector3 tangent, float tilt) {
             var htangent = GeometryUtils.hypot2(tangent.X, tangent.Z);
             var inclination = MathF.Atan2(tangent.Y, htangent);
             var azimuthRadians = MathF.Atan2(tangent.X, tangent.Z);
             var azimuth = GeometryUtils.RadiansToField(azimuthRadians);
-            return new ObjPos(pos, azimuth, inclination, tilt);
+            return new PositionEulerAngles(pos, azimuth, inclination, tilt);
         }
-        public static ObjPos FromPosTangentLateral(Vector3 pos, Vector3 tangent, Vector3 lateral) {
+        public static PositionEulerAngles FromPosTangentLateral(Vector3 pos, Vector3 tangent, Vector3 lateral) {
             var nrm = Vector3.Cross(lateral, tangent);
             nrm.Normalize();
             var ypr = Transform3.ToYawPitchRoll(lateral, nrm, tangent);
 
-            return new ObjPos(pos, GeometryUtils.RadiansToField(ypr.X), ypr.Y, ypr.Z);
+            return new PositionEulerAngles(pos, GeometryUtils.RadiansToField(ypr.X), ypr.Y, ypr.Z);
         }
 
-        public bool Equals(ObjPos other) {
+        public bool Equals(PositionEulerAngles other) {
             return Position.Equals(other.Position)
                 && Tilt .Equals(other.Tilt)
                 && Inclination.Equals(other.Inclination)

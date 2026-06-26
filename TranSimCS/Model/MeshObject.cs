@@ -9,13 +9,13 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.Model {
     public struct MeshObject {
-        public ObjPos pos;
+        public PositionEulerAngles pos;
         public MultiMesh mesh;
 
         public MeshObject(MultiMesh mesh) {
             this.mesh = mesh;
         }
-        public MeshObject(MultiMesh mesh, ObjPos pos) {
+        public MeshObject(MultiMesh mesh, PositionEulerAngles pos) {
             this.mesh = mesh;
             this.pos = pos;
         }
