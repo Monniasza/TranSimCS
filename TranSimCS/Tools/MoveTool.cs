@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
+using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
@@ -55,11 +56,13 @@ namespace TranSimCS.Tools {
                     if (candidate is IDraggableObj drag) ObjToDrag = drag;
                 } else if (ObjToDrag != null) {
                     //Object is held
+                    var obj = ObjToDrag;
                     var dragFrom = DragFrom;
                     var delta = gs - dragFrom;
                     var mousedelta = game.Game.MouseState.Position - game.Game.MouseStateOld.Position;
                     var anglePerPx = MathF.PI / 360;
-                    var angles = new Vector2(anglePerPx * mousedelta.X, anglePerPx * mousedelta.Y);
+                    var angles = new Vector2(mousedelta.X, mousedelta.Y) * anglePerPx;
+                    var cpos = obj.FindCenter();
 
                     if (lmb & !rmb) {
                         //Drag
@@ -67,12 +70,18 @@ namespace TranSimCS.Tools {
                     }
                     if (rmb & !lmb) {
                         //Azimuth
-                        ObjToDrag?.RotateOld(GeometryUtils.RadiansToField(angles.X), 0, 0);
-                        ObjToDrag?.Drag(Vector3.UnitY * mousedelta.Y / -100);
+                        var quaternion = Quaternion.CreateFromYawPitchRoll(angles.X, 0, 0);
+                        obj.DraggableComponents().Transform(new TransformQ(Vector3.UnitY * mousedelta.Y / -100, quaternion), cpos);
                     }
-                    if(lmb & rmb) {
+                    if(lmb & rmb && angles != Vector2.Zero) {
                         //Tilt/inclination
-                        ObjToDrag?.RotateOld(0, angles.Y, angles.X);
+                        var viewInv = Matrix.Invert(game.renderManager.Camera.GetViewMatrix());
+                        var cameraRight = Vector3.Normalize(viewInv.Right);
+                        var cameraUp = Vector3.Normalize(viewInv.Up);
+                        var qHorizontal =Quaternion.CreateFromAxisAngle(cameraUp, angles.X);
+                        var qVertical = Quaternion.CreateFromAxisAngle(cameraRight, angles.Y);
+                        var q = Quaternion.Normalize(qHorizontal * qVertical);
+                        obj.DraggableComponents().Transform(new TransformQ(Vector3.Zero, q), cpos);
                     }
                 }
                 DragFrom = gs;

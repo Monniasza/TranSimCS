@@ -19,6 +19,21 @@ namespace TranSimCS.Geometry {
             Matrix.CreateFromQuaternion(Rotation)
             * Matrix.CreateTranslation(Position);
 
+        public TransformQ Append(TransformQ transform, Vector3 pivot) {
+            TransformQ result = default;
+
+            // Rotate position around pivot
+            var relative = Position - pivot;
+            relative = Vector3.Transform(relative, transform.Rotation);
+            result.Position = pivot + relative + transform.Position;
+
+            // Compose orientations
+            result.Rotation = Quaternion.Normalize(
+                transform.Rotation * Rotation);
+
+            return result;
+        }
+
         /// <summary>
         /// Combines the transforms so <paramref name="b"/> is applied first, then <paramref name="a"/>
         /// </summary>

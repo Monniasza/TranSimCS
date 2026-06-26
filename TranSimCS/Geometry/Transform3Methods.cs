@@ -35,7 +35,7 @@ namespace TranSimCS.Geometry {
 
             Vector3 lateral = m.Right;
             Vector3 normal = m.Up;
-            Vector3 tangent = m.Forward;
+            Vector3 tangent = -m.Forward;
 
             Vector3 ypr = Transform3.ToYawPitchRoll(
                 lateral,
@@ -45,7 +45,7 @@ namespace TranSimCS.Geometry {
             return new ObjPos(
                 transform.Position,
                 GeometryUtils.RadiansToField(ypr.X),
-                -ypr.Y,
+                ypr.Y,
                 ypr.Z);
         }
     }

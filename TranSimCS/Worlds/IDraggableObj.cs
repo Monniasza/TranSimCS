@@ -32,8 +32,26 @@ namespace TranSimCS.Worlds {
                 component.PositionData = objpos;
             }
         }
-        public static void Transform(this IEnumerable<IPosition> obj, TransformQ transform, Vector3 pivot) {
-            
+        public static void Transform(this IEnumerable<IPosition> objs, TransformQ transform, Vector3 pivot) {
+            foreach (var obj in objs.Distinct()) Transform(obj, transform, pivot);
+        }
+        public static void Transform(this IPosition obj, TransformQ transform, Vector3 pivot) {
+            var objPos = obj.PositionData;
+            var quatPos = objPos.ToTransformQ();
+            quatPos = quatPos.Append(transform, pivot);
+            objPos = quatPos.ToObjPos();
+            obj.PositionData = objPos;
+        }
+
+        public static Vector3 FindCenter(this IDraggableObj obj) => FindCenter(obj.DraggableComponents());
+        public static Vector3 FindCenter(this IEnumerable<IPosition> objs) {
+            int count = 0;
+            Vector3 sum = Vector3.Zero;
+            foreach (var obj in objs.Distinct()) {
+                sum += obj.PositionData.Position;
+                count++;
+            }
+            return (count == 0) ? Vector3.Zero : (sum / count);
         }
     }
 }
