@@ -113,6 +113,12 @@ namespace TranSimCS.Worlds.Stack {
     }
 
     public static class ObjectStackMethods {
+        /// <summary>
+        /// Runs an action for each element in an <see cref="IEnumerable{T}"/>
+        /// </summary>
+        /// <typeparam name="T">type of elements in <paramref name="list"/></typeparam>
+        /// <param name="list">this, list of items to iterate over</param>
+        /// <param name="handler">run for each element in <paramref name="list"/></param>
         public static void ForEach<T>(this IEnumerable<T> list, Action<T> handler) {
             foreach(T obj in list) handler(obj);
         }
