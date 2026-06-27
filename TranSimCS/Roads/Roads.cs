@@ -73,7 +73,7 @@ namespace TranSimCS.Roads {
         /// </summary>
         SwitchLeft = 32,
         /// <summary>
-        /// Allow vehicles to switch to the next lane to the lright in the strip's direction. Does not apply to rail.
+        /// Allow vehicles to switch to the next lane to the right in the strip's direction. Does not apply to rail.
         /// </summary>
         SwitchRight = 64,
 

@@ -56,6 +56,22 @@ namespace TranSimCS.Roads {
         public static void GenerateLaneMesh(Lane lane, MultiMesh mesh, float voffset = 0) {
             Mesh renderBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
             GenerateLaneMesh(lane, renderBin, voffset);
+
+            //Generate the stop/yield line
+            var tags = lane.Spec.Flags;
+            var lineFlags = LaneFlags.Stop | LaneFlags.Yield;
+            var lineTest = tags & lineFlags;
+            if(lineFlags != 0) {
+                var lineBin = mesh.GetOrCreateRenderBinForced((lineTest == LaneFlags.Yield) ? Assets.LineYield: Assets.Road);
+                var range = lane.Bounds;
+                var width = range.Max - range.Min;
+                var refframe = lane.RoadNode.ReferenceFrame;
+                var p0 = refframe.O + refframe.X * range.Min;
+                var p1 = refframe.O + refframe.X * range.Max;
+                lineBin.DrawLine(p0, p1, refframe.Y, Color.White, length:width);
+            }
+            
+
         }
         public static void GenerateLaneMesh(Lane lane, Mesh renderBin, float voffset = 0) {
             var quads = GenerateLaneQuad(lane, voffset);

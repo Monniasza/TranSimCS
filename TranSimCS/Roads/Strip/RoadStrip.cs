@@ -166,8 +166,6 @@ namespace TranSimCS.Roads.Strip {
 
         IPosition[] IDraggableObj.DraggableComponents() => [StartNode, EndNode];
 
-        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
         public SplineFrame SplineFrame { get; private set; }
         public IndexStrip IndexStrip { get; private set; }
     }

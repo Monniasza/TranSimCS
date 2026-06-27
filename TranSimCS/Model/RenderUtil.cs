@@ -100,7 +100,7 @@ namespace TranSimCS.Model {
             rb.DrawStrip(vertices.Item1, vertices.Item2);
         }
 
-        public static void DrawLine(this Mesh rb, Vector3 start, Vector3 end, Vector3 normal, Color c, float width = 0.2f) {
+        public static void DrawLine(this Mesh rb, Vector3 start, Vector3 end, Vector3 normal, Color c, float width = 0.2f, float length = 1) {
             var len = end - start;
             var cross = Vector3.Cross(normal, len);
             cross.Normalize();
@@ -112,9 +112,9 @@ namespace TranSimCS.Model {
             var p4 = start - cross;
             rb.DrawQuad(
                 new VertexPositionColorTexture(p1, c, new(0, 0)),
-                new VertexPositionColorTexture(p2, c, new(1, 0)),
-                new VertexPositionColorTexture(p3, c, new(1, 1)),
-                new VertexPositionColorTexture(p4, c, new(0, 1))
+                new VertexPositionColorTexture(p2, c, new(length, 0)),
+                new VertexPositionColorTexture(p3, c, new(length, length)),
+                new VertexPositionColorTexture(p4, c, new(0, length))
            );
         }
 

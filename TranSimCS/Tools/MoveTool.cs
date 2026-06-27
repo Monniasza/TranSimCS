@@ -72,7 +72,6 @@ namespace TranSimCS.Tools {
                     var mousedelta = game.Game.MouseState.Position - game.Game.MouseStateOld.Position;
                     var anglePerPx = MathF.PI / 360;
                     var angles = new Vector2(mousedelta.X, mousedelta.Y) * anglePerPx;
-                    var cpos = obj.Pivot;
 
                     if (mousedelta == Point.Zero) return;
 
@@ -93,7 +92,7 @@ namespace TranSimCS.Tools {
                         var viewInv = Matrix.Invert(game.renderManager.Camera.GetViewMatrix());
                         var cameraRight = Vector3.Normalize(viewInv.Right);
                         var cameraUp = Vector3.Normalize(viewInv.Up);
-                        var qHorizontal =Quaternion.CreateFromAxisAngle(cameraUp, angles.X);
+                        var qHorizontal = Quaternion.CreateFromAxisAngle(cameraUp, angles.X);
                         var qVertical = Quaternion.CreateFromAxisAngle(cameraRight, angles.Y);
                         q = Quaternion.Normalize(qHorizontal * qVertical);
                     }
