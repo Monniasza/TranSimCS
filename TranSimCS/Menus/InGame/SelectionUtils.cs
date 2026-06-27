@@ -14,7 +14,7 @@ namespace TranSimCS.Menus.InGame {
         public static void AddAddLaneSelectors(Mesh mesh, InGameMenu game) => AddAddLaneSelectors(mesh, game.World.Nodes.data, RoadTool.GetActualLaneSpec(game).Width);
         public static void AddAddLaneSelectors(Mesh mesh, IEnumerable<RoadNode> nodes, float width) {
             foreach (RoadNode node in nodes) 
-                RoadRenderer.CreateAddLanes(node, mesh, width);
+                NodeRenderer.CreateAddLanes(node, mesh, width);
             
         }
     }

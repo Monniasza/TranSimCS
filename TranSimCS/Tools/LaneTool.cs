@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
+using TranSimCS.Model;
 using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
@@ -49,7 +50,8 @@ namespace TranSimCS.Tools {
                 foreach (var lane in node.Lanes) {
                     var bounds = lane.Bounds;
                     var arrowBin = menu.renderHelper.GetOrCreateRenderBinForced(Assets.Arrow);
-                    RoadRenderer.GenerateLaneMesh(lane, arrowBin, 0.5f);
+                    var quad = NodeRenderer.GenerateLaneQuad(lane, Colors.SemiClearGray, 0.5f);
+                    arrowBin.DrawQuad(quad);
                 }
             }
         }

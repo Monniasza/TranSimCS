@@ -37,14 +37,13 @@ namespace TranSimCS.Menus.InGame {
 
             //Draw the selected road node
             var selectedObj = MouseOver?.Tag;
-            if (selectedObj is IRoadElement element && element.GetLaneEnd() != null && element.GetRoadStrip() == null) {
-                //Lane selected, road strip not
-                var lane = element.GetLaneEnd();
-                var quad = RoadRenderer.GenerateLaneQuad(lane.Value, 0.5f, Color.Yellow);
-                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(element.GetRoadNode(), roadSegmentHighlightColor, 0.45f);
-                renderBin.DrawQuad(quad);
-                renderBin.DrawQuad(nodeQuad);
+            LaneEnd? laneEnd = null;
+            if (selectedObj is IRoadElement element && element.GetLaneEnd() != null && element.GetRoadStrip() == null) 
+                laneEnd = element.GetLaneEnd();
+            if (CheckNodes.Checked) foreach (var node in World.Nodes.data) {
+                NodeRenderer.GenerateRoadNodeSelectionMesh(node, renderBin, laneEnd);
             }
+
         }
 
 
@@ -77,21 +76,20 @@ namespace TranSimCS.Menus.InGame {
             bool suppressHighlights = ToolAttributes.Contains(ToolAttribs.noHighlights);
             if (!suppressHighlights) DrawHighlights(time);
 
-            //Draw node selectors
+            //Draw nodes
             stats.Nodes = World.Nodes.data.Count;
             foreach (var node in World.Nodes.data) {
                 stats.Lanes += node.Lanes.Count;
-                if (CheckNodes.Checked) renderHelper.AddAll(node.Mesh.GetMesh());
+                renderHelper.AddAll(node.Mesh.GetMesh());
             }
                 
-
             //Draw SelectorObjects
             renderHelper.AddAll(SelectorObjects);
 
             //If the add lane button is selected, draw it
             Mesh plusRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Add);
             if (MouseOver?.Tag is AddLaneSelection selection)
-                RoadRenderer.CreateAddLane(selection, plusRenderBin, RoadTool.GetActualLaneSpec(this).Width, roadSegmentHighlightColor, 0.5f);
+                NodeRenderer.CreateAddLane(selection, plusRenderBin, RoadTool.GetActualLaneSpec(this).Width, roadSegmentHighlightColor, 0.5f);
 
             //Render the snapping grid
             if (CheckSnap.Checked) renderHelper.AddAll(configuration.SnapGrid.Mesh.GetMesh());

@@ -10,6 +10,7 @@ using NLog.Time;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Worlds;
 
@@ -67,13 +68,10 @@ namespace TranSimCS.Tools {
 
                 //The node/lane itself
                 var roadNode = roadSelection.GetRoadNode();
-                var nodeQuad = RoadRenderer.GenerateRoadNodeSelQuad(roadNode, R, v3);
+                var nodeQuad = NodeRenderer.GenerateNodeQuad(roadNode, R, v3);
                 renderBin.DrawQuad(nodeQuad);
-                var lqp = RoadRenderer.GenerateLaneQuad(selLane, v4, O);
-                var q1 = lqp.Back;
-                renderBin.DrawQuad(q1);
-                var q2 = lqp.Front;
-                renderBin.DrawQuad(q2);
+                var lqp = NodeRenderer.GenerateLaneQuad(selLane, Color.Orange, v4);
+                renderBin.DrawQuad(lqp);
             } else if(selStrip != null) {
                 //Deleting segment/strip
                 var segment = selStrip.road;

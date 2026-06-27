@@ -27,6 +27,7 @@ namespace TranSimCS.Roads.Node {
 
         //Cahced/generated contents
         public MeshGenerator<RoadNode> Mesh { get; init; }
+        public MeshGenerator<RoadNode> SelectionMesh { get; init; }
 
         private RoadNodeCache? _cache;
         public RoadNodeCache Cache => _cache ??= new RoadNodeCache(this);
@@ -101,8 +102,12 @@ namespace TranSimCS.Roads.Node {
             PositionProp.Value = positionData;
             RearEnd = new RoadNodeEnd(NodeEnd.Backward, this);
             FrontEnd = new RoadNodeEnd(NodeEnd.Forward, this);
-            Mesh = new MeshGenerator<RoadNode>(this, (node, mesh) => RoadRenderer.GenerateRoadNodeMesh(node, mesh, 0.4f));
+            Mesh = new MeshGenerator<RoadNode>(this, (node, mesh) => NodeRenderer.GenerateNodeVisualMesh(node, mesh));
             Mesh.OnMeshInvalidated += InvalidateMesh0;
+            SelectionMesh = new(this, (node, mesh) => {
+                var roadBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
+                NodeRenderer.GenerateRoadNodeSelectionMesh(node, roadBin, null);
+            });
             PositionProp.ValueChanged += PositionProp_ValueChanged;
             LeftTangent = new(default, "tangentLeft", this);
             RightTangent = new(default, "tangentRight", this);

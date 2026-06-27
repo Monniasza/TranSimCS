@@ -18,7 +18,7 @@ namespace TranSimCS.Worlds.Stack {
         }
 
         public void ElementAdded(TObj element) {
-            sceneTree.Add(element.Mesh.Leaf);
+            sceneTree.Add(element.GetSelectionMeshGenerator().Leaf);
         }
 
         public void ElementModified(TObj element, PropertyChangedEventArgs args) {

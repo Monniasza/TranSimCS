@@ -41,7 +41,7 @@ namespace TranSimCS {
             Arrow = Content.Load<Texture2D>("markings/arrow");
             White = Content.Load<Texture2D>("white");
             Grid = Content.Load<Texture2D>("snapgrid");
-            LineYield = Content.Load<Texture2D>("lines/yield.png");
+            LineYield = Content.Load<Texture2D>("lines/yield");
         }
     }
 }

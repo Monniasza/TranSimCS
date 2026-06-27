@@ -1,5 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using MLEM.Textures;
 using MLEM.Ui;
 using MLEM.Ui.Elements;
 using MLEM.Ui.Style;
@@ -110,6 +112,44 @@ namespace TranSimCS.Tools {
                 var button = new Button(Anchor.AutoLeft, new(100, 20), preset.Item1);
                 button.OnPressed += (s) => laneSpecProp.Value = preset.Item2;
                 presetsDropDown.Panel.AddChild(button);
+            }
+
+            //Tags
+            var flagPresets = new (string Title, string Texture, string? SecondaryTexture, LaneFlags Flag)[]{
+                ("Forward/backward", "signs/backward", "signs/forward", LaneFlags.IsBackward),
+                ("Allow reversing & wrong way", "signs/bidirectional", null, LaneFlags.AllowReverse),
+                ("Stop", "signs/stop", null, LaneFlags.Stop),
+                ("Yield", "signs/yield", null, LaneFlags.Yield),
+                ("Parking", "signs/parking", null, LaneFlags.Parking)
+            };
+            var flagsLabel = new Paragraph(Anchor.AutoLeft, 1, "Lane settings");
+            AddChild(flagsLabel);
+            foreach(var row in flagPresets) {
+                var title = row.Title;
+                var texture = row.Texture;
+                var secondaryTexture = row.SecondaryTexture;
+                var flag = row.Flag;
+                var secondaryColor = (secondaryTexture == null) ? Color.Gray : Color.White;
+                secondaryTexture ??= texture;
+
+                var primaryBitmap = new TextureRegion(menu.Game.Content.Load<Texture2D>(texture));
+                var secondaryBitmap = new TextureRegion(menu.Game.Content.Load<Texture2D>(secondaryTexture));
+                var check = new Checkbox(Anchor.AutoInline, new(20, 20), "");
+                check.Checkmark = primaryBitmap;
+                check.UncheckColor = secondaryColor;
+                check.OnCheckStateChange += (s, e) => {
+                    check.Checkmark = e ? primaryBitmap : secondaryBitmap;
+                    var newSpec = laneSpecProp.Value;
+                    var newFlags = newSpec.Flags;
+                    if (e) newFlags |= flag; else newFlags &= ~flag;
+                    newSpec.Flags = flag;
+                    laneSpecProp.Value = newSpec;
+                };
+                laneSpecProp.ValueChanged += (s, e) => {
+                    var newState = (e.NewValue.Flags & flag) != 0;
+                    check.Checked = newState;
+                };
+                AddChild(check);
             }
 
             //Geometric presets

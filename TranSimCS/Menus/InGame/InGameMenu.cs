@@ -77,9 +77,9 @@ namespace TranSimCS.Menus.InGame {
         public EscapeMenu escapeMenu { get; private set; }
 
         //Colors
-        private Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
-        private Color laneHighlightColor2 = new Color(0, 192, 255, 100); //Color for highlighting the selected road half
-        private Color roadSegmentHighlightColor = new Color(0, 128, 255, 100); //Color for highlighting selected road segments
+        public static readonly Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
+        public static readonly Color laneHighlightColor2 = new Color(0, 192, 255, 100); //Color for highlighting the selected road half
+        public static readonly Color roadSegmentHighlightColor = new Color(0, 128, 255, 100); //Color for highlighting selected road segments
         
         //Tools
         public RoadTool RoadCreationTool { get; private set; }
