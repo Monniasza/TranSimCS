@@ -74,7 +74,7 @@ namespace TranSimCS.Roads.Node {
                 GenerateLaneMesh(lane, mesh);
             }
         }
-        public static void GenerateLaneMesh(Lane lane, MultiMesh mesh, float voffset = 0) {
+        public static void GenerateLaneMesh(Lane lane, MultiMesh mesh) {
             //Generate the stop/yield line
             var tags = lane.Spec.Flags;
             var lineFlags = LaneFlags.Stop | LaneFlags.Yield;
@@ -84,9 +84,10 @@ namespace TranSimCS.Roads.Node {
                 var range = lane.Bounds;
                 var width = range.Max - range.Min;
                 var refframe = lane.RoadNode.ReferenceFrame;
-                var p0 = refframe.O + refframe.X * range.Min;
-                var p1 = refframe.O + refframe.X * range.Max;
-                lineBin.DrawLine(p0, p1, refframe.Y, Color.White, length: width);
+                var voffset = refframe.Y * 0.1f;
+                var p0 = refframe.O + refframe.X * range.Min + voffset;
+                var p1 = refframe.O + refframe.X * range.Max + voffset;
+                lineBin.DrawLine(p0, p1, refframe.Y, Color.White, width: 0.5f, length: width/2);
             }
         }
     }
