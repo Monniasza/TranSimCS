@@ -68,15 +68,6 @@ namespace TranSimCS.Tools {
                     var laneTag = laneDependency.Tag();
                     RoadRenderer.GenerateLaneRangeMesh(laneTag, renderBin, O, v2);
                 }
-
-                
-
-                //The node/lane itself
-                /*
-                var nodeQuad = NodeRenderer.GenerateNodeQuad(roadNode, R, v3);
-                renderBin.DrawQuad(nodeQuad);
-                var lqp = NodeRenderer.GenerateLaneQuad(selLane, Color.Orange, v4);
-                renderBin.DrawQuad(lqp);*/
             } else if(selStrip != null) {
                 //Deleting segment/strip
                 var segment = selStrip.road;

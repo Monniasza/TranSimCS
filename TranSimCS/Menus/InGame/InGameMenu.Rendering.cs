@@ -24,10 +24,6 @@ namespace TranSimCS.Menus.InGame {
 
             var nodecolor = roadSegmentHighlightColor;
             var lanecolor = laneHighlightColor;
-            /*if (configuration.Tool is DemolitionTool) {
-                nodecolor = new Color(255, 0, 0, 100);
-                lanecolor = new Color(255, 128, 0, 100);
-            }*/
 
             var roadStrip = MouseOver?.GetRoadStrip();
             if((MouseOver?.SelectedObj is RoadStrip strip)) {
