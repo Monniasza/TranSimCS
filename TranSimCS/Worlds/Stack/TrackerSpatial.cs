@@ -26,7 +26,7 @@ namespace TranSimCS.Worlds.Stack {
         }
 
         public void ElementRemoved(TObj element) {
-            sceneTree.Remove(element.Mesh.Leaf);
+            sceneTree.Remove(element.GetSelectionMeshGenerator().Leaf);
         }
 
         public void OnThisAdded(TStack stack) {
