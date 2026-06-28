@@ -11,14 +11,16 @@ using TranSimCS.ModelOld;
 
 namespace TranSimCS.Roads.Node {
     public static class NodeRenderer {
-        public static void GenerateRoadNodeSelectionMesh(RoadNode node, Mesh mesh, LaneEnd? SelectedLaneEnd) {
+        public static void GenerateRoadNodeSelectionMesh(RoadNode node, Mesh mesh, LaneEnd? SelectedLaneEnd, Color? nodeHighlightColor = null, Color? laneHighlightColor = null, bool bothends = false) {
             Mesh roadRenderBin = mesh;
             var refframe = node.ReferenceFrame;
             foreach (var lane in node.Lanes) {
                 foreach (var laneEnd in new LaneEnd[] { lane.Front, lane.Rear }) {
                     var altColor = lane.Spec.Color;
                     altColor.A /= 2;
-                    var color = (SelectedLaneEnd == laneEnd) ? InGameMenu.laneHighlightColor : (SelectedLaneEnd == null || !node.Lanes.Contains(SelectedLaneEnd.Value.lane)) ? altColor : InGameMenu.roadSegmentHighlightColor;
+                    var color = nodeHighlightColor ?? InGameMenu.roadSegmentHighlightColor;
+                    if (SelectedLaneEnd == laneEnd || (bothends && SelectedLaneEnd == laneEnd.OppositeEnd)) color = laneHighlightColor ?? InGameMenu.laneHighlightColor;
+                    else if (SelectedLaneEnd == null || !node.Lanes.Contains(SelectedLaneEnd.Value.lane)) color = altColor;
                     var range = lane.Bounds;
                     var zdiscriminant = laneEnd.end.GetConditional(-1, 0);
                     var quad = GenerateLaneQuad(node, range.Min, range.Max, color, 0.2f, zdiscriminant, zdiscriminant+1);

@@ -22,17 +22,24 @@ namespace TranSimCS.Menus.InGame {
         private void DrawHighlights(GameTime time) {
             Mesh renderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
 
+            var nodecolor = roadSegmentHighlightColor;
+            var lanecolor = laneHighlightColor;
+            /*if (configuration.Tool is DemolitionTool) {
+                nodecolor = new Color(255, 0, 0, 100);
+                lanecolor = new Color(255, 128, 0, 100);
+            }*/
+
             var roadStrip = MouseOver?.GetRoadStrip();
             if((MouseOver?.SelectedObj is RoadStrip strip)) {
                 var fstag = strip.FullSizeTag();
-                RoadRenderer.GenerateLaneRangeMesh(fstag, renderBin, roadSegmentHighlightColor, 0.45f);
+                RoadRenderer.GenerateLaneRangeMesh(fstag, renderBin, nodecolor, 0.45f);
             }
 
             //If a road segment is selected, draw the selection
             if ((MouseOver?.Tag) is LaneStrip laneStrip) {
                 // Draw the selected lane tag with a different color
                 var laneTag = laneStrip.Tag();
-                RoadRenderer.GenerateLaneRangeMesh(laneTag, renderBin, laneHighlightColor, 0.5f);
+                RoadRenderer.GenerateLaneRangeMesh(laneTag, renderBin, lanecolor, 0.5f);
             }
 
             //Draw the selected road node
@@ -40,6 +47,7 @@ namespace TranSimCS.Menus.InGame {
             LaneEnd? laneEnd = null;
             if (selectedObj is IRoadElement element && element.GetLaneEnd() != null && element.GetRoadStrip() == null) 
                 laneEnd = element.GetLaneEnd();
+            
             if (CheckNodes.Checked) foreach (var node in World.Nodes.data) {
                 NodeRenderer.GenerateRoadNodeSelectionMesh(node, renderBin, laneEnd);
             }

@@ -7,6 +7,7 @@ using MLEM.Input;
 using MonoGame.Extended;
 using NLog;
 using NLog.Time;
+using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads;
@@ -23,31 +24,33 @@ namespace TranSimCS.Tools {
 
         public void Draw(GameTime gameTime) {
             var roadSelection = game.MouseOver?.Tag as IRoadElement;
-            if (roadSelection == null) return;
 
             Mesh renderBin = game.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
 
             float v1 = 0.2f;
             float v2 = 0.3f;
-            float v3 = 0.55f;
-            float v4 = 0.65f;
+            var O = new Color(255, 128, 0, 100);
+            var R = new Color(255, 0, 0, 100);
 
             //Determine elements to be removed when left-clicking (the segment/node) in red
             //Determine elements to be removed when right-clicking (the strip/lane) in orange
 
-            var selLane = roadSelection.GetLane();
-            var selStrip = roadSelection.GetLaneStrip();
+            var selLane = roadSelection?.GetLane();
+            var selStrip = roadSelection?.GetLaneStrip();
+            var roadNode = roadSelection?.GetRoadNode();
 
-            var O = new Color(255, 128, 0, 100);
-            var R = new Color(255, 0, 0, 100);
+            //Nodes/lanes
+            foreach (var node in game.World.Nodes.data) {
+                NodeRenderer.GenerateRoadNodeSelectionMesh(node, renderBin, selLane?.Front, R, O, true);
+            }
 
-            if (selLane != null) {
+            if (roadSelection == null) return;
+            if (selLane != null && roadNode != null) {
                 //Deleting node/lane
 
                 //Segments
-                var node = selLane.RoadNode;
-                var fw = node.FrontEnd;
-                var bw = node.RearEnd;
+                var fw = roadNode.FrontEnd;
+                var bw = roadNode.RearEnd;
                 var dependencies = new List<RoadStrip>();
                 dependencies.AddRange(fw.ConnectedSegments);
                 dependencies.AddRange(bw.ConnectedSegments);
@@ -62,16 +65,18 @@ namespace TranSimCS.Tools {
                 var laneDependencies = new List<LaneStrip>();
                 laneDependencies.AddRange(dependencies.SelectMany(x => x.Lanes).Where(x => (x.StartLane.lane == selLane || x.EndLane.lane == selLane)));
                 foreach(var laneDependency in laneDependencies) {
-                    var laneTag = laneDependency.Tag;
-                    RoadRenderer.GenerateLaneRangeMesh(laneTag(), renderBin, O, v2);
+                    var laneTag = laneDependency.Tag();
+                    RoadRenderer.GenerateLaneRangeMesh(laneTag, renderBin, O, v2);
                 }
 
+                
+
                 //The node/lane itself
-                var roadNode = roadSelection.GetRoadNode();
+                /*
                 var nodeQuad = NodeRenderer.GenerateNodeQuad(roadNode, R, v3);
                 renderBin.DrawQuad(nodeQuad);
                 var lqp = NodeRenderer.GenerateLaneQuad(selLane, Color.Orange, v4);
-                renderBin.DrawQuad(lqp);
+                renderBin.DrawQuad(lqp);*/
             } else if(selStrip != null) {
                 //Deleting segment/strip
                 var segment = selStrip.road;
@@ -97,7 +102,7 @@ namespace TranSimCS.Tools {
         }
 
         void ITool.OnClick(MouseButton button) {
-            var  MouseOverRoad = game.MouseOver?.Tag as IRoadElement;
+            var MouseOverRoad = game.MouseOver?.Tag as IRoadElement;
             TSWorld world = game.World;
 
             //Demolish the selected road segment if the left mouse button is clicked
