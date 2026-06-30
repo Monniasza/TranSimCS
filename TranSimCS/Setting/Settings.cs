@@ -20,7 +20,7 @@ namespace TranSimCS.Setting {
         public static bool ShowGround { get => ShowGroundProp.Value; set => ShowGroundProp.Value = value; }
 
         static Settings(){
-            RoadAccuracyProp = new(65, "roadAccuracy", null);
+            RoadAccuracyProp = new(17, "roadAccuracy", null);
             RoadAccuracyProp.ValidateChanges += (s, e) => {
                 if (e.NewValue < 2) throw new ArgumentException("Accuracy must be at least 2");
             };
@@ -42,7 +42,7 @@ namespace TranSimCS.Setting {
 
     public struct SettingsData {
         public static SettingsData Default => new() {
-            RoadAccuracy = 65,
+            RoadAccuracy = 17,
             InvertAllNormals = false,
             ShowGround = true
         };
