@@ -63,11 +63,13 @@ namespace TranSimCS.Roads.Strip {
         }
 
         private void RoadStrip_OnLaneRemoved(object? sender, RoadStripEventArgs e) {
-            StartNode?.Node?.Mesh?.Invalidate();
-            EndNode?.Node?.Mesh?.Invalidate();
+            InvalidateNodes();
         }
 
         private void RoadStrip_OnLaneAdded(object? sender, RoadStripEventArgs e) {
+            InvalidateNodes();
+        }
+        public void InvalidateNodes() {
             StartNode?.Node?.Mesh?.Invalidate();
             EndNode?.Node?.Mesh?.Invalidate();
         }
