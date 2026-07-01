@@ -116,11 +116,11 @@ namespace TranSimCS.Tools {
 
             //Tags
             var flagPresets = new (string Title, string Texture, string? SecondaryTexture, LaneFlags Flag)[]{
-                ("Forward/backward", "signs/backward", "signs/forward", LaneFlags.IsBackward),
                 ("Allow reversing & wrong way", "signs/bidirectional", null, LaneFlags.AllowReverse),
                 ("Stop", "signs/stop", null, LaneFlags.Stop),
                 ("Yield", "signs/yield", null, LaneFlags.Yield),
-                ("Parking", "signs/parking", null, LaneFlags.Parking)
+                ("Parking", "signs/parking", null, LaneFlags.Parking),
+                ("Platform", "ui/bus", null, LaneFlags.Parking)
             };
             var flagsLabel = new Paragraph(Anchor.AutoLeft, 1, "Lane settings");
             AddChild(flagsLabel);
