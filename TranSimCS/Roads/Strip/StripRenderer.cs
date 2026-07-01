@@ -46,9 +46,49 @@ namespace TranSimCS.Roads.Strip {
             arrowBin.DrawLine(midpoint - displacement, midpoint + displacement, nrm, Color.White, arrowWidth);
 
             //Generate side-lines
+            var solidTexture = Assets.White;
+            var dashedTexture = ((laneStrip.Spec.Flags & LaneFlags.Yield) != 0) ? Assets.LineYield : Assets.LineDash;
+            var lineWidth = laneStrip.Spec.LineWidth;
+
+            void DrawSide(LaneRange laneRange, LaneFlags flag) {
+                var lineSplines = RoadRenderer.GenerateSplines(laneRange, voffset + 0.05f);
+                var lineTexture = ((laneStrip.Spec.Flags & flag) != 0) ? solidTexture : dashedTexture;
+                var leftLinePoints = GeometryUtils.GenerateSplinePoints(lineSplines.Left, accuracy);
+                var rightLinePoints = GeometryUtils.GenerateSplinePoints(lineSplines.Right, accuracy);
+                var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftLinePoints, rightLinePoints, GenerateLaneStripVertexGen(Color.White));
+                var lineBin = renderer.GetOrCreateRenderBinForced(lineTexture);
+                lineBin.DrawStrip(generatedVertStripPair);
+            }
+
+            var startLeft = tag.startRange.Min;
+            var startLeftCenter = tag.startRange.Min + lineWidth;
+            var startRightCenter = tag.startRange.Max - lineWidth;
+            var startRight = tag.startRange.Max;
+            if(laneStrip.StartLane.end == Node.NodeEnd.Backward) {
+                DataUtil.Swap(ref startLeft, ref startRightCenter);
+                DataUtil.Swap(ref startLeftCenter, ref startRight);
+            }
+            var endLeft = tag.endRange.Min;
+            var endLeftCenter = tag.endRange.Min + lineWidth;
+            var endRightCenter = tag.endRange.Max - lineWidth;
+            var endRight = tag.endRange.Max;
+            if (laneStrip.EndLane.end == Node.NodeEnd.Backward) {
+                DataUtil.Swap(ref endLeft, ref endRightCenter);
+                DataUtil.Swap(ref endLeftCenter, ref endRight);
+            }
+
+            var leftRange = tag;
+            leftRange.startRange = new(startLeft, startLeftCenter);
+            leftRange.endRange = new(endRightCenter, endRight);
+            DrawSide(leftRange, LaneFlags.NoLeft);
+            var rightRange = tag;
+            rightRange.startRange = new(startRightCenter, startRight);
+            rightRange.endRange = new(endLeft, endLeftCenter);
+            DrawSide(rightRange, LaneFlags.NoRight);
 
             renderer.AddTagsToAll(laneStrip);
         }
+
 
         public static VertexGen2<VertexPositionColorTexture> GenerateLaneStripVertexGen(LaneSpec spec) => GenerateLaneStripVertexGen(spec.Color);
         public static VertexGen2<VertexPositionColorTexture> GenerateLaneStripVertexGen(Color c) {

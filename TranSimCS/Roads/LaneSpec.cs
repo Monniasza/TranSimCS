@@ -9,14 +9,17 @@ namespace TranSimCS.Roads {
         public float Width { get; set; } //Width. Ignored by nodes, but used to store new lane widths
         public float SpeedLimit { get; set; } //Speed limit [km/h]
 
+        public float LineWidth { get; set; } //Line width
+
 
         // Constructor to initialize the LaneSpec with lane index, width, and offset
-        public LaneSpec(Color color, VehicleTypes vehicleTypes, float width = 3.5f, float speedLimit = 50, LaneFlags flags = LaneFlags.None) {
+        public LaneSpec(Color color, VehicleTypes vehicleTypes, float width = 3.5f, float speedLimit = 50, LaneFlags flags = LaneFlags.None, float lineWidth = 0.2f) {
             Color = color;
             VehicleTypes = vehicleTypes;
             Flags = flags;
             Width = width;
             SpeedLimit = speedLimit;
+            LineWidth = lineWidth;
         }
 
         //Common presets for lane specifications
@@ -39,11 +42,12 @@ namespace TranSimCS.Roads {
                    VehicleTypes == other.VehicleTypes &&
                    Flags == other.Flags &&
                    Width == other.Width &&
-                   SpeedLimit == other.SpeedLimit;
+                   SpeedLimit == other.SpeedLimit &&
+                   LineWidth == other.LineWidth;
         }
 
         public override int GetHashCode() {
-            return HashCode.Combine(Color, VehicleTypes, Flags, Width, SpeedLimit);
+            return HashCode.Combine(Color, VehicleTypes, Flags, Width, SpeedLimit, LineWidth);
         }
 
         public static bool operator ==(LaneSpec left, LaneSpec right) {
