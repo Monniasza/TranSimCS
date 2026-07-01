@@ -78,18 +78,31 @@ namespace TranSimCS.Roads.Node {
         }
         public static void GenerateLaneMesh(Lane lane, MultiMesh mesh) {
             //Generate the stop/yield line
+            var refframe = lane.RoadNode.ReferenceFrame;
+            var range = lane.Bounds;
+            var width = range.Max - range.Min;
             var tags = lane.Spec.Flags;
             var lineFlags = LaneFlags.Stop | LaneFlags.Yield;
             var lineTest = tags & lineFlags;
             if (lineTest != 0) {
                 var lineBin = mesh.GetOrCreateRenderBinForced((lineTest == LaneFlags.Yield) ? Assets.LineYield : Assets.Road);
-                var range = lane.Bounds;
-                var width = range.Max - range.Min;
-                var refframe = lane.RoadNode.ReferenceFrame;
+                
                 var voffset = refframe.Y * 0.1f;
                 var p0 = refframe.O + refframe.X * range.Min + voffset;
                 var p1 = refframe.O + refframe.X * range.Max + voffset;
                 lineBin.DrawLine(p0, p1, refframe.Y, Color.White, width: 0.5f, length: width/2);
+            }
+
+            //Generate the impassable barrier
+            var isPassable = lane.IsLanePassable();
+            if (!isPassable) {
+                var barrierBin = mesh.GetOrCreateRenderBinForced(Assets.Impassable);
+                var barrierHeight = 0.5f;
+                var barrierNormal = -refframe.Z;
+                var p1 = refframe.O + refframe.X * range.Min + refframe.Y * barrierHeight;
+                var p2 = p1 + refframe.X * width;
+                barrierBin.DrawLine(p1, p2, barrierNormal, Color.White, length: width);
+                barrierBin.DrawLine(p1, p2, -barrierNormal, Color.White, length: width);
             }
         }
     }

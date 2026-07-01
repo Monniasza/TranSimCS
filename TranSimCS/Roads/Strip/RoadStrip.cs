@@ -58,6 +58,18 @@ namespace TranSimCS.Roads.Strip {
             Mesh = new MeshGenerator<RoadStrip>(this, GenerateMesh);
             Mesh.OnMeshInvalidated += () => InvalidateMesh0(this);
             PropertyChanged += (s, e) => Mesh.Invalidate();
+            OnLaneAdded += RoadStrip_OnLaneAdded;
+            OnLaneRemoved += RoadStrip_OnLaneRemoved;
+        }
+
+        private void RoadStrip_OnLaneRemoved(object? sender, RoadStripEventArgs e) {
+            StartNode?.Node?.Mesh?.Invalidate();
+            EndNode?.Node?.Mesh?.Invalidate();
+        }
+
+        private void RoadStrip_OnLaneAdded(object? sender, RoadStripEventArgs e) {
+            StartNode?.Node?.Mesh?.Invalidate();
+            EndNode?.Node?.Mesh?.Invalidate();
         }
 
         public RoadNodeEnd GetHalf(SegmentHalf selectedRoadHalf) => selectedRoadHalf.GetConditional(StartNode, EndNode);

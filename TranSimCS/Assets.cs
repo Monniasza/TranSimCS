@@ -22,6 +22,7 @@ namespace TranSimCS {
         public static Texture2D White { get; private set; }
         public static Texture2D Grid { get; private set; }
         public static Texture2D LineYield { get; private set; }
+        public static Texture2D Impassable { get; private set; }
 
         public static readonly string CrossIcon = "ui/check";
 
@@ -42,6 +43,7 @@ namespace TranSimCS {
             White = Content.Load<Texture2D>("white");
             Grid = Content.Load<Texture2D>("snapgrid");
             LineYield = Content.Load<Texture2D>("lines/yield");
+            Impassable = Content.Load<Texture2D>("signs/trafficbarrier");
         }
     }
 }
