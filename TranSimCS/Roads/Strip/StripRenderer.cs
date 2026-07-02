@@ -91,14 +91,40 @@ namespace TranSimCS.Roads.Strip {
             var startLeftCenter = tag.startRange.Min + lineWidth;
             var startRightCenter = tag.startRange.Max - lineWidth;
             var startRight = tag.startRange.Max;
-            if (laneStrip.StartLane.end == Node.NodeEnd.Backward) {
-                DataUtil.Swap(ref startLeft, ref startRightCenter);
-                DataUtil.Swap(ref startLeftCenter, ref startRight);
-            }
             var endLeft = tag.endRange.Min;
             var endLeftCenter = tag.endRange.Min + lineWidth;
             var endRightCenter = tag.endRange.Max - lineWidth;
             var endRight = tag.endRange.Max;
+
+            //Do merges
+            if (isExpand) {
+                //Work on the end
+                var endLeft1 = (endLeft, endLeftCenter);
+                var endRight1 = (endRightCenter, endRight);
+                var endLeft2 = mergeLeft ? endRight1 : endLeft1;
+                var endRight2 = mergeRight ? endLeft1 : endRight1;
+                endLeft = endLeft2.Item1;
+                endLeftCenter = endLeft2.Item2;
+                endRightCenter = endRight2.Item1;
+                endRight = endRight2.Item2;
+            } else {
+                //Work on the start
+                var startLeft1 = (startLeft, startLeftCenter);
+                var startRight1 = (startRightCenter, startRight);
+                var startLeft2 = mergeLeft ? startRight1 : startLeft1;
+                var startRight2 = mergeRight ? startLeft1 : startRight1;
+                startLeft = startLeft2.Item1;
+                startLeftCenter = startLeft2.Item2;
+                startRightCenter = startRight2.Item1;
+                startRight = startRight2.Item2;
+            }
+
+            //Do oprdering
+            if (laneStrip.StartLane.end == Node.NodeEnd.Backward) {
+                DataUtil.Swap(ref startLeft, ref startRightCenter);
+                DataUtil.Swap(ref startLeftCenter, ref startRight);
+            }
+            
             if (laneStrip.EndLane.end == Node.NodeEnd.Backward) {
                 DataUtil.Swap(ref endLeft, ref endRightCenter);
                 DataUtil.Swap(ref endLeftCenter, ref endRight);
@@ -109,31 +135,7 @@ namespace TranSimCS.Roads.Strip {
             leftRange.endRange = new(endRightCenter, endRight);
             var rightRange = tag;
             rightRange.startRange = new(startRightCenter, startRight);
-            rightRange.endRange = new(endLeft, endLeftCenter);
-
-            //Do merges
-            if (isExpand) {
-                //Work on the end
-                var endLeft1 = (endLeft, endLeftCenter);
-                var endRight1 = (endRight, endRightCenter);
-                var endLeft2 = mergeLeft ? endRight1 : endLeft1;
-                var endRight2 = mergeRight ? endLeft1 : endRight1;
-                endLeft = endLeft2.Item1;
-                endLeftCenter = endLeft2.Item2;
-                endRightCenter = endRight2.Item1;
-                endRight = endRight2.Item2;
-            } else {
-                //Work on the start
-                var startLeft1 = (startLeft, startLeftCenter);
-                var startRight1 = (startRight, startRightCenter);
-                var startLeft2 = mergeLeft ? startRight1 : startLeft1;
-                var startRight2 = mergeRight ? startLeft1 : startRight1;
-                startLeft = startLeft2.Item1;
-                startLeftCenter = startLeft2.Item2;
-                startRightCenter = startRight2.Item1;
-                startRight = startRight2.Item2;
-            }
-
+            rightRange.endRange = new(endLeft, endLeftCenter);        
             DrawSide(leftRange, LaneFlags.NoLeft);
             DrawSide(rightRange, LaneFlags.NoRight);
         }
