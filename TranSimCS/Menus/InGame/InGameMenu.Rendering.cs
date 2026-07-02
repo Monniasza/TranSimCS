@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Collections;
 using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Marking;
@@ -115,6 +116,34 @@ namespace TranSimCS.Menus.InGame {
                         foreach (var laneEnd in new LaneEnd[] { lane.Front, lane.Rear })
                             foreach (var alignment in new float[] { 0, 1 }) entries.Add(new() { Anchor = laneEnd, Alignment = alignment });
                 foreach (var entry in entries) MarkingRenderer.RenderMarkingPoint(entry, renderHelper);
+            }
+
+            //Apply the day/night cycle
+            var isDayNight = Settings.DayNightCycle;
+
+            if (isDayNight) {
+                Vector3 dayVector = new(1, 1, 1);
+                Vector3 nightVector = new(0.2f, 0.2f, 0.5f);
+                DateTime dateTime = DateTime.Now;
+                var seconds = dateTime.Second + dateTime.Millisecond * 0.001f + dateTime.Microsecond * 0.000001f;
+                var radsPerSecond = MathF.PI / 30;
+                var sine = MathF.Sin(seconds * radsPerSecond);
+                sine = MathHelper.Clamp(sine*2, -1, 1);
+                sine = (sine / 2) + 0.5f;
+                var interpolatedDayNightVector = Vector3.SmoothStep(dayVector, nightVector, sine) / 255;
+                foreach(var bin in renderHelper.RenderBins) {
+                    var mesh = bin.Value;
+                    mesh.Vertices.TransformInPlace(x => {
+                        var result = x;
+                        var r = x.Color.R * interpolatedDayNightVector.X;
+                        var g = x.Color.G * interpolatedDayNightVector.Y;
+                        var b = x.Color.B * interpolatedDayNightVector.Z;
+                        var a = x.Color.A / 255;
+                        var color = new Color(r, g, b, a);
+                        result.Color = color;
+                        return result;
+                    });
+                }
             }
 
             //Render the render helper

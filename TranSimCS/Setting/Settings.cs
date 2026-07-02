@@ -18,6 +18,8 @@ namespace TranSimCS.Setting {
 
         public static readonly Property<bool> ShowGroundProp;
         public static bool ShowGround { get => ShowGroundProp.Value; set => ShowGroundProp.Value = value; }
+        public static readonly Property<bool> DayNightCycleProp;
+        public static bool DayNightCycle { get => DayNightCycleProp.Value; set => DayNightCycleProp.Value = value; }
 
         static Settings(){
             RoadAccuracyProp = new(17, "roadAccuracy", null);
@@ -26,17 +28,20 @@ namespace TranSimCS.Setting {
             };
             InvertAllNormalsProp = new(false, "invertNormals");
             ShowGroundProp = new(true, "showGround");
+            DayNightCycleProp = new(true, "dayNightCycle");
         }
 
         public static SettingsData GetAll() => new SettingsData() {
             RoadAccuracy = RoadAccuracy,
             InvertAllNormals = InvertAllNormals,
-            ShowGround = ShowGround
+            ShowGround = ShowGround,
+            DayNightCycle = DayNightCycle
         };
         public static void SetAll(SettingsData data) {
             RoadAccuracy = data.RoadAccuracy;
             InvertAllNormals = data.InvertAllNormals;
             ShowGround = data.ShowGround;
+            DayNightCycle = data.DayNightCycle;
         }
     }
 
@@ -44,12 +49,14 @@ namespace TranSimCS.Setting {
         public static SettingsData Default => new() {
             RoadAccuracy = 17,
             InvertAllNormals = false,
-            ShowGround = true
+            ShowGround = true,
+            DayNightCycle = true
         };
 
         public int RoadAccuracy;
         public bool InvertAllNormals;
         public bool ShowGround;
+        public bool DayNightCycle;
     }
 
     public class SettingsDataConverter : JsonConverter<SettingsData> {
@@ -68,6 +75,10 @@ namespace TranSimCS.Setting {
                     case "showGround":
                         reader0.Read();
                         data.ShowGround = reader0.GetBoolean();
+                        break;
+                    case "dayNightCycle":
+                        reader0.Read();
+                        data.DayNightCycle = reader0.GetBoolean();
                         break;
                     default:
                         reader0.Skip();
@@ -88,6 +99,8 @@ namespace TranSimCS.Setting {
 
             writer.WritePropertyName("showGround");
             writer.WriteBooleanValue(value.ShowGround);
+
+            writer.WriteBoolean("dayNightCycle", value.DayNightCycle);
 
             writer.WriteEndObject();
         }

@@ -36,6 +36,10 @@ namespace TranSimCS.Tools {
             var showGroundCheck = new Checkbox(Anchor.AutoLeft, new(1, 20), "Show ground");
             UI.AddProperty(showGroundCheck, Settings.ShowGroundProp);
             AddChild(showGroundCheck);
+
+            var dayNightCheck = new Checkbox(Anchor.AutoLeft, new(1, 20), "Day/night cycle");
+            UI.AddProperty(dayNightCheck, Settings.DayNightCycleProp);
+            AddChild(dayNightCheck);
         }
 
         public static TextField AddSetting<T>(Panel panel, String name, Func<string, T> fromString, Func<T, string> toString, Property<T> prop) {
