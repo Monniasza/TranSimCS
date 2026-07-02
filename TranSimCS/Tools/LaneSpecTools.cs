@@ -15,7 +15,6 @@ namespace TranSimCS.Tools {
     public class LaneSpecTools : Panel {
         public readonly Property<LaneSpec> laneSpecProp;
         private Panel indicator;
-        public readonly Checkbox[] checks;
         public TextField inR, inG, inB, inA;
         public readonly InGameMenu menu;
 
@@ -58,24 +57,26 @@ namespace TranSimCS.Tools {
             AddChild(indicator);
 
             //Vehicle types
-            var vehicleTypes = new string[] {
-                "Car", "Truck", "Bus", "Bike", "Pedestrian",
-                "Light rail", "Heavy rail", "Equestrians", "Airplanes", "Rockets"
-            };
-            Paragraph vehiclesLabel = new(Anchor.AutoLeft, 1, "Vehicles:", true);
-            checks = new Checkbox[vehicleTypes.Length];
-            for(int i = 0; i <  vehicleTypes.Length; i++) {
-                var x = i;
-                var vehicleName = vehicleTypes[x];
-                var vehicleType = (VehicleTypes)(1 << x);
-                var check = new Checkbox(Anchor.AutoInline, new(20, 20), null, false);
-                check.AddTooltip(vehicleName);
-                check.Checked = (vehicleType & laneSpecProp.Value.VehicleTypes) != VehicleTypes.None;
-                check.OnCheckStateChange += (element, ev) => SetVehicleTypeProperty(x, check.Checked);
-                checks[x] = check;
-                AddChild(check);
-            }
+            LaneSpecToolsFlag<VehicleTypes>[] vehicleTypes = [
+                new("Car", "ui/car", null, VehicleTypes.Car),
+                new("Truck", "ui/truck", null, VehicleTypes.Truck),
+                new("Bus", "ui/bus", null, VehicleTypes.Bus), 
+                new("Bike", "ui/check", null, VehicleTypes.Bicycle),
+                new("Pedestrian", "ui/check", null, VehicleTypes.Pedestrian),
+                new("Light rail", "ui/train", null, VehicleTypes.LRT),
+                new("Train", "ui/train", null, VehicleTypes.Train),
+                new("Horse", "ui/check", null, VehicleTypes.Horse),
+                new("Airplanes", "ui/check", null, VehicleTypes.Plane),
+                new("Rockets", "ui/check", null, VehicleTypes.Rocket),
+            ];
+            foreach (var vehicleType in vehicleTypes) AddPropertyCheckbox(vehicleType, x => x.VehicleTypes, x => {
+                var spec = laneSpecProp.Value;
+                spec.VehicleTypes = x;
+                laneSpecProp.Value = spec;
+            });
 
+            Paragraph vehiclesLabel = new(Anchor.AutoLeft, 1, "Vehicles:", true);
+            
             //Vehicle compound types
             var compoundsDropDown = new Dropdown(Anchor.AutoLeft, new(0.49f, 20), "Vehicle presets");
             AddChild(compoundsDropDown);
@@ -138,37 +139,11 @@ namespace TranSimCS.Tools {
             var reverseLaneSpecButton = new Button(Anchor.AutoInline, new(0.5f, 20), "Reverse");
             reverseLaneSpecButton.OnPressed += s => laneSpecProp.Value = laneSpecProp.Value.Reverse();
             AddChild(reverseLaneSpecButton);
-            foreach(var row in flagPresets) {
-                var title = row.Title;
-                var texture = row.Texture;
-                var secondaryTexture = row.SecondaryTexture;
-                var flag = row.Flag;
-                var secondaryColor = (secondaryTexture == null) ? Color.Gray : Color.White;
-                secondaryTexture ??= texture;
-
-                var primaryBitmap = new TextureRegion(menu.Game.Content.Load<Texture2D>(texture));
-                var secondaryBitmap = new TextureRegion(menu.Game.Content.Load<Texture2D>(secondaryTexture));
-                var check = new Checkbox(Anchor.AutoInline, new(20, 20), "");
-                check.UncheckColor = secondaryColor;
-                void UpdateCheck() {
-                    bool checced = check.Checked;
-                    check.Checkmark = checced ? primaryBitmap : secondaryBitmap;
-                    var newSpec = laneSpecProp.Value;
-                    var newFlags = newSpec.Flags;
-                    if (checced) newFlags |= flag; else newFlags &= ~flag;
-                    newSpec.Flags = newFlags;
-                    laneSpecProp.Value = newSpec;
-                }
-                check.OnCheckStateChange += (s, e) => UpdateCheck();
-                laneSpecProp.ValueChanged += (s, e) => {
-                    var newState = (e.NewValue.Flags & flag) != 0;
-                    if(newState != check.Checked)
-                        check.Checked = newState;
-                };
-                UpdateCheck();
-                check.AddTooltip(title);
-                AddChild(check);
-            }
+            foreach (var row in flagPresets) AddPropertyCheckbox(row, x => x.Flags, x => {
+                var spec = laneSpecProp.Value;
+                spec.Flags = x;
+                laneSpecProp.Value = spec;
+            });
 
             //Geometric presets
             GlobalSettingsTab.AddSettingWithAction(this, "Width [m]", str => {
@@ -194,15 +169,37 @@ namespace TranSimCS.Tools {
             UpdateValues(laneSpecProp.Value);
             laneSpecProp.ValueChanged += OnChange;
         }
+        private void AddPropertyCheckbox<T>(LaneSpecToolsFlag<T> row, Func<LaneSpec, T> getter, Action<T> setter) where T: struct, Enum {
+            var title = row.Title;
+            var texture = row.Texture;
+            var secondaryTexture = row.SecondaryTexture;
+            var flag = row.Flag;
+            var secondaryColor = (secondaryTexture == null) ? Color.Gray : Color.White;
+            secondaryTexture ??= texture;
 
-        private void SetVehicleTypeProperty(int offset, bool value) {
-            var laneSpec = laneSpecProp.Value;
-            var vehicles = laneSpec.VehicleTypes;
-            VehicleTypes flag = (VehicleTypes)(1 << offset);
-            VehicleTypes negFlag = ~flag;
-            vehicles = vehicles & negFlag | (value ? flag : VehicleTypes.None);
-            laneSpec.VehicleTypes = vehicles;
-            laneSpecProp.Value = laneSpec;
+            var primaryBitmap = new TextureRegion(menu.Game.Content.Load<Texture2D>(texture));
+            var secondaryBitmap = new TextureRegion(menu.Game.Content.Load<Texture2D>(secondaryTexture));
+            var check = new Checkbox(Anchor.AutoInline, new(20, 20), "");
+            check.UncheckColor = secondaryColor;
+            T UpdateValueFromCheck() {
+                bool checced = check.Checked;
+                var newSpec = laneSpecProp.Value;
+                var newFlags = getter(newSpec);
+                newFlags = newFlags.WithFlags(flag, checced);
+                return newFlags;
+            }
+            void UpdateCheckFromValue(LaneSpec value) {
+                var propflags = getter(value);
+                var newState = propflags.HasFlags(flag);
+                if (newState != check.Checked)
+                    check.Checked = newState;
+                check.Checkmark = newState ? primaryBitmap : secondaryBitmap;
+            }
+            check.OnCheckStateChange += (s, e) => setter(UpdateValueFromCheck());
+            laneSpecProp.ValueChanged += (s, e) => UpdateCheckFromValue(e.NewValue);
+            UpdateCheckFromValue(laneSpecProp.Value);
+            check.AddTooltip(title);
+            AddChild(check);
         }
 
         private byte GetNewValue(string s, byte oldValue) {
@@ -224,11 +221,6 @@ namespace TranSimCS.Tools {
             style.PanelColor = color;
             indicator.Style = new StyleProp<UiStyle>(style);
             OnValuesChanged?.Invoke(laneSpec);
-
-            for (int i = 0; i < checks.Length; i++) {
-                VehicleTypes flag = (VehicleTypes)(1 << i);
-                checks[i].Checked = (laneSpec.VehicleTypes & flag) != VehicleTypes.None;
-            }
         }
     }
 }

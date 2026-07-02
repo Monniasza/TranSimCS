@@ -38,6 +38,17 @@ namespace TranSimCS {
 
             return (T)Enum.ToObject(typeof(T), source);
         }
+        public static bool HasFlags<T>(this T subject, T flags) where T : struct, Enum {
+            ulong a = Convert.ToUInt64(subject);
+            ulong b = Convert.ToUInt64(flags);
+            return (a & b) != 0;
+        }
+        public static T WithFlags<T>(this T subject, T flags, bool newValue) where T : struct, Enum{
+            ulong subject2 = Convert.ToUInt64(subject);
+            ulong flags2 = Convert.ToUInt64(flags);
+            if(newValue) subject2 |= flags2; else subject2 &= ~flags2;
+            return (T)Enum.ToObject(typeof(T), subject2);
+        }
 
         public static T? OrDefault<T>(T? value) {
             return value ?? default;
