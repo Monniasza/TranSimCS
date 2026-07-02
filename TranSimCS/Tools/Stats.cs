@@ -16,6 +16,7 @@ namespace TranSimCS.Tools {
         public int Sections;
         public int Buildings;
         public int Cars;
+        public int Tags;
 
         public string Format() => $"""
             Vertices: {Vertices}
@@ -28,6 +29,7 @@ namespace TranSimCS.Tools {
             Sections: {Sections}
             Buildings: {Buildings}
             Cars: {Cars}
+            Tags: {Tags}
         """;
     }
 }

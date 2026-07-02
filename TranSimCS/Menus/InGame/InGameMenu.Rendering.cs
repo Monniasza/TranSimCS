@@ -120,13 +120,16 @@ namespace TranSimCS.Menus.InGame {
             //Render the render helper
             var tris = 0;
             var verts = 0;
+            var tags = 0;
             foreach (var bin in renderHelper.RenderBins.Values) {
                 tris += (bin.Indices.Count) / 3;
                 verts += bin.Vertices.Count;
+                tags += bin.Tags.Count;
             }
             stats.Triangles = tris;
             stats.Vertices = verts;
             stats.Materials = renderHelper.RenderBins.Count;
+            stats.Tags = tags;
 
             renderManager.Render(renderHelper);
 

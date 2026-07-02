@@ -113,9 +113,6 @@ namespace TranSimCS.Roads.Strip {
             var endLeftCenter = endLeft + lineWidth;
             var endRightCenter = endRight - lineWidth;
 
-            //reverse is start-swapped if road strip start is rear
-            //forward is start-swapped if road strip start is rear
-
             //Do ordering
             if (laneStrip.StartLane.end == Node.NodeEnd.Backward) {
                 DataUtil.Swap(ref startLeft, ref startRightCenter);
@@ -126,10 +123,6 @@ namespace TranSimCS.Roads.Strip {
                 DataUtil.Swap(ref endLeft, ref endRightCenter);
                 DataUtil.Swap(ref endLeftCenter, ref endRight);
             }
-
-            //var shouldSwapStart = laneStrip.IsReverse() ?
-            //    laneStrip.EndLane.end == Node.NodeEnd.Forward
-            //    : laneStrip StartLane.end == Node.NodeEnd.Forward
 
             var leftRange = LaneStripToRoadStripRange(laneStrip, new(startLeft, startLeftCenter), new(endLeft, endLeftCenter));
             var rightRange = LaneStripToRoadStripRange(laneStrip, new(startRightCenter, startRight), new(endRightCenter, endRight));  
