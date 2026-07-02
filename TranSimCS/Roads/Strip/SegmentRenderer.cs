@@ -251,6 +251,9 @@ namespace TranSimCS.Roads.Strip {
                 RenderUtil.InvertNormals(triangulation);
                 ((Mesh)topRenderBin).DrawModel(vertices, triangulation);
             }
+
+            //Draw solid lines by the lane
+            //...
         }
 
         public static IEnumerable<Vector3> Retransform(SplineFrame frame, IEnumerable<PointD> pts, float z = 0) {

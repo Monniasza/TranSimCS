@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
+using MonoGame.Extended.Collections;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads;
@@ -47,12 +48,29 @@ namespace TranSimCS.Roads.Strip {
             var arrowBin = renderer.GetOrCreateRenderBinForced(Assets.Arrow);
             arrowBin.DrawLine(midpoint - displacement, midpoint + displacement, nrm, Color.White, arrowWidth);
 
+            GenerateStripEdgeLines(laneStrip, renderer, voffset);
+
+            renderer.AddTagsToAll(laneStrip);
+        }
+        public static void GenerateStripEdgeLines(LaneStrip laneStrip, MultiMesh renderer, float voffset = 0) {
+            //Get side-line flags
+            var mergeLeft = (laneStrip.Spec.Flags & LaneFlags.MergeLeft) != 0;
+            var mergeRight = (laneStrip.Spec.Flags & LaneFlags.MergeRight) != 0;
+            var isExpand = (laneStrip.Spec.Flags & LaneFlags.ExpandNotMerge) != 0;
+
+            if (mergeLeft && mergeRight) mergeLeft = mergeRight = false;
+
+            //Get tags
+            var accuracy = Settings.RoadAccuracy;
+            var tag = laneStrip.Tag();
+            var roadTag = laneStrip.road.FullSizeTag();
+
             //Generate side-lines
             var solidTexture = Assets.White;
             var dashedTexture = ((laneStrip.Spec.Flags & LaneFlags.Yield) != 0) ? Assets.LineYield : Assets.LineDash;
             var lineWidth = laneStrip.Spec.LineWidth;
 
-            void DrawSide(LaneRange laneRange, LaneFlags flag){
+            void DrawSide(LaneRange laneRange, LaneFlags flag) {
                 bool isEdge = IsRangeTouchingEdge(laneRange.startRange, roadTag.startRange) && IsRangeTouchingEdge(laneRange.endRange, roadTag.endRange);
                 var lineSplines = RoadRenderer.GenerateSplines(laneRange, voffset + 0.05f);
                 var lineTexture = ((laneStrip.Spec.Flags & flag) != 0 || isEdge) ? solidTexture : dashedTexture;
@@ -73,7 +91,7 @@ namespace TranSimCS.Roads.Strip {
             var startLeftCenter = tag.startRange.Min + lineWidth;
             var startRightCenter = tag.startRange.Max - lineWidth;
             var startRight = tag.startRange.Max;
-            if(laneStrip.StartLane.end == Node.NodeEnd.Backward) {
+            if (laneStrip.StartLane.end == Node.NodeEnd.Backward) {
                 DataUtil.Swap(ref startLeft, ref startRightCenter);
                 DataUtil.Swap(ref startLeftCenter, ref startRight);
             }
@@ -89,16 +107,36 @@ namespace TranSimCS.Roads.Strip {
             var leftRange = tag;
             leftRange.startRange = new(startLeft, startLeftCenter);
             leftRange.endRange = new(endRightCenter, endRight);
-            DrawSide(leftRange, LaneFlags.NoLeft);
-
             var rightRange = tag;
             rightRange.startRange = new(startRightCenter, startRight);
             rightRange.endRange = new(endLeft, endLeftCenter);
+
+            //Do merges
+            if (isExpand) {
+                //Work on the end
+                var endLeft1 = (endLeft, endLeftCenter);
+                var endRight1 = (endRight, endRightCenter);
+                var endLeft2 = mergeLeft ? endRight1 : endLeft1;
+                var endRight2 = mergeRight ? endLeft1 : endRight1;
+                endLeft = endLeft2.Item1;
+                endLeftCenter = endLeft2.Item2;
+                endRightCenter = endRight2.Item1;
+                endRight = endRight2.Item2;
+            } else {
+                //Work on the start
+                var startLeft1 = (startLeft, startLeftCenter);
+                var startRight1 = (startRight, startRightCenter);
+                var startLeft2 = mergeLeft ? startRight1 : startLeft1;
+                var startRight2 = mergeRight ? startLeft1 : startRight1;
+                startLeft = startLeft2.Item1;
+                startLeftCenter = startLeft2.Item2;
+                startRightCenter = startRight2.Item1;
+                startRight = startRight2.Item2;
+            }
+
+            DrawSide(leftRange, LaneFlags.NoLeft);
             DrawSide(rightRange, LaneFlags.NoRight);
-
-            renderer.AddTagsToAll(laneStrip);
         }
-
 
         public static VertexGen2<VertexPositionColorTexture> GenerateLaneStripVertexGen(LaneSpec spec) => GenerateLaneStripVertexGen(spec.Color);
         public static VertexGen2<VertexPositionColorTexture> GenerateLaneStripVertexGen(Color c) {

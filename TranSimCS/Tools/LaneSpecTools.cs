@@ -120,7 +120,12 @@ namespace TranSimCS.Tools {
                 ("Stop", "signs/stop", null, LaneFlags.Stop),
                 ("Yield", "signs/yield", null, LaneFlags.Yield),
                 ("Parking", "signs/parking", null, LaneFlags.Parking),
-                ("Platform", "ui/bus", null, LaneFlags.Parking)
+                ("Platform", "ui/bus", null, LaneFlags.Parking),
+                ("Merge or expand right", "signs/mergeright", null, LaneFlags.MergeRight),
+                ("Merge or expand left", "signs/mergeleft", null, LaneFlags.MergeLeft),
+                ("No switching to the left", "signs/noleft", null, LaneFlags.NoLeft),
+                ("No switching to the right", "signs/noright", null, LaneFlags.NoRight),
+                ("Merge/Expand", "signs/expand", "signs/merge", LaneFlags.ExpandNotMerge),
             };
             var flagsLabel = new Paragraph(Anchor.AutoLeft, 1, "Lane settings");
             AddChild(flagsLabel);
@@ -147,8 +152,10 @@ namespace TranSimCS.Tools {
                 };
                 laneSpecProp.ValueChanged += (s, e) => {
                     var newState = (e.NewValue.Flags & flag) != 0;
-                    check.Checked = newState;
+                    if(newState != check.Checked)
+                        check.Checked = newState;
                 };
+                check.AddTooltip(title);
                 AddChild(check);
             }
 

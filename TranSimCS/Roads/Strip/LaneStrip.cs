@@ -204,6 +204,16 @@ namespace TranSimCS.Roads.Strip {
             var oldEnd = EndLane;
             StartLane = oldEnd;
             EndLane = oldStart;
+
+            //Modify relevant flags
+            var spec = Spec;
+            var flags = spec.Flags;
+            flags ^= LaneFlags.ExpandNotMerge;
+            flags = DataUtil.SwapFlags(flags, LaneFlags.NoLeft, LaneFlags.NoRight);
+            flags = DataUtil.SwapFlags(flags, LaneFlags.MergeLeft, LaneFlags.MergeRight);
+            spec.Flags = flags;
+            Spec = spec;
+
             road?.Mesh.Invalidate();
             InvalidateMesh();
             road?.InvalidateNodes();

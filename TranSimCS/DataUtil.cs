@@ -18,6 +18,26 @@ namespace TranSimCS {
             array[a] = array[b];
             array[b] = tmp;
         }
+        public static int SwapFlags(int source, int leftFlag, int rightFlag) {
+            bool left = (source & leftFlag) != 0;
+            bool right = (source & rightFlag) != 0;
+
+            if (left != right)
+                source ^= leftFlag | rightFlag;
+
+            return source;
+        }
+        public static T SwapFlags<T>(T value, T leftFlag, T rightFlag)
+    where T : struct, Enum {
+            ulong source = Convert.ToUInt64(value);
+            ulong left = Convert.ToUInt64(leftFlag);
+            ulong right = Convert.ToUInt64(rightFlag);
+
+            if (((source & left) != 0) != ((source & right) != 0))
+                source ^= left | right;
+
+            return (T)Enum.ToObject(typeof(T), source);
+        }
 
         public static T? OrDefault<T>(T? value) {
             return value ?? default;

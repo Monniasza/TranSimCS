@@ -4,10 +4,12 @@ namespace TranSimCS.Roads {
     [Flags]
     public enum LaneFlags {
         //RESERVED
-        R1 = 1,
-        R2 = 4,
-        R3 = 8,
         R4 = 16,
+
+        //MERGE FLAGS
+        MergeLeft = 1,
+        MergeRight = 4,
+        ExpandNotMerge = 8,
 
         /// <summary>
         /// No flags set
