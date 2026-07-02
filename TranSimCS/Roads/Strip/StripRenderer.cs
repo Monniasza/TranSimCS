@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads;
@@ -12,6 +13,7 @@ namespace TranSimCS.Roads.Strip {
         public static void GenerateLaneStripMesh(LaneStrip laneStrip, MultiMesh renderer, float voffset = 0) {
             var accuracy = Settings.RoadAccuracy;
             var tag = laneStrip.Tag();
+            var roadTag = laneStrip.road.FullSizeTag();
             var (Left, Right) = RoadRenderer.GenerateSplines(tag, voffset); // Generate the splines for the left and right lanes
 
             var apshaltBin = renderer.GetOrCreateRenderBinForced(Assets.Asphalt);
@@ -50,14 +52,21 @@ namespace TranSimCS.Roads.Strip {
             var dashedTexture = ((laneStrip.Spec.Flags & LaneFlags.Yield) != 0) ? Assets.LineYield : Assets.LineDash;
             var lineWidth = laneStrip.Spec.LineWidth;
 
-            void DrawSide(LaneRange laneRange, LaneFlags flag) {
+            void DrawSide(LaneRange laneRange, LaneFlags flag){
+                bool isEdge = IsRangeTouchingEdge(laneRange.startRange, roadTag.startRange) && IsRangeTouchingEdge(laneRange.endRange, roadTag.endRange);
                 var lineSplines = RoadRenderer.GenerateSplines(laneRange, voffset + 0.05f);
-                var lineTexture = ((laneStrip.Spec.Flags & flag) != 0) ? solidTexture : dashedTexture;
+                var lineTexture = ((laneStrip.Spec.Flags & flag) != 0 || isEdge) ? solidTexture : dashedTexture;
                 var leftLinePoints = GeometryUtils.GenerateSplinePoints(lineSplines.Left, accuracy);
                 var rightLinePoints = GeometryUtils.GenerateSplinePoints(lineSplines.Right, accuracy);
                 var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftLinePoints, rightLinePoints, GenerateLaneStripVertexGen(Color.White));
                 var lineBin = renderer.GetOrCreateRenderBinForced(lineTexture);
                 lineBin.DrawStrip(generatedVertStripPair);
+            }
+            bool IsRangeTouchingEdge(Range<float> lineWidth, Range<float> endingRange) {
+                float delta = 0.01f;
+                var d0 = Math.Abs(lineWidth.Min - endingRange.Min);
+                var d1 = Math.Abs(lineWidth.Max - endingRange.Max);
+                return (d0 < delta) || (d1 < delta);
             }
 
             var startLeft = tag.startRange.Min;
@@ -81,6 +90,7 @@ namespace TranSimCS.Roads.Strip {
             leftRange.startRange = new(startLeft, startLeftCenter);
             leftRange.endRange = new(endRightCenter, endRight);
             DrawSide(leftRange, LaneFlags.NoLeft);
+
             var rightRange = tag;
             rightRange.startRange = new(startRightCenter, startRight);
             rightRange.endRange = new(endLeft, endLeftCenter);
