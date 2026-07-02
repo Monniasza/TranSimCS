@@ -21,34 +21,34 @@ namespace TranSimCS.Tools {
             laneSpecProp = menu.configuration.LaneSpecProp;
 
             //Color selector
-            inR = SetUpProp("Red: ", this, ls => ls.Color.R.ToString(), (s) => {
+            inR = GlobalSettingsTab.AddSettingWithAction(this, "Red: ", (s) => {
                 var laneSpec = laneSpecProp.Value;
                 var color = laneSpec.Color;
                 color.R = GetNewValue(s, color.R);
                 laneSpec.Color = color;
                 laneSpecProp.Value = laneSpec;
-            });
-            inG = SetUpProp("Green: ", this, ls => ls.Color.G.ToString(), (s) => {
+            }, ls => ls.Color.R.ToString(), laneSpecProp);
+            inG = GlobalSettingsTab.AddSettingWithAction(this, "Green: ", (s) => {
                 var laneSpec = laneSpecProp.Value;
                 var color = laneSpec.Color;
                 color.G = GetNewValue(s, color.G);
                 laneSpec.Color = color;
                 laneSpecProp.Value = laneSpec;
-            });
-            inB = SetUpProp("Blue: ", this, ls => ls.Color.B.ToString(), (s) => {
+            }, ls => ls.Color.G.ToString(), laneSpecProp);
+            inB = GlobalSettingsTab.AddSettingWithAction(this, "Blue: ", (s) => {
                 var laneSpec = laneSpecProp.Value;
                 var color = laneSpec.Color;
                 color.B = GetNewValue(s, color.B);
                 laneSpec.Color = color;
                 laneSpecProp.Value = laneSpec;
-            });
-            inA = SetUpProp("Alpha: ", this, ls => ls.Color.A.ToString(), (s) => {
+            }, ls => ls.Color.B.ToString(), laneSpecProp);
+            inA = GlobalSettingsTab.AddSettingWithAction(this, "Alpha: ", (s) => {
                 var laneSpec = laneSpecProp.Value;
                 var color = laneSpec.Color;
                 color.A = GetNewValue(s, color.A);
                 laneSpec.Color = color;
                 laneSpecProp.Value = laneSpec;
-            });
+            }, ls => ls.Color.A.ToString(), laneSpecProp);
 
             indicator = new Panel(Anchor.AutoLeft, new(1, 20));
             AddChild(indicator);
@@ -161,16 +161,16 @@ namespace TranSimCS.Tools {
             }
 
             //Geometric presets
-            SetUpProp("Width [m]", this, ls => ls.Width.ToString(), str => {
+            GlobalSettingsTab.AddSettingWithAction(this, "Width [m]", str => {
                 var laneSpec = laneSpecProp.Value;
                 laneSpec.Width = GetNewFloat(str, laneSpec.Width);
                 laneSpecProp.Value = laneSpec;
-            });
-            SetUpProp("Speed limit [km/h]", this, ls => ls.SpeedLimit.ToString(), str => {
+            }, ls => ls.Width.ToString(), laneSpecProp);
+            GlobalSettingsTab.AddSettingWithAction(this, "Speed limit [km/h]", str => {
                 var laneSpec = laneSpecProp.Value;
                 laneSpec.SpeedLimit = GetNewFloat(str, laneSpec.SpeedLimit);
                 laneSpecProp.Value = laneSpec;
-            });
+            }, ls => ls.SpeedLimit.ToString(), laneSpecProp);
 
 
             var style = new UiStyle(menu.Game.DefaultUiStyle);
@@ -189,9 +189,7 @@ namespace TranSimCS.Tools {
             laneSpec.VehicleTypes = vehicles;
             laneSpecProp.Value = laneSpec;
         }
-        private TextField SetUpProp(string title, Panel panel, Func<LaneSpec, string> getter, Action<string> setter) {
-            return GlobalSettingsTab.AddSettingWithAction(panel, title, setter, getter, laneSpecProp);
-        }
+
         private byte GetNewValue(string s, byte oldValue) {
             if(s.Length == 0) return 0;
             if(byte.TryParse(s, out var value)) { return value; }

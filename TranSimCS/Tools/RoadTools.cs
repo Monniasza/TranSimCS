@@ -8,6 +8,7 @@ using MLEM.Ui.Style;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
+using TranSimCS.Setting;
 
 namespace TranSimCS.Tools {
     public class RoadTools : Panel {
@@ -15,8 +16,8 @@ namespace TranSimCS.Tools {
         public Checkbox flattenTilt { get; private set; }
         public Checkbox flattenIncline { get; private set; }
         public Checkbox anarchyCheck { get; private set; }
-        public NumberField heightStepField { get; private set; }
-        public NumberField HeightField { get; private set; }
+        public TextField heightStepField { get; private set; }
+        public TextField HeightField { get; private set; }
         public Property<float> HeightStep { get; private set; }
         public Property<float> Height {  get; private set; }
         public Property<ChainMode> ChainMode { get; private set; }
@@ -67,10 +68,10 @@ namespace TranSimCS.Tools {
             UI.CreateRadio(game, this, "Custom from road configurator", "ui/customsettings", ChainMode, RoadTool.custom);
 
             //Height adjustment
-            HeightStep = new Property<float>(10, "heightStep");
-            heightStepField = UI.SetUpFloatProp("Height step [m]", this, HeightStep);
             Height = new Property<float>(0f, "height");
-            HeightField = UI.SetUpFloatProp("Height [m]", this, Height);
+            HeightStep = new Property<float>(10, "heightStep");
+            HeightField = GlobalSettingsTab.AddSetting(this, "Height [m]", float.Parse, x => x.ToString(), Height);
+            heightStepField = GlobalSettingsTab.AddSetting(this, "Height step [m]", float.Parse, x => x.ToString(), HeightStep);
         }
 
         public Checkbox CreateCheck(string name, string icon, Color? checkColor = null, Color? uncheckColor = null) {

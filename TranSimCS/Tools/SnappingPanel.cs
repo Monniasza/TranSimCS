@@ -14,7 +14,7 @@ namespace TranSimCS.Tools {
         public InGameMenu Game { get; private set; }
         public Checkbox isYLocal { get; private set; }
         public Checkbox isInfinite { get; private set; }
-        public NumberField cellSize {  get; private set; }
+        public TextField cellSize {  get; private set; }
         public TextField cellCount { get; private set; }
 
 
@@ -29,8 +29,8 @@ namespace TranSimCS.Tools {
             isInfinite = CreateCheck("Infinite snapping grid", "ui/node");
             isInfinite.AddProperty(game.configuration.SnapGrid.IsInfiniteProp);
 
-            cellSize = UI.SetUpFloatProp("Cell size", this, game.configuration.SnapGrid.CellSizeProp);
-            cellCount = UI.SetUpUIntProp("Snapping cell count", this, game.configuration.SnapGrid.CellCountProp);
+            cellSize = GlobalSettingsTab.AddSetting(this, "Cell size [m]", float.Parse, x => x.ToString(), game.configuration.SnapGrid.CellSizeProp);
+            cellCount = GlobalSettingsTab.AddSetting(this, "Snapping cell count", uint.Parse, x => x.ToString(), game.configuration.SnapGrid.CellCountProp);
         }
 
         public Checkbox CreateCheck(string name, string icon, Color? checkColor = null, Color? uncheckColor = null) {

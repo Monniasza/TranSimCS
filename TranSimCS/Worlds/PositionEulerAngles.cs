@@ -5,12 +5,12 @@ using TranSimCS.Geometry;
 namespace TranSimCS.Worlds {
     public struct PositionEulerAngles: IEquatable<PositionEulerAngles> {
         //Position
-        public Vector3 Position { get; set; } // World position of the node
+        public Vector3 Position; // World position of the node
 
         //Angle
-        public int Azimuth { get; set; } // Azimuth angle in the 2^32 field
-        public float Inclination { get; set; } // Inclination angle in radians
-        public float Tilt { get; set; } // Tilt angle in radians
+        public int Azimuth; // Azimuth angle in the 2^32 field
+        public float Inclination; // Inclination angle in radians
+        public float Tilt; // Tilt angle in radians
 
 
         public static PositionEulerAngles Zero => new PositionEulerAngles(Vector3.Zero, 0);

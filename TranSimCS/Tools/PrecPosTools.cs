@@ -25,12 +25,12 @@ namespace TranSimCS.Tools {
         //VALUES
         public readonly Property<IProperty<PositionEulerAngles>> movedObjectRef;
         public readonly ChangeableBackedProperty<PositionEulerAngles> prop;
-        public readonly NumberField x;
-        public readonly NumberField y;
-        public readonly NumberField z;
-        public readonly NumberField yaw;
-        public readonly NumberField pitch;
-        public readonly NumberField roll;
+        public readonly TextField x;
+        public readonly TextField y;
+        public readonly TextField z;
+        public readonly TextField yaw;
+        public readonly TextField pitch;
+        public readonly TextField roll;
 
         public PrecPosTools(InGameMenu menu) : base(MLEM.Ui.Anchor.AutoLeft, new(1, 1), true) {
             //Set up properties
@@ -48,40 +48,36 @@ namespace TranSimCS.Tools {
             tiltIncrement = UI.SetUpFloatProp("Tilt increment", this, tiltProp);
 
             //Set up positioning fields
-            x = UI.SetUpReplacementField("X position (W-E)", this, x => x.Position.X, (p, v) => {
-                var P = p.Position;
-                P.X = v;
-                p.Position = P;
-                return p; 
-            }, prop);
-            y = UI.SetUpReplacementField("Y position (height)", this, x => x.Position.Y, (p, v) => {
-                var P = p.Position;
-                P.Y = v;
-                p.Position = P;
-                return p;
-            }, prop);
-            z = UI.SetUpReplacementField("Z position (S-N)", this, x => x.Position.Z, (p, v) => {
-                var P = p.Position;
-                P.Z = v;
-                p.Position = P;
-                return p;
-            }, prop);
-            yaw = UI.SetUpReplacementField("Azimuth (forward vs north)", this, x => GeometryUtils.FieldToDegs(x.Azimuth), (p, v) => {
-                p.Azimuth = GeometryUtils.DegsToField(v);
-                return p;
-            }, prop);
-            
-            pitch = UI.SetUpReplacementField("Pitch (forward vs horizontal)", this, x => MathHelper.ToDegrees(x.Inclination), (p, v) => {
-                p.Inclination = MathHelper.ToRadians(v);
-                return p;
-            }, prop);
-
-            roll = UI.SetUpReplacementField("Roll (lateral vs ground)", this, x => MathHelper.ToDegrees(x.Tilt), (p, v) => {
-                p.Tilt = MathHelper.ToRadians(v);
-                return p;
-            }, prop);
+            x = GlobalSettingsTab.AddSettingWithAction(this, "X position (W-E) [m]", x => {
+                var P = prop.Value;
+                P.Position.X = float.Parse(x);
+                prop.Value = P;
+            }, x => x.Position.X.ToString(), prop);
+            y = GlobalSettingsTab.AddSettingWithAction(this, "Y position (height above ground) [m]", x => {
+                var P = prop.Value;
+                P.Position.Y = float.Parse(x);
+                prop.Value = P;
+            }, x => x.Position.Y.ToString(), prop);
+            z = GlobalSettingsTab.AddSettingWithAction(this, "Z position (S - N) [m]", x => {
+                var P = prop.Value;
+                P.Position.Z = float.Parse(x);
+                prop.Value = P;
+            }, x => x.Position.Z.ToString(), prop);
+            yaw = GlobalSettingsTab.AddSettingWithAction(this, "Azimuth (forward vs north) [degs]", x => {
+                var P = prop.Value;
+                P.Azimuth = GeometryUtils.DegsToField(float.Parse(x));
+                prop.Value = P;
+            }, x => GeometryUtils.FieldToDegs(x.Azimuth).ToString(), prop);
+            pitch = GlobalSettingsTab.AddSettingWithAction(this, "Pitch (forward vs horizontal) [degs]", x => {
+                var P = prop.Value;
+                P.Inclination = MathHelper.ToRadians(float.Parse(x));
+                prop.Value = P;
+            }, x => MathHelper.ToDegrees(x.Inclination).ToString(), prop);
+            roll = GlobalSettingsTab.AddSettingWithAction(this, "Roll (lateral vs horizontal) [degs]", x => {
+                var P = prop.Value;
+                P.Tilt = MathHelper.ToRadians(float.Parse(x));
+                prop.Value = P;
+            }, x => MathHelper.ToDegrees(x.Tilt).ToString(), prop);
         }
-
-
     }
 }

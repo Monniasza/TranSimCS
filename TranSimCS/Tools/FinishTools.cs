@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using LanguageExt.ClassInstances.Pred;
+using Microsoft.Xna.Framework;
 using MLEM.Ui.Elements;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
@@ -16,25 +18,22 @@ namespace TranSimCS.Tools.Panels {
             var finish = menu.configuration.RoadFinishProp;
             Finish = finish;
 
-            Paragraph heightParagraph = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 0.5f, "Height");
-            AddChild(heightParagraph);
-            heightField = new NumberField(MLEM.Ui.Anchor.AutoInline, new(0.5f, 20), null, Finish.Value.depth);
-            heightField.ValueChanged += HeightField_ValueChanged;
-            AddChild(heightField);
-
-            Paragraph angleParagraph = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 0.5f, "Angle (degs)");
-            AddChild(angleParagraph);
-            angleField = new NumberField(MLEM.Ui.Anchor.AutoInline, new(0.5f, 20), null, MathHelper.ToDegrees(Finish.Value.angle));
-            angleField.ValueChanged += AngleField_ValueChanged;
-            AddChild(angleField);
+            GlobalSettingsTab.AddSettingWithAction(this, "Height [m]", x => {
+                var finish = Finish.Value;
+                finish.depth = float.Parse(x);
+                Finish.Value = finish;
+            }, rf => rf.depth.ToString(), Finish);
+            GlobalSettingsTab.AddSettingWithAction(this, "Angle [degs]", x => {
+                var finish = Finish.Value;
+                finish.angle = MathHelper.ToRadians(float.Parse(x));
+                Finish.Value = finish;
+            }, rf => MathHelper.ToDegrees(rf.angle).ToString(), Finish);
 
             Paragraph surfaceParagraph = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 0.5f, "Surface texture");
             AddChild(surfaceParagraph);
             surfaceDropdown = new(MLEM.Ui.Anchor.AutoInline, new(0.5f, 20), Finish.Value.subsurface);
             surfaceDropdown.SelectedValueProp.ValueChanged += Surface_ValueChanged;
             AddChild(surfaceDropdown);
-
-
 
             Finish.ValueChanged += FinishProp_ValueChanged;
         }
@@ -48,18 +47,6 @@ namespace TranSimCS.Tools.Panels {
         private void Surface_ValueChanged(object? sender, PropertyChangedEventArgs2<Surface> e) {
             var finish = Finish.Value;
             finish.subsurface = e.NewValue;
-            Finish.Value = finish;
-        }
-
-        private void AngleField_ValueChanged(NumberField field, float value) {
-            var finish = Finish.Value;
-            finish.angle = MathHelper.ToRadians(value);
-            Finish.Value = finish;
-        }
-
-        private void HeightField_ValueChanged(NumberField field, float value) {
-            var finish = Finish.Value;
-            finish.depth = value;
             Finish.Value = finish;
         }
     }

@@ -38,30 +38,11 @@ namespace TranSimCS.Tools {
             AddChild(showGroundCheck);
         }
 
-        public static void AddSetting<T>(Panel panel, String name, Func<string, T> fromString, Func<T, string> toString, Property<T> prop) {
-            var label = new Paragraph(Anchor.AutoLeft, 0.5f, name);
-            panel.AddChild(label);
-
-            var textField = new TextField(Anchor.AutoInline, new(0.5f, 20));
-            textField.AddTooltip("Enter to confirm. RMB to cancel. Cancels when the property is changed");
-            panel.AddChild(textField);
-
-            void Revert() => textField.SetText(toString(prop.Value));
-
-            textField.OnEnterPressed = (e) => {
-                //Confirm
-                try {
-                    var newValue = fromString(textField.Text);
-                    prop.Value = newValue;
-                } catch {
-                    Revert();
-                }
-            };
-
-            //When RMB is pressed, revert the value
-            textField.OnSecondaryPressed = (e) => Revert();
-            prop.ValueChanged += (s, e) => Revert();
-            Revert();
+        public static TextField AddSetting<T>(Panel panel, String name, Func<string, T> fromString, Func<T, string> toString, Property<T> prop) {
+            return AddSettingWithAction(panel, name, x => {
+                var newValue = fromString(x);
+                prop.Value = newValue;
+            }, toString, prop);
         }
         public static TextField AddSettingWithAction<T>(Panel panel, String name, Action<string> setter, Func<T, string> toString, Property<T> prop) {
             var label = new Paragraph(Anchor.AutoLeft, 0.5f, name);

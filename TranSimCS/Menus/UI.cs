@@ -49,16 +49,6 @@ namespace TranSimCS.Menus {
         public static StyleProp<TextureRegion> LoadStyleProp(InGameMenu menu, string name) {
             return new StyleProp<TextureRegion>(new TextureRegion(menu.Game.Content.Load<Texture2D>(name)));
         }
-
-        public static TextField SetUpProp<T>(string title, Panel panel, Property<T> prop, Func<T, string> getter, Func<string, T> setter){
-            var textfieldSize = new Vector2(0.5f, 20);
-            TextField textfield = new TextField(Anchor.AutoInline, textfieldSize, null, null, getter(prop.Value));
-            textfield.OnTextChange = (field, str) => prop.Value = setter(str);
-            EventHandler<PropertyChangedEventArgs2<T>> handler = (sender, e) => textfield.SetText(getter(prop.Value));
-            prop.ValueChanged += handler;
-            SetUpProp(title, panel, textfield);
-            return textfield;
-        }
         public static void SetUpProp(string title, Panel panel, Element component) {
             var textfieldSize = new Vector2(0.5f, 20);
             Paragraph label = new Paragraph(Anchor.AutoLeft, 0.5f, title);
@@ -77,29 +67,9 @@ namespace TranSimCS.Menus {
             SetUpProp(title, panel, textfield);
             return textfield;
         }
-        public static NumberField SetUpReplacementField<T>(string title, Panel panel, Func<T, float> get, Func<T, float, T> replacer, Property<T> prop) {
-            var textfieldSize = new Vector2(0.5f, 20);
-            var textfield = new NumberField(Anchor.AutoInline, textfieldSize, null, get(prop.Value));
-            textfield.ValueChanged += (c, v) => prop.Value = replacer(prop.Value, v);
-            prop.ValueChanged += (s, e) => textfield.Value = get(e.NewValue);
-            SetUpProp(title, panel, textfield);
-            return textfield;
-        }
-
-        public static PictureButton SetUpPictureButton(Element parent, String texture, Action? callback = null) {
-            var button = new PictureButton(MLEM.Ui.Anchor.AutoInline, new(40, 40), CreateTextureCallback(Assets.Content.Load<Texture2D>(texture)), MLEM.Ui.Anchor.Center, new(32, 32));
-            if (callback != null)
-                button.OnPressed = (e) => callback.Invoke();
-            parent.AddChild(button);
-            return button;
-        }
         public static Image.TextureCallback CreateTextureCallback(Texture2D texture2D) {
             return (_) => new MLEM.Textures.TextureRegion(texture2D);
         }
         public static Image.TextureCallback CreateTextureCallback(string name) => CreateTextureCallback(Assets.Content.Load<Texture2D>(name));
-
-        public static TextField SetUpUIntProp(string v, SnappingPanel snappingPanel, Property<uint> cellCountProp) {
-            return SetUpProp<uint>(v, snappingPanel, cellCountProp, x => x.ToString(), x => (x == "") ? 0 : uint.Parse(x));
-        }
     }
 }
