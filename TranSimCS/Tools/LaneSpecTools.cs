@@ -8,6 +8,7 @@ using MLEM.Ui.Style;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
 using TranSimCS.Roads;
+using TranSimCS.Setting;
 
 namespace TranSimCS.Tools {
     public class LaneSpecTools : Panel {
@@ -189,14 +190,7 @@ namespace TranSimCS.Tools {
             laneSpecProp.Value = laneSpec;
         }
         private TextField SetUpProp(string title, Panel panel, Func<LaneSpec, string> getter, Action<string> setter) {
-            var textfieldSize = new Vector2(0.5f, 20);
-            Paragraph label = new Paragraph(Anchor.AutoLeft, 0.5f, title);
-            panel.AddChild(label);
-            TextField textfield = new TextField(Anchor.AutoInline, textfieldSize, null, null, getter(laneSpecProp.Value));
-            panel.AddChild(textfield);
-            textfield.OnTextChange = (field, str) => setter(str);
-            OnValuesChanged += (ls) => textfield.SetText(getter(ls));
-            return textfield;
+            return GlobalSettingsTab.AddSettingWithAction(panel, title, setter, getter, laneSpecProp);
         }
         private byte GetNewValue(string s, byte oldValue) {
             if(s.Length == 0) return 0;

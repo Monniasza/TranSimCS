@@ -63,5 +63,31 @@ namespace TranSimCS.Tools {
             prop.ValueChanged += (s, e) => Revert();
             Revert();
         }
+        public static TextField AddSettingWithAction<T>(Panel panel, String name, Action<string> setter, Func<T, string> toString, Property<T> prop) {
+            var label = new Paragraph(Anchor.AutoLeft, 0.5f, name);
+            panel.AddChild(label);
+
+            var textField = new TextField(Anchor.AutoInline, new(0.5f, 20));
+            textField.AddTooltip("Enter to confirm. RMB to cancel. Cancels when the property is changed");
+            panel.AddChild(textField);
+
+            void Revert() => textField.SetText(toString(prop.Value));
+
+            textField.OnEnterPressed = (e) => {
+                //Confirm
+                try {
+                    setter(textField.Text);
+                } catch {
+                    Revert();
+                }
+            };
+
+            //When RMB is pressed, revert the value
+            textField.OnSecondaryPressed = (e) => Revert();
+            prop.ValueChanged += (s, e) => Revert();
+            Revert();
+            return textField;
+        }
+
     }
 }
