@@ -5,6 +5,7 @@ using MLEM.Textures;
 using MLEM.Ui;
 using MLEM.Ui.Elements;
 using MLEM.Ui.Style;
+using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
 using TranSimCS.Roads;
@@ -16,9 +17,12 @@ namespace TranSimCS.Tools {
         private Panel indicator;
         public readonly Checkbox[] checks;
         public TextField inR, inG, inB, inA;
+        public readonly InGameMenu menu;
+
         public LaneSpecTools(InGameMenu menu)
             : base(Anchor.AutoLeft, new (1, 1), true) {
             laneSpecProp = menu.configuration.LaneSpecProp;
+            this.menu = menu;
 
             //Color selector
             inR = GlobalSettingsTab.AddSettingWithAction(this, "Red: ", (s) => {
@@ -116,18 +120,18 @@ namespace TranSimCS.Tools {
             }
 
             //Tags
-            var flagPresets = new (string Title, string Texture, string? SecondaryTexture, LaneFlags Flag)[]{
-                ("Allow reversing & wrong way", "signs/bidirectional", null, LaneFlags.AllowReverse),
-                ("Stop", "signs/stop", null, LaneFlags.Stop),
-                ("Yield", "signs/yield", null, LaneFlags.Yield),
-                ("Parking", "signs/parking", null, LaneFlags.Parking),
-                ("Platform", "ui/bus", null, LaneFlags.Parking),
-                ("Merge or expand right", "signs/mergeright", null, LaneFlags.MergeRight),
-                ("Merge or expand left", "signs/mergeleft", null, LaneFlags.MergeLeft),
-                ("No switching to the left", "signs/noleft", null, LaneFlags.NoLeft),
-                ("No switching to the right", "signs/noright", null, LaneFlags.NoRight),
-                ("Merge/Expand", "signs/expand", "signs/merge", LaneFlags.ExpandNotMerge),
-            };
+            LaneSpecToolsFlag<LaneFlags>[] flagPresets = [
+                new("Allow reversing & wrong way", "signs/bidirectional", null, LaneFlags.AllowReverse),
+                new("Stop", "signs/stop", null, LaneFlags.Stop),
+                new("Yield", "signs/yield", null, LaneFlags.Yield),
+                new("Parking", "signs/parking", null, LaneFlags.Parking),
+                new("Platform", "ui/bus", null, LaneFlags.Platform),
+                new("Merge or expand right", "signs/mergeright", null, LaneFlags.MergeRight),
+                new("Merge or expand left", "signs/mergeleft", null, LaneFlags.MergeLeft),
+                new("No switching to the left", "signs/noleft", null, LaneFlags.NoLeft),
+                new("No switching to the right", "signs/noright", null, LaneFlags.NoRight),
+                new("Merge/Expand", "signs/expand", "signs/merge", LaneFlags.ExpandNotMerge),
+            ];
             var flagsLabel = new Paragraph(Anchor.AutoLeft, 1, "Lane settings");
             AddChild(flagsLabel);
             foreach(var row in flagPresets) {
@@ -144,11 +148,12 @@ namespace TranSimCS.Tools {
                 check.Checkmark = primaryBitmap;
                 check.UncheckColor = secondaryColor;
                 check.OnCheckStateChange += (s, e) => {
-                    check.Checkmark = e ? primaryBitmap : secondaryBitmap;
+                    bool checced = check.Checked;
+                    check.Checkmark = checced ? primaryBitmap : secondaryBitmap;
                     var newSpec = laneSpecProp.Value;
                     var newFlags = newSpec.Flags;
-                    if (e) newFlags |= flag; else newFlags &= ~flag;
-                    newSpec.Flags = flag;
+                    if (checced) newFlags |= flag; else newFlags &= ~flag;
+                    newSpec.Flags = newFlags;
                     laneSpecProp.Value = newSpec;
                 };
                 laneSpecProp.ValueChanged += (s, e) => {
