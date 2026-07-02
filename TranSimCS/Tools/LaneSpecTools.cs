@@ -149,9 +149,8 @@ namespace TranSimCS.Tools {
                 var primaryBitmap = new TextureRegion(menu.Game.Content.Load<Texture2D>(texture));
                 var secondaryBitmap = new TextureRegion(menu.Game.Content.Load<Texture2D>(secondaryTexture));
                 var check = new Checkbox(Anchor.AutoInline, new(20, 20), "");
-                check.Checkmark = primaryBitmap;
                 check.UncheckColor = secondaryColor;
-                check.OnCheckStateChange += (s, e) => {
+                void UpdateCheck() {
                     bool checced = check.Checked;
                     check.Checkmark = checced ? primaryBitmap : secondaryBitmap;
                     var newSpec = laneSpecProp.Value;
@@ -159,12 +158,14 @@ namespace TranSimCS.Tools {
                     if (checced) newFlags |= flag; else newFlags &= ~flag;
                     newSpec.Flags = newFlags;
                     laneSpecProp.Value = newSpec;
-                };
+                }
+                check.OnCheckStateChange += (s, e) => UpdateCheck();
                 laneSpecProp.ValueChanged += (s, e) => {
                     var newState = (e.NewValue.Flags & flag) != 0;
                     if(newState != check.Checked)
                         check.Checked = newState;
                 };
+                UpdateCheck();
                 check.AddTooltip(title);
                 AddChild(check);
             }
