@@ -97,7 +97,7 @@ namespace TranSimCS.Roads.Strip {
             var endRight = tag.endRange.Max;
 
             //Do merges
-            if (isExpand) {
+            if (isExpand ^ laneStrip.IsReverse()) {
                 //Work on the end
                 var endLeft1 = (endLeft, endLeftCenter);
                 var endRight1 = (endRightCenter, endRight);
@@ -119,7 +119,7 @@ namespace TranSimCS.Roads.Strip {
                 startRight = startRight2.Item2;
             }
 
-            //Do oprdering
+            //Do ordering
             if (laneStrip.StartLane.end == Node.NodeEnd.Backward) {
                 DataUtil.Swap(ref startLeft, ref startRightCenter);
                 DataUtil.Swap(ref startLeftCenter, ref startRight);

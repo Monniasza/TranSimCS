@@ -132,8 +132,12 @@ namespace TranSimCS.Tools {
                 new("No switching to the right", "signs/noright", null, LaneFlags.NoRight),
                 new("Merge/Expand", "signs/expand", "signs/merge", LaneFlags.ExpandNotMerge),
             ];
-            var flagsLabel = new Paragraph(Anchor.AutoLeft, 1, "Lane settings");
+
+            var flagsLabel = new Paragraph(Anchor.AutoLeft, 0.5f, "Lane settings");
             AddChild(flagsLabel);
+            var reverseLaneSpecButton = new Button(Anchor.AutoInline, new(0.5f, 20), "Reverse");
+            reverseLaneSpecButton.OnPressed += s => laneSpecProp.Value = laneSpecProp.Value.Reverse();
+            AddChild(reverseLaneSpecButton);
             foreach(var row in flagPresets) {
                 var title = row.Title;
                 var texture = row.Texture;

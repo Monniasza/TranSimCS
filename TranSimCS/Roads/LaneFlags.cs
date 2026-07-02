@@ -44,4 +44,14 @@ namespace TranSimCS.Roads {
         /// </summary>
         Platform = 1024, // Lane is a platform (e.g., for buses or trams)
     }
+
+    public static class LaneFlagsMethods {
+        public static LaneFlags Reverse(this LaneFlags flags) {
+            var result = flags;
+            result ^= LaneFlags.ExpandNotMerge;
+            result = DataUtil.SwapFlags(result, LaneFlags.NoLeft, LaneFlags.NoRight);
+            result = DataUtil.SwapFlags(result, LaneFlags.MergeLeft, LaneFlags.MergeRight);
+            return result;
+        }
+    }
 }

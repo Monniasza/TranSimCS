@@ -57,5 +57,11 @@ namespace TranSimCS.Roads {
         public static bool operator !=(LaneSpec left, LaneSpec right) {
             return !(left == right);
         }
+
+        public LaneSpec Reverse() {
+            var result = this;
+            result.Flags = result.Flags.Reverse();
+            return result;
+        }
     }
 }
