@@ -181,6 +181,11 @@ namespace TranSimCS.Tools {
                 laneSpec.SpeedLimit = GetNewFloat(str, laneSpec.SpeedLimit);
                 laneSpecProp.Value = laneSpec;
             }, ls => ls.SpeedLimit.ToString(), laneSpecProp);
+            GlobalSettingsTab.AddSettingWithAction(this, "Line width [m]", str => {
+                var laneSpec = laneSpecProp.Value;
+                laneSpec.LineWidth = GetNewFloat(str, laneSpec.LineWidth);
+                laneSpecProp.Value = laneSpec;
+            }, ls => ls.LineWidth.ToString(), laneSpecProp);
 
 
             var style = new UiStyle(menu.Game.DefaultUiStyle);
