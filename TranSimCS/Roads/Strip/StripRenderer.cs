@@ -59,6 +59,8 @@ namespace TranSimCS.Roads.Strip {
             var isExpand = (laneStrip.Spec.Flags & LaneFlags.ExpandNotMerge) != 0;
 
             if (mergeLeft && mergeRight) mergeLeft = mergeRight = false;
+            var swapMerges = isExpand ? laneStrip.EndLane.end == Node.NodeEnd.Backward : laneStrip.StartLane.end == Node.NodeEnd.Backward;
+            if (swapMerges) DataUtil.Swap(ref mergeLeft, ref mergeRight);
 
             //Get tags
             var accuracy = Settings.RoadAccuracy;
@@ -87,57 +89,57 @@ namespace TranSimCS.Roads.Strip {
                 return (d0 < delta) || (d1 < delta);
             }
 
-            var startLeft = tag.startRange.Min;
-            var startLeftCenter = tag.startRange.Min + lineWidth;
-            var startRightCenter = tag.startRange.Max - lineWidth;
-            var startRight = tag.startRange.Max;
-            var endLeft = tag.endRange.Min;
-            var endLeftCenter = tag.endRange.Min + lineWidth;
-            var endRightCenter = tag.endRange.Max - lineWidth;
-            var endRight = tag.endRange.Max;
+            var startRange = laneStrip.StartLane.Range();
+            var endRange = laneStrip.EndLane.Range();
+            
+            var startLeft = startRange.Min;
+            var startRight = startRange.Max;
+            var endLeft = endRange.Min;  
+            var endRight = endRange.Max;
 
             //Do merges
-            if (isExpand ^ laneStrip.IsReverse()) {
-                //Work on the end
-                var endLeft1 = (endLeft, endLeftCenter);
-                var endRight1 = (endRightCenter, endRight);
-                var endLeft2 = mergeLeft ? endRight1 : endLeft1;
-                var endRight2 = mergeRight ? endLeft1 : endRight1;
-                endLeft = endLeft2.Item1;
-                endLeftCenter = endLeft2.Item2;
-                endRightCenter = endRight2.Item1;
-                endRight = endRight2.Item2;
+            if (isExpand) {
+                //Merge the end
+                if (mergeLeft) endRight = endLeft;
+                if (mergeRight) endLeft = endRight;
             } else {
-                //Work on the start
-                var startLeft1 = (startLeft, startLeftCenter);
-                var startRight1 = (startRightCenter, startRight);
-                var startLeft2 = mergeLeft ? startRight1 : startLeft1;
-                var startRight2 = mergeRight ? startLeft1 : startRight1;
-                startLeft = startLeft2.Item1;
-                startLeftCenter = startLeft2.Item2;
-                startRightCenter = startRight2.Item1;
-                startRight = startRight2.Item2;
+                //Merge the start
+                if (mergeLeft) startRight = startLeft;
+                if (mergeRight) startLeft = startRight;
             }
+
+            var startLeftCenter = startLeft + lineWidth;
+            var startRightCenter = startRight - lineWidth;
+            var endLeftCenter = endLeft + lineWidth;
+            var endRightCenter = endRight - lineWidth;
+
+            //reverse is start-swapped if road strip start is rear
+            //forward is start-swapped if road strip start is rear
 
             //Do ordering
             if (laneStrip.StartLane.end == Node.NodeEnd.Backward) {
                 DataUtil.Swap(ref startLeft, ref startRightCenter);
                 DataUtil.Swap(ref startLeftCenter, ref startRight);
             }
-            
-            if (laneStrip.EndLane.end == Node.NodeEnd.Backward) {
+
+            if (laneStrip.EndLane.end == Node.NodeEnd.Forward) {
                 DataUtil.Swap(ref endLeft, ref endRightCenter);
                 DataUtil.Swap(ref endLeftCenter, ref endRight);
             }
 
-            var leftRange = tag;
-            leftRange.startRange = new(startLeft, startLeftCenter);
-            leftRange.endRange = new(endRightCenter, endRight);
-            var rightRange = tag;
-            rightRange.startRange = new(startRightCenter, startRight);
-            rightRange.endRange = new(endLeft, endLeftCenter);        
+            //var shouldSwapStart = laneStrip.IsReverse() ?
+            //    laneStrip.EndLane.end == Node.NodeEnd.Forward
+            //    : laneStrip StartLane.end == Node.NodeEnd.Forward
+
+            var leftRange = LaneStripToRoadStripRange(laneStrip, new(startLeft, startLeftCenter), new(endLeft, endLeftCenter));
+            var rightRange = LaneStripToRoadStripRange(laneStrip, new(startRightCenter, startRight), new(endRightCenter, endRight));  
             DrawSide(leftRange, LaneFlags.NoLeft);
             DrawSide(rightRange, LaneFlags.NoRight);
+        }
+
+        public static LaneRange LaneStripToRoadStripRange(LaneStrip strip, Range<float> startRange, Range<float> endRange) {
+            if (strip.IsReverse()) DataUtil.Swap(ref startRange, ref endRange);
+            return new(strip.road, startRange, endRange);
         }
 
         public static VertexGen2<VertexPositionColorTexture> GenerateLaneStripVertexGen(LaneSpec spec) => GenerateLaneStripVertexGen(spec.Color);
