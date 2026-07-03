@@ -46,16 +46,20 @@ namespace TranSimCS {
             ShaderEffect = Content.Load<Effect>("shader");
 
             Asphalt = new("seamlessTextures2/IMGP5511_seamless");
-            Road = new("laneTex", MaterialBlendMode.Transparent);
+            
             Grass = new("seamlessTextures2/grass1");
-            Add = new("addTex");
+            
             Concrete = new("seamlessTextures2/IMGP5514_seamless_2");
             Cobble = new("seamlessTextures2/rock02");
             Tiles = new("tile");
             BuildingBricks = new("brickwall");
             BuildingWindows = new("brickwindow");
             White = new("white");
+
+
             WhiteTransparent = new("white", MaterialBlendMode.Transparent);
+            Road = new("laneTex", MaterialBlendMode.Transparent);
+            Add = new("addTex", MaterialBlendMode.Transparent);
 
             EmissiveWhite = SimpleMaterial.NewEmissive("white");
             Grid = SimpleMaterial.NewEmissive("snapgrid", MaterialBlendMode.Cutout);
