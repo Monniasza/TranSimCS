@@ -51,7 +51,7 @@ VSOutput VSMain(VSInput input){
 
 float4 PSMain(VSOutput input) : COLOR0{
     float4 texColor = tex2D(AlbedoSampler, input.TexCoord);
-    float4 emissiveColor = tex2D(EmissiveSampler, input.TexCoord);
+    float4 emissiveColor = tex2D(EmissiveSampler, input.TexCoord) * float4(1, 1, 1, 0);
     float4 color = (texColor * AmbientColor + emissiveColor) * input.Color;
     //if (Flags & FlagAlphaClip)
         clip(color.a - AlphaCutoff);
