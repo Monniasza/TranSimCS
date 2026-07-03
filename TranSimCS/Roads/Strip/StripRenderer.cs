@@ -56,10 +56,10 @@ namespace TranSimCS.Roads.Strip {
             //Get side-line flags
             var mergeLeft = (laneStrip.Spec.Flags & LaneFlags.MergeLeft) != 0;
             var mergeRight = (laneStrip.Spec.Flags & LaneFlags.MergeRight) != 0;
-            var isExpand = (laneStrip.Spec.Flags & LaneFlags.ExpandNotMerge) != 0;
+            var isMerge = (laneStrip.Spec.Flags & LaneFlags.IsMerge) != 0;
 
             if (mergeLeft && mergeRight) mergeLeft = mergeRight = false;
-            var swapMerges = isExpand ? laneStrip.EndLane.end == Node.NodeEnd.Backward : laneStrip.StartLane.end == Node.NodeEnd.Backward;
+            var swapMerges = isMerge ? laneStrip.EndLane.end == Node.NodeEnd.Backward : laneStrip.StartLane.end == Node.NodeEnd.Backward;
             if (swapMerges) DataUtil.Swap(ref mergeLeft, ref mergeRight);
 
             //Get tags
@@ -98,7 +98,7 @@ namespace TranSimCS.Roads.Strip {
             var endRight = endRange.Max;
 
             //Do merges
-            if (isExpand) {
+            if (isMerge) {
                 //Merge the end
                 if (mergeLeft) endRight = endLeft;
                 if (mergeRight) endLeft = endRight;

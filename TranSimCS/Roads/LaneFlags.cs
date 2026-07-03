@@ -9,7 +9,7 @@ namespace TranSimCS.Roads {
         //MERGE FLAGS
         MergeLeft = 1,
         MergeRight = 4,
-        ExpandNotMerge = 8,
+        IsMerge = 8,
 
         /// <summary>
         /// No flags set
@@ -48,7 +48,7 @@ namespace TranSimCS.Roads {
     public static class LaneFlagsMethods {
         public static LaneFlags Reverse(this LaneFlags flags) {
             var result = flags;
-            result ^= LaneFlags.ExpandNotMerge;
+            result ^= LaneFlags.IsMerge;
             result = DataUtil.SwapFlags(result, LaneFlags.NoLeft, LaneFlags.NoRight);
             result = DataUtil.SwapFlags(result, LaneFlags.MergeLeft, LaneFlags.MergeRight);
             return result;

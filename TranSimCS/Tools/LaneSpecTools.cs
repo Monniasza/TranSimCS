@@ -131,7 +131,7 @@ namespace TranSimCS.Tools {
                 new("Merge or expand left", "signs/mergeleft", null, LaneFlags.MergeLeft),
                 new("No switching to the left", "signs/noleft", null, LaneFlags.NoLeft),
                 new("No switching to the right", "signs/noright", null, LaneFlags.NoRight),
-                new("Merge/Expand", "signs/expand", "signs/merge", LaneFlags.ExpandNotMerge),
+                new("Merge/Expand", "signs/merge", "signs/expand", LaneFlags.IsMerge),
             ];
 
             var flagsLabel = new Paragraph(Anchor.AutoLeft, 0.5f, "Lane settings");
@@ -171,14 +171,14 @@ namespace TranSimCS.Tools {
         }
         private void AddPropertyCheckbox<T>(LaneSpecToolsFlag<T> row, Func<LaneSpec, T> getter, Action<T> setter) where T: struct, Enum {
             var title = row.Title;
-            var texture = row.Texture;
-            var secondaryTexture = row.SecondaryTexture;
+            var checkedTexture = row.CheckTexture;
+            var uncheckedTexture = row.UncheckTexture;
             var flag = row.Flag;
-            var secondaryColor = (secondaryTexture == null) ? Color.Gray : Color.White;
-            secondaryTexture ??= texture;
+            var secondaryColor = (uncheckedTexture == null) ? Color.Gray : Color.White;
+            uncheckedTexture ??= checkedTexture;
 
-            var primaryBitmap = new TextureRegion(menu.Game.Content.Load<Texture2D>(texture));
-            var secondaryBitmap = new TextureRegion(menu.Game.Content.Load<Texture2D>(secondaryTexture));
+            var checkedBitmap = new TextureRegion(menu.Game.Content.Load<Texture2D>(checkedTexture));
+            var uncheckedBitmap = new TextureRegion(menu.Game.Content.Load<Texture2D>(uncheckedTexture));
             var check = new Checkbox(Anchor.AutoInline, new(20, 20), "");
             check.UncheckColor = secondaryColor;
             T UpdateValueFromCheck() {
@@ -193,7 +193,7 @@ namespace TranSimCS.Tools {
                 var newState = propflags.HasFlags(flag);
                 if (newState != check.Checked)
                     check.Checked = newState;
-                check.Checkmark = newState ? primaryBitmap : secondaryBitmap;
+                check.Checkmark = newState ? checkedBitmap : uncheckedBitmap;
             }
             check.OnCheckStateChange += (s, e) => setter(UpdateValueFromCheck());
             laneSpecProp.ValueChanged += (s, e) => UpdateCheckFromValue(e.NewValue);

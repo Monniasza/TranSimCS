@@ -8,13 +8,13 @@ using TranSimCS.Roads;
 namespace TranSimCS.Tools {
     public struct LaneSpecToolsFlag<T> where T: struct, Enum {
         public string Title;
-        public string Texture;
-        public string? SecondaryTexture;
+        public string CheckTexture;
+        public string? UncheckTexture;
         public T Flag;
-        public LaneSpecToolsFlag(string title, string texture, string? secondaryTexture, T flag) {
+        public LaneSpecToolsFlag(string title, string checkTexture, string? uncheckTexture, T flag) {
             this.Title = title;
-            this.Texture = texture;
-            this.SecondaryTexture = secondaryTexture;
+            this.CheckTexture = checkTexture;
+            this.UncheckTexture = uncheckTexture;
             this.Flag = flag;
         }
     }
