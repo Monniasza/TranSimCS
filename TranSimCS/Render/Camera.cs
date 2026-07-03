@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LanguageExt.Pipes;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Menus.InGame;
@@ -47,14 +48,14 @@ namespace TranSimCS {
             return Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(eyePosition, targetPosition, Vector3.Up);
         }
 
-        public void SetUpEffect(BasicEffect effect, InGameMenu game) => SetUpEffect(effect, game.Game.GraphicsDevice);
-        public void SetUpEffect(BasicEffect effect, GraphicsDevice gpu) {
-            effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, gpu.Viewport.AspectRatio, 0.1f, 100000f);
-            effect.World = Matrix.Identity;
+        public Matrix GetCombinedMatrix(GraphicsDevice gpu, out Matrix World, out Matrix View, out Matrix Projection) {
+            Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, gpu.Viewport.AspectRatio, 0.1f, 100000f);
+            World = Matrix.Identity;
             // Optimized near/far plane for better depth buffer precision across all distances
             // Near plane increased from 1f to 0.1f - this dramatically improves depth precision
             // Far plane set to 10000f to balance view distance with precision
-            effect.View = GetViewMatrix();
+            View = GetViewMatrix();
+            return World * View * Projection;
         }
 
         //EQUALITY

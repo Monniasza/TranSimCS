@@ -208,11 +208,11 @@ namespace TranSimCS.Menus.InGame {
             // Unproject screen coordinates to near and far points in 3D space
             Vector3 nearPoint = Vector3.Zero;
             Vector3 farPoint = Vector3.Zero;
-            var effect = renderManager.effect;
-            if (effect != null) {
-                nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), effect.Projection, effect.View, effect.World);
-                farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), effect.Projection, effect.View, effect.World);
-            }
+            var worldMatrix = renderManager.World;
+            var viewMatrix = renderManager.View;
+            var projectionMatrix = renderManager.Projection;
+            nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), projectionMatrix, viewMatrix, worldMatrix);
+            farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), projectionMatrix, viewMatrix, worldMatrix);
             VectorMethods.CheckVector(nearPoint, nameof(nearPoint));
             VectorMethods.CheckVector(farPoint, nameof(farPoint));
 
@@ -257,7 +257,7 @@ namespace TranSimCS.Menus.InGame {
                 MouseOver = Selection.CalculateSelection(World.RootGraph, MouseRay);
 
             //Handle scroll wheel input for zooming in and out
-            var effect = renderManager.effect;
+            var effect = Assets.ShaderEffect;
             var camera = renderManager.Camera;
             if (Game.MouseState.ScrollWheelValue != scrollWheelValue) {
                 // Zoom in or out based on the scroll wheel value
@@ -267,9 +267,6 @@ namespace TranSimCS.Menus.InGame {
                 var zoomDelta = MathF.Pow(2f, mouseScrollDelta / -120f); // Adjust zoom factor based on scroll wheel delta
                 camera.Distance *= zoomDelta; // Update camera distance based on zoom factor
                 camera.Distance = float.Clamp(camera.Distance, 1, 65536);
-            }
-            if (effect != null) {
-                camera.SetUpEffect(effect, this);
             }
 
             //Disable Left Shift/Space motion if tool requests it

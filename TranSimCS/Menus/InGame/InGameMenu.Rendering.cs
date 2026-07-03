@@ -137,21 +137,13 @@ namespace TranSimCS.Menus.InGame {
                 sine = MathHelper.Clamp(sine*2, -1, 1);
                 sine = (sine / 2) + 0.5f;
                 var interpolatedDayNightVector = Vector4.SmoothStep(dayVector, nightVector, sine);
-                foreach(var bin in renderHelper.RenderBins) {
-                    var mesh = bin.Value;
-                    mesh.Vertices.TransformInPlace(x => {
-                        var result = x;
-                        var rgba = x.Color.ToVector4();
-                        rgba *= interpolatedDayNightVector;
-                        var color = new Color(rgba);
-                        result.Color = color;
-                        return result;
-                    });
-                }
+                renderManager.AmbientColor.Value = interpolatedDayNightVector;
+            } else {
+                renderManager.AmbientColor.Value = Vector4.One;
             }
 
-            //Render the render helper
-            var tris = 0;
+                //Render the render helper
+                var tris = 0;
             var verts = 0;
             var tags = 0;
             foreach (var bin in renderHelper.RenderBins.Values) {

@@ -14,19 +14,24 @@ namespace TranSimCS.Model {
         public readonly Property<Camera> CameraProp;
         public readonly Property<Vector4> AmbientColor;
         public readonly GraphicsDevice gpu;
-        public readonly BasicEffect effect;
+
+        public Matrix WorldViewProjection { get; private set; }
+        public Matrix World { get; private set; }
+        public Matrix View { get; private set; }
+        public Matrix Projection { get; private set; }
 
         public RenderManager(GraphicsDevice gpu) {
             this.gpu = gpu;
             CameraProp = new(Camera.Default, "camera", null);
             AmbientColor = new(Vector4.One, "ambientColor", null);
-            effect = new BasicEffect(gpu);
-            Camera.SetUpEffect(effect, gpu);
-            CameraProp.ValueChanged += CameraProp_ValueChanged;
+            CameraProp.ValueChanged += (s, e) => SetUpEffects();
+            SetUpEffects();
         }
-
-        private void CameraProp_ValueChanged(object? sender, PropertyChangedEventArgs2<Camera> e) {
-            Camera.SetUpEffect(effect, gpu);
+        private void SetUpEffects() {
+            WorldViewProjection = Camera.GetCombinedMatrix(gpu, out var world, out var view, out var projection);
+            World = world;
+            View = view;
+            Projection = projection;
         }
 
         public Camera Camera { get => CameraProp.Value; set => CameraProp.Value = value; }
@@ -53,11 +58,6 @@ namespace TranSimCS.Model {
             //CONSTANTS
             var writeDepth = DepthStencilState.Default;
             var keepDepth = DepthStencilState.DepthRead;
-
-            //GPU SETUP
-            effect.LightingEnabled = false;
-            effect.TextureEnabled = true;
-            effect.VertexColorEnabled = true;
             gpu.SamplerStates[0] = SamplerState.PointWrap;
 
             //CATEGORIZATION & COUNTING
@@ -95,7 +95,7 @@ namespace TranSimCS.Model {
             RenderPass(
                 categorizedMeshes[(int)MaterialBlendMode.Cutout],
                 writeDepth,
-                BlendState.Opaque);
+                BlendState.Opaque, 0.5f);
 
             // PASS 2: ADDITIVE
             // - Reads depth so it is hidden by opaque/cutout geometry.
@@ -113,12 +113,9 @@ namespace TranSimCS.Model {
                 categorizedMeshes[(int)MaterialBlendMode.Transparent],
                 keepDepth,
                 BlendState.AlphaBlend);
-
-
-            //RenderPass(mesh, DepthStencilState.Default, BlendState.AlphaBlend);
         }
 
-        private void RenderPass( List<KeyValuePair<SimpleMaterial, Mesh>>? bucket, DepthStencilState depthState, BlendState blendState) {
+        private void RenderPass( List<KeyValuePair<SimpleMaterial, Mesh>>? bucket, DepthStencilState depthState, BlendState blendState, float alphaCutoff = 0) {
             if (bucket == null || bucket.Count == 0) return;
             gpu.BlendState = blendState;
             gpu.DepthStencilState = depthState;
@@ -128,27 +125,21 @@ namespace TranSimCS.Model {
                 var texture = row.Key;
                 if (renderBin.Vertices.Count == 0 || renderBin.Indices.Count == 0) continue;
 
-                effect.Texture = texture.Texture;
-
-                // Ensure pooled arrays are large enough, then copy list contents without allocating
-                EnsureScratchCapacity(renderBin.Vertices.Count, renderBin.Indices.Count);
-                renderBin.Indices.CopyTo(_indexScratch, 0);
-                renderBin.Vertices.CopyTo(_vertexScratch, 0);
-
-                //If requested, invert all normals
-                if (Settings.InvertAllNormals) RenderUtil.InvertNormals(_indexScratch, renderBin.Indices.Count);
-
-                foreach (var pass in effect.CurrentTechnique.Passes) {
-                    pass.Apply();
-                    gpu.DrawUserIndexedPrimitives(
-                        PrimitiveType.TriangleList,
-                        _vertexScratch, 0, renderBin.Vertices.Count,
-                        _indexScratch, 0, renderBin.Indices.Count / 3);
-                }
+                //Create a set of RenderInputs
+                RenderInputs renderInputs = new RenderInputs() {
+                    Albedo = texture.Texture,
+                    Emissive = texture.Emissive,
+                    DepthStencilState = depthState,
+                    BlendState = blendState,
+                    WorldViewProjection = WorldViewProjection,
+                    AmbientColor = AmbientColor.Value,
+                    AlphaCutoff = alphaCutoff
+                };
+                RenderRow(renderBin, renderInputs);
             }
         }
 
-        private void RenderPass(Mesh renderBin, RenderInputs renderInputs) {
+        private void RenderRow(Mesh renderBin, RenderInputs renderInputs) {
             if (renderBin.Vertices.Count == 0 || renderBin.Indices.Count == 0) return;
 
             var eff = Assets.ShaderEffect;
