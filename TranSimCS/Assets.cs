@@ -6,24 +6,27 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.ModelOld;
 
 namespace TranSimCS {
     public static class Assets {
-        public static Texture2D Asphalt { get; private set; }
-        public static Texture2D Road { get; private set; }
-        public static Texture2D Grass { get; private set; }
-        public static Texture2D Add { get; private set; }
-        public static Texture2D Concrete { get; private set; }
-        public static Texture2D Tiles { get; private set; }
-        public static Texture2D Cobble { get; private set; }
-        public static Texture2D BuildingBricks { get; private set; }
-        public static Texture2D BuildingWindows { get; private set; }
-        public static Texture2D Arrow { get; private set; }
-        public static Texture2D White { get; private set; }
-        public static Texture2D Grid { get; private set; }
-        public static Texture2D LineYield { get; private set; }
-        public static Texture2D LineDash { get; private set; }
-        public static Texture2D Impassable { get; private set; }
+        public static SimpleMaterial Asphalt { get; private set; }
+        public static SimpleMaterial Road { get; private set; }
+        public static SimpleMaterial Grass { get; private set; }
+        public static SimpleMaterial Add { get; private set; }
+        public static SimpleMaterial Concrete { get; private set; }
+        public static SimpleMaterial Tiles { get; private set; }
+        public static SimpleMaterial Cobble { get; private set; }
+        public static SimpleMaterial BuildingBricks { get; private set; }
+        public static SimpleMaterial BuildingWindows { get; private set; }
+        public static SimpleMaterial Arrow { get; private set; }
+        public static Texture2D WhiteTex { get; private set; }
+        public static SimpleMaterial White { get; private set; }
+        public static SimpleMaterial WhiteTransparent { get; private set; }
+        public static SimpleMaterial Grid { get; private set; }
+        public static SimpleMaterial LineYield { get; private set; }
+        public static SimpleMaterial LineDash { get; private set; }
+        public static SimpleMaterial Impassable { get; private set; }
 
         public static readonly string CrossIcon = "ui/check";
 
@@ -31,21 +34,23 @@ namespace TranSimCS {
 
 
         public static void ReadAssets() {
-            Asphalt = Content.Load<Texture2D>("seamlessTextures2/IMGP5511_seamless");
-            Road = Content.Load<Texture2D>("laneTex");
-            Grass = Content.Load<Texture2D>("seamlessTextures2/grass1");
-            Add = Content.Load<Texture2D>("addTex");
-            Concrete = Content.Load<Texture2D>("seamlessTextures2/IMGP5514_seamless_2");
-            Cobble = Content.Load<Texture2D>("seamlessTextures2/rock02");
-            Tiles = Content.Load<Texture2D>("tile");
-            BuildingBricks = Content.Load<Texture2D>("brickwall");
-            BuildingWindows = Content.Load<Texture2D>("brickwindow");
-            Arrow = Content.Load<Texture2D>("markings/arrow");
-            White = Content.Load<Texture2D>("white");
-            Grid = Content.Load<Texture2D>("snapgrid");
-            LineYield = Content.Load<Texture2D>("lines/yield");
-            LineDash = Content.Load<Texture2D>("lines/dashed");
-            Impassable = Content.Load<Texture2D>("signs/trafficbarrier");
+            Asphalt = new("seamlessTextures2/IMGP5511_seamless");
+            Road = new("laneTex", MaterialBlendMode.Transparent);
+            Grass = new("seamlessTextures2/grass1");
+            Add = new("addTex");
+            Concrete = new("seamlessTextures2/IMGP5514_seamless_2");
+            Cobble = new("seamlessTextures2/rock02");
+            Tiles = new("tile");
+            BuildingBricks = new("brickwall");
+            BuildingWindows = new("brickwindow");
+            Arrow = new("markings/arrow", MaterialBlendMode.Cutout);
+            WhiteTex = Content.Load<Texture2D>("white");
+            White = new("white");
+            WhiteTransparent = new("white", MaterialBlendMode.Transparent);
+            Grid = new("snapgrid", MaterialBlendMode.Cutout);
+            LineYield = new("lines/yield", MaterialBlendMode.Cutout);
+            LineDash = new("lines/dashed", MaterialBlendMode.Cutout);
+            Impassable = new("signs/trafficbarrier");
         }
     }
 }

@@ -14,6 +14,7 @@ using TranSimCS.Debugging;
 using TranSimCS.Geometry;
 using TranSimCS.Geometry.SplineFrames;
 using TranSimCS.Model;
+using TranSimCS.ModelOld;
 using TranSimCS.Polygons;
 using TranSimCS.Roads.Node;
 using TranSimCS.Setting;
@@ -41,21 +42,46 @@ namespace TranSimCS.Roads.Strip {
             foreach (var lane in connection.Lanes) {
                 renderHelper.AddAll(lane.GetMesh());
             }
-                
+
+            //Draw the road finish
+            var length = GenerateRoadSegmentFinish(connection, renderHelper);
+
+            //Calculate length of the road
+            
+
+            //If this segment is single-ended, draw the inner island
+            if (connection.IsSingleEnded()) 
+                RenderSingleEndedInnerCircle(connection, renderHelper, length);
+            
+            //If the road is only 1 lane, do not render the islands
+            if (connection.Lanes.Count >= 2)
+                RenderRoadSegmentPolygons(connection, renderHelper, length);
+        }
+
+        public static float GenerateRoadSegmentFinish(RoadStrip connection, MultiMesh renderHelper) {
+            var accuracy = Settings.RoadAccuracy;
+
+            //Calculate road length
+            LaneRange topRange = connection.FullSizeTag();
+            var (leftTop, rightTop) = RoadRenderer.GenerateSplines(topRange);
+            var leftTopPoints = GenerateSplinePoints(leftTop, accuracy);
+            var rightTopPoints = GenerateSplinePoints(rightTop, accuracy);
+            var lengthL = CountLength(leftTopPoints);
+            var lengthR = CountLength(rightTopPoints);
+            var length = lengthL + lengthR;
+
             //Draw the road finish
             var finish = connection.Finish;
             var texture = finish.subsurface.GetTexture();
             var height = finish.depth;
             var breadth = finish.depth * MathF.Tan(finish.angle);
 
-            LaneRange topRange = connection.FullSizeTag();
+            if (texture == null) return length;
             LaneRange bottomRange = new LaneRange(
                 connection,
                 new(topRange.startRange.Min - breadth, topRange.startRange.Max + breadth),
                 new(topRange.endRange.Min - breadth, topRange.endRange.Max + breadth)
             );
-
-            var (leftTop, rightTop) = RoadRenderer.GenerateSplines(topRange);
             var (leftDown, rightDown) = RoadRenderer.GenerateSplines(bottomRange, -height);
 
             var splineFrame = connection.SplineFrame;
@@ -72,8 +98,6 @@ namespace TranSimCS.Roads.Strip {
             var bottomLeft = -Vector3.UnitY * height - Vector3.UnitX * breadth;
             var bottomRight = -Vector3.UnitY * height + Vector3.UnitX * breadth;
 
-            var leftTopPoints = GenerateSplinePoints(leftTop, accuracy);
-            var rightTopPoints = GenerateSplinePoints(rightTop, accuracy);
             var leftDownPoints = GenerateSplinePoints(leftDown, accuracy);
             var rightDownPoints = GenerateSplinePoints(rightDown, accuracy);
 
@@ -91,7 +115,7 @@ namespace TranSimCS.Roads.Strip {
             var bottomPointsR = UniformTexturing.UniformTextured(leftDownPoints, avgWidthFn);
 
             //Draw the strips
-            Mesh finishBin = renderHelper.GetOrCreateRenderBinForced(texture);
+            Mesh finishBin = renderHelper.GetOrCreateRenderBinForced(texture.Value);
             finishBin.DrawStrip(leftPointsL, leftPointsR);
             finishBin.DrawStrip(rightPointsL, rightPointsR);
             finishBin.DrawStrip(bottomPointsL, bottomPointsR);
@@ -109,18 +133,7 @@ namespace TranSimCS.Roads.Strip {
             var leftDownEndPos = leftDownPoints.Last();
             GenerateEndCap(rightUpEndPos, leftUpEndPos, leftDownEndPos, rightDownEndPos, swidth, height, breadth, finishBin);
 
-            //Calculate length of the road
-            var lengthL = CountLength(leftTopPoints);
-            var lengthR = CountLength(rightTopPoints);
-            var length = lengthL + lengthR;
-
-            //If this segment is single-ended, draw the inner island
-            if (connection.IsSingleEnded()) 
-                RenderSingleEndedInnerCircle(connection, renderHelper, length);
-            
-            //If the road is only 1 lane, do not render the islands
-            if (connection.Lanes.Count >= 2)
-                RenderRoadSegmentPolygons(connection, renderHelper, length);
+            return length;
         }
 
         public static void RenderSingleEndedInnerCircle(RoadStrip connection, MultiMesh renderHelper, float length) {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.ModelOld;
 
 namespace TranSimCS.Roads {
     public enum Surface {
@@ -16,7 +17,7 @@ namespace TranSimCS.Roads {
         Grass = 6
     }
     public static class Surfaces {
-        public static Texture2D? GetTexture(this Surface surface) {
+        public static SimpleMaterial? GetTexture(this Surface surface) {
             switch (surface) {
                 case Surface.None:
                     return null;

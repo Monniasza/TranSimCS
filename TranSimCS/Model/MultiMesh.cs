@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.ModelOld;
 
 namespace TranSimCS.Model {
     /// <summary>
@@ -9,21 +10,21 @@ namespace TranSimCS.Model {
     /// </summary>
     public class MultiMesh {
         //List of data to render
-        private Dictionary<Texture2D, Mesh> _renderBins = [];
-        public IDictionary<Texture2D, Mesh> RenderBins => new ReadOnlyDictionary<Texture2D, Mesh>(_renderBins);
+        private Dictionary<SimpleMaterial, Mesh> _renderBins = [];
+        public IDictionary<SimpleMaterial, Mesh> RenderBins => new ReadOnlyDictionary<SimpleMaterial, Mesh>(_renderBins);
 
         //The helper method to add a render bin for a specific texture and populate it with vertices and indices.
-        public Mesh GetOrCreateRenderBinForced(Texture2D texture) {
-            ArgumentNullException.ThrowIfNull(texture, nameof(texture));
+        public Mesh GetOrCreateRenderBinForced(SimpleMaterial texture) {
+            ArgumentNullException.ThrowIfNull(texture.Texture, nameof(texture.Texture));
             return GetOrCreateRenderBin(texture, null);
         }
-        public Mesh? GetOrCreateRenderBin(Texture2D? texture) {
-            if (texture == null) return null;
-            return GetOrCreateRenderBin(texture, null);
+        public Mesh? GetOrCreateRenderBin(SimpleMaterial? texture) {
+            if (texture?.Texture == null) return null;
+            return GetOrCreateRenderBin(texture.Value, null);
         }
 
-        public bool TryGetOrCreateRenderBin(Texture2D? texture, out Mesh mesh) {
-            mesh = GetOrCreateRenderBinForced(texture);
+        public bool TryGetOrCreateRenderBin(SimpleMaterial? texture, out Mesh mesh) {
+            mesh = GetOrCreateRenderBin(texture.Value);
             return mesh != null;
         }
 
@@ -34,7 +35,7 @@ namespace TranSimCS.Model {
         public void ClearAll() {
             _renderBins.Clear();
         }
-        public Mesh GetOrCreateRenderBin(Texture2D texture, Action<Mesh>? action) {
+        public Mesh GetOrCreateRenderBin(SimpleMaterial texture, Action<Mesh>? action) {
             if (!_renderBins.TryGetValue(texture, out var renderBin)) {
                 renderBin = new Mesh();
                 _renderBins[texture] = renderBin;

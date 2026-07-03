@@ -176,7 +176,7 @@ namespace TranSimCS.Roads.Section {
             var sideLen = new Vector2(height, breadth).Length();
             var topVertexer = UniformTexturing.WithFixedU(0);
             var bottomVertexer = UniformTexturing.WithFixedU(sideLen);
-            var finishMesh = multimesh.GetOrCreateRenderBinForced(texture);
+            var finishMesh = multimesh.GetOrCreateRenderBinForced(texture.Value);
 
             //Generate the splines
             var splineCount = roadSection.Nodes.Count;

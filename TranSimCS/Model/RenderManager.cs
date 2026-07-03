@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.ModelOld;
 using TranSimCS.Property;
 using TranSimCS.Setting;
 
@@ -56,15 +57,23 @@ namespace TranSimCS.Model {
 
             gpu.SamplerStates[0] = SamplerState.PointWrap;
 
-            //Count triangles and vertices
+            var categorizedMeshes = new List<KeyValuePair<SimpleMaterial, Mesh>>[(int)MaterialBlendMode.Count];
+
+            //Count triangles and vertices, categorize based on type
             foreach (var row in mesh.RenderBins) {
                 var renderBin = row.Value;
                 var texture = row.Key;
+                var renderPassID = texture.BlendMode;
+
+                var bin = categorizedMeshes[(int)renderPassID] ??= new();
+                bin.Add(row);
+
                 var verts = renderBin.Vertices.Count;
                 var tris = renderBin.Indices.Count / 3;
                 TriCount += renderBin.Indices.Count / 3;
                 VertCount += renderBin.Vertices.Count;
             }
+            
 
             RenderPass(mesh, DepthStencilState.Default, BlendState.AlphaBlend);
         }
@@ -77,7 +86,7 @@ namespace TranSimCS.Model {
                 var texture = row.Key;
                 if (renderBin.Vertices.Count == 0 || renderBin.Indices.Count == 0) continue;
 
-                effect.Texture = texture;
+                effect.Texture = texture.Texture;
 
                 //If requested, invert all normals
                 if (Settings.InvertAllNormals) RenderUtil.InvertNormals(_indexScratch, renderBin.Indices.Count);

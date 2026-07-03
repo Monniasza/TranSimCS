@@ -13,12 +13,16 @@ namespace TranSimCS.ModelOld {
         /// <summary>
         /// The texture used by the renderer. null for no texturing
         /// </summary>
-        public Texture2D Texture = Assets.White;
-        public MaterialBlendMode BlendMode;
+        public Texture2D Texture = Assets.WhiteTex;
+        public MaterialBlendMode BlendMode = MaterialBlendMode.Opaque;
 
         public string TextureName { set => Texture = Assets.Content.Load<Texture2D>(value); }
 
         public SimpleMaterial() { }
+        public SimpleMaterial(string texture, MaterialBlendMode blendMode = MaterialBlendMode.Opaque) {
+            TextureName = texture;
+            BlendMode = blendMode;
+        }
 
         public override bool Equals(object? obj)
             => obj is SimpleMaterial material && Equals(material);     
