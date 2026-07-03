@@ -16,8 +16,7 @@ namespace TranSimCS.Roads.Node {
             var refframe = node.ReferenceFrame;
             foreach (var lane in node.Lanes) {
                 foreach (var laneEnd in new LaneEnd[] { lane.Front, lane.Rear }) {
-                    var altColor = lane.Spec.Color;
-                    altColor.A /= 2;
+                    var altColor = lane.Spec.Color * 0.5f;
                     var color = nodeHighlightColor ?? InGameMenu.roadSegmentHighlightColor;
                     if (SelectedLaneEnd == laneEnd || (bothends && SelectedLaneEnd == laneEnd.OppositeEnd)) color = laneHighlightColor ?? InGameMenu.laneHighlightColor;
                     else if (SelectedLaneEnd == null || !node.Lanes.Contains(SelectedLaneEnd.Value.lane)) color = altColor;

@@ -7,8 +7,9 @@ using Microsoft.Xna.Framework;
 
 namespace TranSimCS {
     public static class Colors {
-        public static Color SmokedGlass = new Color(0, 0, 0, 128);
-        public static Color SemiClearGray = new Color(128, 128, 128, 128);
-        public static Color SemiClearAzure = new Color(0, 160, 255, 128);
+        public static Color SmokedGlass = Color.Black * 0.5f;
+        public static Color SemiClearGray = Color.Gray * 0.5f;
+        public static Color SemiClearAzure = new Color(0, 160, 255) * 0.5f;
+        public static Color SemiClearWhite = Color.White * 0.5f;
     }
 }

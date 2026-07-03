@@ -121,25 +121,29 @@ namespace TranSimCS.Menus.InGame {
             //Apply the day/night cycle
             var isDayNight = Settings.DayNightCycle;
 
+            //Render a semi-transparent test quad in white and black
+            var whiteBin = renderHelper.GetOrCreateRenderBinForced(Assets.White);
+            whiteBin.DrawLine(new(0, 0, 0), new(0, 0, 1), Vector3.UnitY, Colors.SmokedGlass);
+            whiteBin.DrawLine(new(1, 0, 0), new(1, 0, 1), Vector3.UnitY, Colors.SemiClearGray);
+            whiteBin.DrawLine(new(2, 0, 0), new(2, 0, 1), Vector3.UnitY, Colors.SemiClearWhite);
+
             if (isDayNight) {
-                Vector3 dayVector = new(1, 1, 1);
-                Vector3 nightVector = new(0.2f, 0.2f, 0.5f);
+                Vector4 dayVector = new(1, 1, 1, 1);
+                Vector4 nightVector = new(0.2f, 0.2f, 0.5f, 1);
                 DateTime dateTime = DateTime.Now;
                 var seconds = dateTime.Second + dateTime.Millisecond * 0.001f + dateTime.Microsecond * 0.000001f;
                 var radsPerSecond = MathF.PI / 30;
                 var sine = MathF.Sin(seconds * radsPerSecond);
                 sine = MathHelper.Clamp(sine*2, -1, 1);
                 sine = (sine / 2) + 0.5f;
-                var interpolatedDayNightVector = Vector3.SmoothStep(dayVector, nightVector, sine) / 255;
+                var interpolatedDayNightVector = Vector4.SmoothStep(dayVector, nightVector, sine);
                 foreach(var bin in renderHelper.RenderBins) {
                     var mesh = bin.Value;
                     mesh.Vertices.TransformInPlace(x => {
                         var result = x;
-                        var r = x.Color.R * interpolatedDayNightVector.X;
-                        var g = x.Color.G * interpolatedDayNightVector.Y;
-                        var b = x.Color.B * interpolatedDayNightVector.Z;
-                        var a = x.Color.A / 255;
-                        var color = new Color(r, g, b, a);
+                        var rgba = x.Color.ToVector4();
+                        rgba *= interpolatedDayNightVector;
+                        var color = new Color(rgba);
                         result.Color = color;
                         return result;
                     });

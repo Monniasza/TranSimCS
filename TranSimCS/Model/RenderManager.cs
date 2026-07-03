@@ -54,37 +54,38 @@ namespace TranSimCS.Model {
             effect.TextureEnabled = true;
             effect.VertexColorEnabled = true;
 
-            // Ensure depth testing is enabled to prevent Z-fighting and flickering
-            gpu.DepthStencilState = DepthStencilState.Default;
-
             gpu.SamplerStates[0] = SamplerState.PointWrap;
+
+            //Count triangles and vertices
             foreach (var row in mesh.RenderBins) {
                 var renderBin = row.Value;
                 var texture = row.Key;
-
                 var verts = renderBin.Vertices.Count;
                 var tris = renderBin.Indices.Count / 3;
-
-                effect.Texture = texture;
                 TriCount += renderBin.Indices.Count / 3;
                 VertCount += renderBin.Vertices.Count;
+            }
+
+            RenderPass(mesh, DepthStencilState.Default, BlendState.AlphaBlend);
+        }
+
+        private void RenderPass(MultiMesh mesh, DepthStencilState depthState, BlendState blendState) {
+            gpu.BlendState = blendState;
+            gpu.DepthStencilState = depthState;
+            foreach (var row in mesh.RenderBins) {
+                var renderBin = row.Value;
+                var texture = row.Key;
                 if (renderBin.Vertices.Count == 0 || renderBin.Indices.Count == 0) continue;
-                // Ensure pooled arrays are large enough, then copy list contents without allocating
-                EnsureScratchCapacity(renderBin.Vertices.Count, renderBin.Indices.Count);
-                renderBin.Indices.CopyTo(_indexScratch, 0);
+
+                effect.Texture = texture;
 
                 //If requested, invert all normals
                 if (Settings.InvertAllNormals) RenderUtil.InvertNormals(_indexScratch, renderBin.Indices.Count);
 
-                //Premultiply alphas
-                for(int i = 0; i < verts; i++) {
-                    var vert = renderBin.Vertices[i];
-                    var color = vert.Color;
-                    var rgbVector = color.ToVector3();
-                    rgbVector *= (color.A / 255f);
-                    vert.Color = color;
-                    _vertexScratch[i] = vert;
-                }
+                // Ensure pooled arrays are large enough, then copy list contents without allocating
+                EnsureScratchCapacity(renderBin.Vertices.Count, renderBin.Indices.Count);
+                renderBin.Indices.CopyTo(_indexScratch, 0);
+                renderBin.Vertices.CopyTo(_vertexScratch, 0);
 
                 foreach (var pass in effect.CurrentTechnique.Passes) {
                     pass.Apply();
