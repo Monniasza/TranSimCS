@@ -10,6 +10,9 @@ using TranSimCS.ModelOld;
 
 namespace TranSimCS {
     public static class Assets {
+        public static Texture2D WhiteTex { get; private set; }
+        public static Texture2D Black { get; private set; }
+        public static Effect ShaderEffect {  get; private set; }
         public static SimpleMaterial Asphalt { get; private set; }
         public static SimpleMaterial Road { get; private set; }
         public static SimpleMaterial Grass { get; private set; }
@@ -20,7 +23,7 @@ namespace TranSimCS {
         public static SimpleMaterial BuildingBricks { get; private set; }
         public static SimpleMaterial BuildingWindows { get; private set; }
         public static SimpleMaterial Arrow { get; private set; }
-        public static Texture2D WhiteTex { get; private set; }
+        
         public static SimpleMaterial White { get; private set; }
         public static SimpleMaterial WhiteTransparent { get; private set; }
         public static SimpleMaterial Grid { get; private set; }
@@ -34,6 +37,10 @@ namespace TranSimCS {
 
 
         public static void ReadAssets() {
+            WhiteTex = Content.Load<Texture2D>("white");
+            Black = Content.Load<Texture2D>("black");
+            ShaderEffect = Content.Load<Effect>("shader");
+
             Asphalt = new("seamlessTextures2/IMGP5511_seamless");
             Road = new("laneTex", MaterialBlendMode.Transparent);
             Grass = new("seamlessTextures2/grass1");
@@ -44,7 +51,6 @@ namespace TranSimCS {
             BuildingBricks = new("brickwall");
             BuildingWindows = new("brickwindow");
             Arrow = new("markings/arrow", MaterialBlendMode.Cutout);
-            WhiteTex = Content.Load<Texture2D>("white");
             White = new("white");
             WhiteTransparent = new("white", MaterialBlendMode.Transparent);
             Grid = new("snapgrid", MaterialBlendMode.Cutout);

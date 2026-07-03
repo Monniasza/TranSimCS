@@ -122,7 +122,7 @@ namespace TranSimCS.Menus.InGame {
             var isDayNight = Settings.DayNightCycle;
 
             //Render a semi-transparent test quad in white and black
-            var whiteBin = renderHelper.GetOrCreateRenderBinForced(Assets.White);
+            var whiteBin = renderHelper.GetOrCreateRenderBinForced(Assets.WhiteTransparent);
             whiteBin.DrawLine(new(0, 0, 0), new(0, 0, 1), Vector3.UnitY, Colors.SmokedGlass);
             whiteBin.DrawLine(new(1, 0, 0), new(1, 0, 1), Vector3.UnitY, Colors.SemiClearGray);
             whiteBin.DrawLine(new(2, 0, 0), new(2, 0, 1), Vector3.UnitY, Colors.SemiClearWhite);

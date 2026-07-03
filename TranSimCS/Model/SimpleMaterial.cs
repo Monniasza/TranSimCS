@@ -14,14 +14,24 @@ namespace TranSimCS.ModelOld {
         /// The texture used by the renderer. null for no texturing
         /// </summary>
         public Texture2D Texture = Assets.WhiteTex;
+        public Texture2D Emissive = Assets.Black;
         public MaterialBlendMode BlendMode = MaterialBlendMode.Opaque;
 
         public string TextureName { set => Texture = Assets.Content.Load<Texture2D>(value); }
+        public string EmissiveName { set => Emissive = Assets.Content.Load<Texture2D>(value); }
 
         public SimpleMaterial() { }
-        public SimpleMaterial(string texture, MaterialBlendMode blendMode = MaterialBlendMode.Opaque) {
+        public SimpleMaterial(string texture = "white", string emissive = "black", MaterialBlendMode blendMode = MaterialBlendMode.Opaque) {
+            TextureName = texture;
+            EmissiveName = emissive;
+            BlendMode = blendMode;
+        }
+        public SimpleMaterial(string texture = "white", MaterialBlendMode blendMode = MaterialBlendMode.Opaque) {
             TextureName = texture;
             BlendMode = blendMode;
+        }
+        public SimpleMaterial(string texture = "white") {
+            TextureName = texture;
         }
 
         public override bool Equals(object? obj)
