@@ -14,6 +14,10 @@ namespace TranSimCS.Model {
         public readonly Property<Camera> CameraProp;
         public readonly Property<Vector4> AmbientColor;
         public readonly GraphicsDevice gpu;
+        public readonly Effect opaqueEffect;
+        public readonly Effect cutoutEffect;
+        public readonly Effect additiveEffect;
+        public readonly Effect transparentEffect;
 
         public Matrix WorldViewProjection { get; private set; }
         public Matrix World { get; private set; }
@@ -26,6 +30,11 @@ namespace TranSimCS.Model {
             AmbientColor = new(Vector4.One, "ambientColor", null);
             CameraProp.ValueChanged += (s, e) => SetUpEffects();
             SetUpEffects();
+
+            opaqueEffect = Assets.ShaderEffect.Clone();
+            cutoutEffect = Assets.ShaderEffect.Clone();
+            additiveEffect = Assets.ShaderEffect.Clone();
+            transparentEffect = Assets.ShaderEffect.Clone();
         }
         private void SetUpEffects() {
             WorldViewProjection = Camera.GetCombinedMatrix(gpu, out var world, out var view, out var projection);
@@ -59,6 +68,7 @@ namespace TranSimCS.Model {
             var writeDepth = DepthStencilState.Default;
             var keepDepth = DepthStencilState.DepthRead;
             gpu.SamplerStates[0] = SamplerState.PointWrap;
+            gpu.SamplerStates[1] = SamplerState.PointWrap;
 
             //CATEGORIZATION & COUNTING
             int TriCount = 0;
@@ -82,17 +92,17 @@ namespace TranSimCS.Model {
             // - Writes depth.
             // - No blending.
             // - Fills the depth buffer for the rest of the frame.
-            RenderPass(
+            RenderPass(opaqueEffect,
                 categorizedMeshes[(int)MaterialBlendMode.Opaque],
                 writeDepth,
                 BlendState.Opaque);
-
+            
             // PASS 1: CUTOUT
             // - Also writes depth.
             // - Should discard transparent texels (requires a custom shader;
             //   BasicEffect cannot perform alpha testing).
             // - Since it writes depth, it behaves like opaque geometry.
-            RenderPass(
+            RenderPass(cutoutEffect,
                 categorizedMeshes[(int)MaterialBlendMode.Cutout],
                 writeDepth,
                 BlendState.Opaque, 0.5f);
@@ -100,7 +110,7 @@ namespace TranSimCS.Model {
             // PASS 2: ADDITIVE
             // - Reads depth so it is hidden by opaque/cutout geometry.
             // - Does not write depth so multiple additive effects can overlap.
-            RenderPass(
+            RenderPass(additiveEffect,
                 categorizedMeshes[(int)MaterialBlendMode.Additive],
                 keepDepth,
                 BlendState.Additive);
@@ -109,16 +119,14 @@ namespace TranSimCS.Model {
             // - Reads depth.
             // - Does not write depth.
             // - Should ideally be drawn back-to-front within this bucket.
-            RenderPass(
+            RenderPass(transparentEffect,
                 categorizedMeshes[(int)MaterialBlendMode.Transparent],
                 keepDepth,
-                BlendState.AlphaBlend);
+                BlendState.AlphaBlend, 0.00001f);
         }
 
-        private void RenderPass( List<KeyValuePair<SimpleMaterial, Mesh>>? bucket, DepthStencilState depthState, BlendState blendState, float alphaCutoff = 0) {
+        private void RenderPass(Effect eff, List<KeyValuePair<SimpleMaterial, Mesh>>? bucket, DepthStencilState depthState, BlendState blendState, float alphaCutoff = 0.5f) {
             if (bucket == null || bucket.Count == 0) return;
-            gpu.BlendState = blendState;
-            gpu.DepthStencilState = depthState;
 
             foreach (var row in bucket) {
                 var renderBin = row.Value;
@@ -133,17 +141,15 @@ namespace TranSimCS.Model {
                     BlendState = blendState,
                     WorldViewProjection = WorldViewProjection,
                     AmbientColor = AmbientColor.Value,
-                    AlphaCutoff = alphaCutoff
+                    AlphaCutoff = alphaCutoff,
+                    EmissiveIsMask = texture.EmissiveIsMask
                 };
-                RenderRow(renderBin, renderInputs);
+                RenderRow(eff, renderBin, renderInputs);
             }
         }
 
-        private void RenderRow(Mesh renderBin, RenderInputs renderInputs) {
+        private void RenderRow(Effect eff, Mesh renderBin, RenderInputs renderInputs) {
             if (renderBin.Vertices.Count == 0 || renderBin.Indices.Count == 0) return;
-
-            var eff = Assets.ShaderEffect;
-            renderInputs.PassInputsToEffect(eff, gpu);
 
             // Ensure pooled arrays are large enough, then copy list contents without allocating
             EnsureScratchCapacity(renderBin.Vertices.Count, renderBin.Indices.Count);
@@ -154,6 +160,7 @@ namespace TranSimCS.Model {
             if (Settings.InvertAllNormals) RenderUtil.InvertNormals(_indexScratch, renderBin.Indices.Count);
 
             foreach (var pass in eff.CurrentTechnique.Passes) {
+                renderInputs.PassInputsToEffect(eff, gpu);
                 pass.Apply();
                 gpu.DrawUserIndexedPrimitives(
                     PrimitiveType.TriangleList,
@@ -167,6 +174,7 @@ namespace TranSimCS.Model {
         public Matrix WorldViewProjection = Matrix.Identity;
         public Vector4 AmbientColor = Vector4.One;
         public float AlphaCutoff = 0.5f;
+        public float EmissiveIsMask = 0;
         public Texture Albedo;
         public Texture Emissive;
         public DepthStencilState DepthStencilState;
@@ -180,6 +188,7 @@ namespace TranSimCS.Model {
             effect.Parameters["AmbientColor"].SetValue(AmbientColor);
             effect.Parameters["WorldViewProjection"].SetValue(WorldViewProjection);
             effect.Parameters["AlphaCutoff"].SetValue(AlphaCutoff);
+            effect.Parameters["EmissiveIsMask"].SetValue(EmissiveIsMask);
         }
     }
 }

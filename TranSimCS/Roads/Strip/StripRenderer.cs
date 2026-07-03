@@ -68,7 +68,7 @@ namespace TranSimCS.Roads.Strip {
             var roadTag = laneStrip.road.FullSizeTag();
 
             //Generate side-lines
-            var solidTexture = Assets.White;
+            var solidTexture = Assets.EmissiveWhite;
             var dashedTexture = ((laneStrip.Spec.Flags & LaneFlags.Yield) != 0) ? Assets.LineYield : Assets.LineDash;
             var lineWidth = laneStrip.Spec.LineWidth;
 

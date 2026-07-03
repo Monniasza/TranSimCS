@@ -257,7 +257,6 @@ namespace TranSimCS.Menus.InGame {
                 MouseOver = Selection.CalculateSelection(World.RootGraph, MouseRay);
 
             //Handle scroll wheel input for zooming in and out
-            var effect = Assets.ShaderEffect;
             var camera = renderManager.Camera;
             if (Game.MouseState.ScrollWheelValue != scrollWheelValue) {
                 // Zoom in or out based on the scroll wheel value

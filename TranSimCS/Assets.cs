@@ -26,12 +26,16 @@ namespace TranSimCS {
         
         public static SimpleMaterial White { get; private set; }
         public static SimpleMaterial WhiteTransparent { get; private set; }
+        
+
+        public static readonly string CrossIcon = "ui/check";
+
+        //MARKINGS. All emissive
         public static SimpleMaterial Grid { get; private set; }
         public static SimpleMaterial LineYield { get; private set; }
         public static SimpleMaterial LineDash { get; private set; }
         public static SimpleMaterial Impassable { get; private set; }
-
-        public static readonly string CrossIcon = "ui/check";
+        public static SimpleMaterial EmissiveWhite { get; private set; }
 
         public static ContentManager Content => Game1.Instance.Content;
 
@@ -50,13 +54,15 @@ namespace TranSimCS {
             Tiles = new("tile");
             BuildingBricks = new("brickwall");
             BuildingWindows = new("brickwindow");
-            Arrow = new("markings/arrow", MaterialBlendMode.Cutout);
             White = new("white");
             WhiteTransparent = new("white", MaterialBlendMode.Transparent);
-            Grid = new("snapgrid", MaterialBlendMode.Cutout);
-            LineYield = new("lines/yield", MaterialBlendMode.Cutout);
-            LineDash = new("lines/dashed", MaterialBlendMode.Cutout);
-            Impassable = new("signs/trafficbarrier");
+
+            EmissiveWhite = SimpleMaterial.NewEmissive("white");
+            Grid = SimpleMaterial.NewEmissive("snapgrid", MaterialBlendMode.Cutout);
+            LineYield = SimpleMaterial.NewEmissive("lines/yield", MaterialBlendMode.Cutout);
+            LineDash = SimpleMaterial.NewEmissive("lines/dashed", MaterialBlendMode.Cutout);
+            Arrow = SimpleMaterial.NewEmissive("markings/arrow", MaterialBlendMode.Cutout);
+            Impassable = SimpleMaterial.NewEmissive("signs/trafficbarrier");
         }
     }
 }

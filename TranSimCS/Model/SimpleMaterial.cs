@@ -16,16 +16,12 @@ namespace TranSimCS.ModelOld {
         public Texture2D Texture = Assets.WhiteTex;
         public Texture2D Emissive = Assets.Black;
         public MaterialBlendMode BlendMode = MaterialBlendMode.Opaque;
+        public float EmissiveIsMask = 0;
 
         public string TextureName { set => Texture = Assets.Content.Load<Texture2D>(value); }
         public string EmissiveName { set => Emissive = Assets.Content.Load<Texture2D>(value); }
 
         public SimpleMaterial() { }
-        public SimpleMaterial(string texture = "white", string emissive = "black", MaterialBlendMode blendMode = MaterialBlendMode.Opaque) {
-            TextureName = texture;
-            EmissiveName = emissive;
-            BlendMode = blendMode;
-        }
         public SimpleMaterial(string texture = "white", MaterialBlendMode blendMode = MaterialBlendMode.Opaque) {
             TextureName = texture;
             BlendMode = blendMode;
@@ -33,17 +29,27 @@ namespace TranSimCS.ModelOld {
         public SimpleMaterial(string texture = "white") {
             TextureName = texture;
         }
+        public static SimpleMaterial NewEmissive(string texture, MaterialBlendMode blendMode = MaterialBlendMode.Opaque) {
+            return new SimpleMaterial() {
+                EmissiveIsMask = 1,
+                EmissiveName = texture,
+                BlendMode = blendMode,
+                Texture = Assets.Black
+            };
+        }
 
         public override bool Equals(object? obj)
             => obj is SimpleMaterial material && Equals(material);     
         
-        public bool Equals(SimpleMaterial material) 
-        => EqualityComparer<Texture2D?>.Default.Equals(Texture, material.Texture) &&
-           BlendMode == material.BlendMode;
+        public bool Equals(SimpleMaterial material) =>
+            material.Texture == Texture
+            && material.Emissive == Emissive
+            && material.BlendMode == BlendMode
+            && material.EmissiveIsMask == EmissiveIsMask;
         
 
         public override int GetHashCode() {
-            return HashCode.Combine(Texture, BlendMode);
+            return HashCode.Combine(Texture, Emissive, BlendMode, EmissiveIsMask);
         }
 
         public static bool operator ==(SimpleMaterial left, SimpleMaterial right) {

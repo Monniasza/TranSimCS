@@ -10,18 +10,25 @@
 //TEXTURES
 Texture2D Albedo;
 Texture2D Emissive;
+SamplerState PointWrap;
 sampler2D AlbedoSampler = sampler_state{
     Texture = <Albedo>;
+    AddressU = Wrap;
+    AddressV = Wrap;
+    Filter = Point;
 };
 sampler2D EmissiveSampler = sampler_state{
     Texture = <Emissive>;
+    AddressU = Wrap;
+    AddressV = Wrap;
+    Filter = Point;
 };
 
 //PARAMETERS
 float4 AmbientColor = float4(1,1,1,1);
 float4x4 WorldViewProjection;
 float AlphaCutoff = 0.5;
-//int Flags = 0;
+float EmissiveIsMask = 0;
 
 //DATA STRUCTURES
 struct VSInput{
@@ -50,10 +57,9 @@ VSOutput VSMain(VSInput input){
 }
 
 float4 PSMain(VSOutput input) : COLOR0{
-    float4 texColor = tex2D(AlbedoSampler, input.TexCoord);
-    float4 emissiveColor = tex2D(EmissiveSampler, input.TexCoord) * float4(1, 1, 1, 0);
+    float4 texColor = tex2D(AlbedoSampler, input.TexCoord) * float4(1, 1, 1, 1-EmissiveIsMask);
+    float4 emissiveColor = tex2D(EmissiveSampler, input.TexCoord) * float4(1, 1, 1, EmissiveIsMask);
     float4 color = (texColor * AmbientColor + emissiveColor) * input.Color;
-    //if (Flags & FlagAlphaClip)
         clip(color.a - AlphaCutoff);
     return color;
 }
