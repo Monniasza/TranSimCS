@@ -102,10 +102,6 @@ namespace TranSimCS.Worlds.Car {
             var meshInstance = new MeshInstance(BodyMesh, transformQ, car, true);
             mesh.meshInstances.Add(meshInstance);
             return;
-
-            var refframe = PositionProp.Value.CalcReferenceFrame();
-            refframe.TransformOutOfPlace(BodyMesh, mesh);
-            mesh.AddTagsToAll(car);
         }
 
         public float Speed;
@@ -139,9 +135,8 @@ namespace TranSimCS.Worlds.Car {
             VectorMethods.CheckVector(xyz, "xyz");
             pr.Position = xyz;
             PositionProp.Value = pr;
-            if (LaneStrip?.road == null) {
-                return;
-            }
+            if (LaneStrip?.road == null) return;
+            
 
             var splines = LaneStrip.SplineCache;
             var lspline = splines.Item1;
@@ -219,20 +214,6 @@ namespace TranSimCS.Worlds.Car {
                 World.Cars.data.Remove(this);
                 return;
             }
-
-            /* If lane allows reversals, reverse now
-            if (candidates.Count == 0) {
-                //End of road, reverse
-                Reverse();
-                var endnode = nextLane.lane;
-                var latpos = endnode.MiddlePosition;
-                var pp = endnode.RoadNode.PositionProp.Value;
-                var rf = pp.CalcReferenceFrame();
-                var mirror = rf.O + rf.X * latpos;
-                var actualCoords = 2*mirror - newPos;
-                newPos = actualCoords;
-                return;
-            }*/
 
             //Car gets stuck when hitting a next segment
             var choice = rnd.GetRandomEntry(candidates);
