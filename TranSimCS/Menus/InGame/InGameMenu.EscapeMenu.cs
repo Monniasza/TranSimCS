@@ -114,8 +114,12 @@ namespace TranSimCS.Menus.InGame {
             }
 
             public void ResetWorld() {
-                parent.World.ClearAll();
-                parent.Overlay = null;
+                InGameMenu newMenu = new InGameMenu(parent.Game);
+                newMenu.LoadContent();
+                parent.Game.Menu = newMenu;
+
+                /*parent.World.ClearAll();
+                parent.Overlay = null;*/
             }
 
             public void Exit() => parent.Game.Exit();
