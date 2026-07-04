@@ -53,6 +53,9 @@ namespace TranSimCS.Tools {
                     }
                     Car car = new Car();
                     car.Randomize();
+                    if(strip != null) {
+                        car.LaneStrip = strip;
+                    }
                     car.PositionProp.Value = newCarPosition; //selected position is NaN
                     car.Speed = settings.CarVelocity;
                     menu.World.Cars.data.Add(car);
