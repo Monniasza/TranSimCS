@@ -96,6 +96,13 @@ namespace TranSimCS.Worlds.Car {
 
         private void GenerateMesh(Car car, MultiMesh mesh) {
             if (BodyMesh == null) return;
+
+            //Generate a mesh instance instead of a full mesh
+            var transformQ = PositionProp.Value.CalcReferenceQuaternion();
+            var meshInstance = new MeshInstance(BodyMesh, transformQ, car, true);
+            mesh.meshInstances.Add(meshInstance);
+            return;
+
             var refframe = PositionProp.Value.CalcReferenceFrame();
             refframe.TransformOutOfPlace(BodyMesh, mesh);
             mesh.AddTagsToAll(car);

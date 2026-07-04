@@ -46,7 +46,7 @@ namespace TranSimCS.Worlds {
             return !(left == right);
         }
 
-        public Transform3 CalcReferenceFrame() => new(CalcReferenceMatrix());
+        
 
         public static PositionEulerAngles FromPosTangentTilt(Vector3 pos, Vector3 tangent, float tilt) {
             var htangent = GeometryUtils.hypot2(tangent.X, tangent.Z);
@@ -70,6 +70,11 @@ namespace TranSimCS.Worlds {
                 && Azimuth.Equals(other.Azimuth);
         }
 
+        public Transform3 CalcReferenceFrame() => new(CalcReferenceMatrix());
+        public TransformQ CalcReferenceQuaternion() {
+            var rotation = Quaternion.CreateFromYawPitchRoll(GeometryUtils.FieldToRadians(Azimuth), -Inclination, Tilt);
+            return new(Position, rotation);
+        }
         public Matrix CalcReferenceMatrix() => Matrix.CreateFromYawPitchRoll(GeometryUtils.FieldToRadians(Azimuth), -Inclination, Tilt) * Matrix.CreateTranslation(Position);
 
         public Vector3 GetTangential() {

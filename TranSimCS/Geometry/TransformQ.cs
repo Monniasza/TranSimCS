@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 
 namespace TranSimCS.Geometry {
-    public struct TransformQ {
+    public struct TransformQ : IEquatable<TransformQ> {
         public static TransformQ Identity => new(Vector3.Zero, Quaternion.Identity);
 
         public Vector3 Position;
@@ -51,6 +51,19 @@ namespace TranSimCS.Geometry {
             return new(Transform(ray.Position), Vector3.Transform(ray.Direction, Rotation));
         }
 
+        public override bool Equals(object? obj) {
+            return obj is TransformQ q && Equals(q);
+        }
+
+        public bool Equals(TransformQ other) {
+            return Position.Equals(other.Position) &&
+                   Rotation.Equals(other.Rotation);
+        }
+
+        public override int GetHashCode() {
+            return HashCode.Combine(Position, Rotation);
+        }
+
         /// <summary>
         /// Combines the transforms so <paramref name="b"/> is applied first, then <paramref name="a"/>
         /// </summary>
@@ -61,6 +74,14 @@ namespace TranSimCS.Geometry {
             return new TransformQ(
                 a.Position + Vector3.Transform(b.Position, a.Rotation),
                 Quaternion.Normalize(a.Rotation * b.Rotation));
+        }
+
+        public static bool operator ==(TransformQ left, TransformQ right) {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(TransformQ left, TransformQ right) {
+            return !(left == right);
         }
     }
 }

@@ -11,9 +11,14 @@ namespace TranSimCS.Model {
     public struct MeshInstance : IEquatable<MeshInstance>, IBVHElement {
         public MultiMesh Mesh;
         public TransformQ PositionRotation;
-        public MeshInstance(MultiMesh mesh, TransformQ transform) {
+        public object? CoverTag;
+        public bool OverrideChildTags;
+
+        public MeshInstance(MultiMesh mesh, TransformQ transform, object? coverTag = null, bool overrideChildTags = false) {
             Mesh = mesh;
             PositionRotation = transform;
+            CoverTag = coverTag;
+            OverrideChildTags = overrideChildTags;
         }
 
         public MeshInstance Transform(TransformQ transform) => new MeshInstance(Mesh, transform * PositionRotation);
@@ -21,7 +26,10 @@ namespace TranSimCS.Model {
         public bool ComputeIntersection(Ray ray, out float distance, out object? tag) {
             var inverse = PositionRotation.Inverse();
             var inverseRay = inverse.Transform(ray);
-            return Mesh.ComputeIntersection(inverseRay, out distance, out tag);
+            var isIntersecting = Mesh.ComputeIntersection(inverseRay, out distance, out tag);
+            if(!isIntersecting) return false;
+            if (OverrideChildTags || tag == null) tag = CoverTag;
+            return true;
         }
         public BoundingBox GetBounds() => OBB.TransformBoundingBox(Mesh.GetBounds(), PositionRotation);
 
@@ -30,8 +38,8 @@ namespace TranSimCS.Model {
         }
 
         public bool Equals(MeshInstance other) {
-            return EqualityComparer<MultiMesh>.Default.Equals(Mesh, other.Mesh) &&
-                   EqualityComparer<TransformQ>.Default.Equals(PositionRotation, other.PositionRotation);
+            return Mesh == other.Mesh && PositionRotation == other.PositionRotation &&
+                CoverTag == other.CoverTag && OverrideChildTags == other.OverrideChildTags;
         }        
 
         public override int GetHashCode() {
