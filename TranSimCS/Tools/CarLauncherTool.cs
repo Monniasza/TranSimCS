@@ -25,13 +25,11 @@ namespace TranSimCS.Tools {
         ];
 
         void ITool.OnClick(MouseButton button) {
-            var selectionOrNull = menu.MouseOver;
-            if (selectionOrNull == null) return;
-            var selection = selectionOrNull.Value;
+            var selection = menu.MouseOver;
             switch (button) {
                 case MouseButton.Left:
                     //Add a new car
-                    var roadElement = selection.AsRoadElement();
+                    var roadElement = selection?.AsRoadElement();
                     var node = roadElement?.GetLane();
                     var strip = roadElement?.GetLaneStrip();
                     if(node != null) {
@@ -46,14 +44,17 @@ namespace TranSimCS.Tools {
                         newCarPosition = startingLane.GetRoadNode().PositionProp.Value;
                         if (startingLane.end == NodeEnd.Backward) newCarPosition.Azimuth ^= (1 << 31);
                     } else {
-                        newCarPosition.Position = selection.Coordinates;
+                        if(selection != null && selection.Value.Distance < float.MaxValue) {
+                            newCarPosition.Position = selection.Value.Coordinates;
+                        } else {
+                            newCarPosition.Position = menu.GroundSelection;
+                        }
                         newCarPosition.Azimuth = GeometryUtils.RadiansToField(menu.renderManager.Camera.Azimuth);
                     }
                     Car car = new Car();
                     car.Randomize();
-                    car.PositionProp.Value = newCarPosition;
-                    var refframe = newCarPosition.CalcReferenceFrame();
-                    car.Velocity = settings.CarVelocity * refframe.Z;
+                    car.PositionProp.Value = newCarPosition; //selected position is NaN
+                    car.Speed = settings.CarVelocity;
                     menu.World.Cars.data.Add(car);
                     break;
             }

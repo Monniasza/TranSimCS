@@ -13,7 +13,8 @@ namespace TranSimCS.Model.OBJ {
             if(mesh == null) mesh = new Mesh();
             foreach (var group in obj.Groups) {
                 var mat = group.Material;
-                var colorvector = new Vector4(mat.Kd, mat.d);
+                mat.d = 1; //Force opaque
+                var colorvector = new Vector4(mat.Kd, 1) * mat.d;
                 var color = new Color(colorvector);
                 Dictionary<FaceVertex, VertexPositionColorTexture> dedupedVerts = [];
                 Dictionary<FaceVertex, int> lov = [];

@@ -47,6 +47,8 @@ namespace TranSimCS.Worlds.Car {
                     var multimesh = new MultiMesh();
                     var submesh = multimesh.GetOrCreateRenderBinForced(Assets.White);
                     var mesh = ObjConverter.ToSingleMesh(objData, submesh);
+                    bool isEmpty = mesh.Vertices.Count == 0 || mesh.Indices.Count == 0;
+                    if (isEmpty) throw new ApplicationException("Empty mesh"); //Meshes not empty
                     meshes.Add((obj, multimesh));
                     loadedMeshes.Add(obj, multimesh);
                     mesh.Stats(log);
@@ -70,6 +72,7 @@ namespace TranSimCS.Worlds.Car {
 
         public Car() {
             PositionProp = new(PositionEulerAngles.Zero, "position", this);
+            PositionProp.ValidateChanges += (s, e) => VectorMethods.CheckPosition(e.NewValue, "position");
             MeshIdProp = new(null, "meshId", this);
             Mesh = new(this, GenerateMesh);
             MeshIdProp.ValueChanged += MeshIdProp_ValueChanged;
@@ -120,8 +123,13 @@ namespace TranSimCS.Worlds.Car {
 
         internal void Update(GameTime t) {
             var vel = Velocity;
+            VectorMethods.CheckVector(vel, "vel");
             var pr = PositionProp.Value;
+            VectorMethods.CheckVector(pr.Position, "pr.Position");
+            if (!float.IsFinite(pr.Inclination)) throw new ArithmeticException("Invalid pitch");
+            if (!float.IsFinite(pr.Tilt)) throw new ArithmeticException("Invalid roll");
             var xyz = pr.Position + vel * (float)(t.ElapsedGameTime.TotalSeconds);
+            VectorMethods.CheckVector(xyz, "xyz");
             pr.Position = xyz;
             PositionProp.Value = pr;
             if (LaneStrip?.road == null) {
@@ -132,7 +140,12 @@ namespace TranSimCS.Worlds.Car {
             var lspline = splines.Item1;
             var rspline = splines.Item2;
             var spline = (lspline + rspline) / 2;
+            VectorMethods.CheckSpline(spline, "spline");
             var newT = Bezier3.FindT(spline, xyz, 20, 5, -1, 2);
+
+            //ASSERT T is valid
+            if (!float.IsFinite(newT)) throw new ArithmeticException("Invalid newT");
+
             if (newT < 0) {
                 //Passed the beginning
                 Overflow(SegmentHalf.Start, t, ref xyz);
@@ -145,21 +158,35 @@ namespace TranSimCS.Worlds.Car {
             lspline = splines.Item1;
             rspline = splines.Item2;
             spline = (lspline + rspline) / 2;
-            newT = Bezier3.FindT(spline, xyz);
 
+            //ASSERT splines are valid
+            VectorMethods.CheckSpline(spline, "spline");
             var latSpline = (rspline - lspline);
+            VectorMethods.CheckSpline(latSpline, "latSpline");
+
+            newT = Bezier3.FindT(spline, xyz);
+            //ASSERT T is valid
+            if (!float.IsFinite(newT)) throw new ArithmeticException("Invalid newT #2");
 
             var lateral = latSpline[newT];
             var tangential = spline.Tangential(newT);
+            VectorMethods.CheckVector(tangential, "tangential");
 
             var d = Vector3.Dot(tangential, Velocity);
-            if(d < 0) {
+            if (!float.IsFinite(d)) throw new ArithmeticException("Invalid d");
+            if (d < 0) {
                 tangential *= -1;
                 lateral *= -1;
             }
 
             xyz = spline[newT];
+            VectorMethods.CheckVector(xyz, "xyz #2");
+
             var newCoords = PositionEulerAngles.FromPosTangentLateral(xyz, tangential, lateral);
+
+            if (!float.IsFinite(newCoords.Inclination)) throw new ArithmeticException("Invalid pitch #2");
+            if (!float.IsFinite(newCoords.Tilt)) throw new ArithmeticException("Invalid roll #2");
+
             PositionProp.Value = newCoords;
 
         }
