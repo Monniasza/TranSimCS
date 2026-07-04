@@ -8,6 +8,7 @@ using MLEM.Input;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Strip;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Car;
 
@@ -61,6 +62,21 @@ namespace TranSimCS.Tools {
                     menu.World.Cars.data.Add(car);
                     break;
             }
+        }
+
+        public static Car LaunchCar(TSWorld world, LaneStrip strip, float speed = 25) {
+            var startingLane = strip.StartLane;
+            var newCarPosition = startingLane.GetRoadNode().PositionProp.Value;
+            if (startingLane.end == NodeEnd.Backward) newCarPosition.Azimuth ^= (1 << 31);
+            Car car = new Car();
+            car.Randomize();
+            if (strip != null) {
+                car.LaneStrip = strip;
+            }
+            car.PositionProp.Value = newCarPosition; //selected position is NaN
+            car.Speed = speed;
+            world.Cars.data.Add(car);
+            return car;
         }
 
         void ITool.AddAttributes(ISet<string> action) {

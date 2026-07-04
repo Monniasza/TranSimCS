@@ -6,12 +6,16 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using TranSimCS.Geometry;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Save2;
+using TranSimCS.Tools;
 using TranSimCS.Worlds.Stack;
 
 namespace TranSimCS.Worlds.Car {
     public class CarStack : ObjectStack<Car, CarStack> {
+        private static readonly Random rnd = new Random();
+
         private readonly TSWorld world;
         public readonly TrackerSpatial<Car, CarStack> trackerSpatial;
         public readonly UpdateLoopTracker<Car, CarStack> trackerUpdate;
@@ -21,6 +25,23 @@ namespace TranSimCS.Worlds.Car {
             trackerUpdate = new((x, t) => x.Update(t));
             stackTrackers.Add(trackerSpatial);
             stackTrackers.Add(trackerUpdate);
+
+            //Add a car every 5 seconds on each lane
+            world.OnUpdate += World_OnUpdate;
+        }
+
+        private void World_OnUpdate(Microsoft.Xna.Framework.GameTime obj) {
+            var seconds = obj.ElapsedGameTime.TotalSeconds;
+            var chance = 0.2f * seconds;
+
+            foreach(var node in World.Nodes.data) foreach(var lane in node.Lanes) foreach(var strip in lane.Connections) {
+                if (strip.EndLane.lane == lane) continue; //Strip ends here, do not spawn
+                //Check if a strip is a dead end
+                var passable = lane.IsLanePassable();
+                if (passable) continue;
+                var decision = rnd.NextSingle() < chance;
+                if (decision) CarLauncherTool.LaunchCar(World, strip);
+            }
         }
 
         public override Car ReadElementFromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
