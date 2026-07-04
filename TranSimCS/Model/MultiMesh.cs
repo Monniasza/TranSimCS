@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Collections;
 using TranSimCS.ModelOld;
 using TranSimCS.Spatial;
 
@@ -54,9 +55,11 @@ namespace TranSimCS.Model {
         public void Clear() {
             foreach (var renderBin in _renderBins.Values)
                 renderBin.Clear();
+            meshInstances.Clear();
         }
         public void ClearAll() {
             _renderBins.Clear();
+            meshInstances.Clear();
         }
         public Mesh GetOrCreateRenderBin(SimpleMaterial texture, Action<Mesh>? action) {
             if (!_renderBins.TryGetValue(texture, out var renderBin)) {
@@ -71,6 +74,7 @@ namespace TranSimCS.Model {
                 Mesh renderBin = GetOrCreateRenderBinForced(kv.Key);
                 renderBin.DrawModel(kv.Value);
             }
+            meshInstances.AddRange(meshes.meshInstances);
         }
     }
 }
