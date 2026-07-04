@@ -119,7 +119,7 @@ namespace TranSimCS.Model {
             if (missedVertices > 0)
                 throw new InvalidOperationException($"Cannot project mesh: {missedVertices} of {projection.Vertices.Count} vertices did not hit the target mesh.");
 
-            return new Mesh(projectedVertices, projection.Indices, projection.Tags);
+            return new Mesh(null, projectedVertices, projection.Indices, projection.Tags);
         }
 
         public static T[] TriangleFan<T>(IList<T> polygon) {
