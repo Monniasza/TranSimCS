@@ -21,7 +21,11 @@ namespace TranSimCS.Model {
             OverrideChildTags = overrideChildTags;
         }
 
-        public MeshInstance Transform(TransformQ transform) => new MeshInstance(Mesh, transform * PositionRotation);
+        public MeshInstance Transform(TransformQ transform) {
+            var result = this;
+            result.PositionRotation = transform * PositionRotation;
+            return result;
+        }
 
         public bool ComputeIntersection(Ray ray, out float distance, out object? tag) {
             var inverse = PositionRotation.Inverse();
