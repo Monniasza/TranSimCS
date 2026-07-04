@@ -72,13 +72,13 @@ namespace TranSimCS.Roads.Strip {
             var dashedTexture = ((laneStrip.Spec.Flags & LaneFlags.Yield) != 0) ? Assets.LineYield : Assets.LineDash;
             var lineWidth = laneStrip.Spec.LineWidth;
 
-            void DrawSide(LaneRange laneRange, LaneFlags flag) {
+            void DrawSide(LaneRange laneRange, LaneFlags flag, float bias) {
                 bool isEdge = IsRangeTouchingEdge(laneRange.startRange, roadTag.startRange) && IsRangeTouchingEdge(laneRange.endRange, roadTag.endRange);
                 var lineSplines = RoadRenderer.GenerateSplines(laneRange, voffset + 0.05f);
                 var lineTexture = ((laneStrip.Spec.Flags & flag) != 0 || isEdge) ? solidTexture : dashedTexture;
                 var leftLinePoints = GeometryUtils.GenerateSplinePoints(lineSplines.Left, accuracy);
                 var rightLinePoints = GeometryUtils.GenerateSplinePoints(lineSplines.Right, accuracy);
-                var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftLinePoints, rightLinePoints, GenerateLaneStripVertexGen(Color.White));
+                var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftLinePoints, rightLinePoints, GenerateLaneStripVertexGen(Color.White), bias);
                 var lineBin = renderer.GetOrCreateRenderBinForced(lineTexture);
                 lineBin.DrawStrip(generatedVertStripPair);
             }
@@ -127,8 +127,8 @@ namespace TranSimCS.Roads.Strip {
 
             var leftRange = LaneStripToRoadStripRange(laneStrip, new(startLeft, startLeftCenter), new(endLeft, endLeftCenter));
             var rightRange = LaneStripToRoadStripRange(laneStrip, new(startRightCenter, startRight), new(endRightCenter, endRight));  
-            DrawSide(leftRange, LaneFlags.NoLeft);
-            DrawSide(rightRange, LaneFlags.NoRight);
+            DrawSide(leftRange, LaneFlags.NoLeft, 0);
+            DrawSide(rightRange, LaneFlags.NoRight, 1);
         }
 
         public static LaneRange LaneStripToRoadStripRange(LaneStrip strip, Range<float> startRange, Range<float> endRange) {

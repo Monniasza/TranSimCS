@@ -38,7 +38,7 @@ namespace TranSimCS.Model {
             }
             return verts;
         }
-        public static (T[], T[]) UniformTexturedTwin<T>(Vector3[] l, Vector3[] r, VertexGen2<T> vertexer) {
+        public static (T[], T[]) UniformTexturedTwin<T>(Vector3[] l, Vector3[] r, VertexGen2<T> vertexer, float bias = 0.5f) {
             ArgumentNullException.ThrowIfNull(l, nameof(l));
             ArgumentNullException.ThrowIfNull(r, nameof(r));
             if (l.Length != r.Length) throw new ArgumentException("Lengths are not equal");
@@ -56,7 +56,9 @@ namespace TranSimCS.Model {
                 var nextl = l[i];
                 var prevr = r[i - 1];
                 var nextr = r[i];
-                var dDistance = (Vector3.Distance(prevl, nextl) + Vector3.Distance(prevr, nextr)) / 2;
+                var distLeft = Vector3.Distance(prevl, nextl);
+                var distRight = Vector3.Distance(prevr, nextr);
+                var dDistance = MathHelper.Lerp(distLeft, distRight, bias);
                 distance += dDistance;
                 vert = vertexer(nextl, nextr, distance, 0);
                 lverts[i] = vert.Item1;
