@@ -37,6 +37,9 @@ namespace TranSimCS {
         public static SimpleMaterial Impassable { get; private set; }
         public static SimpleMaterial EmissiveWhite { get; private set; }
 
+        //LIGHTS
+        public static SimpleMaterial Sun { get; private set; }
+
         public static ContentManager Content => Game1.Instance.Content;
 
 
@@ -67,6 +70,8 @@ namespace TranSimCS {
             LineDash = SimpleMaterial.NewEmissive("lines/dashed", MaterialBlendMode.Cutout);
             Arrow = SimpleMaterial.NewEmissive("markings/arrow", MaterialBlendMode.Cutout);
             Impassable = SimpleMaterial.NewEmissive("signs/trafficbarrier");
+
+            Sun = new("sun/simple glowing 128px", MaterialBlendMode.Transparent);
         }
     }
 }

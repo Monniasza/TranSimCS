@@ -811,6 +811,18 @@
 /processorParam:TextureFormat=Color
 /build:stats.png
 
+#begin sun/simple glowing 128px.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:sun/simple glowing 128px.png
+
 #begin test.png
 /importer:TextureImporter
 /processor:TextureProcessor

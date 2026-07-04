@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Collections;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Marking;
@@ -120,30 +121,43 @@ namespace TranSimCS.Menus.InGame {
 
             //Apply the day/night cycle
             var isDayNight = Settings.DayNightCycle;
+            Vector4 dayVector = new(1, 1, 1, 1);
+            Vector4 nightVector = new(0.2f, 0.2f, 0.5f, 1);
+            Vector4 sunsetVector = new(1, 1, 0.5f, 1);
 
-            //Render a semi-transparent test quad in white and black
-            var whiteBin = renderHelper.GetOrCreateRenderBinForced(Assets.WhiteTransparent);
-            whiteBin.DrawLine(new(0, 0, 0), new(0, 0, 1), Vector3.UnitY, Colors.SmokedGlass);
-            whiteBin.DrawLine(new(1, 0, 0), new(1, 0, 1), Vector3.UnitY, Colors.SemiClearGray);
-            whiteBin.DrawLine(new(2, 0, 0), new(2, 0, 1), Vector3.UnitY, Colors.SemiClearWhite);
+            LUT lut = new([
+                new(-1, sunsetVector), new(0, sunsetVector), new(5, dayVector),
+                new(25, dayVector), new(30, sunsetVector), new(33, nightVector),
+                new(57, nightVector), new(60, sunsetVector), new(61, sunsetVector)
+            ]);
 
-            if (isDayNight) {
-                Vector4 dayVector = new(1, 1, 1, 1);
-                Vector4 nightVector = new(0.2f, 0.2f, 0.5f, 1);
-                DateTime dateTime = DateTime.Now;
-                var seconds = dateTime.Second + dateTime.Millisecond * 0.001f + dateTime.Microsecond * 0.000001f;
-                var radsPerSecond = MathF.PI / 30;
-                var sine = MathF.Sin(seconds * radsPerSecond);
-                sine = MathHelper.Clamp(sine*2, -1, 1);
-                sine = (sine / 2) + 0.5f;
-                var interpolatedDayNightVector = Vector4.SmoothStep(dayVector, nightVector, sine);
-                renderManager.AmbientColor.Value = interpolatedDayNightVector;
-            } else {
-                renderManager.AmbientColor.Value = Vector4.One;
-            }
+            DateTime dateTime = DateTime.Now;
+            var seconds = dateTime.Second + dateTime.Millisecond * 0.001f + dateTime.Microsecond * 0.000001f;
+            if (!isDayNight) seconds = 15;
+            var radsPerSecond = MathF.PI / 30;
 
-                //Render the render helper
-                var tris = 0;
+            var trig = MathF.SinCos(seconds * radsPerSecond);
+            var sine = trig.Sin;
+            var cosine = trig.Cos;
+
+            var coefficient = MathHelper.Clamp(sine * 2, -1, 1);
+            coefficient = (sine / 2) + 0.5f;
+            var interpolatedDayNightVector = lut[seconds];
+            renderManager.AmbientColor.Value = interpolatedDayNightVector;
+
+            //Render the sun
+            var sunDistance = 10000f;
+            var sunDiameter = 1000f;
+            var pos = new Vector3(-cosine, sine, 0) * sunDistance;
+            var normal = new Vector3(cosine, -sine, 0);
+            var tangent = new Vector3(-sine, -cosine, 0) * sunDiameter;
+            var lateral = new Vector3(0, 0, sunDiameter);
+            var startingPoint = pos - (tangent + lateral) / 2;
+            var sunRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Sun);
+            sunRenderBin.DrawParallelogram(startingPoint + renderManager.Camera.Position.ToX0Z(), tangent, lateral, Color.White);
+
+            //Render the render helper
+            var tris = 0;
             var verts = 0;
             var tags = 0;
             foreach (var bin in renderHelper.RenderBins.Values) {
