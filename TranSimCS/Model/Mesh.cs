@@ -4,11 +4,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Spatial;
 
 namespace TranSimCS.Model {
 
-    public class Mesh{
+    public class Mesh: IBVHElement{
         public List<VertexPositionColorTexture> Vertices { get; } = [];
         public List<int> Indices { get; } = [];
         public IDictionary<int, object> Tags { get; } = new Dictionary<int, object>();
@@ -20,6 +22,12 @@ namespace TranSimCS.Model {
         internal void InvalidateAccelerationStructure(){
             bvh = null;
             Parent?.InvalidateAccelerationStructure();
+        }
+        public BoundingBox GetBounds() => GetAccelerationStructure().Bounds;
+
+        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) {
+            tag = MeshUtil.RayIntersectMesh(this, ray, out distance);
+            return distance < float.MaxValue;
         }
 
         public Mesh(MultiMesh? parent = null, IEnumerable<VertexPositionColorTexture>? vertices = null, IEnumerable<int>? indices = null, IDictionary<int, object>? tags = null) {
