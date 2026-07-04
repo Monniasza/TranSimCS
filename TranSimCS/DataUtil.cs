@@ -6,11 +6,17 @@ using System.Threading.Tasks;
 
 namespace TranSimCS {
     public static class DataUtil {
+        public static readonly Random rnd = new Random();
+
         public static T AggregateOrDefault<T>(this IEnumerable<T> data, T def, Func<T, T, T> fn) {
             if (!data.Any()) return def;
             return data.Aggregate(fn);
         }
 
+        public static T GetRandomElement<T>(this IList<T> list) {
+            var count = list.Count;
+            return list[rnd.Next(count)];
+        }
         public static void Swap<T>(ref T a, ref T b) => (a, b) = (b, a);
 
         public static void Swap<T>(T[] array, int a, int b) {
