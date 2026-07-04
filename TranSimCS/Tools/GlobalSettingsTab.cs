@@ -44,6 +44,8 @@ namespace TranSimCS.Tools {
             var spawnCarsCheck = new Checkbox(Anchor.AutoLeft, new(1, 20), "Naturally spawned cars");
             UI.AddProperty(spawnCarsCheck, Settings.SpawnCarsProp);
             AddChild(spawnCarsCheck);
+
+            AddSetting(this, "Car spawn frequency [Hz/lane]", float.Parse, x => x.ToString(), Settings.CarSpawnRateProp);
         }
 
         public static TextField AddSetting<T>(Panel panel, String name, Func<string, T> fromString, Func<T, string> toString, Property<T> prop) {

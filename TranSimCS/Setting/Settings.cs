@@ -22,6 +22,8 @@ namespace TranSimCS.Setting {
         public static bool DayNightCycle { get => DayNightCycleProp.Value; set => DayNightCycleProp.Value = value; }
         public static readonly Property<bool> SpawnCarsProp;
         public static bool SpawnCars { get => SpawnCarsProp.Value; set => SpawnCarsProp.Value = value; }
+        public static readonly Property<float> CarSpawnRateProp;
+        public static float CarSpawnRate { get => CarSpawnRateProp.Value; set => CarSpawnRateProp.Value = value; }
 
         static Settings(){
             RoadAccuracyProp = new(17, "roadAccuracy", null);
@@ -32,6 +34,7 @@ namespace TranSimCS.Setting {
             ShowGroundProp = new(true, "showGround");
             DayNightCycleProp = new(true, "dayNightCycle");
             SpawnCarsProp = new(false, "spawnCars");
+            CarSpawnRateProp = new(0.2f, "carFreq");
         }
 
         public static SettingsData GetAll() => new SettingsData() {
@@ -39,7 +42,8 @@ namespace TranSimCS.Setting {
             InvertAllNormals = InvertAllNormals,
             ShowGround = ShowGround,
             DayNightCycle = DayNightCycle,
-            SpawnCars = SpawnCars
+            SpawnCars = SpawnCars,
+            CarSpawnRate = CarSpawnRate
         };
         public static void SetAll(SettingsData data) {
             RoadAccuracy = data.RoadAccuracy;
@@ -47,6 +51,7 @@ namespace TranSimCS.Setting {
             ShowGround = data.ShowGround;
             DayNightCycle = data.DayNightCycle;
             SpawnCars = data.SpawnCars;
+            CarSpawnRate = data.CarSpawnRate;
         }
     }
 
@@ -56,7 +61,8 @@ namespace TranSimCS.Setting {
             InvertAllNormals = false,
             ShowGround = true,
             DayNightCycle = true,
-            SpawnCars = false
+            SpawnCars = false,
+            CarSpawnRate = 0.2f
         };
 
         public int RoadAccuracy;
@@ -64,6 +70,7 @@ namespace TranSimCS.Setting {
         public bool ShowGround;
         public bool DayNightCycle;
         public bool SpawnCars;
+        public float CarSpawnRate;
     }
 
     public class SettingsDataConverter : JsonConverter<SettingsData> {
@@ -91,6 +98,10 @@ namespace TranSimCS.Setting {
                         reader0.Read();
                         data.SpawnCars = reader0.GetBoolean();
                         break;
+                    case "carFreq":
+                        reader0.Read();
+                        data.CarSpawnRate = reader0.GetSingle();
+                        break;
                     default:
                         reader0.Skip();
                         break;
@@ -113,6 +124,7 @@ namespace TranSimCS.Setting {
 
             writer.WriteBoolean("dayNightCycle", value.DayNightCycle);
             writer.WriteBoolean("spawnCars", value.SpawnCars);
+            writer.WriteNumber("carFreq", value.CarSpawnRate);
 
             writer.WriteEndObject();
         }

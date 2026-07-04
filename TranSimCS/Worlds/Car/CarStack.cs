@@ -35,7 +35,7 @@ namespace TranSimCS.Worlds.Car {
             if (!Settings.SpawnCars) return;
 
             var seconds = obj.ElapsedGameTime.TotalSeconds;
-            var chance = 0.2f * seconds;
+            var chance = Settings.CarSpawnRate * seconds;
 
             foreach(var node in World.Nodes.data) foreach(var lane in node.Lanes) foreach(var strip in lane.Connections) {
                 if (strip.EndLane.lane == lane) continue; //Strip ends here, do not spawn
