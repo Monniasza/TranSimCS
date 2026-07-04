@@ -55,6 +55,9 @@ namespace TranSimCS.Model {
         }
 
         public void Render(MultiMesh mesh) {
+            //Unroll the mesh
+            mesh.Unroll();
+
             //CONSTANTS
             var writeDepth = DepthStencilState.Default;
             var keepDepth = DepthStencilState.DepthRead;

@@ -157,6 +157,8 @@ namespace TranSimCS.Menus.InGame {
             sunRenderBin.DrawParallelogram(startingPoint + renderManager.Camera.Position.ToX0Z(), tangent, lateral, Color.White);
 
             //Render the render helper
+            renderManager.Render(renderHelper);
+
             var tris = 0;
             var verts = 0;
             var tags = 0;
@@ -170,7 +172,7 @@ namespace TranSimCS.Menus.InGame {
             stats.Materials = renderHelper.RenderBins.Count;
             stats.Tags = tags;
 
-            renderManager.Render(renderHelper);
+            
 
             Stats = stats;
         }

@@ -7,6 +7,8 @@ using Microsoft.Xna.Framework;
 
 namespace TranSimCS.Geometry {
     public struct TransformQ {
+        public static TransformQ Identity => new(Vector3.Zero, Quaternion.Identity);
+
         public Vector3 Position;
         public Quaternion Rotation;
 
