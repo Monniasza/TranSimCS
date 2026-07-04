@@ -139,6 +139,11 @@ namespace TranSimCS.Worlds.Car {
             var splines = LaneStrip.SplineCache;
             var lspline = splines.Item1;
             var rspline = splines.Item2;
+            if (LaneStrip.IsReverse()) {
+                DataUtil.Swap(ref lspline, ref rspline);
+                lspline = lspline.Inverse();
+                rspline = rspline.Inverse();
+            }
             var spline = (lspline + rspline) / 2;
             VectorMethods.CheckSpline(spline, "spline");
             var newT = Bezier3.FindT(spline, xyz, 20, 5, -1, 2);
@@ -157,6 +162,11 @@ namespace TranSimCS.Worlds.Car {
             splines = LaneStrip.SplineCache;
             lspline = splines.Item1;
             rspline = splines.Item2;
+            if (LaneStrip.IsReverse()) {
+                DataUtil.Swap(ref lspline, ref rspline);
+                lspline = lspline.Inverse();
+                rspline = rspline.Inverse();
+            }
             spline = (lspline + rspline) / 2;
 
             //ASSERT splines are valid
@@ -196,6 +206,14 @@ namespace TranSimCS.Worlds.Car {
             nextLane = nextLane.OppositeEnd;
             var nextNode = nextLane.GetNodeEnd();
             var candidates = World.FindLaneStrips(nextLane);
+
+            //If there are no more candidates, destroy the car
+            if (candidates.Count == 0) {
+                World.Cars.data.Remove(this);
+                return;
+            }
+
+            /* If lane allows reversals, reverse now
             if (candidates.Count == 0) {
                 //End of road, reverse
                 Reverse();
@@ -207,9 +225,12 @@ namespace TranSimCS.Worlds.Car {
                 var actualCoords = 2*mirror - newPos;
                 newPos = actualCoords;
                 return;
-            }
+            }*/
+
             //Car gets stuck when hitting a next segment
             var choice = rnd.GetRandomEntry(candidates);
+            if (choice == LaneStrip)
+                throw new Exception("Transitioned to same strip");
             LaneStrip = choice;
         }
     }

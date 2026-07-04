@@ -28,10 +28,8 @@ namespace TranSimCS.Worlds {
         public List<LaneStrip> FindLaneStrips(LaneEnd end) {
             var nodeEnd = end.RoadNodeEnd;
             List<LaneStrip> result = [];
-            foreach (var connection in nodeEnd.ConnectedSegments) {
-                foreach (var strip in connection.Lanes) {
-                    if(strip.IsConnected(end)) result.Add(strip);
-                }
+            foreach (var connection in end.lane.Connections) {
+                if(connection.IsConnected(end)) result.Add(connection);
             }
             return result;
         }
