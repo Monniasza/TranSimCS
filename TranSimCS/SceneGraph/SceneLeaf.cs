@@ -25,16 +25,12 @@ namespace TranSimCS.SceneGraph {
             Invalidate();
         }
 
-        protected override BoundingBox CalcBounds() {
-            return SceneNode.FromMany(meshGenerator.GetMesh().RenderBins.Values);
-        }
+        protected override BoundingBox CalcBounds() => meshGenerator.GetMesh().GetBounds();
 
         protected override bool FindInternal(Ray ray, out SceneNode? node, out float dist, out object? tag) {
-            var newTag = MeshUtil.RayIntersectMeshes(meshGenerator.GetMesh().RenderBins.Values, ray, out var intersectionDistance);
-            if (intersectionDistance < float.MaxValue){
+            var isIntersecting = meshGenerator.GetMesh().ComputeIntersection(ray, out dist, out tag);
+            if (isIntersecting){
                 node = this;
-                dist = intersectionDistance;
-                tag = newTag;
                 return true;
             } else {
                 return Reject(this, out node, out dist, out tag);

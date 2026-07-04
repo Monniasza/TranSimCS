@@ -12,21 +12,21 @@ namespace TranSimCS.Model {
         public List<VertexPositionColorTexture> Vertices { get; } = [];
         public List<int> Indices { get; } = [];
         public IDictionary<int, object> Tags { get; } = new Dictionary<int, object>();
+        public readonly MultiMesh? Parent;
 
 
         private MeshBvh? bvh;
         internal MeshBvh GetAccelerationStructure() => bvh ??= MeshBvh.Build(this);
-        internal void InvalidateAccelerationStructure() => bvh = null;
-
-        public Mesh() { }
-        public Mesh(IEnumerable<VertexPositionColorTexture> vertices, IEnumerable<int> indices) {
-            Vertices.AddRange(vertices);
-            Indices.AddRange(indices);
+        internal void InvalidateAccelerationStructure(){
+            bvh = null;
+            Parent?.InvalidateAccelerationStructure();
         }
-        public Mesh(IEnumerable<VertexPositionColorTexture> vertices, IEnumerable<int> indices, IDictionary<int, object> tags) {
-            Vertices.AddRange(vertices);
-            Indices.AddRange(indices);
-            foreach(var row in tags) Tags.Add(row.Key, row.Value);
+
+        public Mesh(MultiMesh? parent = null, IEnumerable<VertexPositionColorTexture>? vertices = null, IEnumerable<int>? indices = null, IDictionary<int, object>? tags = null) {
+            this.Parent = parent;
+            if(vertices != null) Vertices.AddRange(vertices);
+            if(indices != null) Indices.AddRange(indices);
+            if(tags != null) foreach(var row in tags) Tags.Add(row.Key, row.Value);
         }
         public int AddVertex(VertexPositionColorTexture vertex) {
             Vertices.Add(vertex);

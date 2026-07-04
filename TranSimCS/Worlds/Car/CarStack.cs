@@ -9,6 +9,7 @@ using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Save2;
+using TranSimCS.Setting;
 using TranSimCS.Tools;
 using TranSimCS.Worlds.Stack;
 
@@ -31,6 +32,8 @@ namespace TranSimCS.Worlds.Car {
         }
 
         private void World_OnUpdate(Microsoft.Xna.Framework.GameTime obj) {
+            if (!Settings.SpawnCars) return;
+
             var seconds = obj.ElapsedGameTime.TotalSeconds;
             var chance = 0.2f * seconds;
 

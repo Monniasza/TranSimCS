@@ -40,6 +40,10 @@ namespace TranSimCS.Tools {
             var dayNightCheck = new Checkbox(Anchor.AutoLeft, new(1, 20), "Day/night cycle");
             UI.AddProperty(dayNightCheck, Settings.DayNightCycleProp);
             AddChild(dayNightCheck);
+
+            var spawnCarsCheck = new Checkbox(Anchor.AutoLeft, new(1, 20), "Naturally spawned cars");
+            UI.AddProperty(spawnCarsCheck, Settings.SpawnCarsProp);
+            AddChild(spawnCarsCheck);
         }
 
         public static TextField AddSetting<T>(Panel panel, String name, Func<string, T> fromString, Func<T, string> toString, Property<T> prop) {

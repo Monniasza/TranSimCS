@@ -37,6 +37,12 @@ namespace TranSimCS.Geometry {
         }
 
         public Transform3 Around() => new Transform3(-X, Y, -Z, O);
+        public TransformQ ToQuaternion(){
+            var matrix = ToMatrix(Vector3.Zero, X, Y, Z);
+            var quaternion = Quaternion.CreateFromRotationMatrix(matrix);
+            var transform = new TransformQ(O, quaternion);
+            return transform;
+        }
 
         public static Matrix ToMatrix(Vector3 pos, Vector3 lateral, Vector3 nrm, Vector3 tangent) {
             return new Matrix(new Vector4(lateral, 0), new Vector4(nrm, 0), new Vector4(tangent, 0), new Vector4(pos, 1));
@@ -64,10 +70,15 @@ namespace TranSimCS.Geometry {
                 var tgtBin = dst.GetOrCreateRenderBinForced(bin.Key);
                 TransformOutOfPlace(bin.Value, tgtBin);
             }
+            var transform = ToQuaternion();
+            foreach(var meshInstance in src.meshInstances) 
+                dst.meshInstances.Add(meshInstance.Transform(transform));
         }
         public void TransformInPlace(Mesh mesh) => mesh.Vertices.TransformInPlace(Transform);
         public void TransformInPlace(MultiMesh mesh) {
             foreach(var submesh in mesh.RenderBins) TransformInPlace(submesh.Value);
+            var that = this;
+            mesh.meshInstances.TransformInPlace(x => x.Transform(that.ToQuaternion()));
         }
     }
 }

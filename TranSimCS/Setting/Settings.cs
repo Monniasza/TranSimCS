@@ -20,6 +20,8 @@ namespace TranSimCS.Setting {
         public static bool ShowGround { get => ShowGroundProp.Value; set => ShowGroundProp.Value = value; }
         public static readonly Property<bool> DayNightCycleProp;
         public static bool DayNightCycle { get => DayNightCycleProp.Value; set => DayNightCycleProp.Value = value; }
+        public static readonly Property<bool> SpawnCarsProp;
+        public static bool SpawnCars { get => SpawnCarsProp.Value; set => SpawnCarsProp.Value = value; }
 
         static Settings(){
             RoadAccuracyProp = new(17, "roadAccuracy", null);
@@ -29,19 +31,22 @@ namespace TranSimCS.Setting {
             InvertAllNormalsProp = new(false, "invertNormals");
             ShowGroundProp = new(true, "showGround");
             DayNightCycleProp = new(true, "dayNightCycle");
+            SpawnCarsProp = new(false, "spawnCars");
         }
 
         public static SettingsData GetAll() => new SettingsData() {
             RoadAccuracy = RoadAccuracy,
             InvertAllNormals = InvertAllNormals,
             ShowGround = ShowGround,
-            DayNightCycle = DayNightCycle
+            DayNightCycle = DayNightCycle,
+            SpawnCars = SpawnCars
         };
         public static void SetAll(SettingsData data) {
             RoadAccuracy = data.RoadAccuracy;
             InvertAllNormals = data.InvertAllNormals;
             ShowGround = data.ShowGround;
             DayNightCycle = data.DayNightCycle;
+            SpawnCars = data.SpawnCars;
         }
     }
 
@@ -50,13 +55,15 @@ namespace TranSimCS.Setting {
             RoadAccuracy = 17,
             InvertAllNormals = false,
             ShowGround = true,
-            DayNightCycle = true
+            DayNightCycle = true,
+            SpawnCars = false
         };
 
         public int RoadAccuracy;
         public bool InvertAllNormals;
         public bool ShowGround;
         public bool DayNightCycle;
+        public bool SpawnCars;
     }
 
     public class SettingsDataConverter : JsonConverter<SettingsData> {
@@ -80,6 +87,10 @@ namespace TranSimCS.Setting {
                         reader0.Read();
                         data.DayNightCycle = reader0.GetBoolean();
                         break;
+                    case "spawnCars":
+                        reader0.Read();
+                        data.SpawnCars = reader0.GetBoolean();
+                        break;
                     default:
                         reader0.Skip();
                         break;
@@ -101,6 +112,7 @@ namespace TranSimCS.Setting {
             writer.WriteBooleanValue(value.ShowGround);
 
             writer.WriteBoolean("dayNightCycle", value.DayNightCycle);
+            writer.WriteBoolean("spawnCars", value.SpawnCars);
 
             writer.WriteEndObject();
         }

@@ -17,12 +17,6 @@ namespace TranSimCS.Tools
             ([MouseButton.Right], "on road strips to reverse their direction"),
         ];
 
-        void ITool.Draw(GameTime gameTime) {
-        }
-
-        void ITool.Draw2D(GameTime gameTime) {
-        }
-
         void ITool.OnClick(MouseButton button) {
             if (button == MouseButton.Left) {
                 var laneStrip = game.MouseOver?.GetLaneStrip();
@@ -32,21 +26,6 @@ namespace TranSimCS.Tools
                 var roadStrip = game.MouseOver?.GetRoadStrip();
                 if(roadStrip != null) foreach(var lane in roadStrip.Lanes) lane.ReverseDirection();
             }
-        }
-
-        void ITool.OnKeyDown(Keys key) {
-        }
-
-        void ITool.OnKeyUp(Keys key) {
-        }
-
-        void ITool.OnRelease(MouseButton button) {
-        }
-
-        void ITool.Update(GameTime gameTime) {
-        }
-
-        void ITool.AddSelectors(MultiMesh addTo, MultiMesh visibleSelectors) {
         }
     }
 }

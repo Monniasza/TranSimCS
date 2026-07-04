@@ -15,6 +15,14 @@ namespace TranSimCS.Geometry {
             Rotation = Quaternion.Normalize(rotation);
         }
 
+        public TransformQ Inverse() {
+            Quaternion inverseRotation = Quaternion.Conjugate(Rotation);
+
+            return new TransformQ(
+                -Vector3.Transform(Position, inverseRotation),
+                inverseRotation);
+        }
+
         public Matrix ToMatrix() =>
             Matrix.CreateFromQuaternion(Rotation)
             * Matrix.CreateTranslation(Position);
@@ -32,6 +40,13 @@ namespace TranSimCS.Geometry {
                 transform.Rotation * Rotation);
 
             return result;
+        }
+
+        public Vector3 Transform(Vector3 vector) {
+            return Position + Vector3.Transform(vector, Rotation);
+        }
+        public Ray Transform(Ray ray) {
+            return new(Transform(ray.Position), Vector3.Transform(ray.Direction, Rotation));
         }
 
         /// <summary>
