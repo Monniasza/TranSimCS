@@ -96,16 +96,17 @@ namespace TranSimCS.Roads.Strip {
             var startRight = startRange.Max;
             var endLeft = endRange.Min;  
             var endRight = endRange.Max;
+            var linewidth = laneStrip.Spec.LineWidth;
 
             //Do merges
             if (isMerge) {
                 //Merge the end
-                if (mergeLeft) endRight = endLeft;
-                if (mergeRight) endLeft = endRight;
+                if (mergeLeft) endRight = endLeft + linewidth;
+                if (mergeRight) endLeft = endRight - linewidth;
             } else {
                 //Merge the start
-                if (mergeLeft) startRight = startLeft;
-                if (mergeRight) startLeft = startRight;
+                if (mergeLeft) startRight = startLeft + linewidth;
+                if (mergeRight) startLeft = startRight - linewidth;
             }
 
             var startLeftCenter = startLeft + lineWidth;
