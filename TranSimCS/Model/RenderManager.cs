@@ -22,9 +22,6 @@ namespace TranSimCS.Model {
         public readonly Property<Camera> CameraProp;
         public readonly Property<Vector4> AmbientColor;
         public readonly GraphicsDevice gpu;
-        public readonly CollectionPool<VertexBuffer> VertexBufferPool;
-        public readonly CollectionPool<IndexBuffer> IndexBufferPool;
-        public readonly CollectionPool<VertexBuffer> InstanceBufferPool;
         public Matrix WorldViewProjection { get; private set; }
         public Matrix World { get; private set; }
         public Matrix View { get; private set; }
@@ -36,8 +33,8 @@ namespace TranSimCS.Model {
             public VertexBuffer VB;
             public IndexBuffer IB;
             public void Dispose(RenderManager rm) {
-                rm.VertexBufferPool.Return(VB);
-                rm.IndexBufferPool.Return(IB);
+                VB.Dispose();
+                IB.Dispose();
                 VB = null;
                 IB = null;
                 UploadedVersion = int.MaxValue;
@@ -51,15 +48,15 @@ namespace TranSimCS.Model {
                 var indexSize = mesh.Indices.Count;
 
                 if (meshGPU.VB == null || meshGPU.VB.VertexCount < vertexSize) {
-                    if(meshGPU.VB != null) VertexBufferPool.Return(meshGPU.VB);
-                    meshGPU.VB = VertexBufferPool.Rent(vertexSize);
+                    meshGPU.VB?.Dispose();
+                    meshGPU.VB = new VertexBuffer(gpu, typeof(VertexPositionColorTexture), GrowCapacity(128, vertexSize), BufferUsage.WriteOnly);
                 }
                 meshGPU.VB.SetData(mesh.Vertices.ToArray());
 
                 
                 if(meshGPU.IB == null || meshGPU.IB.IndexCount < indexSize){
-                    if(meshGPU.IB != null) IndexBufferPool.Return(meshGPU.IB);
-                    meshGPU.IB = IndexBufferPool.Rent(indexSize);
+                    meshGPU.IB?.Dispose();
+                    meshGPU.IB = new IndexBuffer(gpu, typeof(ushort), GrowCapacity(128, indexSize), BufferUsage.WriteOnly);
                 }
                 meshGPU.IB.SetData(mesh.Indices.ToArray());
                 meshGPU.UploadedVersion = mesh.GeometryVersion;
@@ -96,21 +93,6 @@ namespace TranSimCS.Model {
             CameraProp = new(Camera.Default, "camera", null);
             AmbientColor = new(Vector4.One, "ambientColor", null);
             CameraProp.ValueChanged += (s, e) => SetUpEffects();
-            VertexBufferPool = new(
-                x => new VertexBuffer(gpu, typeof(VertexPositionColorTexture), x, BufferUsage.WriteOnly),
-                x => x.Dispose(),
-                x => x.VertexCount,
-            128);
-            IndexBufferPool = new(
-                x => new IndexBuffer(gpu, typeof(ushort), x, BufferUsage.WriteOnly),
-                x => x.Dispose(),
-                x => x.IndexCount,
-            384);
-            InstanceBufferPool = new(
-                x => new VertexBuffer(gpu, typeof(TransformQ), x, BufferUsage.WriteOnly),
-                x => x.Dispose(),
-                x => x.VertexCount,
-            128);
             SetUpEffects();
         }
         private void SetUpEffects() {
@@ -212,7 +194,7 @@ namespace TranSimCS.Model {
             foreach (var meshGroup in groupedMeshes) {
                 var mesh = meshGroup.Key;
                 var instances = meshGroup.ToArray();
-                if(instances.Length == 0) continue;
+                if(instances.Length == 0 || mesh.Vertices.Count == 0 || mesh.Indices.Count == 0) continue;
 
                 //Bind per-mesh
                 var meshGPU = GetCachedMesh(mesh);
@@ -227,10 +209,10 @@ namespace TranSimCS.Model {
                     shader.Parameters["EmissiveIsMask"].SetValue(material.EmissiveIsMask);
 
                     var positionValues = materialGroup.Select(x => x.Transform).ToArray();
+                    if (positionValues.Length == 0) continue;
 
                     //Bind buffers
-                    using (var disposableRental = InstanceBufferPool.RentAsDisposable(positionValues.Length)) {
-                        var instanceBuffer = disposableRental.Value;
+                    using (var instanceBuffer = new VertexBuffer(gpu, typeof(TransformQ), positionValues.Length, BufferUsage.WriteOnly)) {
                         instanceBuffer.SetData(positionValues);
                         gpu.SetVertexBuffers(
                             new VertexBufferBinding(meshGPU.VB, 0, 0),
@@ -247,8 +229,6 @@ namespace TranSimCS.Model {
                                 instanceCount: positionValues.Length
                             );
                         }
-
-                        
                     }
                 }
             }
@@ -265,11 +245,6 @@ namespace TranSimCS.Model {
             foreach(var row in MeshCache) 
                 row.Value.Dispose(this);
             MeshCache.Clear();
-
-            //Destroy pools
-            VertexBufferPool.Dispose();
-            IndexBufferPool.Dispose();
-            InstanceBufferPool.Dispose();
         }
     }
 }
