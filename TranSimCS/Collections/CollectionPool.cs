@@ -78,6 +78,21 @@ namespace TranSimCS.Collections {
             stack.Push(element);
         }
 
+        public struct DisposableRental<T>: IDisposable {
+            public readonly T Value;
+            private CollectionPool<T> _pool;
+            internal DisposableRental(T value, CollectionPool<T> pool) {
+                Value = value;
+                _pool = pool;
+            }
+
+            void IDisposable.Dispose() => _pool.Dispose();
+        }
+        public DisposableRental<T> RentAsDisposable(int length) {
+            var rental = Rent(length);
+            return new DisposableRental<T>(rental, this);
+        }
+
         public bool IsCollectionPooled(T element) {
             return _owned.Contains(element);
         }

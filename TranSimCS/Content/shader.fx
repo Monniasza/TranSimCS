@@ -7,6 +7,12 @@
     #define PS_SHADERMODEL ps_4_0_level_9_1
 #endif
 
+//Algorithms
+float3 Rotate(float3 v, float4 q){
+    float3 t = 2.0 * cross(q.xyz, v);
+    return v + q.w * t + cross(q.xyz, t);
+}
+
 //Global
 
 //Per material
@@ -42,9 +48,14 @@ float EmissiveIsMask = 0;
 
 //DATA STRUCTURES
 struct VSInput{
+    //Per-vertex
     float4 Position : POSITION0;
     float4 Color    : COLOR0;
     float2 TexCoord : TEXCOORD0;
+
+    // Per-instance
+    float3 InstancePosition : TEXCOORD1;
+    float4 InstanceRotation : TEXCOORD2;
 };
 
 struct VSOutput{
@@ -58,8 +69,9 @@ static const int FlagAlphaClip = 1;
 
 VSOutput VSMain(VSInput input){
     VSOutput output;
+    float3 worldPos = Rotate(input.Position, input.InstanceRotation) + input.InstancePosition;
 
-    output.Position = mul(input.Position, WorldViewProjection);
+    output.Position = mul(worldPos, WorldViewProjection);
     output.Color = input.Color;
     output.TexCoord = input.TexCoord;
 
