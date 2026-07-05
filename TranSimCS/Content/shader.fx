@@ -69,7 +69,6 @@ struct VSOutput{
 VSOutput VSMain(VSInput input, VSInstance instance){
     VSOutput output;
     float3 worldPos = Rotate(input.Position.xyz, instance.Rotation) + instance.Position;
-    //float4 worldPos = input.Position;
     output.Position = mul(float4(worldPos, 1), WorldViewProjection);
     output.Color = input.Color;
     output.TexCoord = input.TexCoord;

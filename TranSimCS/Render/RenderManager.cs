@@ -220,12 +220,12 @@ namespace TranSimCS.Render {
                 var groupedByMaterial = instances.GroupBy(x => x.Material);
                 foreach (var materialGroup in groupedByMaterial) {
                     var material = materialGroup.Key;
+                    var positionValues = materialGroup.Select(x => x.Transform).ToArray();
+                    if (positionValues.Length == 0) continue;
+
                     shader.Parameters["Albedo"].SetValue(material.Texture);
                     shader.Parameters["Emissive"].SetValue(material.Emissive);
                     shader.Parameters["EmissiveIsMask"].SetValue(material.EmissiveIsMask);
-
-                    var positionValues = materialGroup.Select(x => x.Transform).ToArray();
-                    if (positionValues.Length == 0) continue;
 
                     //Bind buffers
                     using (var instanceBufferRental = InstanceBufferPool.RentAsDisposable(positionValues.Length)) {
