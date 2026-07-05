@@ -1,13 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace TranSimCS.Geometry {
-    public struct TransformQ : IEquatable<TransformQ> {
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct TransformQ : IEquatable<TransformQ>, IVertexType {
         public static TransformQ Identity => new(Vector3.Zero, Quaternion.Identity);
+
+        static TransformQ() {
+            Debug.Assert(Marshal.SizeOf<TransformQ>() == 28);
+        }
+
+        public VertexDeclaration VertexDeclaration => vertexDeclaration;
+        public static VertexDeclaration vertexDeclaration = new VertexDeclaration(
+            new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.TextureCoordinate, 1),
+            new VertexElement(12, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 2)
+        );
 
         public Vector3 Position;
         public Quaternion Rotation;

@@ -7,6 +7,16 @@
     #define PS_SHADERMODEL ps_4_0_level_9_1
 #endif
 
+//Global
+
+//Per material
+
+//Per mesh
+
+//Per instance
+
+//Per vertex
+
 //TEXTURES
 Texture2D Albedo;
 Texture2D Emissive;

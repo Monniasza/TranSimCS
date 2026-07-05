@@ -18,9 +18,11 @@ namespace TranSimCS.Model {
 
 
         private MeshBvh? bvh;
+        public int GeometryVersion { get; private set; }
         internal MeshBvh GetAccelerationStructure() => bvh ??= MeshBvh.Build(this);
         internal void InvalidateAccelerationStructure(){
             bvh = null;
+            GeometryVersion++;
             Parent?.InvalidateAccelerationStructure();
         }
         public BoundingBox GetBounds() => GetAccelerationStructure().Bounds;

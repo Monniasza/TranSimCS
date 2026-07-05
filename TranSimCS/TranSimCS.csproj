@@ -56,6 +56,7 @@
   <ItemGroup>
     <PackageReference Include="Arch" Version="2.1.0-beta" />
     <PackageReference Include="Clipper2" Version="1.5.4" />
+    <PackageReference Include="DotNet.MultiMap" Version="2.2.1" />
     <PackageReference Include="Iesi.Collections" Version="4.1.1" />
     <PackageReference Include="LanguageExt.Core" Version="4.4.9" />
     <PackageReference Include="MadWorldNL.EarCut" Version="1.1.0" />

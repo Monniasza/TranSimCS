@@ -3,28 +3,108 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DotNet.Collections.Generic;
+using LanguageExt;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Collections;
 using TranSimCS.ModelOld;
 using TranSimCS.Property;
 using TranSimCS.Setting;
+using static TranSimCS.Model.MeshUnroll;
+using static TranSimCS.Model.RenderManager;
 
 namespace TranSimCS.Model {
-    public class RenderManager {
+    public class RenderManager: IDisposable {
         public readonly Property<Camera> CameraProp;
         public readonly Property<Vector4> AmbientColor;
         public readonly GraphicsDevice gpu;
+        public readonly CollectionPool<VertexBuffer> VertexBufferPool;
+        public readonly CollectionPool<IndexBuffer> IndexBufferPool;
 
         public Matrix WorldViewProjection { get; private set; }
         public Matrix World { get; private set; }
         public Matrix View { get; private set; }
         public Matrix Projection { get; private set; }
 
+        //CACHE, managed by RenderManager
+        internal class MeshGPU{
+            public int UploadedVersion;
+            public VertexBuffer VB;
+            public IndexBuffer IB;
+            public void Dispose(RenderManager rm) {
+                rm.VertexBufferPool.Return(VB);
+                rm.IndexBufferPool.Return(IB);
+                VB = null;
+                IB = null;
+                UploadedVersion = int.MaxValue;
+            }
+        }
+        private readonly Dictionary<Mesh, MeshGPU> MeshCache = [];
+        internal MeshGPU GetCachedMesh(Mesh mesh) {
+            void CheckAndRebuild(MeshGPU meshGPU) {
+                if (meshGPU.UploadedVersion == mesh.GeometryVersion) return;
+
+                var vertexSize = 128;
+                if (meshGPU.VB != null) vertexSize = mesh.Vertices.Count;
+                if (meshGPU.VB == null) meshGPU.VB = VertexBufferPool.Rent(vertexSize);
+                if(vertexSize > meshGPU.VB.VertexCount) {
+                    VertexBufferPool.Return(meshGPU.VB);
+                    meshGPU.VB = VertexBufferPool.Rent(vertexSize);
+                }
+                meshGPU.VB.SetData(mesh.Vertices.ToArray());
+                var indexSize = 384;
+                if (meshGPU.IB != null) indexSize = mesh.Indices.Count;
+                if(meshGPU.IB == null) meshGPU.IB = IndexBufferPool.Rent(indexSize);
+                if (indexSize > meshGPU.IB.IndexCount) {
+                    IndexBufferPool.Return(meshGPU.IB);
+                    meshGPU.IB = IndexBufferPool.Rent(indexSize);
+                }
+                meshGPU.IB.SetData(mesh.Indices.ToArray());
+                meshGPU.UploadedVersion = mesh.GeometryVersion;
+            }
+
+            if(MeshCache.TryGetValue(mesh, out var cache)){
+                //Check if the cache needs a rebuild
+                CheckAndRebuild(cache);
+                return cache;
+            }
+            var cache2 = new MeshGPU();
+            CheckAndRebuild(cache2);
+            MeshCache[mesh] = cache2;
+            return cache2;
+        }
+        internal void MeshCleanup(MultiMapList<Mesh, MeshDrawInstance> meshDrawInstances) {
+            //Runs periodically to clean up the mesh cache to stop accumulating unnecessary meshes
+            var uniqueMeshes = meshDrawInstances.Keys;
+
+            List<Mesh> deleteCachesFor = [];
+            foreach (var row in MeshCache) {
+                var mesh = row.Key;
+                if (meshDrawInstances.ContainsKey(mesh)) continue; //Don't delete caches for used meshes
+                deleteCachesFor.Add(mesh);
+            }
+            foreach (var mesh in deleteCachesFor) {
+                var meshGPU = MeshCache[mesh];
+                meshGPU.Dispose(this);
+            }
+        }
+
         public RenderManager(GraphicsDevice gpu) {
             this.gpu = gpu;
             CameraProp = new(Camera.Default, "camera", null);
             AmbientColor = new(Vector4.One, "ambientColor", null);
             CameraProp.ValueChanged += (s, e) => SetUpEffects();
+            VertexBufferPool = new(
+                x => new VertexBuffer(gpu, typeof(VertexPositionColorTexture), x, BufferUsage.WriteOnly),
+                x => x.Dispose(),
+                x => x.VertexCount,
+            128);
+            IndexBufferPool = new(
+                x => new IndexBuffer(gpu, typeof(int), x, BufferUsage.WriteOnly),
+                x => x.Dispose(),
+                x => x.IndexCount,
+            384);
             SetUpEffects();
         }
         private void SetUpEffects() {
@@ -39,7 +119,7 @@ namespace TranSimCS.Model {
         // Scratch arrays reused across frames to avoid per-frame allocations in Render()
         private VertexPositionColorTexture[] _vertexScratch = Array.Empty<VertexPositionColorTexture>();
         private int[] _indexScratch = Array.Empty<int>();
-        private static int GrowCapacity(int current, int needed) {
+        public static int GrowCapacity(int current, int needed) {
             // Grow exponentially to reduce the number of resizes
             int newCap = current == 0 ? 4 : current;
             while (newCap < needed) newCap = newCap * 2;
@@ -54,9 +134,17 @@ namespace TranSimCS.Model {
             }
         }
 
+
         public void Render(MultiMesh source) {
             MultiMesh mesh = new MultiMesh();
             MeshUnroll.Unroll(source, mesh);
+
+            //TRAVERSE MESHES
+            MultiMapList<Mesh, MeshDrawInstance> meshDrawInstances = new MultiMapList<Mesh, MeshDrawInstance>();
+            foreach (var node in MeshTraversal.Traverse(source)) {
+                meshDrawInstances.TryToAddMapping(node.Mesh, node);
+            }
+
 
             //CONSTANTS
             var writeDepth = DepthStencilState.Default;
@@ -162,6 +250,23 @@ namespace TranSimCS.Model {
                     _vertexScratch, 0, renderBin.Vertices.Count,
                     _indexScratch, 0, renderBin.Indices.Count / 3);
             }
+        }
+
+        /// <summary>
+        /// Releases system resources held by this RenderManager
+        /// </summary>
+        /// <exception cref="NotImplementedException"></exception>
+        public void Dispose() {
+            GC.SuppressFinalize(this);
+
+            //Destroy caches
+            foreach(var row in MeshCache) 
+                row.Value.Dispose(this);
+            MeshCache.Clear();
+
+            //Destroy pools
+            VertexBufferPool.Dispose();
+            IndexBufferPool.Dispose();
         }
     }
 
