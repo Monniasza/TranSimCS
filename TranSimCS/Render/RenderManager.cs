@@ -23,6 +23,9 @@ namespace TranSimCS.Render {
         public readonly Property<Camera> CameraProp;
         public readonly Property<Vector4> AmbientColor;
         public readonly GraphicsDevice gpu;
+        public readonly CollectionPool<VertexBuffer> VertexBufferPool;
+        public readonly CollectionPool<IndexBuffer> IndexBufferPool;
+        public readonly CollectionPool<VertexBuffer> InstanceBufferPool;
         public Matrix WorldViewProjection { get; private set; }
         public Matrix World { get; private set; }
         public Matrix View { get; private set; }
@@ -34,8 +37,8 @@ namespace TranSimCS.Render {
             public VertexBuffer VB;
             public IndexBuffer IB;
             public void Dispose(RenderManager rm) {
-                VB.Dispose();
-                IB.Dispose();
+                rm.VertexBufferPool.Return(VB);
+                rm.IndexBufferPool.Return(IB);
                 VB = null;
                 IB = null;
                 UploadedVersion = int.MaxValue;
@@ -49,14 +52,14 @@ namespace TranSimCS.Render {
                 var indexSize = mesh.Indices.Count;
 
                 if (meshGPU.VB == null || meshGPU.VB.VertexCount < vertexSize) {
-                    meshGPU.VB?.Dispose();
-                    meshGPU.VB = new VertexBuffer(gpu, typeof(VertexPositionColorTexture), GrowCapacity(128, vertexSize), BufferUsage.WriteOnly);
+                    if (meshGPU.VB != null) VertexBufferPool.Return(meshGPU.VB);
+                    meshGPU.VB = VertexBufferPool.Rent(vertexSize);
                 }
                 meshGPU.VB.SetData(mesh.Vertices.ToArray());
 
                 if(meshGPU.IB == null || meshGPU.IB.IndexCount < indexSize){
-                    meshGPU.IB?.Dispose();
-                    meshGPU.IB = new IndexBuffer(gpu, typeof(ushort), GrowCapacity(128, indexSize), BufferUsage.WriteOnly);
+                    if (meshGPU.IB != null) IndexBufferPool.Return(meshGPU.IB);
+                    meshGPU.IB = IndexBufferPool.Rent(indexSize);
                 }
                 meshGPU.IB.SetData(mesh.Indices.ToArray());
                 meshGPU.UploadedVersion = mesh.GeometryVersion;
@@ -94,6 +97,21 @@ namespace TranSimCS.Render {
             AmbientColor = new(Vector4.One, "ambientColor", null);
             CameraProp.ValueChanged += (s, e) => SetUpEffects();
             SetUpEffects();
+            VertexBufferPool = new(
+                x => new VertexBuffer(gpu, typeof(VertexPositionColorTexture), x, BufferUsage.WriteOnly),
+                x => x.Dispose(),
+                x => x.VertexCount,
+            128);
+            IndexBufferPool = new(
+                x => new IndexBuffer(gpu, typeof(ushort), x, BufferUsage.WriteOnly),
+                x => x.Dispose(),
+                x => x.IndexCount,
+            384);
+            InstanceBufferPool = new(
+                x => new VertexBuffer(gpu, typeof(TransformQ), x, BufferUsage.WriteOnly),
+                x => x.Dispose(),
+                x => x.VertexCount,
+            128);
         }
         private void SetUpEffects() {
             WorldViewProjection = Camera.GetCombinedMatrix(gpu, out var world, out var view, out var projection);
@@ -210,16 +228,13 @@ namespace TranSimCS.Render {
                     if (positionValues.Length == 0) continue;
 
                     //Bind buffers
-                    using (var instanceBuffer = new VertexBuffer(gpu, typeof(TransformQ), positionValues.Length, BufferUsage.WriteOnly)) {
+                    using (var instanceBufferRental = InstanceBufferPool.RentAsDisposable(positionValues.Length)) {
+                        var instanceBuffer = instanceBufferRental.Value;
                         instanceBuffer.SetData(positionValues);
                         gpu.SetVertexBuffers(
                             new VertexBufferBinding(meshGPU.VB, 0, 0),
                             new VertexBufferBinding(instanceBuffer, 0, 1)
                         );
-                        //gpu.Indices = meshGPU.IB;
-
-                        //Hit if any geometry goes to rendering
-                        //throw new Exception($"Rendering data sent. VB count: {meshGPU.VB.VertexCount}, InstBuffer count: {instanceBuffer.VertexCount}");
 
                         foreach (var pass in shader.CurrentTechnique.Passes) {
                             pass.Apply();
@@ -247,6 +262,11 @@ namespace TranSimCS.Render {
             foreach(var row in MeshCache) 
                 row.Value.Dispose(this);
             MeshCache.Clear();
+
+            //Destroy pools
+            VertexBufferPool.Dispose();
+            IndexBufferPool.Dispose();
+            InstanceBufferPool.Dispose();
         }
     }
 }
