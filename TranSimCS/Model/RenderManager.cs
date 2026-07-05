@@ -46,21 +46,19 @@ namespace TranSimCS.Model {
         private readonly Dictionary<Mesh, MeshGPU> MeshCache = [];
         internal MeshGPU GetCachedMesh(Mesh mesh) {
             void CheckAndRebuild(MeshGPU meshGPU) {
-                if (meshGPU.UploadedVersion == mesh.GeometryVersion) return;
+                if (meshGPU.VB != null && meshGPU.IB != null && meshGPU.UploadedVersion == mesh.GeometryVersion) return;
+                var vertexSize = mesh.Vertices.Count;
+                var indexSize = mesh.Indices.Count;
 
-                var vertexSize = 128;
-                if (meshGPU.VB != null) vertexSize = mesh.Vertices.Count;
-                if (meshGPU.VB == null) meshGPU.VB = VertexBufferPool.Rent(vertexSize);
-                if(vertexSize > meshGPU.VB.VertexCount) {
-                    VertexBufferPool.Return(meshGPU.VB);
+                if (meshGPU.VB == null || meshGPU.VB.VertexCount < vertexSize) {
+                    if(meshGPU.VB != null) VertexBufferPool.Return(meshGPU.VB);
                     meshGPU.VB = VertexBufferPool.Rent(vertexSize);
                 }
                 meshGPU.VB.SetData(mesh.Vertices.ToArray());
-                var indexSize = 384;
-                if (meshGPU.IB != null) indexSize = mesh.Indices.Count;
-                if(meshGPU.IB == null) meshGPU.IB = IndexBufferPool.Rent(indexSize);
-                if (indexSize > meshGPU.IB.IndexCount) {
-                    IndexBufferPool.Return(meshGPU.IB);
+
+                
+                if(meshGPU.IB == null || meshGPU.IB.IndexCount < indexSize){
+                    if(meshGPU.IB != null) IndexBufferPool.Return(meshGPU.IB);
                     meshGPU.IB = IndexBufferPool.Rent(indexSize);
                 }
                 meshGPU.IB.SetData(mesh.Indices.ToArray());
@@ -125,21 +123,11 @@ namespace TranSimCS.Model {
         public Camera Camera { get => CameraProp.Value; set => CameraProp.Value = value; }
 
         // Scratch arrays reused across frames to avoid per-frame allocations in Render()
-        private VertexPositionColorTexture[] _vertexScratch = Array.Empty<VertexPositionColorTexture>();
-        private int[] _indexScratch = Array.Empty<int>();
         public static int GrowCapacity(int current, int needed) {
             // Grow exponentially to reduce the number of resizes
             int newCap = current == 0 ? 4 : current;
             while (newCap < needed) newCap = newCap * 2;
             return newCap;
-        }
-        private void EnsureScratchCapacity(int vertexCount, int indexCount) {
-            if (_vertexScratch.Length < vertexCount) {
-                Array.Resize(ref _vertexScratch, GrowCapacity(_vertexScratch.Length, vertexCount));
-            }
-            if (_indexScratch.Length < indexCount) {
-                Array.Resize(ref _indexScratch, GrowCapacity(_indexScratch.Length, indexCount));
-            }
         }
 
 
@@ -265,28 +253,6 @@ namespace TranSimCS.Model {
                 }
             }
         }
-
-        /*private void RenderRow(Mesh renderBin, RenderInputs renderInputs) {
-            if (renderBin.Vertices.Count == 0 || renderBin.Indices.Count == 0) return;
-            var eff = Assets.ShaderEffect;
-
-            // Ensure pooled arrays are large enough, then copy list contents without allocating
-            EnsureScratchCapacity(renderBin.Vertices.Count, renderBin.Indices.Count);
-            renderBin.Indices.CopyTo(_indexScratch, 0);
-            renderBin.Vertices.CopyTo(_vertexScratch, 0);
-
-            //If requested, invert all normals
-            if (Settings.InvertAllNormals) RenderUtil.InvertNormals(_indexScratch, renderBin.Indices.Count);
-
-            foreach (var pass in eff.CurrentTechnique.Passes) {
-                renderInputs.PassInputsToEffect(eff, gpu);
-                pass.Apply();
-                gpu.DrawUserIndexedPrimitives(
-                    PrimitiveType.TriangleList,
-                    _vertexScratch, 0, renderBin.Vertices.Count,
-                    _indexScratch, 0, renderBin.Indices.Count / 3);
-            }
-        }*/
 
         /// <summary>
         /// Releases system resources held by this RenderManager
