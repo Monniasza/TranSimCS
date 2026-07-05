@@ -86,7 +86,7 @@ namespace TranSimCS.Collections {
                 _pool = pool;
             }
 
-            void IDisposable.Dispose() => _pool.Dispose();
+            void IDisposable.Dispose() => _pool.Return(Value);
         }
         public DisposableRental<T> RentAsDisposable(int length) {
             var rental = Rent(length);
