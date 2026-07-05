@@ -104,7 +104,7 @@ namespace TranSimCS.Model {
                 x => x.VertexCount,
             128);
             IndexBufferPool = new(
-                x => new IndexBuffer(gpu, typeof(int), x, BufferUsage.WriteOnly), //TODO 32 -> 16 bits
+                x => new IndexBuffer(gpu, typeof(ushort), x, BufferUsage.WriteOnly),
                 x => x.Dispose(),
                 x => x.IndexCount,
             384);
