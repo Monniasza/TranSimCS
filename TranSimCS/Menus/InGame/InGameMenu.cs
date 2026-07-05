@@ -99,7 +99,7 @@ namespace TranSimCS.Menus.InGame {
         }
 
         public override void Destroy() {
-            //unused
+            renderManager.Dispose();
         }
 
         public void LoadWorldFromFile(string filename) {
