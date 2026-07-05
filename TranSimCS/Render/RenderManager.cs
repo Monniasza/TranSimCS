@@ -11,13 +11,14 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Collections;
 using TranSimCS.Geometry;
+using TranSimCS.Model;
 using TranSimCS.ModelOld;
 using TranSimCS.Property;
 using TranSimCS.Setting;
 using static TranSimCS.Model.MeshUnroll;
-using static TranSimCS.Model.RenderManager;
+using static TranSimCS.Render.RenderManager;
 
-namespace TranSimCS.Model {
+namespace TranSimCS.Render {
     public class RenderManager: IDisposable {
         public readonly Property<Camera> CameraProp;
         public readonly Property<Vector4> AmbientColor;
@@ -53,7 +54,6 @@ namespace TranSimCS.Model {
                 }
                 meshGPU.VB.SetData(mesh.Vertices.ToArray());
 
-                
                 if(meshGPU.IB == null || meshGPU.IB.IndexCount < indexSize){
                     meshGPU.IB?.Dispose();
                     meshGPU.IB = new IndexBuffer(gpu, typeof(ushort), GrowCapacity(128, indexSize), BufferUsage.WriteOnly);
@@ -114,17 +114,15 @@ namespace TranSimCS.Model {
 
 
         public void Render(MultiMesh source) {
-            MultiMesh mesh = new MultiMesh();
-            MeshUnroll.Unroll(source, mesh);
-
             //CONSTANTS
             var shader = Assets.ShaderEffect;
             var writeDepth = DepthStencilState.Default;
             var keepDepth = DepthStencilState.DepthRead;
             gpu.SamplerStates[0] = SamplerState.PointWrap;
             gpu.SamplerStates[1] = SamplerState.PointWrap;
-            gpu.RasterizerState = Settings.InvertAllNormals ? RasterizerState.CullCounterClockwise : RasterizerState.CullClockwise;
+            gpu.RasterizerState = Settings.InvertAllNormals ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
             shader.Parameters["AmbientColor"].SetValue(AmbientColor.Value);
+            shader.Parameters["WorldViewProjection"].SetValue(WorldViewProjection);
 
             //CATEGORIZATION & COUNTING
             int TriCount = 0;
@@ -218,6 +216,10 @@ namespace TranSimCS.Model {
                             new VertexBufferBinding(meshGPU.VB, 0, 0),
                             new VertexBufferBinding(instanceBuffer, 0, 1)
                         );
+                        //gpu.Indices = meshGPU.IB;
+
+                        //Hit if any geometry goes to rendering
+                        //throw new Exception($"Rendering data sent. VB count: {meshGPU.VB.VertexCount}, InstBuffer count: {instanceBuffer.VertexCount}");
 
                         foreach (var pass in shader.CurrentTechnique.Passes) {
                             pass.Apply();

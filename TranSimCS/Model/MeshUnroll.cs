@@ -43,6 +43,17 @@ namespace TranSimCS.Model {
             }
         }
         public static class MeshTraversal {
+            public static IEnumerable<MeshDrawInstance> Traverse2(MultiMesh root) {
+                // Emit renderable geometry
+                foreach (var bin in root.RenderBins) {
+                    yield return new MeshDrawInstance(
+                        bin.Value,
+                        TransformQ.Identity,
+                        bin.Key
+                    );
+                }
+            }
+
             public static IEnumerable<MeshDrawInstance> Traverse(MultiMesh root) {
                 var active = new HashSet<MultiMesh>();
 

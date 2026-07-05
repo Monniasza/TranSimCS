@@ -21,6 +21,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Polygons;
 using TranSimCS.Property;
+using TranSimCS.Render;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;

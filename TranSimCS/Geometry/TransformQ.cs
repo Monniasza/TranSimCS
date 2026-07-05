@@ -19,8 +19,8 @@ namespace TranSimCS.Geometry {
 
         public VertexDeclaration VertexDeclaration => vertexDeclaration;
         public static VertexDeclaration vertexDeclaration = new VertexDeclaration(
-            new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.TextureCoordinate, 1),
-            new VertexElement(12, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 2)
+            new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.BlendWeight, 0),
+            new VertexElement(12, VertexElementFormat.Vector4, VertexElementUsage.BlendWeight, 1)
         );
 
         public Vector3 Position;

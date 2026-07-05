@@ -52,10 +52,12 @@ struct VSInput{
     float4 Position : POSITION0;
     float4 Color    : COLOR0;
     float2 TexCoord : TEXCOORD0;
+};
 
+struct VSInstance{
     // Per-instance
-    float3 InstancePosition : TEXCOORD1;
-    float4 InstanceRotation : TEXCOORD2;
+    float3 Position : BLENDWEIGHT0;
+    float4 Rotation : BLENDWEIGHT1;
 };
 
 struct VSOutput{
@@ -64,14 +66,11 @@ struct VSOutput{
     float2 TexCoord : TEXCOORD0;
 };
 
-//FLAGS
-static const int FlagAlphaClip = 1;
-
-VSOutput VSMain(VSInput input){
+VSOutput VSMain(VSInput input, VSInstance instance){
     VSOutput output;
-    float3 worldPos = Rotate(input.Position, input.InstanceRotation) + input.InstancePosition;
-
-    output.Position = mul(worldPos, WorldViewProjection);
+    float3 worldPos = Rotate(input.Position.xyz, instance.Rotation) + instance.Position;
+    //float4 worldPos = input.Position;
+    output.Position = mul(float4(worldPos, 1), WorldViewProjection);
     output.Color = input.Color;
     output.TexCoord = input.TexCoord;
 
@@ -82,7 +81,7 @@ float4 PSMain(VSOutput input) : COLOR0{
     float4 texColor = tex2D(AlbedoSampler, input.TexCoord) * float4(1, 1, 1, 1-EmissiveIsMask);
     float4 emissiveColor = tex2D(EmissiveSampler, input.TexCoord) * float4(1, 1, 1, EmissiveIsMask);
     float4 color = (texColor * AmbientColor + emissiveColor) * input.Color;
-        clip(color.a - AlphaCutoff);
+    clip(color.a - AlphaCutoff);
     return color;
 }
 
