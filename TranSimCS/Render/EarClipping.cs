@@ -84,7 +84,7 @@ namespace TranSimCS.Render {
             var normal = GeometryUtils.NormalPoly(verts.Select(v => v.Position).ToArray());
             var addedVerts = verts.Select(v => (mesh.AddVertex(v), v)).ToArray();
             var length = verts.Length;
-            var currentNode = DLNode<(int, VertexPositionColorTexture)>.CreateCircular(addedVerts);
+            var currentNode = DLNode<(ushort, VertexPositionColorTexture)>.CreateCircular(addedVerts);
 
             var itersSinceLastClip = 0;
 
@@ -140,7 +140,7 @@ namespace TranSimCS.Render {
             OutputTriangle(mesh, currentNode);
         }
 
-        public static void OutputTriangle(Mesh mesh, DLNode<(int, VertexPositionColorTexture)> node) {
+        public static void OutputTriangle(Mesh mesh, DLNode<(ushort, VertexPositionColorTexture)> node) {
             var prevIndex = node.Prev.val.Item1;
             var nextIndex = node.Next.val.Item1;
             var currIndex = node.val.Item1;

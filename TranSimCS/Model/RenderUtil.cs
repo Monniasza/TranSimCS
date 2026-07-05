@@ -22,11 +22,11 @@ namespace TranSimCS.Model {
         /// <param name="d">fourth vertex</param>
         private static readonly int[] indexDataQuadLookup = [0, 1, 2, 0, 2, 3];
         public static void DrawQuad(this Mesh rb, VertexPositionColorTexture a, VertexPositionColorTexture b, VertexPositionColorTexture c, VertexPositionColorTexture d) {
-            int indexA = rb.AddVertex(a);
-            int indexB = rb.AddVertex(b);
-            int indexC = rb.AddVertex(c);
-            int indexD = rb.AddVertex(d);
-            int[] indexDataQuad = [indexA, indexB, indexC, indexD];
+            ushort indexA = rb.AddVertex(a);
+            ushort indexB = rb.AddVertex(b);
+            ushort indexC = rb.AddVertex(c);
+            ushort indexD = rb.AddVertex(d);
+            ushort[] indexDataQuad = [indexA, indexB, indexC, indexD];
             foreach (var index in indexDataQuadLookup) {
                 rb.AddIndex(indexDataQuad[index]);
             }
@@ -47,8 +47,8 @@ namespace TranSimCS.Model {
             rb.DrawQuad(a, b, c, d, color, new RectangleF(0, 0, 1, 1));
         }
         public static void DrawQuad(this Mesh rb, QuadOld q) => rb.DrawQuad(q.a, q.b, q.c, q.d);
-        public static void DrawQuad(this Mesh rb, int a, int b, int c, int d) {
-            int[] indexDataQuad = [a, b, c, d];
+        public static void DrawQuad(this Mesh rb, ushort a, ushort b, ushort c, ushort d) {
+            ushort[] indexDataQuad = [a, b, c, d];
             foreach (var index in indexDataQuadLookup) rb.AddIndex(indexDataQuad[index]);
         }
 
@@ -66,9 +66,9 @@ namespace TranSimCS.Model {
         /// <param name="b">second vertex</param>
         /// <param name="c">third vertex</param>
         public static void DrawTriangle(this Mesh rb, VertexPositionColorTexture a, VertexPositionColorTexture b, VertexPositionColorTexture c) {
-            int indexA = rb.AddVertex(a);
-            int indexB = rb.AddVertex(b);
-            int indexC = rb.AddVertex(c);
+            ushort indexA = rb.AddVertex(a);
+            ushort indexB = rb.AddVertex(b);
+            ushort indexC = rb.AddVertex(c);
             rb.DrawTriangle(indexA, indexB, indexC);
         }
 
@@ -81,7 +81,7 @@ namespace TranSimCS.Model {
         public static void DrawStrip(this Mesh rb, VertexPositionColorTexture[] vertices) {
             ArgumentNullException.ThrowIfNull(vertices);
             if (vertices.Length < 3) throw new ArgumentException("At least three vertices are required to draw a strip.");
-            int[] newVertexIds = new int[vertices.Length];
+            ushort[] newVertexIds = new ushort[vertices.Length];
             for (int i = 0; i < vertices.Length; i++)
                 newVertexIds[i] = rb.AddVertex(vertices[i]);
             for (int i = 0; i < newVertexIds.Length - 2; i++) {
@@ -136,13 +136,13 @@ namespace TranSimCS.Model {
 
         public static void DrawCenteredPoly(this Mesh rb, VertexPositionColorTexture center, params VertexPositionColorTexture[] perimeter) {
             var centerIdx = rb.AddVertex(center);
-            var perimeterIndexes = new int[perimeter.Length];
+            var perimeterIndexes = new ushort[perimeter.Length];
             for (int i = 0; i < perimeter.Length; i++)
                 perimeterIndexes[i] = rb.AddVertex(perimeter[i]);
             for (int i = 0; i < perimeter.Length; i++) {
-                var idx1 = perimeterIndexes[i];
-                var idx2 = perimeterIndexes[(i + 1) % perimeterIndexes.Length];
-                var idx0 = centerIdx;
+                ushort idx1 = perimeterIndexes[i];
+                ushort idx2 = perimeterIndexes[(i + 1) % perimeterIndexes.Length];
+                ushort idx0 = centerIdx;
                 rb.DrawTriangle(idx0, idx1, idx2);
             }
         }
@@ -158,7 +158,7 @@ namespace TranSimCS.Model {
             ArgumentNullException.ThrowIfNull(vertices);
             int height = vertices.GetLength(1);
             int width = vertices.GetLength(0);
-            int[,] newVertexIds = new int[width, height];
+            ushort[,] newVertexIds = new ushort[width, height];
             for (int i = 0; i < width; i++)
                 for (int j = 0; j < height; j++)
                     newVertexIds[i, j] = rb.AddVertex(vertices[i, j]);

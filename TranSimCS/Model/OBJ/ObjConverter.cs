@@ -17,7 +17,7 @@ namespace TranSimCS.Model.OBJ {
                 var colorvector = new Vector4(mat.Kd, 1) * mat.d;
                 var color = new Color(colorvector);
                 Dictionary<FaceVertex, VertexPositionColorTexture> dedupedVerts = [];
-                Dictionary<FaceVertex, int> lov = [];
+                Dictionary<FaceVertex, ushort> lov = [];
                 foreach (var Face in group.Faces) {
                     var face = Face.Vertices;
                     if (face.Count < 3) throw new IOException("Invalid vert count for a face: " + face.Count);
@@ -31,7 +31,7 @@ namespace TranSimCS.Model.OBJ {
                         var vert = new VertexPositionColorTexture(position, color, texcoords);
                         dedupedVerts[fv] = vert;
 
-                        int index = mesh.AddVertex(vert);
+                        ushort index = mesh.AddVertex(vert);
                         lov[fv] = index;
                     }
                 }

@@ -17,24 +17,24 @@ namespace TranSimCS.Geometry {
         /// </summary>
         /// <param name="points"></param>
         /// <returns></returns>
-        public static int[] LongitudinalTriangulate(PointD[] points) {
-            var rows = new (PointD, int)[points.Length];
-            for (int i = 0; i < rows.Length; i++) rows[i] = (points[i], i);
+        public static ushort[] LongitudinalTriangulate(PointD[] points) {
+            var rows = new (PointD, ushort)[points.Length];
+            for (ushort i = 0; i < rows.Length; i++) rows[i] = (points[i], i);
 
-            Comparison<(PointD, int)> comparison = (a, b) => (a.Item1.y - b.Item1.y).CompareTo(0);
-            var comparer = Comparer<(PointD, int)>.Create(comparison);
+            Comparison<(PointD, ushort)> comparison = (a, b) => (a.Item1.y - b.Item1.y).CompareTo(0);
+            var comparer = Comparer<(PointD, ushort)>.Create(comparison);
 
             //Sort the points by increasing Y
-            var sortedRows = new (PointD, int)[points.Length];
+            var sortedRows = new (PointD, ushort)[points.Length];
             Array.Copy(rows, sortedRows, rows.Length);
             sortedRows.Sort(comparison);
 
             var count = points.Length;
             var index = 0;
-            var ring = Node<(PointD, int)>.Circular(rows)[0];
+            var ring = Node<(PointD, ushort)>.Circular(rows)[0];
 
             var valuecount = (points.Length - 2) * 3;
-            var result = new int[valuecount];
+            var result = new ushort[valuecount];
 
             while(count > 2) {
                 var currRow = sortedRows[index];
