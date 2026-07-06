@@ -12,6 +12,11 @@ namespace TranSimCS.SceneGraph {
 
         public SceneProxy(SceneLeaf owner) {
             this.owner = owner;
+            owner.MeshSource.OnMeshInvalidated += () =>
+                OnMeshInvalidated?.Invoke();
+
+            owner.MeshSource.OnMeshGenerated += mesh =>
+                OnMeshGenerated?.Invoke(mesh);
         }
 
         public event Action<MultiMesh>? OnMeshGenerated;

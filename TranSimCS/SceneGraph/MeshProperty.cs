@@ -18,7 +18,7 @@ namespace TranSimCS.SceneGraph {
         }
 
         private void Prop_ValueChanged(object? sender, PropertyChangedEventArgs2<MultiMesh> e) {
-            if (e.OldValue != null) OnMeshInvalidated?.Invoke();
+            OnMeshInvalidated?.Invoke();
             if (e.NewValue != null) OnMeshGenerated?.Invoke(e.NewValue);
         }
 
@@ -26,6 +26,6 @@ namespace TranSimCS.SceneGraph {
             return prop.Value;
         }
 
-        public void Invalidate() {}
+        public void Invalidate() { OnMeshInvalidated?.Invoke(); }
     }
 }

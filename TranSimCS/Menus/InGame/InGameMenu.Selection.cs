@@ -29,6 +29,7 @@ namespace TranSimCS.Menus.InGame {
             World.RoadSegments.trackerSpatial.sceneTree.Active.Value = CheckSegments.Checked;
             World.Nodes.trackerSpatial.sceneTree.Active.Value = CheckNodes.Checked;
             World.Cars.trackerSpatial.sceneTree.Active.Value = CheckUnits.Checked;
+            World.TempSelectors.Active.Value = true;
 
             //Add tool selectors for collision detection
             var tempSelectors = new MultiMesh();

@@ -36,23 +36,15 @@ namespace TranSimCS.Model {
             public readonly Mesh Mesh;
             public readonly TransformQ Transform;
             public readonly SimpleMaterial Material;
-            public MeshDrawInstance(Mesh mesh, TransformQ transform, SimpleMaterial material) {
+            public readonly int TagCount;
+            public MeshDrawInstance(Mesh mesh, TransformQ transform, SimpleMaterial material, int tagCount) {
                 Mesh = mesh;
                 Transform = transform;
                 Material = material;
+                TagCount = tagCount;
             }
         }
         public static class MeshTraversal {
-            public static IEnumerable<MeshDrawInstance> Traverse2(MultiMesh root) {
-                // Emit renderable geometry
-                foreach (var bin in root.RenderBins) {
-                    yield return new MeshDrawInstance(
-                        bin.Value,
-                        TransformQ.Identity,
-                        bin.Key
-                    );
-                }
-            }
 
             public static IEnumerable<MeshDrawInstance> Traverse(MultiMesh root) {
                 var active = new HashSet<MultiMesh>();
@@ -72,10 +64,12 @@ namespace TranSimCS.Model {
 
                     // Emit renderable geometry
                     foreach (var bin in node.RenderBins) {
+                        int tagcount = (frame.CoverTag == null) ? bin.Value.Tags.Count : bin.Value.Tags.Count;
                         yield return new MeshDrawInstance(
                             bin.Value,
                             frame.PositionRotation,
-                            bin.Key
+                            bin.Key,
+                            tagcount
                         );
                     }
 
