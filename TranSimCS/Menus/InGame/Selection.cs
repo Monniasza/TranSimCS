@@ -31,6 +31,7 @@ namespace TranSimCS.Menus.InGame {
             var node = result.SceneNode;
             while(node != null) {
                 if(!node.Active.Value) return Selection.Invalid;
+                node = node.Parent;
             }
 
             return result;
