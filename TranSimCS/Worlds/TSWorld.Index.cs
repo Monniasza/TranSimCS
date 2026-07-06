@@ -13,6 +13,10 @@ using TranSimCS.SceneGraph;
 namespace TranSimCS.Worlds {
     public partial class TSWorld {
         /// <summary>
+        /// Root scene index. Used to find objects by ray.
+        /// </summary>
+        public readonly SceneRoot RootIndex;
+        /// <summary>
         /// Root scene graph. Contains all selectable objects in this world.
         /// </summary>
         public readonly SceneTree RootGraph;

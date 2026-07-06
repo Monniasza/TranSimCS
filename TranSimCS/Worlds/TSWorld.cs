@@ -66,6 +66,7 @@ namespace TranSimCS.Worlds
 
         public TSWorld() {
             RootGraph = new SceneGraph.SceneTree();
+            RootIndex = new(RootGraph);
 
             Buildings = new BuildingStack(this);
             Nodes = new NodeStack(this);

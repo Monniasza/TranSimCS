@@ -8,33 +8,25 @@ using TranSimCS.Model;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.SceneGraph {
-    public class SceneLeaf: SceneNode{
+    public sealed class SceneLeaf : SceneNode {
+        public IMeshSource MeshSource { get; }
+        public Obj Obj { get; }
 
-        public readonly IMeshSource meshGenerator;
-        public readonly Obj obj;
+        public SceneProxy Proxy { get; }
 
-        public SceneLeaf(IMeshSource meshGenerator, Obj obj) {
-            ArgumentNullException.ThrowIfNull(meshGenerator, nameof(meshGenerator));
+        public SceneLeaf(IMeshSource meshSource, Obj obj) {
+            MeshSource = meshSource;
+            Obj = obj;
 
-            this.meshGenerator = meshGenerator;
-            meshGenerator.OnMeshInvalidated += MeshGenerator_OnRemoveMesh;
-            this.obj = obj;
+            Proxy = new SceneProxy(this);
+
+            MeshSource.OnMeshInvalidated += () =>
+            {
+                // nothing structural here — tree handles it via proxy
+            };
         }
 
-        private void MeshGenerator_OnRemoveMesh() {
-            Invalidate();
-        }
-
-        protected override BoundingBox CalcBounds() => meshGenerator.GetMesh().GetBounds();
-
-        protected override bool FindInternal(Ray ray, out SceneNode? node, out float dist, out object? tag) {
-            var isIntersecting = meshGenerator.GetMesh().ComputeIntersection(ray, out dist, out tag);
-            if (isIntersecting){
-                node = this;
-                return true;
-            } else {
-                return Reject(this, out node, out dist, out tag);
-            }
-        }
+        public override BoundingBox GetBounds()
+            => MeshSource.GetBounds();
     }
 }

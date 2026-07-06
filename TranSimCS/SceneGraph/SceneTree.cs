@@ -11,62 +11,42 @@ using TranSimCS.Spatial;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.SceneGraph {
-    public class SceneTree : SceneNode {
-        public SceneTree() {
-            OnInvalidate += SceneTree_OnInvalidate;
-        }
-        private void SceneTree_OnInvalidate(SceneNode arg1, BoundingBox arg2) {
-            index = null;
-        }
+    public sealed class SceneTree : SceneNode {
+        private readonly List<SceneNode> children = new();
 
-        protected override BoundingBox CalcBounds() {
-            //Rebuild the index
-            return GetIndex().Bounds;
-        }
+        public IReadOnlyList<SceneNode> Children => children;
 
-        //CONTENTS
-        private ISet<SceneNode> nodes = new HashSet<SceneNode>();
-        public bool Add(SceneNode node) {
-            var added = nodes.Add(node);
-            if (!added) return false;
+        public void Add(SceneNode node) {
+            if (children.Contains(node)) return;
+
+            children.Add(node);
             node.Parent = this;
-            Invalidate();
-            return true;
+
+            RaiseAdded(node);
+
+            // propagate upward if nested trees
+            Parent?.RaiseAdded(node);
         }
-        public bool Remove(SceneNode node) {
-            var removed = nodes.Remove(node);
-            if (!removed) return false;
+
+        public void Remove(SceneNode node) {
+            if (!children.Remove(node)) return;
+
             node.Parent = null;
-            Invalidate();
-            return true;
-        }
-        public ISet<SceneNode> Nodes => new ReadOnlySet<SceneNode>(nodes);
 
-        //INDEX
-        private ElementBVH<SceneNode>? index;
-        public ElementBVH<SceneNode> GetIndex() {
-            index ??= new ElementBVH<SceneNode>(Nodes.ToList());
-            return index;
+            RaiseRemoved(node);
+
+            Parent?.RaiseRemoved(node);
         }
 
-        protected override bool FindInternal(Ray ray, out SceneNode? node, out float dist, out object? tag) {
-            var currDist = float.MaxValue;
-            object? currTag = null;
-            SceneNode? currNode = null;
-            bool found = false;
-            foreach(var child in Nodes) {
-                if(child.Find(ray, out var nextNode, out var nextDist, out var nextTag)) 
-                    if(nextDist < currDist) {
-                        currDist = nextDist;
-                        currTag = nextTag;
-                        currNode = nextNode;
-                        found = true;
-                    }
-            }
-            node = currNode;
-            dist = currDist;
-            tag = currTag;
-            return found;
+        public override BoundingBox GetBounds() {
+            if (children.Count == 0)
+                return default;
+
+            var box = children[0].GetBounds();
+            for (int i = 1; i < children.Count; i++)
+                box = BoundingBox.CreateMerged(box, children[i].GetBounds());
+
+            return box;
         }
     }
 }

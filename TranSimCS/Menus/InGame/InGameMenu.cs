@@ -255,8 +255,8 @@ namespace TranSimCS.Menus.InGame {
             //Selection logic
             float distance = float.MaxValue;
             MouseOver = null;
-            if (!IsMouseOverUI) 
-                MouseOver = Selection.CalculateSelection(World.RootGraph, MouseRay);
+            if (!IsMouseOverUI)
+                MouseOver = World.RootIndex.Find(ray);
 
             //Handle scroll wheel input for zooming in and out
             var camera = renderManager.Camera;

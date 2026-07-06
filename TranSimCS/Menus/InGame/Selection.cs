@@ -23,24 +23,19 @@ namespace TranSimCS.Menus.InGame {
         public Vector3 Coordinates;
         public float Distance;
 
-        public static Selection CalculateSelection(SceneNode node, Ray ray) {
-            SceneNode hitNode = null;
-            float distance = float.PositiveInfinity;
-            Vector3 coordinates = new Vector3(float.NaN);
-            object? tag = null;
+        public static Selection CalculateSelection(SceneRoot graph, Ray ray) {
+            Selection result = graph.Find(ray);
+            if (result.SceneNode == null) return Selection.Invalid;
 
-            Selection result = new();
-
-            var isHit = node.Find(ray, out hitNode, out distance, out tag);
-            if (isHit) coordinates = ray.Position + distance * ray.Direction;
-            if (hitNode is SceneLeaf leaf) result.SelectedObj = leaf.obj; //SelectedObj remains null
-            else if (hitNode != null) throw new ArgumentException("non-leaf hit node");
-            result.SceneNode = hitNode;
-            result.Tag = tag;
-            result.Distance = distance;
-            result.Coordinates = coordinates;
+            //Check if all parents are enabled
+            var node = result.SceneNode;
+            while(node != null) {
+                if(!node.Active.Value) return Selection.Invalid;
+            }
 
             return result;
         }
+
+
     }
 }
