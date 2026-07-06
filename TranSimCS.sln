@@ -7,6 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TranSimCS", "TranSimCS\Tran
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarkovChains", "MarkovChains\MarkovChains.csproj", "{98C0BDAC-6A58-43FF-84CE-6E89F77E011E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TranSimCSTests", "TranSimCSTests\TranSimCSTests.csproj", "{99F71ABF-166E-48BC-A3C8-DF501954D069}"
+	ProjectSection(ProjectDependencies) = postProject
+		{32494F9B-04F4-494B-8E26-7BCC9A525BC2} = {32494F9B-04F4-494B-8E26-7BCC9A525BC2}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +26,10 @@ Global
 		{98C0BDAC-6A58-43FF-84CE-6E89F77E011E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98C0BDAC-6A58-43FF-84CE-6E89F77E011E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98C0BDAC-6A58-43FF-84CE-6E89F77E011E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99F71ABF-166E-48BC-A3C8-DF501954D069}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99F71ABF-166E-48BC-A3C8-DF501954D069}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99F71ABF-166E-48BC-A3C8-DF501954D069}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99F71ABF-166E-48BC-A3C8-DF501954D069}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

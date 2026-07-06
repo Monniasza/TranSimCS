@@ -13,14 +13,14 @@ using TranSimCS.SceneGraph;
 namespace TranSimCS.Spatial {
     public sealed class AABBTree<T>
     where T : IMeshSource {
-        private readonly Dictionary<T, Node<T>> Items = [];
-        private Node<T>? root;
+        private readonly Dictionary<T, AABBNode<T>> Items = [];
+        private AABBNode<T>? root;
 
         public void Add(T item) {
             ArgumentNullException.ThrowIfNull(item, nameof(item));
             if(Items.ContainsKey(item)) return;
 
-            Node<T> leaf = new Node<T>() {
+            AABBNode<T> leaf = new AABBNode<T>() {
                 Item = item,
                 Bounds = item.GetBounds(),
                 Stale = false,
@@ -39,11 +39,11 @@ namespace TranSimCS.Spatial {
             Balance(leaf);
             RefitUpwards(leaf);
         }
-        private Node<T> FindBestSibling(Node<T> leaf) {
+        private AABBNode<T> FindBestSibling(AABBNode<T> leaf) {
             if (root == null) throw new NullReferenceException("Method called with an empty AABBTree");
             if (root.Item != null) return root;
 
-            Node<T> parent = root;
+            AABBNode<T> parent = root;
             while (true) {
                 if (parent.Item != null) return parent;
                 if (parent.Left != null && parent.Right != null) return parent;
@@ -61,10 +61,10 @@ namespace TranSimCS.Spatial {
                 }
             }
         }
-        private void InsertLeaf(Node<T> leaf, Node<T> sibling) {
+        private void InsertLeaf(AABBNode<T> leaf, AABBNode<T> sibling) {
             var parent = sibling.Parent;
             var isSiblingOnTheLeft = parent?.Left == sibling;
-            var newParent = new Node<T>() {
+            var newParent = new AABBNode<T>() {
                 Left = leaf,
                 Right = sibling,
                 Bounds = BoundingBox.CreateMerged(leaf.Bounds, sibling.Bounds),
@@ -86,7 +86,7 @@ namespace TranSimCS.Spatial {
             newParent.Parent = parent;
         }
         
-        private void Balance(Node<T> node) {
+        private void Balance(AABBNode<T> node) {
             while (node != null) {
                 if (node.Item != null) {
                     node = node.Parent;
@@ -103,8 +103,8 @@ namespace TranSimCS.Spatial {
 
                 float bestCost = node.Bounds.SurfaceArea();
 
-                Node<T>? bestA = null;
-                Node<T>? bestB = null;
+                AABBNode<T>? bestA = null;
+                AABBNode<T>? bestB = null;
 
                 // -------------------------
                 // Try LEFT rotation (bring right child up)
@@ -160,7 +160,7 @@ namespace TranSimCS.Spatial {
                 node = node.Parent;
             }
         }
-        private void ApplyRotation(Node<T> parent, Node<T> child, Node<T> sibling) {
+        private void ApplyRotation(AABBNode<T> parent, AABBNode<T> child, AABBNode<T> sibling) {
             var grandParent = parent.Parent;
 
             // detach
@@ -201,7 +201,7 @@ namespace TranSimCS.Spatial {
             child.Bounds = MergeBounds(child);
         }
 
-        private BoundingBox MergeBounds(Node<T> n) {
+        private BoundingBox MergeBounds(AABBNode<T> n) {
             if (n.Item != null)
                 return n.Item.GetBounds();
 
@@ -224,12 +224,12 @@ namespace TranSimCS.Spatial {
             var isChildLeftOfParent = child.Parent.Left == child;
             var parent = child.Parent;
             var sibling = isChildLeftOfParent ? parent.Right : parent.Left;
+            var grandparent = child.Parent.Parent;
 
             //Fully invalidate the child
             child.Destroy();
             child = null;
-
-            var grandparent = child.Parent.Parent;
+            
             sibling.Parent = grandparent;
             if (grandparent == null) {
                 //Deleting a second-level node
@@ -264,9 +264,9 @@ namespace TranSimCS.Spatial {
             Reject(out element, out distance, out tag);
             if (root == null) return false;
 
-            PriorityQueue<Node<T>, float> queue = new();
+            PriorityQueue<AABBNode<T>, float> queue = new();
             
-            void ComputeIntersectionAndAddElementToQueue(Node<T>? node, float upperBound = float.PositiveInfinity) {
+            void ComputeIntersectionAndAddElementToQueue(AABBNode<T>? node, float upperBound = float.PositiveInfinity) {
                 if (node == null) return;
                 Refit(node);
                 var rayIntersect = node.Bounds.Intersects(ray);
@@ -300,7 +300,7 @@ namespace TranSimCS.Spatial {
         }
 
         public IEnumerable<T> Query(BoundingBox box) {
-            Queue<Node<T>?> queue = new();
+            Queue<AABBNode<T>?> queue = new();
             queue.Enqueue(root);
             Refit(root);
             while(queue.TryDequeue(out var node)) {
@@ -315,7 +315,7 @@ namespace TranSimCS.Spatial {
         }
 
         public IEnumerable<T> Query(BoundingFrustum frustum) {
-            Queue<Node<T>?> queue = new();
+            Queue<AABBNode<T>?> queue = new();
             queue.Enqueue(root);
             Refit(root);
             while (queue.TryDequeue(out var node)) {
@@ -330,12 +330,12 @@ namespace TranSimCS.Spatial {
             }
         }
 
-        private void Refit(Node<T>? node) {
+        private void Refit(AABBNode<T>? node) {
             if (node == null || !node.Stale) return;
             RefitDown(node);
             RefitUpwards(node.Parent);
         }
-        private void RefitUpwards(Node<T> node) {
+        private void RefitUpwards(AABBNode<T> node) {
             Debug.Assert(node != null);
             while (node != null) {
                 if (node.Item == null) {
@@ -350,7 +350,7 @@ namespace TranSimCS.Spatial {
                 node = node.Parent;
             }
         }
-        private void RefitDown(Node<T> node) {
+        private void RefitDown(AABBNode<T> node) {
             if (node == null || !node.Stale) return;
             Validate(node);
             if (node.Item != null) {
@@ -367,7 +367,7 @@ namespace TranSimCS.Spatial {
         }
 
         [Conditional("DEBUG")]
-        private static void Validate(Node<T> node) {
+        private static void Validate(AABBNode<T> node) {
             if (node.Item != null) {
                 Debug.Assert(node.Left == null);
                 Debug.Assert(node.Right == null);
@@ -377,13 +377,13 @@ namespace TranSimCS.Spatial {
             }
         }
     }
-    internal sealed class Node<T> {
-        public Node(){
-            ItemAction = () => Stale = true;
+    public sealed class AABBNode<T> {
+        public AABBNode(){
+            ItemAction = () => MarkStale();
         }
-        public Node<T>? Parent;
-        public Node<T>? Left;
-        public Node<T>? Right;
+        public AABBNode<T>? Parent;
+        public AABBNode<T>? Left;
+        public AABBNode<T>? Right;
         public BoundingBox Bounds;
         public bool Stale;
         public float SurfaceArea => Bounds.SurfaceArea();
@@ -396,6 +396,13 @@ namespace TranSimCS.Spatial {
             Bounds = default;
             Item = default;
             Stale = true;
+        }
+        public void MarkStale() {
+            var node = this;
+            while(node != null) {
+                node.Stale = true;
+                node = node.Parent;
+            }
         }
     }
 }
