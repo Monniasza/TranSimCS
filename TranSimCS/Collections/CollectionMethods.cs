@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DotNet.Collections.Generic;
 
 namespace TranSimCS.Collections {
     public static class CollectionMethods {
@@ -19,6 +20,21 @@ namespace TranSimCS.Collections {
         }
         public static void FilterInPlace<T>(this HashSet<T> set, Predicate<T> data) {
             set.RemoveWhere(x => !data(x));
+        }
+
+        public static Dictionary<TKey, List<TValue>> QuickGroup<TKey, TValue>(this IEnumerable<TValue> source, Func<TValue, TKey> keyMapper) {
+            Dictionary<TKey, List<TValue>> result = new();
+            foreach (var item in source) {
+                var groupKey = keyMapper(item);
+                if(result.TryGetValue(groupKey, out var group)) {
+                    group.Add(item);
+                } else {
+                    var group2 = new List<TValue>();
+                    group2.Add(item);
+                    result[groupKey] = group2;
+                }
+            }
+            return result;
         }
     }
 }

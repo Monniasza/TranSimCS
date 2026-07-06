@@ -37,9 +37,13 @@ namespace TranSimCS.Worlds.Car {
 
             newLoader = new(null);
 
+            var syntheticMesh = CarModel.CreateModel();
+            var meshName = "synthetic";
+            loadedMeshes.Add(meshName, syntheticMesh);
+            meshes.Add((meshName, syntheticMesh));
+
             //Find all cars in the directory and load them
             var objs = Directory.GetFiles(objRoot).Where(x => x.EndsWith(".obj"));
-
             foreach (var obj in objs) {
                 try {
                     log.Info("Loading car mesh " + obj);
@@ -89,9 +93,7 @@ namespace TranSimCS.Worlds.Car {
         }
 
         public void Randomize() {
-            var idx = rnd.Next(meshes.Count);
-            var element = meshes[idx];
-            MeshId = element.Item1;
+            MeshId = "synthetic";
         }
 
         private void GenerateMesh(Car car, MultiMesh mesh) {

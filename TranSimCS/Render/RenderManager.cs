@@ -206,22 +206,24 @@ namespace TranSimCS.Render {
             shader.Parameters["AlphaCutoff"].SetValue(alphaCutoff);
 
             //Group meshes by mesh
-            var groupedMeshes = bucket.GroupBy(x => x.Mesh);
+            var groupedMeshes = bucket.QuickGroup(x => x.Mesh);
             foreach (var meshGroup in groupedMeshes) {
                 var mesh = meshGroup.Key;
-                var instances = meshGroup.ToArray();
-                if(instances.Length == 0 || mesh.Vertices.Count == 0 || mesh.Indices.Count == 0) continue;
+                var instances = meshGroup.Value;
+                if(instances.Count == 0 || mesh.Vertices.Count == 0 || mesh.Indices.Count == 0) continue;
 
                 //Bind per-mesh
                 var meshGPU = GetCachedMesh(mesh);
                 gpu.Indices = meshGPU.IB;
 
                 //For each material
-                var groupedByMaterial = instances.GroupBy(x => x.Material);
+                var groupedByMaterial = instances.QuickGroup(x => x.Material);
                 foreach (var materialGroup in groupedByMaterial) {
                     var material = materialGroup.Key;
-                    var positionValues = materialGroup.Select(x => x.Transform).ToArray();
-                    if (positionValues.Length == 0) continue;
+                    var materialInstances = materialGroup.Value;
+
+                    if (materialInstances.Count == 0) continue;
+                    var positionValues = materialInstances.Select(x => x.Transform).ToArray();
 
                     shader.Parameters["Albedo"].SetValue(material.Texture);
                     shader.Parameters["Emissive"].SetValue(material.Emissive);
