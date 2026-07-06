@@ -35,9 +35,9 @@ namespace TranSimCS {
         }
         public static T SwapFlags<T>(T value, T leftFlag, T rightFlag)
     where T : struct, Enum {
-            ulong source = Convert.ToUInt64(value);
-            ulong left = Convert.ToUInt64(leftFlag);
-            ulong right = Convert.ToUInt64(rightFlag);
+            long source = Convert.ToInt64(value);
+            long left = Convert.ToInt64(leftFlag);
+            long right = Convert.ToInt64(rightFlag);
 
             if (((source & left) != 0) != ((source & right) != 0))
                 source ^= left | right;
@@ -45,13 +45,13 @@ namespace TranSimCS {
             return (T)Enum.ToObject(typeof(T), source);
         }
         public static bool HasFlags<T>(this T subject, T flags) where T : struct, Enum {
-            ulong a = Convert.ToUInt64(subject);
-            ulong b = Convert.ToUInt64(flags);
+            long a = Convert.ToInt64(subject);
+            long b = Convert.ToInt64(flags);
             return (a & b) != 0;
         }
         public static T WithFlags<T>(this T subject, T flags, bool newValue) where T : struct, Enum{
-            ulong subject2 = Convert.ToUInt64(subject);
-            ulong flags2 = Convert.ToUInt64(flags);
+            long subject2 = Convert.ToInt64(subject);
+            long flags2 = Convert.ToInt64(flags);
             if(newValue) subject2 |= flags2; else subject2 &= ~flags2;
             return (T)Enum.ToObject(typeof(T), subject2);
         }
