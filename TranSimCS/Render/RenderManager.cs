@@ -16,9 +16,18 @@ using TranSimCS.ModelOld;
 using TranSimCS.Property;
 using TranSimCS.Setting;
 using static TranSimCS.Model.MeshUnroll;
-using static TranSimCS.Render.RenderManager;
 
 namespace TranSimCS.Render {
+    public struct RenderStats {
+        public int VertexCount;
+        public int TriangleCount;
+        public int InstanceCount;
+        public int MaterialCount;
+        public int TagCount;
+        public int ModelCount;
+        public int DrawCount;
+    }
+
     public class RenderManager: IDisposable {
         public readonly Property<Camera> CameraProp;
         public readonly Property<Vector4> AmbientColor;
@@ -130,6 +139,7 @@ namespace TranSimCS.Render {
             return newCap;
         }
 
+        public RenderStats Stats { get; private set; }
 
         public void Render(MultiMesh source) {
             //CONSTANTS
@@ -143,8 +153,7 @@ namespace TranSimCS.Render {
             shader.Parameters["WorldViewProjection"].SetValue(WorldViewProjection);
 
             //CATEGORIZATION & COUNTING
-            int TriCount = 0;
-            int VertCount = 0;
+            var stats = new RenderStats();
             var categorizedMeshes = new List<MeshDrawInstance>[(int)MaterialBlendMode.Count];
             foreach (var mdi in MeshTraversal.Traverse(source)) {
                 var renderBin = mdi.Mesh;
@@ -153,8 +162,10 @@ namespace TranSimCS.Render {
                 var bin = categorizedMeshes[(int)renderPassID] ??= new();
                 bin.Add(mdi);
 
-                TriCount += renderBin.Indices.Count / 3;
-                VertCount += renderBin.Vertices.Count;
+                stats.TriangleCount += renderBin.Indices.Count / 3;
+                stats.VertexCount += renderBin.Vertices.Count;
+                stats.TagCount += renderBin.Tags.Count;
+                stats.InstanceCount++;
             }
 
             // PASS 0: SKYBOX
@@ -171,11 +182,11 @@ namespace TranSimCS.Render {
             RenderPass(
                 categorizedMeshes[(int)MaterialBlendMode.Opaque],
                 writeDepth,
-                BlendState.Opaque);
+                BlendState.Opaque, ref stats);
             RenderPass(
                 categorizedMeshes[(int)MaterialBlendMode.Cutout],
                 writeDepth,
-                BlendState.Opaque);
+                BlendState.Opaque, ref stats);
 
             // PASS 2: ADDITIVE
             // - Reads depth so it is hidden by opaque/cutout geometry.
@@ -183,7 +194,7 @@ namespace TranSimCS.Render {
             RenderPass(
                 categorizedMeshes[(int)MaterialBlendMode.Additive],
                 keepDepth,
-                BlendState.Additive);
+                BlendState.Additive, ref stats);
 
             // PASS 3: TRANSPARENT
             // - Reads depth.
@@ -192,10 +203,12 @@ namespace TranSimCS.Render {
             RenderPass(
                 categorizedMeshes[(int)MaterialBlendMode.Transparent],
                 keepDepth,
-                BlendState.AlphaBlend, 0.00001f);
+                BlendState.AlphaBlend, ref stats, 0.00001f);
+
+            Stats = stats;
         }
 
-        private void RenderPass(List<MeshDrawInstance>? bucket, DepthStencilState depthState, BlendState blendState, float alphaCutoff = 0.5f) {
+        private void RenderPass(List<MeshDrawInstance>? bucket, DepthStencilState depthState, BlendState blendState, ref RenderStats stats, float alphaCutoff = 0.5f) {
             if (bucket == null || bucket.Count == 0) return;
 
             var shader = Assets.ShaderEffect;
@@ -207,6 +220,7 @@ namespace TranSimCS.Render {
 
             //Group meshes by mesh
             var groupedMeshes = bucket.QuickGroup(x => x.Mesh);
+            stats.ModelCount += groupedMeshes.Count;
             foreach (var meshGroup in groupedMeshes) {
                 var mesh = meshGroup.Key;
                 var instances = meshGroup.Value;
@@ -218,6 +232,7 @@ namespace TranSimCS.Render {
 
                 //For each material
                 var groupedByMaterial = instances.QuickGroup(x => x.Material);
+                stats.MaterialCount += groupedByMaterial.Count;
                 foreach (var materialGroup in groupedByMaterial) {
                     var material = materialGroup.Key;
                     var materialInstances = materialGroup.Value;
@@ -240,6 +255,7 @@ namespace TranSimCS.Render {
 
                         foreach (var pass in shader.CurrentTechnique.Passes) {
                             pass.Apply();
+                            stats.DrawCount++;
                             gpu.DrawInstancedPrimitives(
                                 PrimitiveType.TriangleList,
                                 baseVertex: 0,

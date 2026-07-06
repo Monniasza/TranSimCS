@@ -9,6 +9,9 @@ namespace TranSimCS.Tools {
         public int Vertices;
         public int Triangles;
         public int Materials;
+        public int MeshModels;
+        public int MeshInstances;
+        public int MeshDraws;
         public int Lanes;
         public int Nodes;
         public int Segments;
@@ -22,6 +25,9 @@ namespace TranSimCS.Tools {
             Vertices: {Vertices}
             Triangles: {Triangles}
             Materials: {Materials}
+            Mesh instances: {MeshInstances}
+            Mesh models: {MeshModels}
+            Render calls: {MeshDraws}
             Lanes: {Lanes}
             Nodes: {Nodes}
             Segments: {Segments}
