@@ -33,8 +33,10 @@ namespace TranSimCS.SceneGraph {
             return mesh;
         }
         public void Invalidate() {
-            mesh = null;
-            OnMeshInvalidated?.Invoke();
+            if (mesh != null) {
+                mesh = null;
+                OnMeshInvalidated?.Invoke();
+            }
         }
     }
 }
