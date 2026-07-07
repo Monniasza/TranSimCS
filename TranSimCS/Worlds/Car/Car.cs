@@ -185,7 +185,7 @@ namespace TranSimCS.Worlds.Car {
                 //Put the car in the world
                 var laneStrip = LanePosition.LaneStrip;
                 var positionCache = laneStrip.SplineLUT;
-                var positionLUT = LanePosition.IsReverse ?
+                var positionLUT = laneStrip.IsReverse() ?
                     positionCache.ReverseLUT : positionCache.ForwardLUT;
 
                 var xyzt = positionLUT[LanePosition.LaneArcLength];
@@ -199,7 +199,7 @@ namespace TranSimCS.Worlds.Car {
                 VectorMethods.CheckVector(lateral, "lateral");
                 var tangential = positionCache.Spline.Tangential(t);
                 VectorMethods.CheckVector(tangential, "tangential");
-                if (LanePosition.IsReverse) {
+                if (LanePosition.IsReverse ^ laneStrip.IsReverse()) {
                     tangential *= -1;
                     lateral *= -1;
                 }

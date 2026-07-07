@@ -25,7 +25,7 @@ namespace TranSimCS.Spatial {
                 Bounds = item.GetBounds(),
                 Stale = false,
             };
-            item.OnMeshInvalidated += leaf.ItemAction;
+            item.OnMeshInvalidated += leaf.MarkStale;
             Items[item] = leaf;
 
             if (root == null) {
@@ -212,7 +212,7 @@ namespace TranSimCS.Spatial {
             ArgumentNullException.ThrowIfNull(item, nameof(item));
             if(!Items.TryGetValue(item, out var child)) return false;
             Items.Remove(item);
-            item.OnMeshInvalidated -= child.ItemAction;
+            item.OnMeshInvalidated -= child.MarkStale;
 
             //Move the sibling into place of the parent
             if(child == root || child.Parent == null) {

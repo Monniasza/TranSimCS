@@ -50,9 +50,9 @@ namespace TranSimCS.Roads.Strip {
                 node.X = cumulativeDistance - node.X;
                 reverse[i] = node;
 
-                var t = step * i;
-                var reverseArcLength = reverse[i].Y.W;
-                var forwardArcLength = forward[i].Y.W;
+                var t = step * j;
+                var reverseArcLength = reverse[i].X;
+                var forwardArcLength = forward[j].X;
 
                 var tToArcKey = new LUTKey(t, new Vector4(forwardArcLength, reverseArcLength, 0, 0));
                 tToArcLength[i] = tToArcKey;
