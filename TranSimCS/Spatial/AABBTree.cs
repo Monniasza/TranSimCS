@@ -378,9 +378,7 @@ namespace TranSimCS.Spatial {
         }
     }
     public sealed class AABBNode<T> {
-        public AABBNode(){
-            ItemAction = () => MarkStale();
-        }
+        public AABBNode(){}
         public AABBNode<T>? Parent;
         public AABBNode<T>? Left;
         public AABBNode<T>? Right;
@@ -388,7 +386,6 @@ namespace TranSimCS.Spatial {
         public bool Stale;
         public float SurfaceArea => Bounds.SurfaceArea();
         public T? Item;
-        public readonly Action ItemAction;
         public void Destroy() {
             Left = null;
             Right = null;
