@@ -128,8 +128,6 @@ namespace TranSimCS.Worlds.Car {
 
         internal void Update(GameTime time) {
             if (World == null) return;
-
-            Vector3 newCoordinates = PositionProp.Value.Position;
             if(LanePosition.LaneStrip == null) {
                 //The car is off-road
                 var vel = Velocity;
