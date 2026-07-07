@@ -16,6 +16,11 @@ namespace TranSimCS {
             X = x;
             Y = y;
         }
+        public LUTKey(float x, Vector3 y, float w = 1) {
+            X = x;
+            Y = new Vector4(y, w);
+        }
+
 
         public int CompareTo(LUTKey other) => X.CompareTo(other.X);
 

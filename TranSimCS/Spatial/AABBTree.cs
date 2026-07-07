@@ -399,7 +399,7 @@ namespace TranSimCS.Spatial {
         }
         public void MarkStale() {
             var node = this;
-            while(node != null) {
+            while(node != null && !node.Stale) {
                 node.Stale = true;
                 node = node.Parent;
             }

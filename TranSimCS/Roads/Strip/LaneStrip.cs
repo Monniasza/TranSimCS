@@ -116,7 +116,14 @@ namespace TranSimCS.Roads.Strip {
 
         //Spline cache
         private (Bezier3, Bezier3)? splineCache = null;
-        public (Bezier3, Bezier3) SplineCache => splineCache ?? RecalcSplines();
+        public (Bezier3, Bezier3) SplineCache => splineCache ??= RecalcSplines();
+
+        private SplineLUT? splineLUT = null;
+        public SplineLUT SplineLUT => splineLUT ??= new SplineLUT((SplineCache.Item1 + SplineCache.Item2) / 2);
+
+        private SplineLUT? lateralLUT = null;
+        public SplineLUT LateralLUT => lateralLUT ??= new SplineLUT(SplineCache.Item2 - SplineCache.Item1);
+
 
         //Mesh cache
         private MultiMesh? mesh; // Cached mesh for the lane strip
@@ -130,6 +137,8 @@ namespace TranSimCS.Roads.Strip {
         public void InvalidateMesh() {
             mesh = null; // Invalidate the cached mesh, forcing it to be regenerated next time
             splineCache = null;
+            splineLUT = null;
+            lateralLUT = null;
         }
         private (Bezier3, Bezier3) RecalcSplines() {
             var splines = RoadRenderer.GenerateSplines(Tag());

@@ -39,7 +39,8 @@ namespace TranSimCS.Roads.Strip {
         public RoadNodeEnd? GetNodeEnd() => null;
 
         //Events
-
+        public event EventHandler<RoadStripEventArgs>? OnLaneAdded; // Event triggered when lanes are added or removed
+        public event EventHandler<RoadStripEventArgs>? OnLaneRemoved; // Event triggered when lanes are removed
 
         //Road strip contents
         public readonly Property<StripSplineGenerator> SplineGeneratorProp;
@@ -102,8 +103,7 @@ namespace TranSimCS.Roads.Strip {
         }
         public IReadOnlyCollection<LaneStrip> Lanes => lanes.AsReadOnly(); // Get the list of lane strips associated with this road connection
 
-        public event EventHandler<RoadStripEventArgs>? OnLaneAdded; // Event triggered when lanes are added or removed
-        public event EventHandler<RoadStripEventArgs>? OnLaneRemoved; // Event triggered when lanes are removed
+        
 
         public LaneRange FullSizeTag() {
             var bounds = Bounds;

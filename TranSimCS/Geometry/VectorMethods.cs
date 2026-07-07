@@ -36,5 +36,8 @@ namespace TranSimCS.Geometry {
         public static Vector3 ToX0Z(this Vector3 vector) {
             return new(vector.X, 0, vector.Z);
         }
+
+        public static Vector3 ToXYZ(this Vector4 vector) =>
+            new Vector3(vector.X, vector.Y, vector.Z);
     }
 }

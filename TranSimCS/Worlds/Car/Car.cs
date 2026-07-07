@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using MLEM.Maths;
+using MonoGame.Extended;
 using NLog;
 using TranSimCS.Collections;
 using TranSimCS.Geometry;
@@ -25,9 +26,7 @@ namespace TranSimCS.Worlds.Car {
         private static Random rnd = new Random();
         private static string objRoot;
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
-
         public static ObjLoader newLoader;
-
         public static void Init() {
             //Load all meshes
             objRoot = Path.Combine(Program.DataRoot, "Files", "eracoon_cars", "obj");
@@ -62,9 +61,9 @@ namespace TranSimCS.Worlds.Car {
                     log.Error(e);
                     throw;
                 }
-
             }
         }
+
 
         public MeshGenerator<Car> Mesh { get; }
 
@@ -80,7 +79,7 @@ namespace TranSimCS.Worlds.Car {
             MeshIdProp = new(null, "meshId", this);
             Mesh = new(this, GenerateMesh);
             MeshIdProp.ValueChanged += MeshIdProp_ValueChanged;
-            OnStripProp = new(null, "strip", this, Equality.ReferenceEqualComparer<LaneStrip?>());
+            LanePositionProp = new(default, "strip", this);
         }
 
         private void MeshIdProp_ValueChanged(object? sender, PropertyChangedEventArgs2<string?> e) {
@@ -123,92 +122,103 @@ namespace TranSimCS.Worlds.Car {
             pr.Inclination *= -1;
             PositionProp.Value = pr;
         }
-        public Property<LaneStrip?> OnStripProp;
-        public LaneStrip? LaneStrip { get => OnStripProp.Value; set => OnStripProp.Value = value; }
 
-        internal void Update(GameTime t) {
-            var vel = Velocity;
-            VectorMethods.CheckVector(vel, "vel");
-            var pr = PositionProp.Value;
-            VectorMethods.CheckVector(pr.Position, "pr.Position");
-            if (!float.IsFinite(pr.Inclination)) throw new ArithmeticException("Invalid pitch");
-            if (!float.IsFinite(pr.Tilt)) throw new ArithmeticException("Invalid roll");
-            var xyz = pr.Position + vel * (float)(t.ElapsedGameTime.TotalSeconds);
-            VectorMethods.CheckVector(xyz, "xyz");
-            pr.Position = xyz;
-            PositionProp.Value = pr;
-            if (LaneStrip?.road == null) return;
-            
+        public Property<LanePosition> LanePositionProp;
+        public LanePosition LanePosition { get => LanePositionProp.Value; set => LanePositionProp.Value = value; }
 
-            var splines = LaneStrip.SplineCache;
-            var lspline = splines.Item1;
-            var rspline = splines.Item2;
-            if (LaneStrip.IsReverse()) {
-                DataUtil.Swap(ref lspline, ref rspline);
-                lspline = lspline.Inverse();
-                rspline = rspline.Inverse();
+        internal void Update(GameTime time) {
+            if (World == null) return;
+
+            Vector3 newCoordinates = PositionProp.Value.Position;
+            if(LanePosition.LaneStrip == null) {
+                //The car is off-road
+                var vel = Velocity;
+                VectorMethods.CheckVector(vel, "vel");
+                var pr = PositionProp.Value;
+                VectorMethods.CheckVector(pr.Position, "pr.Position");
+                if (!float.IsFinite(pr.Inclination)) throw new ArithmeticException("Invalid pitch");
+                if (!float.IsFinite(pr.Tilt)) throw new ArithmeticException("Invalid roll");
+                var xyz = pr.Position + vel * (float)(time.ElapsedGameTime.TotalSeconds);
+                VectorMethods.CheckVector(xyz, "xyz");
+                pr.Position = xyz;
+                PositionProp.Value = pr;
+            } else {
+                //If the car has an undeterminate position, infer direction from velocity and arc-length from FindT
+                if (!float.IsFinite(LanePosition.LaneArcLength)) {
+                    var spline = LanePosition.LaneStrip.SplineLUT.Spline;
+                    var inverseInterpolatedT = Bezier3.FindT(spline, PositionProp.Value.Position, lowerLimit: -1, upperLimit: 2);
+                    var splineTangential = spline.Tangential(inverseInterpolatedT);
+                    var discriminant = Vector3.Dot(splineTangential, Velocity);
+                    var isReverse = discriminant < 0;
+                    var forwardReverseT = LanePosition.LaneStrip.SplineLUT.ByT[inverseInterpolatedT];
+
+                    var temp1 = LanePosition;
+                    temp1.LaneArcLength = isReverse ? forwardReverseT.Y : forwardReverseT.X;
+                    temp1.IsReverse = isReverse;
+                    LanePosition = temp1;
+                }
+
+                //Interpolate
+                var temp0 = LanePosition;
+                temp0.LaneArcLength += Speed * time.GetElapsedSeconds();
+                LanePosition = temp0;
+
+                //Overflow
+                var splineCache = LanePosition.LaneStrip.SplineLUT;
+                while (LanePosition.LaneArcLength < 0 || LanePosition.LaneArcLength > splineCache.Length) {
+                    if (LanePosition.LaneStrip == null) return;
+                    
+                    //ASSERT T is valid
+                    if (!float.IsFinite(LanePosition.LaneArcLength)) throw new ArithmeticException("Invalid newT");
+
+                    if (LanePosition.LaneArcLength < 0) {
+                        //Passed the beginning
+                        Overflow(SegmentHalf.Start);
+                    } else if (LanePosition.LaneArcLength > splineCache.Length) {
+                        //Passed the end
+                        Overflow(SegmentHalf.End);
+                    }
+
+                    if (World == null) return;
+                }
+
+                //Put the car in the world
+                var laneStrip = LanePosition.LaneStrip;
+                var positionCache = laneStrip.SplineLUT;
+                var positionLUT = LanePosition.IsReverse ?
+                    positionCache.ReverseLUT : positionCache.ForwardLUT;
+
+                var xyzt = positionLUT[LanePosition.LaneArcLength];
+                var xyz = xyzt.ToXYZ();
+                VectorMethods.CheckVector(xyz, "xyz");
+                var t = xyzt.W;
+                if (!float.IsFinite(t)) throw new ArithmeticException("Invalid spline paramater ");
+
+                var lateralSpline = laneStrip.SplineCache.Item2 - laneStrip.SplineCache.Item1;
+                var lateral = lateralSpline[t];
+                VectorMethods.CheckVector(lateral, "lateral");
+                var tangential = positionCache.Spline.Tangential(t);
+                VectorMethods.CheckVector(tangential, "tangential");
+                if (LanePosition.IsReverse) {
+                    tangential *= -1;
+                    lateral *= -1;
+                }
+
+                var newCoords = PositionEulerAngles.FromPosTangentLateral(xyz, tangential, lateral);
+                
+                if (!float.IsFinite(newCoords.Inclination)) throw new ArithmeticException("Invalid pitch #2");
+                if (!float.IsFinite(newCoords.Tilt)) throw new ArithmeticException("Invalid roll #2");
+
+                PositionProp.Value = newCoords;
             }
-            var spline = (lspline + rspline) / 2;
-            VectorMethods.CheckSpline(spline, "spline");
-            var newT = Bezier3.FindT(spline, xyz, 20, 5, -1, 2);
-
-            //ASSERT T is valid
-            if (!float.IsFinite(newT)) throw new ArithmeticException("Invalid newT");
-
-            if (newT < 0) {
-                //Passed the beginning
-                Overflow(SegmentHalf.Start, t, ref xyz);
-            } else if (newT > 1) {
-                //Passed the end
-                Overflow(SegmentHalf.End, t, ref xyz);
-            }
-
-            splines = LaneStrip.SplineCache;
-            lspline = splines.Item1;
-            rspline = splines.Item2;
-            if (LaneStrip.IsReverse()) {
-                DataUtil.Swap(ref lspline, ref rspline);
-                lspline = lspline.Inverse();
-                rspline = rspline.Inverse();
-            }
-            spline = (lspline + rspline) / 2;
-
-            //ASSERT splines are valid
-            VectorMethods.CheckSpline(spline, "spline");
-            var latSpline = (rspline - lspline);
-            VectorMethods.CheckSpline(latSpline, "latSpline");
-
-            newT = Bezier3.FindT(spline, xyz);
-            //ASSERT T is valid
-            if (!float.IsFinite(newT)) throw new ArithmeticException("Invalid newT #2");
-
-            var lateral = latSpline[newT];
-            var tangential = spline.Tangential(newT);
-            VectorMethods.CheckVector(tangential, "tangential");
-
-            var d = Vector3.Dot(tangential, Velocity);
-            if (!float.IsFinite(d)) throw new ArithmeticException("Invalid d");
-            if (d < 0) {
-                tangential *= -1;
-                lateral *= -1;
-            }
-
-            xyz = spline[newT];
-            VectorMethods.CheckVector(xyz, "xyz #2");
-
-            var newCoords = PositionEulerAngles.FromPosTangentLateral(xyz, tangential, lateral);
-
-            if (!float.IsFinite(newCoords.Inclination)) throw new ArithmeticException("Invalid pitch #2");
-            if (!float.IsFinite(newCoords.Tilt)) throw new ArithmeticException("Invalid roll #2");
-
-            PositionProp.Value = newCoords;
-
         }
-        private void Overflow(SegmentHalf half, GameTime t, ref Vector3 newPos) {
-            if (LaneStrip == null) return;
-            var nextLane = LaneStrip.GetHalf(half);
+        private void Overflow(SegmentHalf half) {
+            var lanePosition = LanePosition;
+            if (lanePosition.LaneStrip == null) return;
+            lanePosition.LaneArcLength -= lanePosition.LaneStrip.SplineLUT.Length;
+
+            var nextLane = lanePosition.LaneStrip.GetHalf(half);
             nextLane = nextLane.OppositeEnd;
-            var nextNode = nextLane.GetNodeEnd();
             var candidates = World.FindLaneStrips(nextLane);
 
             //If there are no more candidates, destroy the car
@@ -219,9 +229,13 @@ namespace TranSimCS.Worlds.Car {
 
             //Car gets stuck when hitting a next segment
             var choice = rnd.GetRandomEntry(candidates);
-            if (choice == LaneStrip)
+            if (choice == lanePosition.LaneStrip)
                 throw new Exception("Transitioned to same strip");
-            LaneStrip = choice;
+
+            var isEntryFromEnd = choice.EndLane == nextLane;
+            lanePosition.LaneStrip = choice;
+            lanePosition.IsReverse = isEntryFromEnd;
+            LanePosition = lanePosition;
         }
     }
 }
