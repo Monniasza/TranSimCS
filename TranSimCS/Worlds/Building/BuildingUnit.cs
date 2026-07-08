@@ -13,7 +13,7 @@ using TranSimCS.Property;
 using TranSimCS.SceneGraph;
 
 namespace TranSimCS.Worlds.Building {
-    public class BuildingUnit : Obj, IPosition, IObjMesh<BuildingUnit> {
+    public class BuildingUnit : Obj, IPosition, IObjMesh {
         public Property<PositionEulerAngles> PositionProp { get; }
         public Property<Vector3i> UnitSizeProp { get; }
         public MeshGenerator<BuildingUnit> Mesh { get; }
@@ -22,7 +22,10 @@ namespace TranSimCS.Worlds.Building {
             PositionProp = new Property<PositionEulerAngles>(PositionEulerAngles.Zero, "pos", this);
             UnitSizeProp = new Property<Vector3i>(new(8, 2, 4), "size", this);
             Mesh = new MeshGenerator<BuildingUnit>(this, GenerateMesh);
+            Mesh.OnMeshInvalidated += () => GeometryChanged?.Invoke(this);
         }
+
+        public event MeshInvalidationCallback GeometryChanged;
 
         private static void GenerateMesh(BuildingUnit unit, MultiMesh mesh) {
             var size = unit.UnitSizeProp.Value;
@@ -77,5 +80,9 @@ namespace TranSimCS.Worlds.Building {
             mesh.DrawStrip(verts);
             mesh.AddTagsToLastTriangles(8, tag);
         }
+
+        public void GenerateGeometry(RenderTarget target) => target.Draw(Mesh.GetMesh());
+        public BoundingBox GetBounds() => Mesh.GetMesh().GetBounds();
+        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => Mesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
     }
 }

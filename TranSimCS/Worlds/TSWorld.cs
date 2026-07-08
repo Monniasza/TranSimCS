@@ -76,7 +76,7 @@ namespace TranSimCS.Worlds
 
             //Spatial indexing
             TempSelectorsMesh = new Property<Model.MultiMesh>(new Model.MultiMesh(), "selectors", null, Equality.ReferenceEqualComparer<MultiMesh>());
-            TempSelectors = new SceneGraph.SceneLeaf(new MeshProperty(TempSelectorsMesh), null);
+            TempSelectors = new SceneGraph.SceneLeaf(new MeshProperty(TempSelectorsMesh));
             RootGraph.Add(TempSelectors);
 
             //Event handling

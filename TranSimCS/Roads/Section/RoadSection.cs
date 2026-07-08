@@ -11,10 +11,11 @@ using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.SceneGraph;
+using TranSimCS.Setting;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Section {
-    public class RoadSection : Obj, IObjMesh<RoadSection>, IRoadFinish, IDraggableObj{
+    public class RoadSection : Obj, IObjMesh, IRoadFinish, IDraggableObj{
         //Added nodes, maintained by the road section
         private List<RoadNodeEnd> nodes = new();
         public IList<RoadNodeEnd> Nodes => new ReadOnlyCollection<RoadNodeEnd>(nodes);
@@ -22,6 +23,9 @@ namespace TranSimCS.Roads.Section {
         //Section contents
         public readonly Property<RoadNodeEndPair> MainSlopeNodes;
         public readonly Property<RoadFinish> FinishProperty;
+
+        public event MeshInvalidationCallback GeometryChanged;
+
         public RoadFinish Finish { get => FinishProperty.Value; set => FinishProperty.Value = value; }
         Property<RoadFinish> IRoadFinish.FinishProperty => FinishProperty;
 
@@ -35,6 +39,7 @@ namespace TranSimCS.Roads.Section {
             MainSlopeNodes = new(default, "slopeNodes", this);
             FinishProperty = new(RoadFinish.Embankment, "finish", this);
             Mesh = new MeshGenerator<RoadSection>(this, (rs, mesh) => SectionRenderer.GenerateSectionMesh(rs, mesh));
+            Mesh.OnMeshInvalidated += () => GeometryChanged?.Invoke(this);
         }
 
         internal void OnConnect(RoadNodeEnd node) {
@@ -67,9 +72,6 @@ namespace TranSimCS.Roads.Section {
             Mesh.Invalidate();
 
             if (nodes.Count == 0) return;
-
-
-
 
             //Find the center of mass and the normal
             var center = Vector3.Zero;
@@ -127,5 +129,11 @@ namespace TranSimCS.Roads.Section {
             return result.ToArray();
         }
         IPosition[] IDraggableObj.DraggableComponents() => Nodes.ToArray();
+
+        public void GenerateGeometry(RenderTarget target) => target.Draw(Mesh.GetMesh());
+
+        public BoundingBox GetBounds() => Mesh.GetMesh().GetBounds();
+
+        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => Mesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
     }
 }

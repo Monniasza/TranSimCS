@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Spatial;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.SceneGraph {
     public sealed class SceneRoot {
@@ -60,7 +61,7 @@ namespace TranSimCS.SceneGraph {
 
             return new Selection {
                 SceneNode = leaf,
-                SelectedObj = leaf.Obj,
+                SelectedObj = (Obj)leaf.Obj,
                 Distance = dist,
                 Tag = tag,
                 Coordinates = ray.Position + ray.Direction * dist

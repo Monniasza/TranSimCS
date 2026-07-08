@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.SceneGraph;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.Spatial {
     [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
@@ -41,7 +42,7 @@ namespace TranSimCS.Spatial {
     }
 
     public sealed class AABBTree<T>
-    where T : IMeshSource {
+    where T : IObjMesh {
         private readonly Dictionary<T, AABBNode<T>> Items = [];
         private AABBNode<T>? root;
 
@@ -71,7 +72,7 @@ namespace TranSimCS.Spatial {
                 Bounds = item.GetBounds(),
                 Stale = false,
             };
-            item.OnMeshInvalidated += leaf.MarkStale;
+            item.GeometryChanged += leaf.MarkStale;
             Items[item] = leaf;
 
             if (root == null) {
@@ -274,7 +275,7 @@ namespace TranSimCS.Spatial {
             ArgumentNullException.ThrowIfNull(item, nameof(item));
             if(!Items.TryGetValue(item, out var child)) return false;
             Items.Remove(item);
-            item.OnMeshInvalidated -= child.MarkStale;
+            item.GeometryChanged -= child.MarkStale;
 
             //Move the sibling into place of the parent
             if(child == root || child.Parent == null) {
@@ -482,6 +483,8 @@ namespace TranSimCS.Spatial {
             Item = default;
             Stale = true;
         }
+
+        public void MarkStale(IObjMesh ignore) => MarkStale();
         public void MarkStale() {
             var node = this;
             while(node != null && !node.Stale) {

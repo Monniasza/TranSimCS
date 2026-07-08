@@ -18,7 +18,7 @@ using TranSimCS.Worlds;
 using Transform3 = TranSimCS.Geometry.Transform3;
 
 namespace TranSimCS.Roads.Node {
-    public class RoadNode: Obj, IPosition, IObjMesh<RoadNode>, IRoadElement {
+    public class RoadNode: Obj, IPosition, IObjMesh, IRoadElement {
         //Node contents
         public Property<PositionEulerAngles> PositionProp { get; private set; }
         public Property<RoadNodeTangents> LeftTangent { get; private set; }
@@ -53,6 +53,7 @@ namespace TranSimCS.Roads.Node {
         }
         public event EventHandler<LaneEventArgs> LaneAdded;
         public event EventHandler<LaneEventArgs> LaneRemoved;
+        public event MeshInvalidationCallback GeometryChanged;
 
         //Bidirectional derived contents
         public NodeSpec NodeSpec {
@@ -170,6 +171,7 @@ namespace TranSimCS.Roads.Node {
         protected void InvalidateMesh0(){
             _cache = null;
             SelectionMesh.Invalidate();
+            GeometryChanged?.Invoke(this);
 
             foreach (var connection in Connections) connection.Mesh.Invalidate();
             RearEnd.ConnectedSection.Value?.Regenerate();
@@ -181,6 +183,12 @@ namespace TranSimCS.Roads.Node {
         public readonly RoadNodeEnd FrontEnd;
         // Retrieves the node end instance for the given direction.
         public RoadNodeEnd GetEnd(NodeEnd end) => end.GetConditional(RearEnd, FrontEnd);
+
+        public void GenerateGeometry(RenderTarget target) => target.Draw(Mesh.GetMesh());
+
+        public BoundingBox GetBounds() => SelectionMesh.GetMesh().GetBounds();
+
+        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => SelectionMesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
 
         //Connections (maintained by the node ends)
         public IEnumerable<RoadStrip> Connections => RearEnd.ConnectedSegments.Union(FrontEnd.ConnectedSegments);

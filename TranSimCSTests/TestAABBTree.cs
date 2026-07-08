@@ -5,18 +5,20 @@ using TranSimCS.Model;
 using TranSimCS.ModelOld;
 using TranSimCS.SceneGraph;
 using TranSimCS.Spatial;
+using TranSimCS.Worlds;
 
 namespace TranSimCSTests {
-    public sealed class TestMesh : IMeshSource {
+    public sealed class TestMesh : IObjMesh {
         public event Action? OnMeshInvalidated;
         public event Action<MultiMesh>? OnMeshGenerated;
+        public event MeshInvalidationCallback GeometryChanged;
 
         private BoundingBox _bounds;
         public BoundingBox Bounds {
             get => _bounds;  set {
                 if (_bounds == value) return;
                 _bounds = value;
-                Invalidate();
+                GeometryChanged?.Invoke(this);
             }
         }
 
@@ -41,7 +43,6 @@ namespace TranSimCSTests {
 
         public void Move(Vector3 delta) {
             Bounds = new BoundingBox(Bounds.Min + delta, Bounds.Max + delta);
-            OnMeshInvalidated?.Invoke();
         }
 
         private MultiMesh mesh;
@@ -68,11 +69,7 @@ namespace TranSimCSTests {
             OnMeshGenerated?.Invoke(mesh);
             return mesh;
         }
-
-        public void Invalidate() {
-            mesh = null;
-            OnMeshInvalidated?.Invoke();
-        }
+        public void GenerateGeometry(RenderTarget target) => target.Draw(GetMesh());
     }
 
     public class TestAABBTree {

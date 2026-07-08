@@ -20,7 +20,7 @@ using TranSimCS.SceneGraph;
 using TranSimCS.Spline;
 
 namespace TranSimCS.Worlds.Car {
-    public class Car : Obj, IObjMesh<Car>, IPosition {
+    public class Car : Obj, IObjMesh, IPosition {
         public static Dictionary<string, MultiMesh> loadedMeshes = [];
         public static ObservableList<(string, MultiMesh)> meshes = [];
         private static Random rnd = new Random();
@@ -64,9 +64,6 @@ namespace TranSimCS.Worlds.Car {
             }
         }
 
-
-        public MeshGenerator<Car> Mesh { get; }
-
         public Property<PositionEulerAngles> PositionProp { get; }
         public MultiMesh? BodyMesh { get; private set; }
 
@@ -76,9 +73,17 @@ namespace TranSimCS.Worlds.Car {
         public Car() {
             PositionProp = new(PositionEulerAngles.Zero, "position", this);
             PositionProp.ValidateChanges += (s, e) => VectorMethods.CheckPosition(e.NewValue, "position");
+            PositionProp.ValueChanged += PositionProp_ValueChanged;
             MeshIdProp = new(null, "meshId", this);
-            Mesh = new(this, GenerateMesh);
             MeshIdProp.ValueChanged += MeshIdProp_ValueChanged;
+        }
+
+        public TransformQ transformQ { get; private set; }
+        public MeshInstance meshInstance { get; private set; }
+
+        private void PositionProp_ValueChanged(object? sender, PropertyChangedEventArgs2<PositionEulerAngles> e) {
+            transformQ = e.NewValue.ToTransformQ();
+            meshInstance = new(BodyMesh, transformQ, this, true);
         }
 
         private void MeshIdProp_ValueChanged(object? sender, PropertyChangedEventArgs2<string?> e) {
@@ -87,21 +92,14 @@ namespace TranSimCS.Worlds.Car {
             if (loadedMeshes.TryGetValue(key, out var bm)) {
                 BodyMesh = bm;
             }
-            Mesh.Invalidate();
+
+            meshInstance = new(BodyMesh, transformQ, this, true);
+
+            GeometryChanged?.Invoke(this);
         }
 
         public void Randomize() {
             MeshId = "synthetic";
-        }
-
-        private void GenerateMesh(Car car, MultiMesh mesh) {
-            if (BodyMesh == null) return;
-
-            //Generate a mesh instance instead of a full mesh
-            var transformQ = PositionProp.Value.CalcReferenceQuaternion();
-            var meshInstance = new MeshInstance(BodyMesh, transformQ, car, true);
-            mesh.meshInstances.Add(meshInstance);
-            return;
         }
 
         public float Speed;
@@ -122,6 +120,8 @@ namespace TranSimCS.Worlds.Car {
             PositionProp.Value = pr;
         }
         public LanePosition LanePosition;
+
+        public event MeshInvalidationCallback GeometryChanged;
 
         internal void Update(GameTime time) {
             if (World == null) return;
@@ -226,5 +226,9 @@ namespace TranSimCS.Worlds.Car {
             LanePosition.LaneStrip = choice;
             LanePosition.IsReverse = isEntryFromEnd;
         }
+
+        public void GenerateGeometry(RenderTarget target) => target.Draw(meshInstance);
+        public BoundingBox GetBounds() => meshInstance.GetBounds();
+        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => meshInstance.ComputeIntersection(ray, out distance, out tag);
     }
 }

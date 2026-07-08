@@ -46,11 +46,11 @@ namespace TranSimCS.Model {
         }
         public static class MeshTraversal {
 
-            public static IEnumerable<MeshDrawInstance> Traverse(MultiMesh root) {
+            public static IEnumerable<MeshDrawInstance> Traverse(MultiMesh root, TransformQ? transform = null) {
                 var active = new HashSet<MultiMesh>();
 
                 var stack = new Stack<MeshInstance>();
-                stack.Push(new MeshInstance(root, TransformQ.Identity));
+                stack.Push(new MeshInstance(root, transform ?? TransformQ.Identity));
 
                 while (stack.Count > 0) {
                     var frame = stack.Pop();

@@ -77,7 +77,7 @@ namespace TranSimCS.Menus.InGame {
 
             //Draw cars
             stats.Cars = World.Cars.data.Count;
-            foreach (var car in World.Cars.data) renderHelper.AddAll(car.Mesh.GetMesh());
+            foreach (var car in World.Cars.data) renderHelper.meshInstances.Add(car.meshInstance);
 
             bool suppressHighlights = ToolAttributes.Contains(ToolAttribs.noHighlights);
             if (!suppressHighlights) DrawHighlights(time);

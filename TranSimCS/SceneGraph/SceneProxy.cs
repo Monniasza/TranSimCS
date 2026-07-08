@@ -5,33 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using TranSimCS.Model;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.SceneGraph {
-    public sealed class SceneProxy : IMeshSource {
+    public sealed class SceneProxy: IObjMesh{
         private readonly SceneLeaf owner;
-
         public SceneProxy(SceneLeaf owner) {
             this.owner = owner;
-            owner.MeshSource.OnMeshInvalidated += () =>
-                OnMeshInvalidated?.Invoke();
-
-            owner.MeshSource.OnMeshGenerated += mesh =>
-                OnMeshGenerated?.Invoke(mesh);
         }
-
-        public event Action<MultiMesh>? OnMeshGenerated;
-        public event Action? OnMeshInvalidated;
-
-        public MultiMesh GetMesh()
-            => owner.MeshSource.GetMesh();
-
-        public void Invalidate()
-            => owner.MeshSource.Invalidate();
-
-        public BoundingBox GetBounds()
-            => owner.MeshSource.GetBounds();
-
-        public bool ComputeIntersection(Ray ray, out float distance, out object? tag)
-            => owner.MeshSource.ComputeIntersection(ray, out distance, out tag);
+        public event MeshInvalidationCallback GeometryChanged {
+            add => owner.Obj.GeometryChanged += value;
+            remove => owner.Obj.GeometryChanged -= value;
+        }
+        public BoundingBox GetBounds()  => owner.Obj.GetBounds();
+        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => owner.Obj.ComputeIntersection(ray, out distance, out tag);
+        public void GenerateGeometry(RenderTarget target) => owner.Obj.GenerateGeometry(target);
     }
 }

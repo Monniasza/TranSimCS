@@ -9,24 +9,14 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.SceneGraph {
     public sealed class SceneLeaf : SceneNode {
-        public IMeshSource MeshSource { get; }
-        public Obj Obj { get; }
-
+        public IObjMesh Obj { get; }
         public SceneProxy Proxy { get; }
 
-        public SceneLeaf(IMeshSource meshSource, Obj obj) {
-            MeshSource = meshSource;
+        public SceneLeaf(IObjMesh obj) {
             Obj = obj;
-
             Proxy = new SceneProxy(this);
-
-            MeshSource.OnMeshInvalidated += () =>
-            {
-                // nothing structural here — tree handles it via proxy
-            };
         }
 
-        public override BoundingBox GetBounds()
-            => MeshSource.GetBounds();
+        public override BoundingBox GetBounds() => Obj.GetBounds();
     }
 }

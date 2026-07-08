@@ -27,7 +27,7 @@ namespace TranSimCS.Roads.Strip {
     /// <remarks>A <see cref="RoadStrip"/> defines the relationship between two road nodes, specifying
     /// the lanes involved at each node and their respective indices. It also includes properties for lane
     /// specifications and rendering-related data, such as meshes for visualization.</remarks>
-    public class RoadStrip: Obj, IObjMesh<RoadStrip>, IRoadElement, IRoadFinish, IDraggableObj {
+    public class RoadStrip: Obj, IObjMesh, IRoadElement, IRoadFinish, IDraggableObj {
         //ROAD ELEMENT
         public Lane? GetLane() => null;
         public LaneStrip? GetLaneStrip() => null;
@@ -41,6 +41,7 @@ namespace TranSimCS.Roads.Strip {
         //Events
         public event EventHandler<RoadStripEventArgs>? OnLaneAdded; // Event triggered when lanes are added or removed
         public event EventHandler<RoadStripEventArgs>? OnLaneRemoved; // Event triggered when lanes are removed
+        public event MeshInvalidationCallback GeometryChanged;
 
         //Road strip contents
         public readonly Property<StripSplineGenerator> SplineGeneratorProp;
@@ -57,7 +58,7 @@ namespace TranSimCS.Roads.Strip {
             FinishProperty = new(RoadFinish.Embankment, "finish", this);
             SplineGeneratorProp = new(AnisotropicStripSplineGenerator.Instance, "splineformat", this);
             Mesh = new MeshGenerator<RoadStrip>(this, GenerateMesh);
-            Mesh.OnMeshInvalidated += () => InvalidateMesh0(this);
+            Mesh.OnMeshInvalidated += InvalidateMesh0;
             PropertyChanged += (s, e) => Mesh.Invalidate();
             OnLaneAdded += RoadStrip_OnLaneAdded;
             OnLaneRemoved += RoadStrip_OnLaneRemoved;
@@ -112,8 +113,9 @@ namespace TranSimCS.Roads.Strip {
 
         //Meshes for the lane connection (can be used for rendering and cached)
         public MeshGenerator<RoadStrip> Mesh { get; init; }
-        protected static void InvalidateMesh0(RoadStrip strip) {
-            foreach (var lane in strip.lanes)
+        protected void InvalidateMesh0() {
+            GeometryChanged?.Invoke(this);
+            foreach (var lane in lanes)
                 lane.InvalidateMesh(); // Invalidate the mesh for each lane strip
         }
 
@@ -179,6 +181,10 @@ namespace TranSimCS.Roads.Strip {
         }
 
         IPosition[] IDraggableObj.DraggableComponents() => [StartNode, EndNode];
+
+        public void GenerateGeometry(RenderTarget target) => target.Draw(Mesh.GetMesh());
+        public BoundingBox GetBounds() => Mesh.GetMesh().GetBounds();
+        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => Mesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
 
         public SplineFrame SplineFrame { get; private set; }
         public IndexStrip IndexStrip { get; private set; }

@@ -10,15 +10,19 @@ using TranSimCS.SceneGraph;
 
 namespace TranSimCS.Worlds.Stack {
     public sealed class TrackerSpatial<TObj, TStack>: IStackTracker<TObj, TStack>
-        where TObj: Obj, IObjMesh<TObj>
+        where TObj: Obj, IObjMesh
         where TStack: ObjectStack<TObj, TStack>{
         public readonly SceneTree sceneTree;
+
+        private Dictionary<TObj, SceneLeaf> obj2leaf = [];
         public TrackerSpatial(TSWorld world) {
             sceneTree = new SceneTree();
         }
 
         public void ElementAdded(TObj element) {
-            sceneTree.Add(element.GetSelectionMeshGenerator().Leaf);
+            var leaf = new SceneLeaf(element);
+            obj2leaf[element] = leaf;
+            sceneTree.Add(leaf);
         }
 
         public void ElementModified(TObj element, PropertyChangedEventArgs args) {
@@ -26,7 +30,9 @@ namespace TranSimCS.Worlds.Stack {
         }
 
         public void ElementRemoved(TObj element) {
-            sceneTree.Remove(element.GetSelectionMeshGenerator().Leaf);
+            var leaf = obj2leaf[element];
+            sceneTree.Remove(leaf);
+            obj2leaf.Remove(element);
         }
 
         public void OnThisAdded(TStack stack) {

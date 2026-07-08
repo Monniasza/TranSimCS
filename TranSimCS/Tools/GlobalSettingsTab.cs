@@ -14,16 +14,11 @@ using TranSimCS.Menus;
 namespace TranSimCS.Tools {
     public class GlobalSettingsTab: Panel {
         public GlobalSettingsTab(InGameMenu menu) : base(MLEM.Ui.Anchor.AutoLeft, new(1, 1), true) {
-            var regenerateAllButton = new Button(Anchor.AutoLeft, new(1f, 20), "Regenerate all meshes", "Applied meshing settings and fixes stale meshes");
+            var regenerateAllButton = new Button(Anchor.AutoLeft, new(1f, 20), "Regenerate all meshes", "Applies meshing settings and fixes stale meshes");
             regenerateAllButton.OnPressed += (e) => {
                 var world = menu.World;
-                var objects = new List<IObjMesh>();
-                objects.AddRange(world.Nodes.data);
-                objects.AddRange(world.Cars.data);
-                objects.AddRange(world.RoadSections.data);
-                objects.AddRange(world.RoadSegments.data);
-                objects.AddRange(world.Buildings.data);
-                foreach (var obj in objects) obj.InvalidateMesh();
+                foreach(var obj in world.RoadSections.data) obj.Mesh.Invalidate();
+                foreach (var obj in world.RoadSegments.data) obj.Mesh.Invalidate();
             };
             AddChild(regenerateAllButton);
 

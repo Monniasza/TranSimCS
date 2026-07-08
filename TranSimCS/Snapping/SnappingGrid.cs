@@ -12,7 +12,7 @@ using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Snapping {
-    public class SnappingGrid : Obj, IPosition, IObjMesh<SnappingGrid> {
+    public class SnappingGrid : Obj, IPosition, IObjMesh {
         public Property<PositionEulerAngles> PositionProp { get; private set; }
         /// <summary>
         /// Size of each snapping cell in meters
@@ -32,6 +32,8 @@ namespace TranSimCS.Snapping {
         /// </summary>
         public readonly Property<bool> IsInfiniteProp;
 
+        public event MeshInvalidationCallback GeometryChanged;
+
         public float CellSize { get => CellSizeProp.Value; set => CellSizeProp.Value = value; }
         public uint CellCount { get => CellCountProp.Value; set => CellCountProp.Value = value; }
         public PositionEulerAngles Position { get => PositionProp.Value; set => PositionProp.Value = value; }
@@ -47,6 +49,7 @@ namespace TranSimCS.Snapping {
             IsYLocalProp = new(true, "yLocal", this);
             IsInfiniteProp = new(false, "infinite", this);
             Mesh = new(this, GenerateMesh);
+            Mesh.OnMeshInvalidated += () => GeometryChanged?.Invoke(this);
         }
 
         private void GenerateMesh(SnappingGrid grid, MultiMesh mesh) {
@@ -106,5 +109,9 @@ namespace TranSimCS.Snapping {
             var refPlane = new Plane(refFrame.O + refFrame.Y * y, refFrame.Y);
             return refPlane;
         }
+
+        public void GenerateGeometry(RenderTarget target) => target.Draw(Mesh.GetMesh());
+        public BoundingBox GetBounds() => Mesh.GetMesh().GetBounds();
+        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => Mesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
     }
 }
