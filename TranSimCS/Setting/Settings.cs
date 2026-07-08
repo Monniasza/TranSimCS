@@ -25,6 +25,9 @@ namespace TranSimCS.Setting {
         public static readonly Property<float> CarSpawnRateProp;
         public static float CarSpawnRate { get => CarSpawnRateProp.Value; set => CarSpawnRateProp.Value = value; }
 
+        public static readonly Property<float> DayTimeLengthProp;
+        public static float DayTimeLength { get => DayTimeLengthProp.Value; set => DayTimeLengthProp.Value = value; }
+
         static Settings(){
             RoadAccuracyProp = new(17, "roadAccuracy", null);
             RoadAccuracyProp.ValidateChanges += (s, e) => {
@@ -35,6 +38,7 @@ namespace TranSimCS.Setting {
             DayNightCycleProp = new(true, "dayNightCycle");
             SpawnCarsProp = new(false, "spawnCars");
             CarSpawnRateProp = new(0.2f, "carFreq");
+            DayTimeLengthProp = new(60, "dayTimeLength");
         }
 
         public static SettingsData GetAll() => new SettingsData() {
@@ -43,7 +47,8 @@ namespace TranSimCS.Setting {
             ShowGround = ShowGround,
             DayNightCycle = DayNightCycle,
             SpawnCars = SpawnCars,
-            CarSpawnRate = CarSpawnRate
+            CarSpawnRate = CarSpawnRate,
+            DayTimeLength = DayTimeLength
         };
         public static void SetAll(SettingsData data) {
             RoadAccuracy = data.RoadAccuracy;
@@ -52,6 +57,7 @@ namespace TranSimCS.Setting {
             DayNightCycle = data.DayNightCycle;
             SpawnCars = data.SpawnCars;
             CarSpawnRate = data.CarSpawnRate;
+            DayTimeLength = data.DayTimeLength;
         }
     }
 
@@ -62,7 +68,8 @@ namespace TranSimCS.Setting {
             ShowGround = true,
             DayNightCycle = true,
             SpawnCars = false,
-            CarSpawnRate = 0.2f
+            CarSpawnRate = 0.2f,
+            DayTimeLength = 60
         };
 
         public int RoadAccuracy;
@@ -71,6 +78,7 @@ namespace TranSimCS.Setting {
         public bool DayNightCycle;
         public bool SpawnCars;
         public float CarSpawnRate;
+        public float DayTimeLength;
     }
 
     public class SettingsDataConverter : JsonConverter<SettingsData> {
@@ -102,6 +110,10 @@ namespace TranSimCS.Setting {
                         reader0.Read();
                         data.CarSpawnRate = reader0.GetSingle();
                         break;
+                    case "dayTimeLength":
+                        reader0.Read();
+                        data.DayTimeLength = reader0.GetSingle();
+                        break;
                     default:
                         reader0.Skip();
                         break;
@@ -125,6 +137,7 @@ namespace TranSimCS.Setting {
             writer.WriteBoolean("dayNightCycle", value.DayNightCycle);
             writer.WriteBoolean("spawnCars", value.SpawnCars);
             writer.WriteNumber("carFreq", value.CarSpawnRate);
+            writer.WriteNumber("dayTimeLength", value.DayTimeLength);
 
             writer.WriteEndObject();
         }

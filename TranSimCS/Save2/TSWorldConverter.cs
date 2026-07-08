@@ -34,6 +34,10 @@ namespace TranSimCS.Save2 {
                         world.Cars.data.Clear();
                         world.Cars.ReadFromJson(ref reader0, options);
                         break;
+                    case "daytime":
+                        reader0.Read();
+                        world.DayTime = reader0.GetSingle();
+                        break;
                 }
             }, true);
 
@@ -62,6 +66,8 @@ namespace TranSimCS.Save2 {
 
             writer.WritePropertyName("cars");
             value.Cars.SaveToJson(writer, options);
+
+            writer.WriteNumber("daytime", value.DayTime);
             
             writer.WriteEndObject();
         }

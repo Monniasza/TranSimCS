@@ -41,6 +41,7 @@ namespace TranSimCS.Tools {
             AddChild(spawnCarsCheck);
 
             AddSetting(this, "Car spawn frequency [Hz/lane]", float.Parse, x => x.ToString(), Settings.CarSpawnRateProp);
+            AddSetting(this, "Lenght of day/night cycle [s]", float.Parse, x => x.ToString(), Settings.DayTimeLengthProp);
         }
 
         public static TextField AddSetting<T>(Panel panel, String name, Func<string, T> fromString, Func<T, string> toString, Property<T> prop) {

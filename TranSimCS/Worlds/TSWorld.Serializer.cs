@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using TranSimCS.Save2;
+using TranSimCS.Worlds.Car;
 
 namespace TranSimCS.Worlds {
     public partial class TSWorld {
@@ -33,6 +34,7 @@ namespace TranSimCS.Worlds {
             options.Converters.Add(new Save2.LaneStripConverter(this));
             options.Converters.Add(new Save2.TSWorldConverter());
             options.Converters.Add(new Save2.Vector3iConverter());
+            options.Converters.Add(new LanePositionConverter(this));
 
             return options;
         }
@@ -81,6 +83,8 @@ namespace TranSimCS.Worlds {
 
                     Cars.data.Clear();
                     Cars.data.UnionWith(loadedWorld.Cars.data);
+
+                    DayTime = loadedWorld.DayTime;
 
                     log.Info($"World loaded successfully from {filename}");
                 } else {

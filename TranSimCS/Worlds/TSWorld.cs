@@ -18,6 +18,8 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Roads.Section;
 using TranSimCS.Property;
+using TranSimCS.Setting;
+using MonoGame.Extended;
 
 namespace TranSimCS.Worlds
 {
@@ -31,6 +33,12 @@ namespace TranSimCS.Worlds
         public CarStack Cars { get; }
         public NodeStack Nodes { get; }
         public World ECS { get; private set; }
+
+        private float _daytime;
+        public float DayTime {
+            get => _daytime;
+            set => _daytime = ((value % 60) + 60) % 60;
+        }
 
         public RoadStrip? FindRoadStrip(RoadNodeEnd start, RoadNodeEnd end) {
             foreach (var strip in RoadSegments.data) 
@@ -127,6 +135,7 @@ namespace TranSimCS.Worlds
             OnUpdate?.Invoke(deltaTime);
 
             // Update logic for the world can be added here
+            DayTime += (60 / Settings.DayTimeLength) * deltaTime.GetElapsedSeconds();
             diagCounter++;
             if(diagCounter >= 60) {
                 diagCounter = 0;
@@ -147,6 +156,7 @@ namespace TranSimCS.Worlds
             Nodes.data.Clear();
             Buildings.data.Clear();
             ECS.Clear();
+            Cars.data.Clear();
         }
     }
 }

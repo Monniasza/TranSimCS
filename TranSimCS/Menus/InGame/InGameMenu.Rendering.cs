@@ -131,8 +131,7 @@ namespace TranSimCS.Menus.InGame {
                 new(57, nightVector), new(60, sunsetVector), new(61, sunsetVector)
             ]);
 
-            DateTime dateTime = DateTime.Now;
-            var seconds = dateTime.Second + dateTime.Millisecond * 0.001f + dateTime.Microsecond * 0.000001f;
+            var seconds = World.DayTime;
             if (!isDayNight) seconds = 15;
             var radsPerSecond = MathF.PI / 30;
 
