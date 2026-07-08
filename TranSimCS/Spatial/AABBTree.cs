@@ -11,10 +11,56 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.SceneGraph;
 
 namespace TranSimCS.Spatial {
+    [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+    public struct AABBDiagnostic {
+        public int Height;
+        public float Surface;
+        public int Count;
+
+        public AABBDiagnostic(int height, float surface, int count) {
+            this.Height = height;
+            this.Surface = surface;
+            this.Count = count;
+        }
+
+        public static AABBDiagnostic operator +(AABBDiagnostic left, AABBDiagnostic right) {
+            return new(
+                int.Max(left.Height, right.Height) + 1,
+                left.Surface + right.Surface,
+                left.Count + right.Count
+            );
+        }
+
+        private string GetDebuggerDisplay() {
+            return ToString();
+        }
+
+        public override string ToString() {
+            return $"Height: {Height}, Surface: {Surface}, Count: {Count}";
+        }
+    }
+
     public sealed class AABBTree<T>
     where T : IMeshSource {
         private readonly Dictionary<T, AABBNode<T>> Items = [];
         private AABBNode<T>? root;
+
+        public AABBDiagnostic[] GenerateDiagnostics() {
+            if (root == null) return [new AABBDiagnostic(0, 0, 0)];
+            if (root.Item != null) return [GenerateDiagnostic(root)];
+            return [GenerateDiagnostic(root.Left), GenerateDiagnostic(root.Right)];
+        }
+        private AABBDiagnostic GenerateDiagnostic(AABBNode<T> node) {
+            AABBDiagnostic diagnostic = (node.Item == null) ?
+                GenerateDiagnostic(node.Left) + GenerateDiagnostic(node.Right) :
+                new(1, node.Item.GetBounds().SurfaceArea(), 1);
+
+            //Verify height
+            Debug.Assert(diagnostic.Height == node.Height);
+           
+            return diagnostic;
+        }
+
 
         public void Add(T item) {
             ArgumentNullException.ThrowIfNull(item, nameof(item));
@@ -36,7 +82,7 @@ namespace TranSimCS.Spatial {
 
             var sibling = FindBestSibling(leaf);
             InsertLeaf(leaf, sibling);
-            Balance(leaf);
+            BalanceAVL(leaf);
             RefitUpwards(leaf);
         }
         private AABBNode<T> FindBestSibling(AABBNode<T> leaf) {
@@ -46,14 +92,13 @@ namespace TranSimCS.Spatial {
             AABBNode<T> parent = root;
             while (true) {
                 if (parent.Item != null) return parent;
-                if (parent.Left != null && parent.Right != null) return parent;
                 var area = leaf.SurfaceArea;
                 var left = parent.Left;
                 var leftMerged = BoundingBox.CreateMerged(leaf.Bounds, left.Bounds);
-                var leftCost = leftMerged.SurfaceArea() - area;
+                var leftCost = leftMerged.SurfaceArea() - left.Bounds.SurfaceArea();
                 var right = parent.Right;
                 var rightMerged = BoundingBox.CreateMerged(leaf.Bounds, right.Bounds);
-                var rightCost = rightMerged.SurfaceArea() - area;
+                var rightCost = rightMerged.SurfaceArea() - right.Bounds.SurfaceArea();
                 if (leftCost < rightCost) {
                     parent = left;
                 } else {
@@ -62,7 +107,12 @@ namespace TranSimCS.Spatial {
             }
         }
         private void InsertLeaf(AABBNode<T> leaf, AABBNode<T> sibling) {
+            Debug.Assert(leaf.Item != null); //`leaf` must be a leaf
+            Debug.Assert(sibling.Item != null); //`sibling` must be a leaf
+
             var parent = sibling.Parent;
+            if (parent != null) 
+                Debug.Assert(parent.Left == sibling || parent.Right == sibling, "Sibling's parent doesn't reference sibling");
             var isSiblingOnTheLeft = parent?.Left == sibling;
             var newParent = new AABBNode<T>() {
                 Left = leaf,
@@ -70,9 +120,11 @@ namespace TranSimCS.Spatial {
                 Bounds = BoundingBox.CreateMerged(leaf.Bounds, sibling.Bounds),
                 Stale = false,
                 Parent = parent,
+                Height = 2
             };
             leaf.Parent = newParent;
             sibling.Parent = newParent;
+            
 
             if (parent == null) {
                 root = newParent;
@@ -83,129 +135,139 @@ namespace TranSimCS.Spatial {
             } else {
                 parent.Right = newParent;
             }
-            newParent.Parent = parent;
+            Validate(newParent);
+
+            //Update all ancestors
+            ReheightUpwards(parent);
+            Validate(parent);
         }
-        
-        private void Balance(AABBNode<T> node) {
+        private void ReheightUpwards(AABBNode<T>? parent) {
+            while (parent != null) {
+                Debug.Assert(parent.Item == null);
+                Debug.Assert(parent.Left != null);
+                Debug.Assert(parent.Right != null);
+                var newHeight = int.Max(parent.Left.Height, parent.Right.Height) + 1;
+                if (parent.Height == newHeight) return;
+                parent.Height = newHeight;
+                parent = parent.Parent;
+            }
+        }
+        private void ReheightUpwards2(AABBNode<T>? parent) {
+            while (parent != null) {
+                Debug.Assert(parent.Item == null);
+                Debug.Assert(parent.Left != null);
+                Debug.Assert(parent.Right != null);
+                var newHeight = int.Max(parent.Left.Height, parent.Right.Height) + 1;
+                parent.Height = newHeight;
+                Validate(parent);
+                parent = parent.Parent;
+            }
+        }
+        private void BalanceAVL(AABBNode<T> node) {
+            Debug.Print("Balancing...");
             while (node != null) {
+                Validate(node);
                 if (node.Item != null) {
+                    //This node is a leaf
                     node = node.Parent;
                     continue;
                 }
 
-                var left = node.Left;
-                var right = node.Right;
+                Debug.Print("Node validation succeeded");
 
-                if (left == null || right == null) {
+                //Check if balancing is needed
+                var bias = Balance(node);
+                if(bias > -2 && bias < 2) {
+                    //The node is sufficiently balanced
                     node = node.Parent;
                     continue;
                 }
-
-                float bestCost = node.Bounds.SurfaceArea();
-
-                AABBNode<T>? bestA = null;
-                AABBNode<T>? bestB = null;
-
-                // -------------------------
-                // Try LEFT rotation (bring right child up)
-                // -------------------------
-                if (right.Item == null) {
-                    var rl = right.Left;
-                    var rr = right.Right;
-
-                    float cost = BoundingBox.CreateMerged(
-                        left.Bounds,
-                        rl.Bounds).SurfaceArea();
-
-                    cost += BoundingBox.CreateMerged(
-                        rr.Bounds,
-                        node.Bounds).SurfaceArea();
-
-                    if (cost < bestCost) {
-                        bestCost = cost;
-                        bestA = right;
-                        bestB = left;
-                    }
+                if(bias > 0) {
+                    //Biased left, rotate right
+                    if(Balance(node.Left) < 0)
+                        RotateLeft(node.Left);
+                    node = RotateRight(node);
+                } else {
+                    //Biased right, rotate left
+                    if(Balance(node.Right) > 0)
+                        RotateRight(node.Right);
+                    node = RotateLeft(node);
                 }
-
-                // -------------------------
-                // Try RIGHT rotation (bring left child up)
-                // -------------------------
-                if (left.Item == null) {
-                    var ll = left.Left;
-                    var lr = left.Right;
-
-                    float cost = BoundingBox.CreateMerged(
-                        ll.Bounds,
-                        node.Bounds).SurfaceArea();
-
-                    cost += BoundingBox.CreateMerged(
-                        lr.Bounds,
-                        right.Bounds).SurfaceArea();
-
-                    if (cost < bestCost) {
-                        bestCost = cost;
-                        bestA = left;
-                        bestB = right;
-                    }
-                }
-
-                // -------------------------
-                // Apply best rotation
-                // -------------------------
-                if (bestA != null) {
-                    ApplyRotation(node, bestA, bestB);
-                }
-
+                Debug.Assert(node.Left.Parent == node);
+                Debug.Assert(node.Right.Parent == node);
                 node = node.Parent;
             }
         }
-        private void ApplyRotation(AABBNode<T> parent, AABBNode<T> child, AABBNode<T> sibling) {
-            var grandParent = parent.Parent;
 
-            // detach
-            if (grandParent != null) {
-                if (grandParent.Left == parent)
-                    grandParent.Left = child;
-                else
-                    grandParent.Right = child;
-            } else {
-                root = child;
-            }
-
-            child.Parent = grandParent;
-
-            // rotate structure
-            if (child == parent.Left) {
-                // RIGHT rotation
-                var move = child.Right;
-
-                child.Right = parent;
-                parent.Parent = child;
-
-                parent.Left = move;
-                if (move != null) move.Parent = parent;
-            } else {
-                // LEFT rotation
-                var move = child.Left;
-
-                child.Left = parent;
-                parent.Parent = child;
-
-                parent.Right = move;
-                if (move != null) move.Parent = parent;
-            }
-
-            // fix bounds
-            parent.Bounds = MergeBounds(parent);
-            child.Bounds = MergeBounds(child);
+        private int Balance(AABBNode<T> node) {
+            if (node.Item != null) return 0;
+            return node.Left.Height - node.Right.Height; ;
         }
+        private AABBNode<T> RotateRight(AABBNode<T> O) {
+            //Biased left, rotate right
+            /* Before:         | B becomes the root | C becomes right of 0 | 0 becomes a left of B, finished
+             * .....0.....hr>2 | ..B...0......hl0=1 | ..B...0......hl0=1   | .....B...hr=2
+             * ..../.\....hl=1 | ./.\...\.....hr0=0 | ./.../.\.....hr0=1   | ..../.\..hl=2
+             * ...B...A....... | D...C...A....hlB=1 | D...C...A....hlB=0   | ...D...0.....
+             * ../.\.......... | .............hrB=2 | .............hrB=2   | ....../.\....
+             * .D...C......... | .................. | ..................   | .....A...C...
+             * .|...|......... | Modified nodes: root, B, 0, C, the predecessor */
+            // Links Broken: P|0, 0/B, B\C
+            // Links Added: P|B, 0/C, B\0
 
-        private BoundingBox MergeBounds(AABBNode<T> n) {
-            if (n.Item != null)
-                return n.Item.GetBounds();
+            var P = O.Parent;
+            var B = O.Left;
+            var C = B.Right;
 
-            return BoundingBox.CreateMerged(n.Left.Bounds, n.Right.Bounds);
+            O.Left = C;
+            C?.Parent = O;
+            B.Right = O;
+            O.Parent = B;
+            B.Parent = P;
+            if (P == null) root = B;
+            else if (P.Left == O) P.Left = B;
+            else if (P.Right == O) P.Right = B;
+            else Debug.Fail("Neither child of the predecessor is the target node");
+            if (C != null) Validate(C);
+            O.Reheight(); B.Reheight();
+            if (P != null) ReheightUpwards2(P);
+            Validate(B); Validate(O);
+            if (P != null) Validate(P);
+
+            return B;
+        }
+        private AABBNode<T> RotateLeft(AABBNode<T> O) {
+            //Biased right, rotate left
+            /* Before:         | B becomes the root | C becomes right of 0 | 0 becomes a left of B, finished
+             * .....0.....hr>2 | ..0...B......hl0=1 | ..0....B.....hl0=1   | .....B...hr=2
+             * ..../.\....hl=1 | ./.../.\.....hr0=0 | ./.\....\....hr0=1   | ..../.\..hl=2
+             * ...A...B....... | A...C...D....hlB=1 | A...C....D...hlB=0   | ...0...D.....
+             * ....../.\...... | .............hrB=2 | .............hrB=2   | ../.\........
+             * .....C...D..... | .................. | ..................   | .A...C.......
+             * .....|...|..... | Modified nodes: root, B, 0, C, the predecessor */
+            // Links Broken: P|0, 0\B, B/C
+            // Links Added: P|B, 0\C, B/0
+
+            var P = O.Parent;
+            var B = O.Right;
+            var C = B.Left;
+
+            O.Right = C;
+            C?.Parent = O;
+            B.Left = O;
+            O.Parent = B;
+            B.Parent = P;
+            if (P == null) root = B;
+            else if (P.Left == O) P.Left = B;
+            else if (P.Right == O) P.Right = B;
+            else Debug.Fail("Neither child of the predecessor is the target node");
+            if (C != null) Validate(C);
+            O.Reheight(); B.Reheight();
+            if (P != null) ReheightUpwards2(P);
+            Validate(B); Validate(O);
+            if (P != null) Validate(P);
+
+            return B;
         }
 
         public bool Remove(T item) {
@@ -241,6 +303,7 @@ namespace TranSimCS.Spatial {
                 } else {
                     grandparent.Right = sibling;
                 }
+                grandparent.Reheight();
             }
 
             //Destroy the parent
@@ -251,7 +314,7 @@ namespace TranSimCS.Spatial {
             var start = grandparent ?? sibling;
 
             RefitUpwards(start);
-            Balance(start);
+            BalanceAVL(start);
 
             return true;
         }
@@ -333,7 +396,7 @@ namespace TranSimCS.Spatial {
         private void Refit(AABBNode<T>? node) {
             if (node == null || !node.Stale) return;
             RefitDown(node);
-            RefitUpwards(node.Parent);
+            RefitUpwards(node);
         }
         private void RefitUpwards(AABBNode<T> node) {
             Debug.Assert(node != null);
@@ -368,12 +431,35 @@ namespace TranSimCS.Spatial {
 
         [Conditional("DEBUG")]
         private static void Validate(AABBNode<T> node) {
+            ValidateParentChain(node);
             if (node.Item != null) {
                 Debug.Assert(node.Left == null);
                 Debug.Assert(node.Right == null);
+                Debug.Assert(node.Height == 1);
             } else {
-                Debug.Assert(node.Left != null);
-                Debug.Assert(node.Right != null);
+                Debug.Assert(node.Left != null, "Left child missing");
+                Debug.Assert(node.Right != null, "Right child missing");
+                Debug.Assert(node.Left.Parent == node, "Left parent incorrect");
+                Debug.Assert(node.Right.Parent == node, "Right parent incorrect");
+                Debug.Assert(node.Parent == null ||
+                     node.Parent.Left == node ||
+                     node.Parent.Right == node,
+                     "Parent doesn't point back");
+                int expected = int.Max(node.Left.Height, node.Right.Height) + 1;
+                Debug.Assert(node.Height == expected, $"Height wrong: Actual: {node.Height}, expected: {expected}");
+            }
+        }
+
+        [Conditional("DEBUG")]
+        private static void ValidateParentChain(AABBNode<T>? node) {
+            var slow = node;
+            var fast = node;
+
+            while (fast != null && fast.Parent != null) {
+                slow = slow!.Parent;
+                fast = fast.Parent.Parent;
+
+                Debug.Assert(slow != fast, "Cycle detected in Parent chain");
             }
         }
     }
@@ -384,6 +470,8 @@ namespace TranSimCS.Spatial {
         public AABBNode<T>? Right;
         public BoundingBox Bounds;
         public bool Stale;
+        public int Height = 1;
+
         public float SurfaceArea => Bounds.SurfaceArea();
         public T? Item;
         public void Destroy() {
@@ -401,5 +489,6 @@ namespace TranSimCS.Spatial {
                 node = node.Parent;
             }
         }
+        public void Reheight() => Height = (Item == null) ? int.Max(Left.Height, Right.Height) + 1 : 1;
     }
 }
