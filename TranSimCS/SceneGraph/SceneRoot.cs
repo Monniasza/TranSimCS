@@ -11,7 +11,7 @@ namespace TranSimCS.SceneGraph {
     public sealed class SceneRoot {
         public SceneTree RootTree { get; }
 
-        private readonly AABBTree<SceneProxy> tree = new();
+        public readonly AABBTree<SceneProxy> tree = new();
 
         public SceneRoot(SceneTree root) {
             RootTree = root;

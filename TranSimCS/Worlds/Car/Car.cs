@@ -79,7 +79,6 @@ namespace TranSimCS.Worlds.Car {
             MeshIdProp = new(null, "meshId", this);
             Mesh = new(this, GenerateMesh);
             MeshIdProp.ValueChanged += MeshIdProp_ValueChanged;
-            LanePositionProp = new(default, "strip", this);
         }
 
         private void MeshIdProp_ValueChanged(object? sender, PropertyChangedEventArgs2<string?> e) {
@@ -122,9 +121,7 @@ namespace TranSimCS.Worlds.Car {
             pr.Inclination *= -1;
             PositionProp.Value = pr;
         }
-
-        public Property<LanePosition> LanePositionProp;
-        public LanePosition LanePosition { get => LanePositionProp.Value; set => LanePositionProp.Value = value; }
+        public LanePosition LanePosition;
 
         internal void Update(GameTime time) {
             if (World == null) return;
@@ -150,16 +147,12 @@ namespace TranSimCS.Worlds.Car {
                     var isReverse = discriminant < 0;
                     var forwardReverseT = LanePosition.LaneStrip.SplineLUT.ByT[inverseInterpolatedT];
 
-                    var temp1 = LanePosition;
-                    temp1.LaneArcLength = isReverse ? forwardReverseT.Y : forwardReverseT.X;
-                    temp1.IsReverse = isReverse;
-                    LanePosition = temp1;
+                    LanePosition.LaneArcLength = isReverse ? forwardReverseT.Y : forwardReverseT.X;
+                    LanePosition.IsReverse = isReverse;
                 }
 
                 //Interpolate
-                var temp0 = LanePosition;
-                temp0.LaneArcLength += Speed * time.GetElapsedSeconds();
-                LanePosition = temp0;
+                LanePosition.LaneArcLength += Speed * time.GetElapsedSeconds();
 
                 //Overflow
                 var splineCache = LanePosition.LaneStrip.SplineLUT;
@@ -211,11 +204,10 @@ namespace TranSimCS.Worlds.Car {
             }
         }
         private void Overflow(SegmentHalf half) {
-            var lanePosition = LanePosition;
-            if (lanePosition.LaneStrip == null) return;
-            lanePosition.LaneArcLength -= lanePosition.LaneStrip.SplineLUT.Length;
+            if (LanePosition.LaneStrip == null) return;
+            LanePosition.LaneArcLength -= LanePosition.LaneStrip.SplineLUT.Length;
 
-            var nextLane = lanePosition.LaneStrip.GetHalf(half);
+            var nextLane = LanePosition.LaneStrip.GetHalf(half);
             nextLane = nextLane.OppositeEnd;
             var candidates = World.FindLaneStrips(nextLane);
 
@@ -227,13 +219,12 @@ namespace TranSimCS.Worlds.Car {
 
             //Car gets stuck when hitting a next segment
             var choice = rnd.GetRandomEntry(candidates);
-            if (choice == lanePosition.LaneStrip)
+            if (choice == LanePosition.LaneStrip)
                 throw new Exception("Transitioned to same strip");
 
             var isEntryFromEnd = choice.EndLane == nextLane;
-            lanePosition.LaneStrip = choice;
-            lanePosition.IsReverse = isEntryFromEnd;
-            LanePosition = lanePosition;
+            LanePosition.LaneStrip = choice;
+            LanePosition.IsReverse = isEntryFromEnd;
         }
     }
 }

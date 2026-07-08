@@ -119,10 +119,26 @@ namespace TranSimCS.Worlds
         }
 
 
+        //Every 60 frames, log tree parameters
+        private int diagCounter = 0;
+
         public event Action<GameTime>? OnUpdate;
         public void Update(GameTime deltaTime){
             OnUpdate?.Invoke(deltaTime);
+
             // Update logic for the world can be added here
+            diagCounter++;
+            if(diagCounter >= 60) {
+                diagCounter = 0;
+
+                //Print AABB diagnostic
+                log.Trace("AABB diagnostics:");
+                var diagnostics = RootIndex.tree.GenerateDiagnostics();
+                if(diagnostics.Length == 2) {
+                    log.Trace("Left: {0}", diagnostics[0].ToString());
+                    log.Trace("Right: {0}", diagnostics[1].ToString());
+                }
+            }
         }
 
         public void ClearAll() {
