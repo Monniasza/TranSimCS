@@ -29,7 +29,7 @@ namespace TranSimCS.Tools {
         public void AddSelectors(MultiMesh invisibleSelectors, MultiMesh visibleSelectors) { }
 
         public static void Init() {
-            ToolsPanel.AddPanel(ToolAttribs.showRoadTools, (x => new RoadTools(x)));
+            ToolsPanel.AddPanel(ToolAttribs.showRoadTools, (x => new StripTools(x)));
             ToolsPanel.AddPanel(ToolAttribs.showFinishes, (x => new FinishTools(x)));
             ToolsPanel.AddPanel(ToolAttribs.showPosManip, (x => new PrecPosTools(x)));
             ToolsPanel.AddPanel(ToolAttribs.showChooser, (x => new PickAnObjectTab(x)));

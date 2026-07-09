@@ -11,7 +11,7 @@ using TranSimCS.Property;
 using TranSimCS.Setting;
 
 namespace TranSimCS.Tools {
-    public class RoadTools : Panel {
+    public class StripTools : Panel {
         public InGameMenu Game { get; private set; }
         public Checkbox flattenTilt { get; private set; }
         public Checkbox flattenIncline { get; private set; }
@@ -28,7 +28,7 @@ namespace TranSimCS.Tools {
             return new StyleProp<TextureRegion>(new TextureRegion(Game.Game.Content.Load<Texture2D>(name)));
         }
 
-        public RoadTools(InGameMenu game)
+        public StripTools(InGameMenu game)
             : base(Anchor.AutoLeft, new(1, 1), true) {
             Game = game;
 
@@ -63,9 +63,9 @@ namespace TranSimCS.Tools {
             //Spec-transfer modes
             var specTransferLabel = new Paragraph(Anchor.AutoInlineBottom, 0.5f, "Lane-spec transfer method");
             AddChild(specTransferLabel);
-            ChainMode = new Property<ChainMode>(RoadTool.chained, "chainMode");
-            UI.CreateRadio(game, this, "From previous", "ui/chain", ChainMode, RoadTool.chained);
-            UI.CreateRadio(game, this, "Custom from road configurator", "ui/customsettings", ChainMode, RoadTool.custom);
+            ChainMode = new Property<ChainMode>(StripTool.chained, "chainMode");
+            UI.CreateRadio(game, this, "From previous", "ui/chain", ChainMode, StripTool.chained);
+            UI.CreateRadio(game, this, "Custom from road configurator", "ui/customsettings", ChainMode, StripTool.custom);
 
             //Height adjustment
             Height = new Property<float>(0f, "height");

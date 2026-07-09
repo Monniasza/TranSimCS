@@ -61,14 +61,14 @@ namespace TranSimCS.Tools {
         public LaneSpec ChainValues(InGameMenu game) => game.configurator.laneSpecProp.Value;
     }
 
-    public class RoadTool: ITool {
+    public class StripTool: ITool {
         private static Logger log = LogManager.GetCurrentClassLogger();
         public static readonly ChainMode chained = ChainModeChained.value;
         public static readonly ChainMode custom = ChainModeCustom.value;
         static readonly Vector3 offset = new Vector3(0, 0.01f, 0);
 
         public readonly InGameMenu menu;
-        public readonly RoadTools RoadTools;
+        public readonly StripTools RoadTools;
 
         public Bezier3 GeneratedSpline { get; private set; }
         public LaneEnd? node { get; set; }
@@ -76,7 +76,7 @@ namespace TranSimCS.Tools {
         public PositionEulerAngles? NewNodePosition { get; private set; }
         public RoadMode Mode { get; set; } = new CircMode();
 
-        string ITool.Name => "Road creation tool";
+        string ITool.Name => "Road strip creation tool";
 
         string ITool.Description => node == null ? "Pick a lane"
             : $"Creating a segment. Chord-length: {GeneratedSpline.ChordLength()}, arc-length: {GeneratedSpline.ArcLength()}";
@@ -96,9 +96,9 @@ namespace TranSimCS.Tools {
         }
 
         
-        public RoadTool(InGameMenu menu) {
+        public StripTool(InGameMenu menu) {
             this.menu = menu;
-            RoadTools = menu.ToolsPanel.GetPanel<RoadTools>(ToolAttribs.showRoadTools);
+            RoadTools = menu.ToolsPanel.GetPanel<StripTools>(ToolAttribs.showRoadTools);
         }
 
         private LaneEnd? GetLaneEnd() {
@@ -283,7 +283,7 @@ namespace TranSimCS.Tools {
         }
 
         public static LaneSpec GetActualLaneSpec(InGameMenu menu) {
-            var roadTab = menu.ToolsPanel.GetPanel<RoadTools>(ToolAttribs.showRoadTools);
+            var roadTab = menu.ToolsPanel.GetPanel<StripTools>(ToolAttribs.showRoadTools);
             return roadTab.ChainMode.Value.ChainValues(menu);
         }
     }

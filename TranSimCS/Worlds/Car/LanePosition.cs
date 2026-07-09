@@ -95,7 +95,7 @@ namespace TranSimCS.Worlds.Car {
             writer.WriteBoolean("reverse", value.IsReverse);
             if (float.IsFinite(value.LaneArcLength)) writer.WriteNumber("pos", value.LaneArcLength);
             if(value.LaneStrip != null) {
-                var stripConverter = new LaneStripConverter(world);
+                var stripConverter = new StripRefConverter(world);
                 writer.WritePropertyName("strip");
                 stripConverter.Write(writer, value.LaneStrip, options);
             }
