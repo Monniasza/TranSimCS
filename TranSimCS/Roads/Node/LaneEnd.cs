@@ -11,7 +11,7 @@ using TranSimCS.Worlds;
 namespace TranSimCS.Roads.Node {
     public struct LaneEnd(NodeEnd End, Lane Lane) : IEquatable<LaneEnd>, IDraggableObj, IRoadElement {
         //ROAD ELEMENT
-        public Guid Guid => lane.RoadNode.Guid;
+        public Guid Guid => lane.Guid;
         public Lane GetLane() => lane;
         public LaneStrip? GetLaneStrip() => null;
         public RoadNode GetRoadNode() => lane.RoadNode;

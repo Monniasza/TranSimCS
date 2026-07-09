@@ -30,5 +30,8 @@ namespace TranSimCS.Geometry {
         public static T Middle<T>(this Range<T> a) where T: INumber<T> {
             return (a.Min + a.Max)/(T.One + T.One);
         }
+        public static T Width<T>(this Range<T> a) where T : INumber<T> {
+            return a.Max - a.Min;
+        }
     }
 }

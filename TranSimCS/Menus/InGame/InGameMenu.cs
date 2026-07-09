@@ -165,6 +165,7 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("ui/preceditor", new LaneTool(this));
             SetUpToolPictureButton("stats", new StatTool(this));
             SetUpToolPictureButton("ui/carlauncher", new CarLauncherTool(this));
+            SetUpToolPictureButton("ui/toolRoad", new SegmentTool(this));
 
             //Set up the tool preview
             ToolDescPanel = new ToolDescriptionPanel(this);

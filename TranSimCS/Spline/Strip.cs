@@ -9,6 +9,7 @@ namespace TranSimCS.Spline {
     public struct Strip(Bezier3 left, Bezier3 right): IPatch {
         public Bezier3 left = left;
         public Bezier3 right = right;
+        public Bezier3 Middle => (left+right)/2;
 
         public Vector3 Get(float x, float y) {
             var lpos = left[y];
