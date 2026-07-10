@@ -3,14 +3,12 @@ using Microsoft.Xna.Framework;
 
 namespace TranSimCS.Roads {
     public struct LaneSpec : IEquatable<LaneSpec> {
-        public Color Color { get; set; } // Color of the lane
-        public VehicleTypes VehicleTypes { get; set; } // Types of vehicles allowed in the lane
-        public LaneFlags Flags { get; set; } // Flags for additional lane properties
-        public float Width { get; set; } //Width. Ignored by nodes, but used to store new lane widths
-        public float SpeedLimit { get; set; } //Speed limit [km/h]
-
-        public float LineWidth { get; set; } //Line width
-
+        public Color Color; // Color of the lane
+        public VehicleTypes VehicleTypes; // Types of vehicles allowed in the lane
+        public LaneFlags Flags;// Flags for additional lane properties
+        public float Width;//Width. Ignored by nodes, but used to store new lane widths
+        public float SpeedLimit;//Speed limit [km/h]
+        public float LineWidth; //Line width
 
         // Constructor to initialize the LaneSpec with lane index, width, and offset
         public LaneSpec(Color color, VehicleTypes vehicleTypes, float width = 3.5f, float speedLimit = 50, LaneFlags flags = LaneFlags.None, float lineWidth = 0.2f) {

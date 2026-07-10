@@ -1,4 +1,5 @@
 ﻿using System;
+using LanguageExt.Common;
 
 namespace TranSimCS.Roads {
     [Flags]
@@ -58,6 +59,14 @@ namespace TranSimCS.Roads {
         public static LaneFlags Reverse(this LaneFlags flags) {
             var result = flags;
             result ^= LaneFlags.IsMerge;
+            result = DataUtil.SwapFlags(result, LaneFlags.NoLeft, LaneFlags.NoRight);
+            result = DataUtil.SwapFlags(result, LaneFlags.MergeLeft, LaneFlags.MergeRight);
+            return result;
+        }
+        public static LaneFlags LongitudinalReverse(this LaneFlags flags)
+            => flags ^ LaneFlags.IsMerge;
+        public static LaneFlags LateralReverse(this LaneFlags flags) {
+            var result = flags;
             result = DataUtil.SwapFlags(result, LaneFlags.NoLeft, LaneFlags.NoRight);
             result = DataUtil.SwapFlags(result, LaneFlags.MergeLeft, LaneFlags.MergeRight);
             return result;
