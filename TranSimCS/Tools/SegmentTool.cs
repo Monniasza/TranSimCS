@@ -83,8 +83,15 @@ namespace TranSimCS.Tools {
 
                     //Should the road go forward or backward?
                     var (forwardCount, backwardCount) = startLane.lane.CountLaneDirections();
+
+                    var isBackPreferred = backwardCount > forwardCount;
+                    var isForwardPreferred = backwardCount < forwardCount;
+                    var isLaneLeft = prevLanes[i].MiddlePosition < 0;
+
+                    var isBackwards = isBackPreferred || (!isForwardPreferred && isLaneLeft);
+
                     //backwards if backwards is clearly preferred or equally preferred but going from the back
-                    if ((backwardCount > forwardCount ^ newLaneEnd.end == NodeEnd.Backward) && backwardCount != forwardCount) DataUtil.Swap(ref startLane, ref endLane);
+                    if (isBackwards ^ newLaneEnd.end == NodeEnd.Backward) DataUtil.Swap(ref startLane, ref endLane);
                     LaneStrip laneStrip = new LaneStrip(startLane, endLane);
                     road.AddLaneStrip(laneStrip);
                 }
