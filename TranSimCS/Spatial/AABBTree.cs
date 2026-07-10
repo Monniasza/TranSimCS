@@ -10,6 +10,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
+using static LanguageExt.Compositions<A>;
 
 namespace TranSimCS.Spatial {
     [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
@@ -72,6 +73,7 @@ namespace TranSimCS.Spatial {
                 Bounds = item.GetBounds(),
                 Stale = false,
             };
+            Validate(leaf);
             item.GeometryChanged += leaf.MarkStale;
             Items[item] = leaf;
 
@@ -411,6 +413,7 @@ namespace TranSimCS.Spatial {
                 } else {
                     node.Bounds = node.Item.GetBounds();
                 }
+                Validate(node);
                 node = node.Parent;
             }
         }
@@ -426,13 +429,16 @@ namespace TranSimCS.Spatial {
                 node.Bounds = BoundingBox.CreateMerged(node.Left.Bounds, node.Right.Bounds);
                 var isLeftStale = node.Left != null && node.Left.Stale;
                 var isRightStale = node.Right != null && node.Right.Stale;
-                if (!isLeftStale && !isRightStale) node.Stale = false;
+                if (!isLeftStale && !isRightStale) node.Stale = false; 
             }
+            Validate(node);
         }
 
         [Conditional("DEBUG")]
         private static void Validate(AABBNode<T> node) {
             ValidateParentChain(node);
+            VectorMethods.CheckVector(node.Bounds.Min, "node.Bounds.Min");
+            VectorMethods.CheckVector(node.Bounds.Min, "node.Bounds.Max");
             if (node.Item != null) {
                 Debug.Assert(node.Left == null);
                 Debug.Assert(node.Right == null);
