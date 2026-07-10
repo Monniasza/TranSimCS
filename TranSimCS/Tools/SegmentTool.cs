@@ -28,8 +28,13 @@ namespace TranSimCS.Tools {
     public class SegmentTool : ITool{ 
         public InGameMenu Menu { get; private set; }
         public StripTools StripTools { get; private set; }
-        public LaneCreationState? State { get; private set; }
         public SegmentTools SegmentTools { get; private set; }
+
+        //TOOL STATE
+        public LaneCreationState? State { get; private set; }
+        public LaneMappings? LaneMappings { get; private set; }
+
+        //PROPERTIES
         public string Name => "Road Creation Tool 2";
         public string Description => (State == null) ?
             "Pick a lane to start creating a road segment" :
@@ -88,8 +93,8 @@ namespace TranSimCS.Tools {
             }else if(State != null && button == MouseButton.Left) {
                 //Build the node
                 RoadNode roadNode = new RoadNode("", State.GeneratedNodePosition);
-                var newLaneNodes = State.LaneMappings.EndingLanes;
-                var newLanes = new Lane[State.LaneMappings.EndingLanes.Length];
+                var newLaneNodes = LaneMappings.EndingLanes;
+                var newLanes = new Lane[LaneMappings.EndingLanes.Length];
                 for (int i = 0; i < newLaneNodes.Length; i++) {
                     var laneDef = newLaneNodes[i];
                     var lane = roadNode.AddLane(laneDef);
@@ -101,7 +106,7 @@ namespace TranSimCS.Tools {
                 var nodeSpec = State.StartLane.GetRoadNode().NodeSpec;
                 LaneEnd newLaneEnd = default;
                 newLaneEnd.end = State.StartLane.end;
-                foreach(var laneConnection in State.LaneMappings.Mappings) {
+                foreach(var laneConnection in LaneMappings.Mappings) {
                     if (laneConnection.PassedGuid == State.StartLane.Guid) newLaneEnd.lane = newLanes[laneConnection.EndIndex];
                 }
 
@@ -109,10 +114,10 @@ namespace TranSimCS.Tools {
                 if(newLaneEnd.lane == null) {
                     var closestLaneFind = 0;
                     var targetPosition = State.StartLane.lane.MiddlePosition;
-                    for (int i = 1; i < State.LaneMappings.EndingLanes.Length; i++) {
-                        var candidate = State.LaneMappings.EndingLanes[i];
+                    for (int i = 1; i < LaneMappings.EndingLanes.Length; i++) {
+                        var candidate = LaneMappings.EndingLanes[i];
                         var distance = MathF.Abs(targetPosition - candidate.CenterPos);
-                        var closestDistance = MathF.Abs(targetPosition - State.LaneMappings.EndingLanes[closestLaneFind].CenterPos);
+                        var closestDistance = MathF.Abs(targetPosition - LaneMappings.EndingLanes[closestLaneFind].CenterPos);
                         if (distance < closestDistance) closestLaneFind = i;
                     }
                     newLaneEnd.lane = newLanes[closestLaneFind];
@@ -126,7 +131,7 @@ namespace TranSimCS.Tools {
                 RoadStrip road = new RoadStrip(State.StartLane.RoadNodeEnd, roadNode.GetEnd(State.StartLane.end.Negate()));
                 road.Finish = Menu.configuration.RoadFinish;
 
-                foreach(var connection in State.LaneMappings.Mappings) {
+                foreach(var connection in LaneMappings.Mappings) {
                     var startLane = prevLanes[connection.StartIndex].GetEnd(newLaneEnd.end);
                     var endLane = newLanes[connection.EndIndex].GetEnd(newLaneEnd.end.Negate());
                     var isBackwards = LaneMappings.IsReverseLaneHeuristic(startLane.lane);
@@ -145,13 +150,23 @@ namespace TranSimCS.Tools {
                 State = new LaneCreationState(newLaneEnd);
                 SegmentTools.AddRemoveLeft.Value = 0;
                 SegmentTools.AddRemoveRight.Value = 0;
+                LaneMappings = null;
             } else if (State != null && button == MouseButton.Right) {
                 //Quit road creation
                 State = null;
+                LaneMappings = null;
             }
         }
         void ITool.Update(GameTime gameTime) {
+            var laneChangesLeft = SegmentTools.AddRemoveLeft.Value;
+            var laneChangesRight = SegmentTools.AddRemoveRight.Value;
+            if (State != null && (LaneMappings == null || LaneMappings.LaneChangesLeft != laneChangesLeft || LaneMappings.LaneChangesRight != laneChangesRight))
+                LaneMappings = new LaneMappings(State, laneChangesLeft, laneChangesRight);
+
+            State?.StartRange = State.StartLane.GetRoadNode().Bounds;
+            State?.EndRange = LaneMappings!.Range;
             State?.Generate(Menu);
+            
         }
         void ITool.Draw(GameTime gameTime) {
             if (State == null) return;
@@ -426,7 +441,6 @@ namespace TranSimCS.Tools {
         public Strip GeneratedSplines;
         public PositionEulerAngles GeneratedNodePosition;
         public RoadPlan RoadPlan;
-        public LaneMappings LaneMappings;
 
         //DERIVED STATE
         public Bezier3 CenterLine => GeneratedSplines.Middle;
@@ -443,17 +457,9 @@ namespace TranSimCS.Tools {
         
         //GENERATION
         public void Generate(InGameMenu menu) {
-            var segmentTools = menu.ToolsPanel.GetPanel<SegmentTools>(ToolAttribs.showSegmentTools);
-            var laneChangesLeft = segmentTools.AddRemoveLeft.Value;
-            var laneChangesRight = segmentTools.AddRemoveRight.Value;
-            if (LaneMappings == null || LaneMappings.LaneChangesLeft != laneChangesLeft || LaneMappings.LaneChangesRight != laneChangesRight)
-                LaneMappings = new LaneMappings(this, laneChangesLeft, laneChangesRight);
-
             var stripTools = menu.ToolsPanel.GetPanel<StripTools>(ToolAttribs.showRoadTools);
             SplineMode = menu.RoadCreationTool.Mode;
             Alignment = stripTools.AlignmentProp.Value;
-            StartRange = StartLane.GetRoadNode().Bounds;
-            EndRange = LaneMappings.Range;
 
             var (alignmentMulLeft, alignmentMulRight) = Alignment.GetAlignments();
             var laneRange = StartLane.lane.Bounds;
@@ -487,7 +493,6 @@ namespace TranSimCS.Tools {
             //Flatten tilt or inclination
             if (stripTools.flattenTilt.Checked) plan.endLateral = plan.endLateral.ToX0Z().Normalized();
             if (stripTools.flattenIncline.Checked) plan.endTangent = plan.endTangent.ToX0Z().Normalized();
-            var endLeftPos = plan.endPos - plan.endLateral * StartLane.lane.Width / 2;
 
             var correctedLateral = plan.endLateral * StartLane.end.Discriminant();
             var correctedPosition = plan.endPos - correctedLateral * StartLane.lane.LeftPosition;
