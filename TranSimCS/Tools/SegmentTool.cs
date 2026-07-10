@@ -44,14 +44,39 @@ namespace TranSimCS.Tools {
 
         public (object[], string)[] PromptKeys() {
             if (State == null) return [
-                ([MouseButton.Left], "Select a road node end to create a lane strip.")
+                ([MouseButton.Left], "Select a road node end to create a lane strip."),
+
+                ([Keys.Q], "to add a lane on the left"),
+                ([Keys.E], "to subtract a lane on the left"),
+                ([Keys.O], "to subtract a lane on the right"),
+                ([Keys.P], "to add a lane on the right"),
             ]; return [
                 ([MouseButton.Right], "to cancel"),
-                ([MouseButton.Left], "to place a point. Changes will be reset afterwards.")
+                ([MouseButton.Left], "to place a point. Changes will be reset afterwards."),
+
+                ([Keys.Q], "to add a lane on the left"),
+                ([Keys.E], "to subtract a lane on the left"),
+                ([Keys.O], "to subtract a lane on the right"),
+                ([Keys.P], "to add a lane on the right"),
             ];
         }
 
-
+        void ITool.OnKeyDown(Keys key) {
+            switch (key) {
+                case Keys.Q:
+                    SegmentTools.AddRemoveLeft.Value += 1;
+                    break;
+                case Keys.E:
+                    SegmentTools.AddRemoveLeft.Value -= 1;
+                    break;
+                case Keys.O:
+                    SegmentTools.AddRemoveRight.Value -= 1;
+                    break;
+                case Keys.P:
+                    SegmentTools.AddRemoveRight.Value += 1;
+                    break;
+            }
+        }
 
         void ITool.OnClick(MouseButton button) {
             var pickedGroundPosition = Menu.GroundSelection;
@@ -115,6 +140,8 @@ namespace TranSimCS.Tools {
 
                 //Advance to the next road node
                 State = new LaneCreationState(newLaneEnd);
+                SegmentTools.AddRemoveLeft.Value = 0;
+                SegmentTools.AddRemoveRight.Value = 0;
             } else if (State != null && button == MouseButton.Right) {
                 //Quit road creation
                 State = null;

@@ -21,7 +21,12 @@ namespace TranSimCS.Tools {
             : "Click to place a node. The reference will not be reset after placement";
 
         public (object[], string)[] PromptKeys() {
-            List<(object[], string)> keys = [];
+            List<(object[], string)> keys = [
+                ([Keys.Q], "to add a lane on the left"),
+                ([Keys.E], "to subtract a lane on the left"),
+                ([Keys.O], "to subtract a lane on the right"),
+                ([Keys.P], "to add a lane on the right"),
+            ];
             if (Reference == null) {
                 keys.Add(([MouseButton.Left], "on a node to set direction from it"));
                 keys.Add(([MouseButton.Left], "elsewhere to set direction manually"));
@@ -30,6 +35,23 @@ namespace TranSimCS.Tools {
                 keys.Add(([MouseButton.Right], "to cancel placement"));
             }
             return keys.ToArray();
+        }
+
+        void ITool.OnKeyDown(Keys key) {
+            switch (key) {
+                case Keys.Q:
+                    addLaneTools.LeftLaneCount.Value += 1;
+                    break;
+                case Keys.E:
+                    if(addLaneTools.LeftLaneCount.Value >= 0) addLaneTools.LeftLaneCount.Value -= 1;
+                    break;
+                case Keys.O:
+                    if (addLaneTools.RightLaneCount.Value >= 0) addLaneTools.RightLaneCount.Value -= 1;
+                    break;
+                case Keys.P:
+                    addLaneTools.RightLaneCount.Value += 1;
+                    break;
+            }
         }
 
         /// <summary>
