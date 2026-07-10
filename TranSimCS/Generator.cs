@@ -11,13 +11,15 @@ using TranSimCS.Roads.Strip;
 namespace TranSimCS
 {
     internal static class Generator {
-        public static void GenerateLanes(int count, RoadNode node, LaneSpec spec, float offset = 0) {
+        public static void GenerateLanes(int l, int r, float median, RoadNode node, LaneSpec spec, float offset = 0) {
+            int count = l + r;
             if (count < 1) throw new ArgumentException("Count must be at least 1.", nameof(count));
             // Clear existing position offsets
             node.ClearLanes();
             //Generate lane specifications for each lane
             for (int i = 0; i < count; i++) {
-                var lposition = offset + i * (float)spec.Width; // Calculate the left position for the lane
+                var lposition = offset + (i - l) * (float)spec.Width; // Calculate the left position for the lane
+                lposition += median * ((i < l) ? -0.5f : 0.5f);
                 var rposition = lposition + (float)spec.Width; // Calculate the right position for the lane
                 LaneNode lane = LaneNode.FromBounds(spec, new(lposition, rposition));
                 node.AddLane(lane); // Add the lane to the road node
@@ -27,7 +29,7 @@ namespace TranSimCS
         public static void GenerateLanes(int count, RoadNode node, float laneWidth = 3.5f, float offset = 0){
             var laneSpec = LaneSpec.Default;
             laneSpec.Width = laneWidth;
-            GenerateLanes(count, node, laneSpec, offset);
+            GenerateLanes(0, count, 0, node, laneSpec, offset);
         }
 
         /// <summary>
