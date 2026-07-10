@@ -8,13 +8,13 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
 
 namespace TranSimCS.Tools {
-    public class AddLaneTools : Panel {
+    public class AddNodeTools : Panel {
         public readonly InGameMenu Menu;
         public readonly Property<uint> LeftLaneCount;
         public readonly Property<uint> RightLaneCount;
         public readonly Property<float> MedianWidth;
 
-        public AddLaneTools(InGameMenu menu) : base(MLEM.Ui.Anchor.AutoLeft, new(1,1), true){
+        public AddNodeTools(InGameMenu menu) : base(MLEM.Ui.Anchor.AutoLeft, new(1,1), true){
             Menu = menu;
             LeftLaneCount = new(0, "leftLanes");
             RightLaneCount = new(1, "rightLanes");

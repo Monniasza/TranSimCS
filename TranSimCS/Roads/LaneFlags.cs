@@ -7,8 +7,17 @@ namespace TranSimCS.Roads {
         R4 = 16,
 
         //MERGE FLAGS
+        /// <summary>
+        /// Does this lane strip go left? If <see cref="MergeRight"/> is active too, removes side-lines.
+        /// </summary>
         MergeLeft = 1,
+        /// <summary>
+        /// Does this lane strip go right? If <see cref="MergeLeft"/> is active too, removes side-lines.
+        /// </summary>
         MergeRight = 4,
+        /// <summary>
+        /// Is this road strip a merge? Otherwise it is a diverge.
+        /// </summary>
         IsMerge = 8,
 
         /// <summary>

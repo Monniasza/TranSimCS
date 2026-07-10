@@ -40,7 +40,7 @@ namespace TranSimCS.Tools {
 
         //Preview variables
         public PositionEulerAngles PrePosition { get; set; }
-        public readonly AddLaneTools addLaneTools = menu.ToolsPanel.GetPanel<AddLaneTools>(ToolAttribs.showLaneLayout);
+        public readonly AddNodeTools addLaneTools = menu.ToolsPanel.GetPanel<AddNodeTools>(ToolAttribs.showLaneLayout);
 
         void ITool.Draw(GameTime gameTime) {
             if (NewlyCreatedNode == null && Reference == null) return;

@@ -57,7 +57,7 @@ namespace TranSimCS.Roads.Strip {
             var mergeRight = (laneStrip.Spec.Flags & LaneFlags.MergeRight) != 0;
             var isMerge = (laneStrip.Spec.Flags & LaneFlags.IsMerge) != 0;
 
-            if (mergeLeft && mergeRight) mergeLeft = mergeRight = false;
+            if (mergeLeft && mergeRight) return;
             var swapMerges = isMerge ? laneStrip.EndLane.end == Node.NodeEnd.Backward : laneStrip.StartLane.end == Node.NodeEnd.Backward;
             if (swapMerges) DataUtil.Swap(ref mergeLeft, ref mergeRight);
 
