@@ -27,6 +27,14 @@ namespace TranSimCS.Roads.Node {
                     roadRenderBin.AddTagsToLastTriangles(2, laneEnd);
                 }
             }
+
+            //Generate front and back markers
+            var front = refframe.O + refframe.Z * 2;
+            var back = refframe.O - refframe.Z * 2;
+            roadRenderBin.DrawLine(refframe.O, front, refframe.Y, Color.Red);
+            roadRenderBin.AddTagsToLastTriangles(2, node.FrontEnd);
+            roadRenderBin.DrawLine(refframe.O, back, refframe.Y, Color.Maroon);
+            roadRenderBin.AddTagsToLastTriangles(2, node.RearEnd);
         }
 
         public static void CreateAddLanes(RoadNode nodeEnd, Mesh mesh, float size = 1, Color? color = null, float voffset = 0.2f) {
