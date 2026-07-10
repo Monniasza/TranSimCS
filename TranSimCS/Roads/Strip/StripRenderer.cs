@@ -26,13 +26,12 @@ namespace TranSimCS.Roads.Strip {
             //Generate arrows
             float aoffset = 0.15f;
             var t = 0.5f;
-            
             var avgspline = (Right + Left) / 2;
             var lpoint = Left[t];
             var rpoint = Right[t];
             var midpoint = (lpoint + rpoint) / 2;
             var tangent = avgspline.Tangential(t);
-            
+            if (tangent.LengthSquared() < 0.0000001) return; //Zero tangential. It's wrong!
             tangent.Normalize();
             var fakebinormal = rpoint - lpoint;
             var width = Vector3.Cross(tangent, fakebinormal).Length();

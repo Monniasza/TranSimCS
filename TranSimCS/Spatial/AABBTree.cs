@@ -10,7 +10,6 @@ using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
-using static LanguageExt.Compositions<A>;
 
 namespace TranSimCS.Spatial {
     [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
