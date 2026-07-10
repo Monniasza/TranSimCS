@@ -38,7 +38,27 @@ namespace TranSimCS.Model {
             if(indices != null) Indices.AddRange(indices);
             if(tags != null) foreach(var row in tags) Tags.Add(row.Key, row.Value);
         }
+        [Conditional("DEBUG")]
+        private static void AssertVertexValidity(VertexPositionColorTexture vertex) {
+            Debug.Assert(float.IsFinite(vertex.Position.X), "vertex.X");
+            Debug.Assert(float.IsFinite(vertex.Position.Y), "vertex.Y");
+            Debug.Assert(float.IsFinite(vertex.Position.Z), "vertex.Z");
+            Debug.Assert(float.IsFinite(vertex.TextureCoordinate.X), "vertex.U");
+            Debug.Assert(float.IsFinite(vertex.TextureCoordinate.Y), "vertex.V");
+        }
+        [Conditional("DEBUG")]
+        private static void AssertVerticesValidity(VertexPositionColorTexture[] verts) {
+            for (int i = 0; i < verts.Length; i++) {
+                var vertex = verts[i];
+                Debug.Assert(float.IsFinite(vertex.Position.X), $"verts[{i}].vertex.X");
+                Debug.Assert(float.IsFinite(vertex.Position.Y), $"verts[{i}].vertex.Y");
+                Debug.Assert(float.IsFinite(vertex.Position.Z), $"verts[{i}].vertex.Z");
+                Debug.Assert(float.IsFinite(vertex.TextureCoordinate.X), $"verts[{i}].vertex.U");
+                Debug.Assert(float.IsFinite(vertex.TextureCoordinate.Y), $"verts[{i}].vertex.V");
+            }
+        }
         public ushort AddVertex(VertexPositionColorTexture vertex) {
+            AssertVertexValidity(vertex);
             Vertices.Add(vertex);
             InvalidateAccelerationStructure();
             return (ushort)(Vertices.Count - 1); // Return the index of the newly added vertex
@@ -53,6 +73,7 @@ namespace TranSimCS.Model {
         }
 
         public int AddVerts(VertexPositionColorTexture[] verts) {
+            AssertVerticesValidity(verts);
             int index = Vertices.Count;
             Vertices.AddRange(verts);
             InvalidateAccelerationStructure();
