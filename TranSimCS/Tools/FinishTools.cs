@@ -39,8 +39,6 @@ namespace TranSimCS.Tools.Panels {
         }
 
         private void FinishProp_ValueChanged(object? sender, PropertyChangedEventArgs2<RoadFinish> e) {
-            heightField.Value = e.NewValue.depth;
-            angleField.Value = MathHelper.ToDegrees(e.NewValue.angle);
             surfaceDropdown.SelectedValue = e.NewValue.subsurface;
         }
 
