@@ -51,6 +51,12 @@ namespace TranSimCS.Tools {
                 ([Keys.E], "to subtract a lane on the left"),
                 ([Keys.O], "to subtract a lane on the right"),
                 ([Keys.P], "to add a lane on the right"),
+                ([Keys.Z], "to move starting left border left"),
+                ([Keys.C], "to move starting left border right"),
+                ([Keys.OemComma], "to move starting right border left"),
+                ([Keys.OemPeriod], "to move starting right border right"),
+                ([Keys.X], "to swap left and right include/exclude counts"),
+                ([Keys.OemQuestion], "to toggle include/exclude"),
             ]; return [
                 ([MouseButton.Right], "to cancel"),
                 ([MouseButton.Left], "to place a point. Changes will be reset afterwards."),
@@ -59,10 +65,17 @@ namespace TranSimCS.Tools {
                 ([Keys.E], "to subtract a lane on the left"),
                 ([Keys.O], "to subtract a lane on the right"),
                 ([Keys.P], "to add a lane on the right"),
+                ([Keys.Z], "to move starting left border left"),
+                ([Keys.C], "to move starting left border right"),
+                ([Keys.OemComma], "to move starting right border left"),
+                ([Keys.OemPeriod], "to move starting right border right"),
+                ([Keys.OemQuestion], "to swap left and right include/exclude counts"),
+                ([Keys.X], "to toggle include/exclude"),
             ];
         }
 
         void ITool.OnKeyDown(Keys key) {
+            var changeLaneCountPolarity = (SegmentTools.IsInclusive.Value ? 1 : -1);
             switch (key) {
                 case Keys.Q:
                     SegmentTools.AddRemoveLeft.Value += 1;
@@ -75,6 +88,27 @@ namespace TranSimCS.Tools {
                     break;
                 case Keys.P:
                     SegmentTools.AddRemoveRight.Value += 1;
+                    break;
+                case Keys.Z:
+                    SegmentTools.IncludeExcludeLeft.Value += (uint)changeLaneCountPolarity;
+                    break;
+                case Keys.C:
+                    SegmentTools.IncludeExcludeLeft.Value -= (uint)changeLaneCountPolarity;
+                    break;
+                case Keys.OemComma:
+                    SegmentTools.IncludeExcludeRight.Value -= (uint)changeLaneCountPolarity;
+                    break;
+                case Keys.OemPeriod:
+                    SegmentTools.IncludeExcludeRight.Value += (uint)changeLaneCountPolarity;
+                    break;
+                case Keys.X:
+                    SegmentTools.IsInclusive.Value = !SegmentTools.IsInclusive.Value;
+                    break;
+                case Keys.OemQuestion:
+                    var l = SegmentTools.IncludeExcludeRight.Value;
+                    var r = SegmentTools.IncludeExcludeLeft.Value;
+                    SegmentTools.IncludeExcludeRight.Value = r;
+                    SegmentTools.IncludeExcludeLeft.Value = l;
                     break;
             }
         }
@@ -89,7 +123,7 @@ namespace TranSimCS.Tools {
             }else if(State != null && button == MouseButton.Left) {
                 //Build the node
                 RoadNode roadNode = new RoadNode("", State.GeneratedNodePosition);
-                var newLaneNodes = LaneMappings.EndingLanes;
+                var newLaneNodes = LaneMappings!.EndingLanes;
                 var newLanes = new Lane[LaneMappings.EndingLanes.Length];
                 for (int i = 0; i < newLaneNodes.Length; i++) {
                     var laneDef = newLaneNodes[i];
@@ -121,12 +155,11 @@ namespace TranSimCS.Tools {
                 Debug.Assert(newLaneEnd.lane != null, "Didn't find a new lane");
 
                 //List previous lanes
-                var prevLanes = State.StartLane.GetRoadNode().NodeSpec.Select(x => State.StartLane.GetRoadNode().LaneXRef[x.ID]).ToArray();
+                var prevLanes = LaneMappings.StartingLanes;
                 
                 //Build the road strip
                 RoadStrip road = new RoadStrip(State.StartLane.RoadNodeEnd, roadNode.GetEnd(State.StartLane.end.Negate()));
                 road.Finish = Menu.configuration.RoadFinish;
-
                 foreach(var connection in LaneMappings.Mappings) {
                     var startLane = prevLanes[connection.StartIndex].GetEnd(newLaneEnd.end);
                     var endLane = newLanes[connection.EndIndex].GetEnd(newLaneEnd.end.Negate());
@@ -146,6 +179,9 @@ namespace TranSimCS.Tools {
                 State = new LaneCreationState(newLaneEnd);
                 SegmentTools.AddRemoveLeft.Value = 0;
                 SegmentTools.AddRemoveRight.Value = 0;
+                SegmentTools.IncludeExcludeLeft.Value = 0;
+                SegmentTools.IncludeExcludeRight.Value = 0;
+                SegmentTools.IsInclusive.Value = false;
                 LaneMappings = null;
             } else if (State != null && button == MouseButton.Right) {
                 //Quit road creation
@@ -154,13 +190,12 @@ namespace TranSimCS.Tools {
             }
         }
         void ITool.Update(GameTime gameTime) {
-            var laneChangesLeft = SegmentTools.AddRemoveLeft.Value;
-            var laneChangesRight = SegmentTools.AddRemoveRight.Value;
-            if (State != null && (LaneMappings == null || LaneMappings.LaneChangesLeft != laneChangesLeft || LaneMappings.LaneChangesRight != laneChangesRight))
-                LaneMappings = new LaneMappings(State, laneChangesLeft, laneChangesRight);
+            var presets = SegmentTools.CurrentPresets;
+            if (State != null && LaneMappings?.Presets != presets)
+                LaneMappings = new LaneMappings(State, presets);
 
-            State?.StartRange = State.StartLane.GetRoadNode().Bounds;
-            State?.EndRange = LaneMappings!.Range;
+            State?.StartRange = LaneMappings!.StartRange;
+            State?.EndRange = LaneMappings!.EndRange;
             State?.Generate(Menu);
             
         }

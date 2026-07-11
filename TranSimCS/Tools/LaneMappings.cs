@@ -9,18 +9,53 @@ using TranSimCS.Roads.Node;
 
 namespace TranSimCS.Tools {
     public class LaneMappings {
-        public int LaneChangesLeft { get; private set; }
-        public int LaneChangesRight { get; private set; }
+        public SegmentTools.Presets Presets { get; private set; }
         public ImmutableArray<LaneMapping> Mappings { get; private set; }
         public ImmutableArray<Lane> StartingLanes { get; private set; }
         public ImmutableArray<LaneNode> EndingLanes { get; private set; }
-        public Range<float> Range { get; private set; }
+        public Range<float> EndRange { get; private set; }
+        public Range<float> StartRange { get; private set; }
 
-        public LaneMappings(LaneCreationState laneCreationState, int laneChangesLeft, int laneChangesRight) {
+        public LaneMappings(LaneCreationState laneCreationState, SegmentTools.Presets presets) {
             //Set fields up
-            StartingLanes = laneCreationState.StartLane.GetRoadNode().Lanes.ToImmutableArray();
-            LaneChangesLeft = laneChangesLeft;
-            LaneChangesRight = laneChangesRight;
+            Presets = presets;
+
+            //Add/remove lanes
+            var startingLanes = laneCreationState.StartLane.GetRoadNode().Lanes.ToArray();
+            var currentLaneIndexInList = -1;
+            for(int i = 0; i < startingLanes.Length; i++) {
+                var lane = startingLanes[i];
+                if (lane == laneCreationState.StartLane.lane) currentLaneIndexInList = i;
+            }
+            Debug.Assert(currentLaneIndexInList >= 0, "Didn't find the start lane in lane list");
+
+            uint includeLeft = presets.IncludeExcludeLeft;
+            uint includeRight = presets.IncludeExcludeRight;
+            var isInclusive = presets.IsInclusive;
+            int minIndex = 0;
+            int maxIndex = startingLanes.Length - 1;
+            var lanesOnRight = maxIndex - currentLaneIndexInList;
+            if (isInclusive) {
+                if (includeLeft > currentLaneIndexInList) includeLeft = (uint)currentLaneIndexInList;
+                if (includeRight > lanesOnRight) includeRight = (uint)lanesOnRight;
+                minIndex = currentLaneIndexInList - (int)includeLeft;
+                maxIndex = currentLaneIndexInList + (int)includeRight;
+            } else if(!(includeLeft > startingLanes.Length || includeRight > startingLanes.Length || includeLeft + includeRight > startingLanes.Length)) {
+                minIndex += (int)includeLeft;
+                maxIndex -= (int)includeRight;
+            }
+            Debug.Assert(minIndex <= maxIndex, "List has no elements");
+            Debug.Assert(minIndex >= 0 && minIndex < startingLanes.Length, "Min index out of bounds");
+            Debug.Assert(maxIndex >= 0 && maxIndex < startingLanes.Length, "Max index out of bounds");
+            StartingLanes = startingLanes.Skip(minIndex).Take((maxIndex - minIndex) + 1).ToImmutableArray();
+            StartRange = new();
+            foreach(var lane in StartingLanes) {
+                StartRange = StartRange.Union(lane.Bounds);
+            }
+
+
+            var laneChangesLeft = presets.AddRemoveLeft;
+            var laneChangesRight = presets.AddRemoveRight;
 
             //Find lanes to collapse/expand from
             int leftBound, rightBound = StartingLanes.Length - 1;
@@ -68,7 +103,7 @@ namespace TranSimCS.Tools {
             int countSideRight = StartingLanes.Length - rightBound - 1;
 
             //Find synthetic lane specs
-            var roadSpecLeft = StartingLanes[countSideLeft+1].Spec;
+            var roadSpecLeft = StartingLanes[countSideLeft].Spec;
             var roadSpecRight = StartingLanes[^(countSideRight+1)].Spec;
             var sidewalkOffsetLeft = laneChangesLeft * roadSpecLeft.Width;
             var sidewalkOffsetRight = laneChangesRight * roadSpecRight.Width;
@@ -181,9 +216,9 @@ namespace TranSimCS.Tools {
             }
 
             //Calculate end bounds
-            Range = new();
+            EndRange = new();
             foreach(var endLane in endingLanes) {
-                Range = Range.Union(endLane.Bounds);
+                EndRange = EndRange.Union(endLane.Bounds);
             }
 
             //Push results
@@ -212,9 +247,9 @@ namespace TranSimCS.Tools {
             }
             Mappings = mappings.ToImmutableArray();
             EndingLanes = endingLanes.ToImmutableArray();
-            Range = new();
+            EndRange = new();
             foreach (var endLane in endingLanes) {
-                Range = Range.Union(endLane.Bounds);
+                EndRange = EndRange.Union(endLane.Bounds);
             }
         }
         public static bool IsReverseLaneHeuristic(Lane lane) {
