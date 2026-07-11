@@ -177,7 +177,7 @@ namespace TranSimCS.Tools {
                     int newIndex = i + leftBound;
                     int prevIndex = leftBound;
                     var spec = roadSpecLeft;
-                    var newflags = (i == laneChangesLeft - 1) ? exitLeft : mergePlain;
+                    var newflags = (i == 0) ? exitLeft : mergePlain;
                     spec.Flags = (spec.Flags & ~mergeFlagsMask) | newflags;
                     var lm = new LaneMapping(prevIndex, newIndex, spec);
                     ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
@@ -192,7 +192,7 @@ namespace TranSimCS.Tools {
                     int newIndex = leftBound;
                     int prevIndex = i + leftBound;
                     var spec = roadSpecLeft;
-                    var newflags = (i == -laneChangesLeft - 1) ? mergeRight : mergePlain;
+                    var newflags = (i == 0) ? mergeRight : mergePlain;
                     spec.Flags = (spec.Flags & ~mergeFlagsMask) | newflags;
                     var lm = new LaneMapping(prevIndex, newIndex, spec);
                     ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
@@ -205,7 +205,7 @@ namespace TranSimCS.Tools {
                     int newIndex = newCount - countSideRight - i - 1;
                     int prevIndex = rightBound;
                     var spec = roadSpecRight;
-                    var newflags = (i == laneChangesRight - 1) ? exitRight : mergePlain;
+                    var newflags = (i == 0) ? exitRight : mergePlain;
                     spec.Flags = (spec.Flags & ~mergeFlagsMask) | newflags;
                     var lm = new LaneMapping(prevIndex, newIndex, spec);
                     ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
@@ -220,7 +220,7 @@ namespace TranSimCS.Tools {
                     int newIndex = rightBound + laneChangesRight + laneChangesLeft;
                     int prevIndex = StartingLanes.Length - countSideRight - i - 1;
                     var spec = roadSpecRight;
-                    var newflags = (i == -laneChangesRight - 1) ? mergeLeft : mergePlain;
+                    var newflags = (i == 0) ? mergeLeft : mergePlain;
                     spec.Flags = (spec.Flags & ~mergeFlagsMask) | newflags;
                     var lm = new LaneMapping(prevIndex, newIndex, spec);
                     ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
