@@ -136,25 +136,8 @@ namespace TranSimCS.Tools {
                 Menu.World.Nodes.data.Add(roadNode);
 
                 //Find a new lane to build from
-                var nodeSpec = State.StartLane.GetRoadNode().NodeSpec;
-                LaneEnd newLaneEnd = default;
-                newLaneEnd.end = State.StartLane.end;
-                foreach(var laneConnection in LaneMappings.Mappings) {
-                    if (laneConnection.PassedGuid == State.StartLane.Guid) newLaneEnd.lane = newLanes[laneConnection.EndIndex];
-                }
-
-                //If a new lane wasn't found, find a closest one
-                if(newLaneEnd.lane == null) {
-                    var closestLaneFind = 0;
-                    var targetPosition = State.StartLane.lane.MiddlePosition;
-                    for (int i = 1; i < LaneMappings.EndingLanes.Length; i++) {
-                        var candidate = LaneMappings.EndingLanes[i];
-                        var distance = MathF.Abs(targetPosition - candidate.CenterPos);
-                        var closestDistance = MathF.Abs(targetPosition - LaneMappings.EndingLanes[closestLaneFind].CenterPos);
-                        if (distance < closestDistance) closestLaneFind = i;
-                    }
-                    newLaneEnd.lane = newLanes[closestLaneFind];
-                }
+                var passthroughNumber = LaneMappings.LaneMappingSourceToDest;
+                LaneEnd newLaneEnd = new LaneEnd(State.StartLane.end, newLanes[passthroughNumber]);
                 Debug.Assert(newLaneEnd.lane != null, "Didn't find a new lane");
 
                 //List previous lanes
