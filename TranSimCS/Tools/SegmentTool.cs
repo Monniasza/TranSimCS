@@ -121,6 +121,9 @@ namespace TranSimCS.Tools {
                 if (pickedLaneEnd == null || pickedLaneEnd.Value.lane == null) return;
                 State = new LaneCreationState(pickedLaneEnd.Value);
             }else if(State != null && button == MouseButton.Left) {
+                //Validate the position
+                if (!float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt)) return;
+
                 //Build the node
                 RoadNode roadNode = new RoadNode("", State.GeneratedNodePosition);
                 var newLaneNodes = LaneMappings!.EndingLanes;
@@ -200,7 +203,7 @@ namespace TranSimCS.Tools {
             
         }
         void ITool.Draw(GameTime gameTime) {
-            if (State == null) return;
+            if (State == null || !float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt)) return;
             Color previewColor = Colors.SemiClearWhite;
             var material = Assets.Asphalt;
             material.BlendMode = ModelOld.MaterialBlendMode.Transparent;
