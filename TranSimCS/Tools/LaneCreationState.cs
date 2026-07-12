@@ -23,7 +23,8 @@ namespace TranSimCS.Tools {
         //GENERATED STATE
         public Strip GeneratedSplines;
         public PositionEulerAngles GeneratedNodePosition;
-        public RoadPlan RoadPlan;
+        public float DeltaOffset;
+        public LaneEnd? SnappedLane;
 
         //DERIVED STATE
         public Bezier3 CenterLine => GeneratedSplines.Middle;
@@ -44,51 +45,85 @@ namespace TranSimCS.Tools {
             SplineMode = menu.RoadCreationTool.Mode;
             Alignment = stripTools.AlignmentProp.Value;
 
-            var (alignmentMulLeft, alignmentMulRight) = Alignment.GetAlignments();
+            DeltaOffset = 0;
+            SnappedLane = null;
+
+            //Shared variables
             var laneRange = StartLane.lane.Bounds;
-            var referenceIndex = alignmentMulLeft * laneRange.Min + alignmentMulRight * laneRange.Max;
+            var (alignmentMulLeft, alignmentMulRight) = Alignment.GetAlignments();
+            float referenceIndex = alignmentMulLeft * laneRange.Min + alignmentMulRight * laneRange.Max;
             var startingPositionRef = LineEnd.calcLineEnd(StartLane.RoadNodeEnd, referenceIndex);
             var startTangent = startingPositionRef.Tangential;
             var startLateral = startingPositionRef.Lateral;
             startLateral *= StartLane.end.Discriminant();
             var startPos = startingPositionRef.Position;
             var startWidth = StartLane.lane.Width;
-            Plane selectionPlane = menu.ReferencePlane;
-            TargetPosition = GeometryUtils.IntersectRayPlane(menu.MouseRay, selectionPlane);
-            if (menu.CheckSnap.Checked) 
-                //Snap the position
-                TargetPosition = menu.configuration.SnapGrid.Snap(TargetPosition);
-            RoadPlan plan = new RoadPlan {
-                startLateral = startLateral,
-                endLateral = startLateral,
-                startPos = startPos,
-                endPos = TargetPosition,
-                startTangent = startTangent,
-                endTangent = startTangent,
-                menu = menu
-            };
-            plan.Align(Alignment, startWidth);
-            //Apply the road mode
-            SplineMode.CreateValues(plan);
-            plan.Align(Alignment.Inverse(), startWidth);
-            RoadPlan = plan;
 
-            //Flatten tilt or inclination
-            if (stripTools.flattenTilt.Checked) plan.endLateral = plan.endLateral.ToX0Z().Normalized();
-            if (stripTools.flattenIncline.Checked) plan.endTangent = plan.endTangent.ToX0Z().Normalized();
+            //Intermediate values
+            var endPosition = Vector3.Zero;
+            var endTangent = Vector3.Zero;
+            var endLateral = Vector3.Zero;
 
-            var correctedLateral = plan.endLateral * StartLane.end.Discriminant();
-            var correctedPosition = plan.endPos - correctedLateral * StartLane.lane.LeftPosition;
+            var selectedRoadLane = menu.MouseOver?.As<LaneEnd>() ?? default;
+            if (selectedRoadLane.lane != null) {
+                //Picked a lane. Match it to the target road node
+                var targetCenterPos = selectedRoadLane.lane.MiddlePosition;
+                var sourceCenterPos = StartLane.lane.MiddlePosition;
+                DeltaOffset = targetCenterPos - sourceCenterPos;
+                GeneratedNodePosition = selectedRoadLane.GetRoadNode().PositionProp.Value;
+                SnappedLane = selectedRoadLane;
+                var refframe = selectedRoadLane.GetRoadNode().ReferenceFrame;
+                endPosition = refframe.O;
+                endTangent = refframe.Z;
+                endLateral = refframe.X;
 
-            //Calculate the NodePosition
-            var newNodePosition = PositionEulerAngles.FromPosTangentLateral(correctedPosition, plan.endTangent, correctedLateral);
-            if (StartLane.end == NodeEnd.Backward) newNodePosition.Azimuth += int.MinValue;
+                if(StartLane.end == selectedRoadLane.end) {
+                    endTangent *= -1;
+                    endLateral *= -1;
+                }
+            } else {
+                //Create a synthetic end
+                Plane selectionPlane = menu.ReferencePlane;
+                TargetPosition = GeometryUtils.IntersectRayPlane(menu.MouseRay, selectionPlane);
+                if (menu.CheckSnap.Checked)
+                    //Snap the position
+                    TargetPosition = menu.configuration.SnapGrid.Snap(TargetPosition);
+                RoadPlan plan = new RoadPlan {
+                    startLateral = startLateral,
+                    endLateral = startLateral,
+                    startPos = startPos,
+                    endPos = TargetPosition,
+                    startTangent = startTangent,
+                    endTangent = startTangent,
+                    menu = menu
+                };
+                plan.Align(Alignment, startWidth);
+                SplineMode.CreateValues(plan);
+                plan.Align(Alignment.Inverse(), startWidth);
+
+                endPosition = plan.endPos;
+                endTangent = plan.endTangent;
+                endLateral = plan.endLateral;
+
+                //Flatten tilt or inclination
+                if (stripTools.flattenTilt.Checked) plan.endLateral = plan.endLateral.ToX0Z().Normalized();
+                if (stripTools.flattenIncline.Checked) plan.endTangent = plan.endTangent.ToX0Z().Normalized();
+
+                var correctedLateral = plan.endLateral * StartLane.end.Discriminant();
+                var correctedPosition = plan.endPos - plan.endLateral * StartLane.lane.LeftPosition;
+
+                //Calculate the NodePosition
+                var newNodePosition = PositionEulerAngles.FromPosTangentLateral(correctedPosition, plan.endTangent, correctedLateral);
+                if (StartLane.end == NodeEnd.Backward) newNodePosition.Azimuth += int.MinValue;
+                if (stripTools.flattenTilt.Checked) newNodePosition.Tilt = 0;
+                if (stripTools.flattenIncline.Checked) newNodePosition.Inclination = 0;
                 GeneratedNodePosition = newNodePosition;
-            if (stripTools.flattenTilt.Checked) newNodePosition.Tilt = 0;
-            if (stripTools.flattenIncline.Checked) newNodePosition.Inclination = 0;
+            }
 
-            Bezier3 lbound = GeometryUtils.GenerateJoinSpline(startPos + plan.startLateral * (StartRange.Min - referenceIndex), plan.endPos + plan.endLateral * (EndRange.Min - referenceIndex), startTangent, -plan.endTangent);
-            Bezier3 rbound = GeometryUtils.GenerateJoinSpline(startPos + plan.startLateral * (StartRange.Max - referenceIndex), plan.endPos + plan.endLateral * (EndRange.Max - referenceIndex), startTangent, -plan.endTangent);
+            EndRange = new(EndRange.Min + DeltaOffset, EndRange.Max + DeltaOffset);
+
+            Bezier3 lbound = GeometryUtils.GenerateJoinSpline(startPos + startLateral * (StartRange.Min - referenceIndex), endPosition + endLateral * (EndRange.Min - referenceIndex), startTangent, -endTangent);
+            Bezier3 rbound = GeometryUtils.GenerateJoinSpline(startPos + startLateral * (StartRange.Max - referenceIndex), endPosition + endLateral * (EndRange.Max - referenceIndex), startTangent, -endTangent);
             if (StartLane.end == NodeEnd.Backward) DataUtil.Swap(ref lbound, ref rbound);
             GeneratedSplines = new(lbound, rbound);
         }
