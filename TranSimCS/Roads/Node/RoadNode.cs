@@ -21,8 +21,6 @@ namespace TranSimCS.Roads.Node {
     public class RoadNode: Obj, IPosition, IObjMesh, IRoadElement {
         //Node contents
         public Property<PositionEulerAngles> PositionProp { get; private set; }
-        public Property<RoadNodeTangents> LeftTangent { get; private set; }
-        public Property<RoadNodeTangents> RightTangent { get; private set; }
         public string Name { get; set; }
 
         //Cahced/generated contents
@@ -110,8 +108,6 @@ namespace TranSimCS.Roads.Node {
                 NodeRenderer.GenerateRoadNodeSelectionMesh(node, roadBin, null);
             });
             PositionProp.ValueChanged += PositionProp_ValueChanged;
-            LeftTangent = new(default, "tangentLeft", this);
-            RightTangent = new(default, "tangentRight", this);
 
             lanesSet = new();
             lanesDict = new();
