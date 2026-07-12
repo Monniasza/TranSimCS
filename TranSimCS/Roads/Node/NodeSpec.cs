@@ -97,13 +97,13 @@ namespace TranSimCS.Roads.Node {
         }
     }
     public sealed class NodeSpec: IEquatable<NodeSpec>, IEnumerable<LaneNode> {
-        public readonly IList<LaneNode> Lanes;
-        public readonly IDictionary<Guid, LaneNode> LaneXRef;
+        public readonly ImmutableArray<LaneNode> Lanes;
+        public readonly ImmutableDictionary<Guid, LaneNode> LaneXRef;
         public readonly Range<float> Range;
         public static readonly NodeSpec Empty = new([]);
         public NodeSpec(IEnumerable<LaneNode> data) {
             Range = data.Select(x => x.Bounds).AggregateOrDefault(new(0, 0), (x, y) => x.Union(y));
-            Lanes = data.Order().ToImmutableList();
+            Lanes = data.OrderBy(x => x.Bounds.Middle()).ToImmutableArray();
             LaneXRef = data.Select(x => new KeyValuePair<Guid, LaneNode>(x.ID, x)).ToImmutableDictionary();
         }
 
@@ -125,7 +125,7 @@ namespace TranSimCS.Roads.Node {
             return true;
         }
 
-        public IEnumerator<LaneNode> GetEnumerator() => Lanes.GetEnumerator();
+        public IEnumerator<LaneNode> GetEnumerator() => ((IEnumerable<LaneNode>)Lanes).GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         
     }

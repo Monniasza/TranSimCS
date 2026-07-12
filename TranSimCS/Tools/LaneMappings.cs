@@ -28,7 +28,7 @@ namespace TranSimCS.Tools {
             Presets = presets;
 
             //Add/remove lanes
-            var startingLanes = laneCreationState.StartLane.GetRoadNode().Lanes.ToArray();
+            var startingLanes = laneCreationState.StartLane.GetRoadNode().Lanes.OrderBy(x => x.MiddlePosition).ToArray();
             var currentLaneIndexInList = -1;
             for (int i = 0; i < startingLanes.Length; i++) {
                 var lane = startingLanes[i];
