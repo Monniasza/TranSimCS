@@ -21,7 +21,11 @@ namespace TranSimCS
                 var lposition = offset + (i - l) * (float)spec.Width; // Calculate the left position for the lane
                 lposition += median * ((i < l) ? -0.5f : 0.5f);
                 var rposition = lposition + (float)spec.Width; // Calculate the right position for the lane
-                LaneNode lane = LaneNode.FromBounds(spec, new(lposition, rposition));
+
+                var thisSpec = spec;
+                if((i == l && r > 0) || (i == l-1) && l > 0) thisSpec.Flags |= LaneFlags.NoLeft;
+
+                LaneNode lane = LaneNode.FromBounds(thisSpec, new(lposition, rposition));
                 node.AddLane(lane); // Add the lane to the road node
             }
         }
