@@ -154,7 +154,7 @@ namespace TranSimCS.Tools {
             }
 
             //Constants
-            var mergeFlagsMask = LaneFlags.MergeRight | LaneFlags.MergeLeft | LaneFlags.IsMerge;
+            var mergeFlagsMask = LaneFlags.MergeRight | LaneFlags.MergeLeft | LaneFlags.IsMerge | LaneFlags.NoLeft | LaneFlags.NoRight;
             var mergePlain = LaneFlags.MergeLeft | LaneFlags.MergeRight;
             var mergeLeft = LaneFlags.IsMerge | LaneFlags.MergeLeft;
             var mergeRight = LaneFlags.IsMerge | LaneFlags.MergeRight;
