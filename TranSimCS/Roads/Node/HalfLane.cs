@@ -32,5 +32,7 @@ namespace TranSimCS.Roads.Node {
         public HalfNode HalfNode => Lane.RoadNode.GetHalfNode(End);
         public HalfLane OppositeHalf => End.GetConditional(Lane.FrontHalf, Lane.RearHalf);
         public int Index => (End == NodeEnd.Forward) ? Lane.Index : Lane.RoadNode.Lanes.Count - Lane.Index - 1;
+        public float MiddlePosition => LaneNode.CenterPos; // Middle position of the lane, calculated as the average of left and right positions
+        public float Width => LaneNode.LaneSpec.Width;
     }
 }
