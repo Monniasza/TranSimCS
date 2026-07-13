@@ -171,6 +171,8 @@ namespace TranSimCS.Roads.Node {
         // Clears cached data when the base mesh invalidation occurs.
         protected void InvalidateMesh0(){
             _cache = null;
+            FrontHalf._cache = null;
+            RearHalf._cache = null;
             SelectionMesh.Invalidate();
             GeometryChanged?.Invoke(this);
 

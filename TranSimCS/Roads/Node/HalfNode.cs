@@ -63,7 +63,7 @@ namespace TranSimCS.Roads.Node {
         public RoadNodeEnd RoadNodeEnd => RoadNode.GetEnd(End);
 
         //Cached properties
-        public HalfNodeCache? _cache;
+        internal HalfNodeCache? _cache;
         public HalfNodeCache Cache => _cache ??= new HalfNodeCache(this);
         public NodeSpec NodeSpec => Cache.NodeSpec;
         public ImmutableArray<HalfLane> SortedLanes => Cache.SortedLanes;
