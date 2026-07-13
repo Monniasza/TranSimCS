@@ -1,0 +1,71 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Iesi.Collections.Generic;
+using TranSimCS.Property;
+using TranSimCS.Roads.Section;
+using TranSimCS.Roads.Strip;
+
+namespace TranSimCS.Roads.Node {
+    /// <summary>
+    /// A half of a road node, either front or back.
+    /// </summary>
+    public class HalfNode {
+        //Definition
+        public RoadNode RoadNode { get; private set; }
+        public NodeEnd End { get; private set; }
+
+        //Connections. Maintained by consumers.
+        internal HashSet<RoadStripHalf> _connectedRoadStrips;
+        public ReadOnlySet<RoadStripHalf> ConnectedRoadStrips { get; private set; }
+
+        //The constructor
+        internal HalfNode(RoadNode roadNode, NodeEnd end) {
+            RoadNode = roadNode;
+            End = end;
+            _connectedRoadStrips = new();
+            ConnectedRoadStrips = new(_connectedRoadStrips);
+            ConnectedSection = new Property<RoadSection?>(null, "connection");
+            ConnectedSection.ValueChanged += ConnectedSection_ValueChanged;
+        }
+
+        //Contents
+        public int LaneCount => RoadNode.Lanes.Count;
+        public HalfLane GetLaneByIndex(int index) {
+            if (End == NodeEnd.Backward) index = LaneCount - index - 1;
+            return RoadNode.SortedLanes[index].GetHalfLane(End);
+        }
+        public HalfLane AddLane(LaneNode laneNode) {
+            if (End == NodeEnd.Backward) laneNode = laneNode.Mirror;
+            var lane = RoadNode.AddLane(laneNode);
+            return lane.GetHalfLane(End);
+        }
+        public void Delete(HalfLane hlane) {
+            if (hlane.End != End) throw new InvalidOperationException("The lane is assigned to the other end");
+            RoadNode.RemoveLane(hlane.Lane);
+        }
+        public Property<RoadSection?> ConnectedSection { get; private set; }
+
+        //Events
+        public delegate void HalfLaneListener(HalfNode node, HalfLane lane);
+        public event HalfLaneListener OnLaneAdded;
+        public event HalfLaneListener OnLaneRemoved;
+        internal void FireLaneAdded(Lane lane) => OnLaneAdded?.Invoke(this, lane.GetHalfLane(End));
+        internal void FireLaneRemoved(Lane lane) => OnLaneRemoved?.Invoke(this, lane.GetHalfLane(End));
+
+        //Derived properties
+        public HalfNode OppositeHalf => End.GetConditional(RoadNode.FrontHalf, RoadNode.RearHalf);
+        public RoadNodeEnd RoadNodeEnd => RoadNode.GetEnd(End);
+
+        //Event listeners
+        private void ConnectedSection_ValueChanged(object sender, PropertyChangedEventArgs2<RoadSection?> e) {
+            var rne = RoadNodeEnd;
+            var oldNode = e.OldValue;
+            oldNode?.OnDisconnect(rne);
+            var newNode = e.NewValue;
+            newNode?.OnConnect(rne);
+        }
+    }
+}

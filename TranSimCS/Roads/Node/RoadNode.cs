@@ -40,7 +40,6 @@ namespace TranSimCS.Roads.Node {
         private HashSet<Lane> lanesDict;
         public readonly ISet<Lane> Lanes;
         public readonly IDictionary<Guid, Lane> LaneXRef;
-        
 
         //Events
         public class LaneEventArgs: EventArgs {
@@ -69,7 +68,7 @@ namespace TranSimCS.Roads.Node {
                 foreach(var newLane in nodeSpec) {
                     if(LaneXRef.TryGetValue(newLane.ID, out var existingLane)) {
                         //The lane has been changed
-                        existingLane.Definition = newLane;
+                        existingLane.LaneNode = newLane;
                     }else {
                         //The lane has been added
                         AddLane(newLane);
@@ -101,6 +100,8 @@ namespace TranSimCS.Roads.Node {
             PositionProp.Value = positionData;
             RearEnd = new RoadNodeEnd(NodeEnd.Backward, this);
             FrontEnd = new RoadNodeEnd(NodeEnd.Forward, this);
+            RearHalf = new HalfNode(this, NodeEnd.Backward);
+            FrontHalf = new HalfNode(this, NodeEnd.Forward);
             Mesh = new MeshGenerator<RoadNode>(this, (node, mesh) => NodeRenderer.GenerateNodeVisualMesh(node, mesh));
             Mesh.OnMeshInvalidated += InvalidateMesh0;
             SelectionMesh = new(this, (node, mesh) => {
@@ -135,6 +136,8 @@ namespace TranSimCS.Roads.Node {
             lanesDict.Add(lane);
 
             LaneAdded?.Invoke(this, new LaneEventArgs(lane));
+            FrontHalf.FireLaneAdded(lane);
+            RearHalf.FireLaneAdded(lane);
 
             Mesh.Invalidate();
 
@@ -157,6 +160,8 @@ namespace TranSimCS.Roads.Node {
             lane.RoadNode = null;
 
             LaneRemoved?.Invoke(this, new LaneEventArgs(lane));
+            FrontHalf.FireLaneRemoved(lane);
+            RearHalf.FireLaneRemoved(lane);
 
             Mesh.Invalidate();
         }
@@ -177,6 +182,12 @@ namespace TranSimCS.Roads.Node {
         //Halves of this road node
         public readonly RoadNodeEnd RearEnd;
         public readonly RoadNodeEnd FrontEnd;
+
+        public HalfNode FrontHalf { get; private set; }
+        public HalfNode RearHalf { get; private set; }
+        public HalfNode GetHalfNode(NodeEnd end) => end.GetConditional(RearHalf, FrontHalf);
+
+
         // Retrieves the node end instance for the given direction.
         public RoadNodeEnd GetEnd(NodeEnd end) => end.GetConditional(RearEnd, FrontEnd);
 

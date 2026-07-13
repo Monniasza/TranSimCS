@@ -110,7 +110,7 @@ namespace TranSimCS.Roads.Node {
             writer.WriteStartArray();
             var laneConverter = new LaneConverter();
             foreach (var lane in value.Lanes) {
-                laneConverter.Write(writer, lane.Definition, options);
+                laneConverter.Write(writer, lane.LaneNode, options);
             }
             writer.WriteEndArray();
 

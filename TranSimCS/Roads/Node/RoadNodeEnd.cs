@@ -9,6 +9,9 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Node {
+    /**
+     * TODO Implement HalfNode
+     */
     public class RoadNodeEnd: IPosition, IRoadElement {
         //ROAD ELEMENT
         public Guid Guid => Node.Guid;
@@ -27,15 +30,6 @@ namespace TranSimCS.Roads.Node {
         internal RoadNodeEnd(NodeEnd end, RoadNode node) {
             End = end;
             Node = node;
-            ConnectedSection = new Property<RoadSection?>(null, "connection");
-            ConnectedSection.ValueChanged += ConnectedSection_ValueChanged;
-        }
-
-        private void ConnectedSection_ValueChanged(object sender, PropertyChangedEventArgs2<RoadSection> e) {
-            var oldNode = e.OldValue;
-            oldNode?.OnDisconnect(this);
-            var newNode = e.NewValue;
-            newNode?.OnConnect(this);
         }
 
         public RoadNodeEnd OppositeEnd => Node.GetEnd(End.Negate());
@@ -45,7 +39,7 @@ namespace TranSimCS.Roads.Node {
         public ISet<RoadStrip> ConnectedSegments => new ReadOnlySet<RoadStrip>(connectedSegments); // Expose the connections set
 
         //Indexing of the road sections
-        public readonly Property<RoadSection?> ConnectedSection;
+        public Property<RoadSection?> ConnectedSection => HalfNode.ConnectedSection;
 
         //Position
         public Property<PositionEulerAngles> PositionProp => Node.PositionProp;
@@ -83,5 +77,6 @@ namespace TranSimCS.Roads.Node {
         }
 
         public MonoGame.Extended.Range<float> Range() => Node.Bounds;
+        public HalfNode HalfNode => Node.GetHalfNode(End);
     }
 }

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Iesi.Collections.Generic;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
+using TranSimCS.Geometry;
 using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Strip;
@@ -15,50 +17,49 @@ namespace TranSimCS.Roads.Node {
     /// <summary>
     /// A lane defines where vehicles can ride through and in which direction.
     /// </summary>
-    public class Lane: IDraggableObj, IRoadElement {
+    public class Lane: Obj, IDraggableObj, IRoadElement {
         //Contents
-        public readonly Property<LaneNode> DefinitionProp;
-        public LaneNode Definition { get => DefinitionProp.Value; set => DefinitionProp.Value = value.WithGUID(DefinitionProp.Value.ID); }
+        public Property<LaneDefinition> DefinitionProp { get; private set; }
+        public BidirectionalDerivedProperty<LaneDefinition, LaneDefinition> InverseDefinitionProp { get; private set; }
+        public LaneDefinition Definition { get => DefinitionProp.Value; set => DefinitionProp.Value = value; }
+        public LaneNode LaneNode { get => new(Definition, Guid); set => DefinitionProp.Value = value.ToLaneDefinition; }
         public RoadNode RoadNode { get; internal set; }
 
         //Derived/cached values
-        public Guid Guid => DefinitionProp.Value.ID;
         /// <summary>
         /// Specification of the lane, including properties like color, type, etc.
         /// The width here is ignored when set, but it's returned with the proper value when get.
         /// </summary>
         public LaneSpec Spec {
             get => Definition.LaneSpec;
-            set => Definition = Definition.WithSpec(value);
+            set => Definition = new(Definition.CenterPosition, value);
         }
-        public float LeftPosition { // Left position of the lane relative to the road node
-            get => Definition.Bounds.Min;
-            set => Definition = Definition.WithBounds(new(value, RightPosition)); 
-        } 
-        public float RightPosition { // Right position of the lane relative to the road node
-            get => Definition.Bounds.Max;
-            set => Definition = Definition.WithBounds(new(LeftPosition, value)); 
-        } 
         public Range<float> Bounds {
-            get => Definition.Bounds;
-            set => Definition = Definition.WithBounds(value);
+            get => Definition.Bounds();
+            set {
+                var newCenterPos = value.Middle();
+                var newSpec = Spec;
+                newSpec.Width = value.Width();
+                Definition = new(newCenterPos, newSpec);
+            }
         }
         public int Index { get; internal set; } // Index of the lane in the road node's lane list
-        public float MiddlePosition => Definition.CenterPos; // Middle position of the lane, calculated as the average of left and right positions
-        public float Width => Definition.LaneSpec.Width;
+        public float MiddlePosition => LaneNode.CenterPos; // Middle position of the lane, calculated as the average of left and right positions
+        public float Width => LaneNode.LaneSpec.Width;
         public LaneEnd Rear => new LaneEnd(NodeEnd.Backward, this);
         public LaneEnd Front => new LaneEnd(NodeEnd.Forward, this);
 
         public Lane(RoadNode node, LaneNode definition) {
+            Guid = definition.ID;
             ArgumentNullException.ThrowIfNull(definition, nameof(definition));
             ArgumentNullException.ThrowIfNull(node, nameof(node));
-            DefinitionProp = new(definition, "definition", node);
-            DefinitionProp.ValidateChanges += (s, e) => {
-                ArgumentNullException.ThrowIfNull(e.NewValue, nameof(definition));
-            };
+            DefinitionProp = new(definition.ToLaneDefinition, "definition", node);
             DefinitionProp.ValueChanged += (s, e) => {
                 node.Mesh.Invalidate();
             };
+            InverseDefinitionProp = new("invDefinition", DefinitionProp, LaneDefinitionMethods.Mirror, LaneDefinitionMethods.Mirror);
+            FrontHalf = new(this, NodeEnd.Forward);
+            RearHalf = new(this, NodeEnd.Backward);
         }
         //Positioning utilities
         public LaneEnd GetEnd(NodeEnd end) => end.GetConditional(Rear, Front);
@@ -66,6 +67,10 @@ namespace TranSimCS.Roads.Node {
         //Indexing
         internal ISet<LaneStrip> connections = new HashSet<LaneStrip>(); // Set of lane strips that this lane is connected to
         public ISet<LaneStrip> Connections => new ReadOnlySet<LaneStrip>(connections); // Read-only set of lane strips that this lane is connected to
+
+        public HalfLane FrontHalf { get; private set; }
+        public HalfLane RearHalf { get; private set; }
+        public HalfLane GetHalfLane(NodeEnd nodeEnd) => nodeEnd.GetConditional(RearHalf, FrontHalf);
 
         //Dragging
         IPosition[] IDraggableObj.DraggableComponents() => [RoadNode];
