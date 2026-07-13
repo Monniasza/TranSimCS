@@ -156,7 +156,6 @@ namespace TranSimCS.Roads.Node {
 
             lanesSet.Remove(lane.Guid);
             lanesDict.Remove(lane);
-            lane.Index = -1;
             lane.RoadNode = null;
 
             LaneRemoved?.Invoke(this, new LaneEventArgs(lane));

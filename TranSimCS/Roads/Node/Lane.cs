@@ -43,7 +43,7 @@ namespace TranSimCS.Roads.Node {
                 Definition = new(newCenterPos, newSpec);
             }
         }
-        public int Index { get; internal set; } // Index of the lane in the road node's lane list
+        public int Index => RoadNode.SortedLanes.IndexOf(this); // Index of the lane in the road node's lane list
         public float MiddlePosition => LaneNode.CenterPos; // Middle position of the lane, calculated as the average of left and right positions
         public float Width => LaneNode.LaneSpec.Width;
         public LaneEnd Rear => new LaneEnd(NodeEnd.Backward, this);

@@ -17,7 +17,6 @@ namespace TranSimCS.Roads.Node {
         internal RoadNodeCache(RoadNode node) {
             NodeSpec = new NodeSpec(node.Lanes.Select(x => x.LaneNode));
             SortedLanes = node.Lanes.OrderBy(x => x.MiddlePosition).ToImmutableList();
-            for (int i = 0; i < SortedLanes.Count; i++) SortedLanes[i].Index = i;
             ReferenceFrame = node.PositionProp.Value.CalcReferenceFrame();
             CenterPosition = ReferenceFrame.O + ReferenceFrame.X * NodeSpec.Range.Middle();
         }
