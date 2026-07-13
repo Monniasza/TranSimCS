@@ -11,7 +11,7 @@ using TranSimCS.Worlds;
 namespace TranSimCS.Tools {
     public class LaneCreationState {
         //SOURCE STATE
-        public readonly LaneEnd StartLane;
+        public readonly HalfLane StartLane;
         public Range<float> StartRange;
         public Range<float> EndRange;
 
@@ -30,8 +30,8 @@ namespace TranSimCS.Tools {
         public Bezier3 CenterLine => GeneratedSplines.Middle;
 
         //CONSTRUCTOR
-        public LaneCreationState(LaneEnd laneEnd) {
-            ArgumentNullException.ThrowIfNull(laneEnd.lane, nameof(laneEnd.lane));
+        public LaneCreationState(HalfLane laneEnd) {
+            ArgumentNullException.ThrowIfNull(laneEnd, nameof(laneEnd));
             StartLane = laneEnd;
         }
 
@@ -49,15 +49,14 @@ namespace TranSimCS.Tools {
             SnappedLane = null;
 
             //Shared variables
-            var laneRange = StartLane.lane.Bounds;
+            var laneRange = StartLane.Bounds;
             var (alignmentMulLeft, alignmentMulRight) = Alignment.GetAlignments();
             float referenceIndex = alignmentMulLeft * laneRange.Min + alignmentMulRight * laneRange.Max;
-            var startingPositionRef = LineEnd.calcLineEnd(StartLane.RoadNodeEnd, referenceIndex);
+            var startingPositionRef = LineEnd.calcLineEnd(StartLane.HalfNode, referenceIndex);
             var startTangent = startingPositionRef.Tangential;
             var startLateral = startingPositionRef.Lateral;
-            startLateral *= StartLane.end.Discriminant();
             var startPos = startingPositionRef.Position;
-            var startWidth = StartLane.lane.Width;
+            var startWidth = StartLane.Width;
 
             //Intermediate values
             var endPosition = Vector3.Zero;
@@ -68,7 +67,7 @@ namespace TranSimCS.Tools {
             if (selectedRoadLane.lane != null) {
                 //Picked a lane. Match it to the target road node
                 var targetCenterPos = selectedRoadLane.lane.MiddlePosition;
-                var sourceCenterPos = StartLane.lane.MiddlePosition;
+                var sourceCenterPos = StartLane.MiddlePosition;
                 DeltaOffset = targetCenterPos - sourceCenterPos;
                 GeneratedNodePosition = selectedRoadLane.GetRoadNode().PositionProp.Value;
                 SnappedLane = selectedRoadLane;
@@ -76,11 +75,6 @@ namespace TranSimCS.Tools {
                 endPosition = refframe.O;
                 endTangent = refframe.Z;
                 endLateral = refframe.X;
-
-                if(StartLane.end == selectedRoadLane.end) {
-                    endTangent *= -1;
-                    endLateral *= -1;
-                }
             } else {
                 //Create a synthetic end
                 Plane selectionPlane = menu.ReferencePlane;
@@ -109,12 +103,12 @@ namespace TranSimCS.Tools {
                 if (stripTools.flattenTilt.Checked) plan.endLateral = plan.endLateral.ToX0Z().Normalized();
                 if (stripTools.flattenIncline.Checked) plan.endTangent = plan.endTangent.ToX0Z().Normalized();
 
-                var correctedLateral = plan.endLateral * StartLane.end.Discriminant();
-                var correctedPosition = plan.endPos - plan.endLateral * StartLane.lane.Bounds.Min;
+                var correctedLateral = plan.endLateral;
+                var correctedPosition = plan.endPos - plan.endLateral * referenceIndex;
 
                 //Calculate the NodePosition
                 var newNodePosition = PositionEulerAngles.FromPosTangentLateral(correctedPosition, plan.endTangent, correctedLateral);
-                if (StartLane.end == NodeEnd.Backward) newNodePosition.Azimuth += int.MinValue;
+                if (StartLane.End == NodeEnd.Backward) newNodePosition.Azimuth += int.MinValue;
                 if (stripTools.flattenTilt.Checked) newNodePosition.Tilt = 0;
                 if (stripTools.flattenIncline.Checked) newNodePosition.Inclination = 0;
                 GeneratedNodePosition = newNodePosition;
@@ -124,7 +118,6 @@ namespace TranSimCS.Tools {
 
             Bezier3 lbound = GeometryUtils.GenerateJoinSpline(startPos + startLateral * (StartRange.Min - referenceIndex), endPosition + endLateral * (EndRange.Min - referenceIndex), startTangent, -endTangent);
             Bezier3 rbound = GeometryUtils.GenerateJoinSpline(startPos + startLateral * (StartRange.Max - referenceIndex), endPosition + endLateral * (EndRange.Max - referenceIndex), startTangent, -endTangent);
-            if (StartLane.end == NodeEnd.Backward) DataUtil.Swap(ref lbound, ref rbound);
             GeneratedSplines = new(lbound, rbound);
         }
     

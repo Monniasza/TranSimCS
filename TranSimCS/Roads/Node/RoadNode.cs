@@ -21,6 +21,7 @@ namespace TranSimCS.Roads.Node {
     public class RoadNode: Obj, IPosition, IObjMesh, IRoadElement {
         //Node contents
         public Property<PositionEulerAngles> PositionProp { get; private set; }
+        public BidirectionalDerivedProperty<PositionEulerAngles, PositionEulerAngles> InversePositionProp { get; private set; }
         public string Name { get; set; }
 
         //Cahced/generated contents
@@ -95,9 +96,9 @@ namespace TranSimCS.Roads.Node {
 
         public RoadNode(string name, PositionEulerAngles positionData, Guid? id = null) {
             Guid = id ?? Guid.NewGuid();   
-            PositionProp = new(PositionEulerAngles.Zero, "Position", this);
+            PositionProp = new(positionData, "Position", this);
             Name = name;
-            PositionProp.Value = positionData;
+            InversePositionProp = new("invPos", PositionProp, PositionEulerAnglesMethods.Around, PositionEulerAnglesMethods.Around);
             RearEnd = new RoadNodeEnd(NodeEnd.Backward, this);
             FrontEnd = new RoadNodeEnd(NodeEnd.Forward, this);
             RearHalf = new HalfNode(this, NodeEnd.Backward);

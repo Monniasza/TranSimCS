@@ -10,15 +10,17 @@ using MonoGame.Extended;
 using TranSimCS.Property;
 using TranSimCS.Roads.Section;
 using TranSimCS.Roads.Strip;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Node {
     /// <summary>
     /// A half of a road node, either front or back.
     /// </summary>
-    public class HalfNode {
+    public class HalfNode: IPosition {
         //Definition
         public RoadNode RoadNode { get; private set; }
         public NodeEnd End { get; private set; }
+        public Property<PositionEulerAngles> PositionProp { get; private set; }
 
         //Connections. Maintained by consumers.
         internal HashSet<RoadStripHalf> _connectedRoadStrips;
@@ -32,6 +34,7 @@ namespace TranSimCS.Roads.Node {
             ConnectedRoadStrips = new(_connectedRoadStrips);
             ConnectedSection = new Property<RoadSection?>(null, "connection");
             ConnectedSection.ValueChanged += ConnectedSection_ValueChanged;
+            PositionProp = end.GetConditional(roadNode.InversePositionProp, roadNode.PositionProp);
         }
 
         //Contents

@@ -18,8 +18,11 @@ namespace TranSimCS.Geometry
             Lateral = lateral;
         }
 
-    public static LineEnd calcLineEnd(RoadNodeEnd node, float offset)
-        => calcLineEnd(node.Node, offset, node.End);
+        public static LineEnd calcLineEnd(RoadNodeEnd node, float offset)
+            => calcLineEnd(node.Node, offset, node.End);
+
+        public static LineEnd calcLineEnd(HalfNode node, float offset)
+            => calcLineEnd(node, offset, NodeEnd.Forward); 
 
         public static (LineEnd, LineEnd) calcBoundingLineEnds(RoadNodeEnd node) {
             var bounds = node.Bounds();

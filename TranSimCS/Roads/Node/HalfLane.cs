@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Iesi.Collections.Generic;
+using MonoGame.Extended;
 using TranSimCS.Property;
 using TranSimCS.Roads.Strip;
 
@@ -17,6 +19,7 @@ namespace TranSimCS.Roads.Node {
         public Property<LaneDefinition> DefinitionProp { get; private set; }
         public LaneDefinition Definition { get => DefinitionProp.Value; set => DefinitionProp.Value = value; }
         public LaneNode LaneNode => new(Definition, Lane.Guid);
+        public LaneSpec Spec => Definition.LaneSpec;
 
         //The constructor
         internal HalfLane(Lane lane, NodeEnd end) {
@@ -34,5 +37,8 @@ namespace TranSimCS.Roads.Node {
         public int Index => (End == NodeEnd.Forward) ? Lane.Index : Lane.RoadNode.Lanes.Count - Lane.Index - 1;
         public float MiddlePosition => LaneNode.CenterPos; // Middle position of the lane, calculated as the average of left and right positions
         public float Width => LaneNode.LaneSpec.Width;
+        public Range<float> Bounds => LaneNode.Bounds;
+        public Guid Guid => Lane.Guid;
+        public LaneEnd LaneEnd => new(End, Lane);
     }
 }

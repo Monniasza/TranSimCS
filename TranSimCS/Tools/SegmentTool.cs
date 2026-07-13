@@ -119,41 +119,42 @@ namespace TranSimCS.Tools {
                 //Pick a new selection
                 var pickedLaneEnd = Menu.MouseOver?.As<LaneEnd>();
                 if (pickedLaneEnd == null || pickedLaneEnd.Value.lane == null) return;
-                State = new LaneCreationState(pickedLaneEnd.Value);
+                State = new LaneCreationState(pickedLaneEnd.Value.ToHalfLane());
             }else if(State != null && button == MouseButton.Left) {
                 //Validate the position
                 if (!float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt)) return;
 
                 //Build the node
                 RoadNode roadNode = new RoadNode("", State.GeneratedNodePosition);
+                var nodeHalf = roadNode.GetHalfNode(State.StartLane.End);
                 var newLaneNodes = LaneMappings!.EndingLanes;
-                var newLanes = new Lane[LaneMappings.EndingLanes.Length];
+                var newLanes = new HalfLane[LaneMappings.EndingLanes.Length];
                 for (int i = 0; i < newLaneNodes.Length; i++) {
                     var laneDef = newLaneNodes[i];
-                    var lane = roadNode.AddLane(laneDef);
+                    var lane = nodeHalf.AddLane(laneDef);
                     newLanes[i] = lane;
                 }
                 Menu.World.Nodes.data.Add(roadNode);
 
                 //Find a new lane to build from
                 var passthroughNumber = LaneMappings.LaneMappingSourceToDest;
-                LaneEnd newLaneEnd = new LaneEnd(State.StartLane.end, newLanes[passthroughNumber]);
+                LaneEnd newLaneEnd = new LaneEnd(State.StartLane.End, newLanes[passthroughNumber].Lane);
                 Debug.Assert(newLaneEnd.lane != null, "Didn't find a new lane");
 
                 //List previous lanes
                 var prevLanes = LaneMappings.StartingLanes;
                 
                 //Build the road strip
-                RoadStrip road = new RoadStrip(State.StartLane.RoadNodeEnd, roadNode.GetEnd(State.StartLane.end.Negate()));
+                RoadStrip road = new RoadStrip(State.StartLane.HalfNode.RoadNodeEnd, roadNode.GetEnd(State.StartLane.End.Negate()));
                 road.Finish = Menu.configuration.RoadFinish;
                 foreach(var connection in LaneMappings.Mappings) {
-                    var startLane = prevLanes[connection.StartIndex].GetEnd(newLaneEnd.end);
-                    var endLane = newLanes[connection.EndIndex].GetEnd(newLaneEnd.end.Negate());
-                    var isBackwards = LaneMappings.IsReverseLaneHeuristic(startLane.lane);
+                    var startLane = prevLanes[connection.StartIndex];
+                    var endLane = newLanes[connection.EndIndex].Lane.GetHalfLane(newLaneEnd.end.Negate());
+                    var isBackwards = LaneMappings.IsReverseLaneHeuristic(startLane.Lane);
 
                     //backwards if backwards is clearly preferred or equally preferred but going from the back
                     if (isBackwards ^ newLaneEnd.end == NodeEnd.Backward) DataUtil.Swap(ref startLane, ref endLane);
-                    LaneStrip laneStrip = new LaneStrip(startLane, endLane);
+                    LaneStrip laneStrip = new LaneStrip(startLane.LaneEnd, endLane.LaneEnd);
                     var spec = connection.LaneSpec;
                     if (isBackwards) spec.Flags = spec.Flags.LongitudinalReverse();
                     if (newLaneEnd.end == NodeEnd.Backward) spec.Flags = spec.Flags.Reverse();
@@ -163,7 +164,7 @@ namespace TranSimCS.Tools {
                 Menu.World.RoadSegments.data.Add(road);
 
                 //Advance to the next road node
-                State = new LaneCreationState(newLaneEnd);
+                State = new LaneCreationState(newLaneEnd.ToHalfLane());
                 SegmentTools.AddRemoveLeft.Value = 0;
                 SegmentTools.AddRemoveRight.Value = 0;
                 SegmentTools.IncludeExcludeLeft.Value = 0;
