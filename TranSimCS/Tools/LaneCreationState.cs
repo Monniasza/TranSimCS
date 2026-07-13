@@ -110,7 +110,7 @@ namespace TranSimCS.Tools {
                 if (stripTools.flattenIncline.Checked) plan.endTangent = plan.endTangent.ToX0Z().Normalized();
 
                 var correctedLateral = plan.endLateral * StartLane.end.Discriminant();
-                var correctedPosition = plan.endPos - plan.endLateral * StartLane.lane.LeftPosition;
+                var correctedPosition = plan.endPos - plan.endLateral * StartLane.lane.Bounds.Min;
 
                 //Calculate the NodePosition
                 var newNodePosition = PositionEulerAngles.FromPosTangentLateral(correctedPosition, plan.endTangent, correctedLateral);

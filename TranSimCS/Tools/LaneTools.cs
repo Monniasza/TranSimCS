@@ -9,18 +9,13 @@ using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
 using TranSimCS.Roads.Node;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.Tools {
     public class LaneTools: Panel {
-        public Property<Lane?> PickedLaneProp;
         public Property<float> SnappingIncrementProp;
         public Property<bool> SnappingEnabledProp;
         public Property<bool> SnappingIsAbsoluteProp;
-
-        public Lane? PickedLane {
-            get => PickedLaneProp.Value;
-            set => PickedLaneProp.Value = value;
-        }
         public float SnappingSetting {
             get => SnappingIncrementProp.Value;
             set => SnappingIncrementProp.Value = value;
@@ -46,8 +41,6 @@ namespace TranSimCS.Tools {
         }
 
         public LaneTools(InGameMenu game) : base(Anchor.AutoLeft, new(1, 1), true) {
-            PickedLaneProp = new(null, "lane", null);
-            PickedLaneProp.ValueChanged += PickedLaneProp_ValueChanged;
             SnappingIncrementProp = new(0.25f, "increment");
             SnappingEnabledProp = new(false, "enableSnap");
             SnappingIsAbsoluteProp = new(true, "absolute");
@@ -74,17 +67,5 @@ namespace TranSimCS.Tools {
             snapField.ValueChanged += (s, v) => SnappingSetting = v;
             snapAbsolute.OnCheckStateChange += (s, v) => SnappingIsAbsolute = v;
         }
-
-        private void PickedLaneProp_ValueChanged(object? sender, PropertyChangedEventArgs2<Lane?> e) {
-            e.OldValue?.DefinitionProp.ValueChanged -= PickedLaneContentsChanged;
-            e.NewValue?.DefinitionProp.ValueChanged += PickedLaneContentsChanged;
-            if(e.NewValue != null) UpdateValues(e.NewValue.Definition);
-        }
-
-        private void UpdateValues(LaneNode definition) {
-            throw new NotImplementedException();
-        }
-
-        private void PickedLaneContentsChanged(object? sender, PropertyChangedEventArgs2<LaneNode> e) => UpdateValues(e.NewValue);
     }
 }
