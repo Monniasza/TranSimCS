@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Iesi.Collections.Generic;
+using Microsoft.Xna.Framework;
+using MonoGame.Extended;
 using TranSimCS.Property;
 using TranSimCS.Roads.Section;
 using TranSimCS.Roads.Strip;
@@ -58,6 +61,14 @@ namespace TranSimCS.Roads.Node {
         //Derived properties
         public HalfNode OppositeHalf => End.GetConditional(RoadNode.FrontHalf, RoadNode.RearHalf);
         public RoadNodeEnd RoadNodeEnd => RoadNode.GetEnd(End);
+
+        //Cached properties
+        public HalfNodeCache? _cache;
+        public HalfNodeCache Cache => _cache ??= new HalfNodeCache(this);
+        public NodeSpec NodeSpec => Cache.NodeSpec;
+        public ImmutableArray<HalfLane> SortedLanes => Cache.SortedLanes;
+        public Vector3 CenterPos => RoadNode.CenterPosition;
+        public Range<float> Bounds => NodeSpec.Range;
 
         //Event listeners
         private void ConnectedSection_ValueChanged(object sender, PropertyChangedEventArgs2<RoadSection?> e) {
