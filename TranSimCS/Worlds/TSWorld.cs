@@ -102,6 +102,12 @@ namespace TranSimCS.Worlds
             segment.OnLaneAdded += LaneAddedToRoad; // Subscribe to lane addition events in the road segment
             segment.StartNode.connectedSegments.Add(segment);
             segment.EndNode.connectedSegments.Add(segment);
+
+            var startHalf = segment.StartNode.Node.GetHalfNode(segment.StartNode.End);
+            var endHalf = segment.EndNode.Node.GetHalfNode(segment.EndNode.End);
+            startHalf._connectedRoadStrips.Add(new(segment, SegmentHalf.Start));
+            endHalf._connectedRoadStrips.Add(new(segment, SegmentHalf.End));
+
             AddIfAbsent(segment.StartNode.Node);
             AddIfAbsent(segment.EndNode.Node);
         }        
@@ -112,6 +118,11 @@ namespace TranSimCS.Worlds
             segment.OnLaneRemoved -= LaneRemovedFromRoad; // Unsubscribe from lane removal events in the road segment
             segment.StartNode.connectedSegments.Remove(segment);
             segment.EndNode.connectedSegments.Remove(segment);
+
+            var startHalf = segment.StartNode.Node.GetHalfNode(segment.StartNode.End);
+            var endHalf = segment.EndNode.Node.GetHalfNode(segment.EndNode.End);
+            startHalf._connectedRoadStrips.Remove(new(segment, SegmentHalf.Start));
+            endHalf._connectedRoadStrips.Remove(new(segment, SegmentHalf.End));
 
             //Remove node connections that are no longer valid
             var lanes = segment.Lanes.ToArray();
