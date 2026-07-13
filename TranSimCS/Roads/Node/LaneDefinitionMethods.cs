@@ -12,6 +12,6 @@ namespace TranSimCS.Roads.Node {
             return new(definition.CenterPosition - halfwidth, definition.CenterPosition + halfwidth);
         }
 
-        public static LaneDefinition Mirror(this LaneDefinition definition) => new(-definition.CenterPosition, definition.LaneSpec.Reverse());
+        public static LaneDefinition Mirror(this LaneDefinition definition) => new(-definition.CenterPosition, definition.LaneSpec);
     }
 }

@@ -157,7 +157,7 @@ namespace TranSimCS.Tools {
                     LaneStrip laneStrip = new LaneStrip(startLane.LaneEnd, endLane.LaneEnd);
                     var spec = connection.LaneSpec;
                     if (isBackwards) spec.Flags = spec.Flags.LongitudinalReverse();
-                    if (newLaneEnd.end == NodeEnd.Backward) spec.Flags = spec.Flags.Reverse();
+                    if (newLaneEnd.end == NodeEnd.Backward) spec.Flags = spec.Flags.LongitudinalReverse();
                     laneStrip.Spec = spec;
                     road.AddLaneStrip(laneStrip);
                 }
