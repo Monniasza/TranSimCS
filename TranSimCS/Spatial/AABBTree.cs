@@ -409,8 +409,10 @@ namespace TranSimCS.Spatial {
                     node.Bounds = BoundingBox.CreateMerged(
                         node.Left.Bounds, node.Right.Bounds
                     );
+                    node.Reheight();
                 } else {
                     node.Bounds = node.Item.GetBounds();
+                    node.Height = 1;
                 }
                 Validate(node);
                 node = node.Parent;
