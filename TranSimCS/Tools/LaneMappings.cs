@@ -21,7 +21,7 @@ namespace TranSimCS.Tools {
         public ImmutableArray<LaneNode> EndingLanes { get; private set; }
         public Range<float> EndRange { get; private set; }
         public Range<float> StartRange { get; private set; }
-        public int LaneMappingSourceToDest { get; private set; }
+        public int LaneIndexGoingToSource { get; private set; }
 
         public LaneMappings(LaneCreationState laneCreationState, SegmentTools.Presets presets) {
             //Set fields up
@@ -87,6 +87,7 @@ namespace TranSimCS.Tools {
                     if (MathF.Abs(target - candidate) < MathF.Abs(target - current)) laneMappingSourceToDest = i;
                 }
             }
+            LaneIndexGoingToSource = laneMappingSourceToDest;
         }
 
         private void CalculateConnections(SegmentTools.Presets presets) {
@@ -260,7 +261,6 @@ namespace TranSimCS.Tools {
             for (int i = 0; i < count; i++) {
                 var laneDef = StartingLanes[i];
                 var newLaneDef = new LaneNode(laneDef.Spec, laneDef.MiddlePosition, Guid.NewGuid());
-                var isReverse = IsReverseLaneHeuristic(laneDef.Lane);
                 endingLanes[i] = newLaneDef;
                 var lm = new LaneMapping(i, i, laneDef.Spec);
                 ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);

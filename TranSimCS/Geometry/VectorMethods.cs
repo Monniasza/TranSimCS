@@ -29,6 +29,8 @@ namespace TranSimCS.Geometry {
             if (!float.IsFinite(vector.Tilt)) throw new ArgumentException(name + ".Tilt === NaN");
         }
 
+        public static bool IsFinite(this Vector3 vector) => float.IsFinite(vector.X) && float.IsFinite(vector.Y) && float.IsFinite(vector.Z);
+
         public static PointD ToPointD(this Vector2 vector) {
             return new PointD((float)vector.X, (float)vector.Y);
         }

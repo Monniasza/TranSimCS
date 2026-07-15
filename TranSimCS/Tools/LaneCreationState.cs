@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
 using TranSimCS.Geometry;
@@ -25,6 +26,7 @@ namespace TranSimCS.Tools {
         public PositionEulerAngles GeneratedNodePosition;
         public float DeltaOffset;
         public LaneEnd? SnappedLane;
+        public NodeEnd DestinationNodeEnd;
 
         //DERIVED STATE
         public Bezier3 CenterLine => GeneratedSplines.Middle;
@@ -47,6 +49,7 @@ namespace TranSimCS.Tools {
 
             DeltaOffset = 0;
             SnappedLane = null;
+            DestinationNodeEnd = StartLane.End;
 
             //Shared variables
             var laneRange = StartLane.Bounds;
@@ -55,26 +58,18 @@ namespace TranSimCS.Tools {
             var startingPositionRef = LineEnd.calcLineEnd(StartLane.HalfNode, referenceIndex);
             var startTangent = startingPositionRef.Tangential;
             var startLateral = startingPositionRef.Lateral;
-            var startPos = startingPositionRef.Position;
+            var startLanePos = startingPositionRef.Position;
             var startWidth = StartLane.Width;
 
-            //Intermediate values
-            var endPosition = Vector3.Zero;
-            var endTangent = Vector3.Zero;
-            var endLateral = Vector3.Zero;
-
             var selectedRoadLane = menu.MouseOver?.As<LaneEnd>() ?? default;
-            if (selectedRoadLane.lane != null) {
+            if (selectedRoadLane.lane != null && selectedRoadLane.ToHalfLane() != StartLane) {
                 //Picked a lane. Match it to the target road node
-                var targetCenterPos = selectedRoadLane.lane.MiddlePosition;
+                var targetCenterPos = -selectedRoadLane.ToHalfLane().MiddlePosition;
                 var sourceCenterPos = StartLane.MiddlePosition;
                 DeltaOffset = targetCenterPos - sourceCenterPos;
-                GeneratedNodePosition = selectedRoadLane.GetRoadNode().PositionProp.Value;
+                GeneratedNodePosition = selectedRoadLane.GetRoadNode().InversePositionProp.Value;
                 SnappedLane = selectedRoadLane;
-                var refframe = selectedRoadLane.GetRoadNode().ReferenceFrame;
-                endPosition = refframe.O;
-                endTangent = refframe.Z;
-                endLateral = refframe.X;
+                DestinationNodeEnd = selectedRoadLane.end;
             } else {
                 //Create a synthetic end
                 Plane selectionPlane = menu.ReferencePlane;
@@ -85,7 +80,7 @@ namespace TranSimCS.Tools {
                 RoadPlan plan = new RoadPlan {
                     startLateral = startLateral,
                     endLateral = startLateral,
-                    startPos = startPos,
+                    startPos = startLanePos,
                     endPos = TargetPosition,
                     startTangent = startTangent,
                     endTangent = startTangent,
@@ -95,29 +90,44 @@ namespace TranSimCS.Tools {
                 SplineMode.CreateValues(plan);
                 plan.Align(Alignment.Inverse(), startWidth);
 
-                endPosition = plan.endPos;
-                endTangent = plan.endTangent;
-                endLateral = plan.endLateral;
+                Debug.Assert(plan.endPos.IsFinite(), "Invalid end position");
+                Debug.Assert(plan.endLateral.IsFinite(), "Invalid end lateral");
+                Debug.Assert(plan.endTangent.IsFinite(), "Invalid end tangent");
 
                 //Flatten tilt or inclination
                 if (stripTools.flattenTilt.Checked) plan.endLateral = plan.endLateral.ToX0Z().Normalized();
                 if (stripTools.flattenIncline.Checked) plan.endTangent = plan.endTangent.ToX0Z().Normalized();
 
-                var correctedLateral = plan.endLateral;
+                if (!(plan.endTangent.IsFinite() && plan.endLateral.IsFinite())) {
+                    plan.endTangent = plan.startTangent;
+                    plan.endLateral = plan.startLateral;
+                }
+
                 var correctedPosition = plan.endPos - plan.endLateral * referenceIndex;
 
                 //Calculate the NodePosition
-                var newNodePosition = PositionEulerAngles.FromPosTangentLateral(correctedPosition, plan.endTangent, correctedLateral);
+                var newNodePosition = PositionEulerAngles.FromPosTangentLateral(correctedPosition, plan.endTangent, plan.endLateral);
                 if (StartLane.End == NodeEnd.Backward) newNodePosition.Azimuth += int.MinValue;
                 if (stripTools.flattenTilt.Checked) newNodePosition.Tilt = 0;
                 if (stripTools.flattenIncline.Checked) newNodePosition.Inclination = 0;
                 GeneratedNodePosition = newNodePosition;
             }
 
-            EndRange = new(EndRange.Min + DeltaOffset, EndRange.Max + DeltaOffset);
-
-            Bezier3 lbound = GeometryUtils.GenerateJoinSpline(startPos + startLateral * (StartRange.Min - referenceIndex), endPosition + endLateral * (EndRange.Min - referenceIndex), startTangent, -endTangent);
-            Bezier3 rbound = GeometryUtils.GenerateJoinSpline(startPos + startLateral * (StartRange.Max - referenceIndex), endPosition + endLateral * (EndRange.Max - referenceIndex), startTangent, -endTangent);
+            var refframe = GeneratedNodePosition.CalcReferenceFrame();
+            var endPosition = refframe.O;
+            var endTangent = refframe.Z;
+            var endLateral = refframe.X;
+            if (DestinationNodeEnd == NodeEnd.Backward) {
+                endLateral *= -1;
+                endTangent *= -1;
+            }
+            endPosition += DeltaOffset * endLateral;
+            GeneratedNodePosition.Position = endPosition;
+            Bezier3 lbound = GeometryUtils.GenerateJoinSpline(startLanePos + startLateral * (StartRange.Min - referenceIndex), endPosition + endLateral * EndRange.Min, startTangent, -endTangent);
+            Bezier3 rbound = GeometryUtils.GenerateJoinSpline(startLanePos + startLateral * (StartRange.Max - referenceIndex), endPosition + endLateral * EndRange.Max, startTangent, -endTangent);
+            //Assert spline validity
+            VectorMethods.CheckSpline(lbound, "left");
+            VectorMethods.CheckSpline(rbound, "right");
             GeneratedSplines = new(lbound, rbound);
         }
     

@@ -31,6 +31,8 @@ namespace TranSimCS.Tools {
             var reflectionVector = plan.endPos - plan.startPos;
             reflectionVector.Normalize();
 
+            if (!reflectionVector.IsFinite()) return;
+
             Vector3 startNormal =
                 Vector3.Normalize(
                     Vector3.Cross(

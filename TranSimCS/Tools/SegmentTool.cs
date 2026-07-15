@@ -19,6 +19,7 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Setting;
 using TranSimCS.Tools;
 using TranSimCS.Tools.Panels;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.Tools {
     public class SegmentTool : ITool{ 
@@ -122,49 +123,10 @@ namespace TranSimCS.Tools {
                 State = new LaneCreationState(pickedLaneEnd.Value.ToHalfLane());
             }else if(State != null && button == MouseButton.Left) {
                 //Validate the position
-                if (!float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt)) return;
-
-                //Build the node
-                RoadNode roadNode = new RoadNode("", State.GeneratedNodePosition);
-                var nodeHalf = roadNode.GetHalfNode(State.StartLane.End);
-                var newLaneNodes = LaneMappings!.EndingLanes;
-                var newLanes = new HalfLane[LaneMappings.EndingLanes.Length];
-                for (int i = 0; i < newLaneNodes.Length; i++) {
-                    var laneDef = newLaneNodes[i];
-                    var lane = nodeHalf.AddLane(laneDef);
-                    newLanes[i] = lane;
-                }
-                Menu.World.Nodes.data.Add(roadNode);
-
-                //Find a new lane to build from
-                var passthroughNumber = LaneMappings.LaneMappingSourceToDest;
-                LaneEnd newLaneEnd = new LaneEnd(State.StartLane.End, newLanes[passthroughNumber].Lane);
-                Debug.Assert(newLaneEnd.lane != null, "Didn't find a new lane");
-
-                //List previous lanes
-                var prevLanes = LaneMappings.StartingLanes;
-                
-                //Build the road strip
-                RoadStrip road = new RoadStrip(State.StartLane.HalfNode.RoadNodeEnd, roadNode.GetEnd(State.StartLane.End.Negate()));
-                road.Finish = Menu.configuration.RoadFinish;
-                foreach(var connection in LaneMappings.Mappings) {
-                    var startLane = prevLanes[connection.StartIndex];
-                    var endLane = newLanes[connection.EndIndex].Lane.GetHalfLane(newLaneEnd.end.Negate());
-                    var isBackwards = LaneMappings.IsReverseLaneHeuristic(startLane.Lane);
-
-                    //backwards if backwards is clearly preferred or equally preferred but going from the back
-                    if (isBackwards ^ newLaneEnd.end == NodeEnd.Backward) DataUtil.Swap(ref startLane, ref endLane);
-                    LaneStrip laneStrip = new LaneStrip(startLane.LaneEnd, endLane.LaneEnd);
-                    var spec = connection.LaneSpec;
-                    if (isBackwards) spec.Flags = spec.Flags.LongitudinalReverse();
-                    if (newLaneEnd.end == NodeEnd.Backward) spec.Flags = spec.Flags.LongitudinalReverse();
-                    laneStrip.Spec = spec;
-                    road.AddLaneStrip(laneStrip);
-                }
-                Menu.World.RoadSegments.data.Add(road);
+                if (LaneMappings == null || !float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt)) return;
 
                 //Advance to the next road node
-                State = new LaneCreationState(newLaneEnd.ToHalfLane());
+                State = LaneReconcillation.BuildConnections(State, LaneMappings, Menu);
                 SegmentTools.AddRemoveLeft.Value = 0;
                 SegmentTools.AddRemoveRight.Value = 0;
                 SegmentTools.IncludeExcludeLeft.Value = 0;
@@ -199,6 +161,14 @@ namespace TranSimCS.Tools {
             var rightPoints = GeometryUtils.GenerateSplinePoints(State.GeneratedSplines.right, accuracy);
             var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftPoints, rightPoints, StripRenderer.GenerateLaneStripVertexGen(previewColor));
             apshaltBin.DrawStrip(generatedVertStripPair);
+
+            //Generate a preview of the node position
+            var refframe = State.GeneratedNodePosition.CalcReferenceFrame();
+            var roadRenderBin = Menu.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
+            var front = refframe.O + refframe.Z * 2;
+            var back = refframe.O - refframe.Z * 2;
+            roadRenderBin.DrawLine(refframe.O, front, refframe.Y, Color.Red);
+            roadRenderBin.DrawLine(refframe.O, back, refframe.Y, Color.Maroon);
         }
 
 
