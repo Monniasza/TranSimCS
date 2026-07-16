@@ -30,55 +30,62 @@ namespace TranSimCS.Roads.Strip {
             var siding = Right - Left;
             var midpoint = centerline[t];
             var tangent = centerline.Tangential(t);
-            if (tangent.LengthSquared() < 0.0000001) return; //Zero tangential. It's wrong!
-            tangent.Normalize();
-            var fakebinormal = siding[t];
-            var width = Vector3.Cross(tangent, fakebinormal).Length();
-            var normalfakebirnormal = Vector3.Normalize(fakebinormal);
-            var nrm = Vector3.Cross(tangent, normalfakebirnormal);
-            nrm.Normalize();
+            if (tangent.LengthSquared() >= 0.0000001){
+                tangent.Normalize();
+                var fakebinormal = siding[t];
+                var width = Vector3.Cross(tangent, fakebinormal).Length();
+                var normalfakebirnormal = Vector3.Normalize(fakebinormal);
+                var nrm = Vector3.Cross(tangent, normalfakebirnormal);
+                nrm.Normalize();
 
-            var arrowWidth = width / 2;
-            var displacement = tangent * width / 2;
-            midpoint += nrm * aoffset;
-            if (laneStrip.IsReverse()) displacement *= -1;
+                var arrowWidth = width / 2;
+                var displacement = tangent * width / 2;
+                midpoint += nrm * aoffset;
+                if (laneStrip.IsReverse()) displacement *= -1;
 
-            var arrowBin = renderer.GetOrCreateRenderBinForced(Assets.Arrow);
-            arrowBin.DrawLine(midpoint - displacement, midpoint + displacement, nrm, Color.White, arrowWidth);
+                var arrowBin = renderer.GetOrCreateRenderBinForced(Assets.Arrow);
+                arrowBin.DrawLine(midpoint - displacement, midpoint + displacement, nrm, Color.White, arrowWidth);
+            } //else Zero tangential. It's wrong!
 
-            GenerateStripEdgeLines(laneStrip, renderer, voffset + 0.05f);
+            var stripEdgeLines = laneStrip.Lines;
+            foreach (var line in stripEdgeLines) {
+                var leftLinePoints = GeometryUtils.GenerateSplinePoints(line.Strip.left, accuracy);
+                var rightLinePoints = GeometryUtils.GenerateSplinePoints(line.Strip.right, accuracy);
+                var generatedLineVertStripPair = UniformTexturing.UniformTexturedTwin(leftLinePoints, rightLinePoints, GenerateLaneStripVertexGen(Color.White), line.Bias);
+                var lineBin = renderer.GetOrCreateRenderBinForced(line.Type.GetMaterial());
+                lineBin.DrawStrip(generatedLineVertStripPair);
+            }
 
             renderer.AddTagsToAll(laneStrip);
         }
-        public static void GenerateStripEdgeLines(LaneStrip laneStrip, MultiMesh renderer, float voffset = 0) {
+
+        //TODO return an array
+        public static RoadSplineComponent[] GenerateStripEdgeLines(LaneStrip laneStrip, float voffset = 0) {
             //Get side-line flags
             var mergeLeft = (laneStrip.Spec.Flags & LaneFlags.MergeLeft) != 0;
             var mergeRight = (laneStrip.Spec.Flags & LaneFlags.MergeRight) != 0;
             var isMerge = (laneStrip.Spec.Flags & LaneFlags.IsMerge) != 0;
 
-            if (mergeLeft && mergeRight) return;
+            if (mergeLeft && mergeRight) return [];
             var swapMerges = isMerge ? laneStrip.EndLane.end == Node.NodeEnd.Backward : laneStrip.StartLane.end == Node.NodeEnd.Backward;
             if (swapMerges) DataUtil.Swap(ref mergeLeft, ref mergeRight);
 
             //Get tags
-            var accuracy = Settings.RoadAccuracy;
-            var tag = laneStrip.Tag();
             var roadTag = laneStrip.road.FullSizeTag();
 
             //Generate side-lines
-            var solidTexture = Assets.EmissiveWhite;
-            var dashedTexture = ((laneStrip.Spec.Flags & LaneFlags.Yield) != 0) ? Assets.LineYield : Assets.LineDash;
             var lineWidth = laneStrip.Spec.LineWidth;
 
-            void DrawSide(LaneRange laneRange, LaneFlags flag, float bias) {
+            RoadSplineComponent DrawSide(LaneRange laneRange, LaneFlags flag, float bias) {
                 bool isEdge = IsRangeTouchingEdge(laneRange.startRange, roadTag.startRange) && IsRangeTouchingEdge(laneRange.endRange, roadTag.endRange);
                 var lineSplines = RoadRenderer.GenerateSplines(laneRange, voffset);
-                var lineTexture = ((laneStrip.Spec.Flags & flag) != 0 || isEdge) ? solidTexture : dashedTexture;
-                var leftLinePoints = GeometryUtils.GenerateSplinePoints(lineSplines.left, accuracy);
-                var rightLinePoints = GeometryUtils.GenerateSplinePoints(lineSplines.right, accuracy);
-                var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftLinePoints, rightLinePoints, GenerateLaneStripVertexGen(Color.White), bias);
-                var lineBin = renderer.GetOrCreateRenderBinForced(lineTexture);
-                lineBin.DrawStrip(generatedVertStripPair);
+                var lineTexture = ((laneStrip.Spec.Flags & flag) != 0 || isEdge) ? RoadSplineComponentType.Solid : RoadSplineComponentType.Dashed;
+                return new RoadSplineComponent() {
+                    Bias = bias,
+                    Color = Color.White,
+                    Strip  = lineSplines,
+                    Type = lineTexture
+                };
             }
             bool IsRangeTouchingEdge(Range<float> lineWidth, Range<float> endingRange) {
                 float delta = 0.01f;
@@ -124,9 +131,11 @@ namespace TranSimCS.Roads.Strip {
             }
 
             var leftRange = LaneStripToRoadStripRange(laneStrip, new(startLeft, startLeftCenter), new(endLeft, endLeftCenter));
-            var rightRange = LaneStripToRoadStripRange(laneStrip, new(startRightCenter, startRight), new(endRightCenter, endRight));  
-            DrawSide(leftRange, LaneFlags.NoLeft, 0);
-            DrawSide(rightRange, LaneFlags.NoRight, 1);
+            var rightRange = LaneStripToRoadStripRange(laneStrip, new(startRightCenter, startRight), new(endRightCenter, endRight));
+            return [
+                DrawSide(leftRange, LaneFlags.NoLeft, 0),
+                DrawSide(rightRange, LaneFlags.NoRight, 1)
+            ];
         }
 
         public static LaneRange LaneStripToRoadStripRange(LaneStrip strip, Range<float> startRange, Range<float> endRange) {

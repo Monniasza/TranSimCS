@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -135,6 +136,9 @@ namespace TranSimCS.Roads.Strip {
         private SplineLUT? lateralLUT = null;
         public SplineLUT LateralLUT => lateralLUT ??= new SplineLUT(SplineCache.right - SplineCache.left);
 
+        private ImmutableArray<RoadSplineComponent>? lines;
+        public ImmutableArray<RoadSplineComponent> Lines => lines ??= StripRenderer.GenerateStripEdgeLines(this, 0.05f).ToImmutableArray();
+
 
         //Mesh cache
         private MultiMesh? mesh; // Cached mesh for the lane strip
@@ -150,6 +154,8 @@ namespace TranSimCS.Roads.Strip {
             splineCache = null;
             splineLUT = null;
             lateralLUT = null;
+            drivableAreaStripCache = null;
+            lines = null;
         }
         private SplineStrip RecalcSplines() {
             var splines = RoadRenderer.GenerateSplines(Tag());
