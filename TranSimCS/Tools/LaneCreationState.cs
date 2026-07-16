@@ -22,7 +22,7 @@ namespace TranSimCS.Tools {
         public Alignment Alignment;
 
         //GENERATED STATE
-        public Strip GeneratedSplines;
+        public SplineStrip GeneratedSplines;
         public PositionEulerAngles GeneratedNodePosition;
         public float DeltaOffset;
         public LaneEnd? SnappedLane;

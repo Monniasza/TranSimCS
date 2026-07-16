@@ -36,18 +36,13 @@ namespace TranSimCS.Roads.Strip {
         /// <param name="renderHelper">render helper</param>
         public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MultiMesh renderHelper, float voffset = 0) {
             if(connection == null || connection.Lanes.Count == 0) return;
-            var accuracy = Settings.RoadAccuracy;
 
-            Mesh roadBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
             foreach (var lane in connection.Lanes) {
                 renderHelper.AddAll(lane.GetMesh());
             }
 
-            //Draw the road finish
-            var length = GenerateRoadSegmentFinish(connection, renderHelper);
-
-            //Calculate length of the road
-            
+            //Draw the road finish, Calculate length of the road
+            var length = GenerateRoadSegmentFinish(connection, renderHelper);            
 
             //If this segment is single-ended, draw the inner island
             if (connection.IsSingleEnded()) 
@@ -95,8 +90,6 @@ namespace TranSimCS.Roads.Strip {
             var rightStart = Vector3.UnitX * bounds.rightStart;
             var leftEnd = Vector3.UnitX * bounds.leftEnd;
             var rightEnd = Vector3.UnitX * bounds.rightEnd;
-            var bottomLeft = -Vector3.UnitY * height - Vector3.UnitX * breadth;
-            var bottomRight = -Vector3.UnitY * height + Vector3.UnitX * breadth;
 
             var leftDownPoints = GenerateSplinePoints(leftDown, accuracy);
             var rightDownPoints = GenerateSplinePoints(rightDown, accuracy);
@@ -264,9 +257,6 @@ namespace TranSimCS.Roads.Strip {
                 RenderUtil.InvertNormals(triangulation);
                 ((Mesh)topRenderBin).DrawModel(vertices, triangulation);
             }
-
-            //Draw solid lines by the lane
-            //...
         }
 
         public static IEnumerable<Vector3> Retransform(SplineFrame frame, IEnumerable<PointD> pts, float z = 0) {

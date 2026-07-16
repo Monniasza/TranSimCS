@@ -36,8 +36,8 @@ namespace TranSimCS.Roads {
             var strips = GenerateSplines(range, voffset); // Generate the splines for the left and right lanes
 
             //Generate border curves
-            Vector3[] leftBorder = GenerateSplinePoints(strips.Item1, accuracy);
-            Vector3[] rightBorder = GenerateSplinePoints(strips.Item2, accuracy);
+            Vector3[] leftBorder = GenerateSplinePoints(strips.left, accuracy);
+            Vector3[] rightBorder = GenerateSplinePoints(strips.right, accuracy);
 
             var leftBorder2 = GeneratePositionsFromVectors(0, color, leftBorder);
             var rightBorder2 = GeneratePositionsFromVectors(1, color, rightBorder);
@@ -73,9 +73,9 @@ namespace TranSimCS.Roads {
             return (pos1L, pos1R, pos2L, pos2R);
         }
 
-        public static (Bezier3 Left, Bezier3 Right) GenerateSplines(LaneRange laneRange, float voffset = 0) {
+        public static SplineStrip GenerateSplines(LaneRange laneRange, float voffset = 0) {
             var (pos1L, pos1R, pos2L, pos2R) = GetPositionsForGenerateSplines(laneRange);
-            return (
+            return new(
                 laneRange.road.GenerateSpline(pos1L, pos2L, voffset),
                 laneRange.road.GenerateSpline(pos1R, pos2R, voffset)
             );

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Clipper2Lib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NLog;
@@ -134,8 +135,8 @@ namespace TranSimCS.Roads.Section {
             if (accuracy < 0) accuracy = Settings.RoadAccuracy;
 
             var mesh = multimesh.GetOrCreateRenderBinForced(Assets.Asphalt);
-            var surfaceMesh = new Mesh();
 
+            var surfaceMesh = new Mesh();
             var endsPair = roadSection.MainSlopeNodes.Value;
             var hasSlope = endsPair.Start != null
                 && endsPair.End != null
@@ -151,6 +152,13 @@ namespace TranSimCS.Roads.Section {
                 GenerateIntersectionStrip(surfaceMesh, roadSection.Nodes[0], roadSection.Nodes[1], accuracy);
             } else {
                 GenerateSectionWithoutSlope(surfaceMesh, roadSection, accuracy);
+            }
+
+            //Generate markings
+            PathsD asphaltPaths = new();
+            PathsD drivablePaths = new();
+            foreach (var path in roadSection.Nodes) {
+                
             }
 
             mesh.DrawModel(surfaceMesh);
@@ -230,27 +238,22 @@ namespace TranSimCS.Roads.Section {
         }
 
         private static Vector3[] GenerateSectionPerimeter(RoadSection roadSection, int accuracy = 17) {
-            var nodes = roadSection.Nodes;
+            var nodes = roadSection.Nodes.Select(x => x.HalfNode).Rev().ToArray();
             var perimeter = new List<Vector3>();
 
-            for (int i = 0; i < nodes.Count; i++) {
-                var node = nodes[i];
-                var next = nodes[(i + 1) % nodes.Count];
-                var bounds = node.Bounds();
-                var left = calcLineEnd(node, bounds.LocalLeft).Position;
-                var right = calcLineEnd(node, bounds.LocalRight).Position;
-
-                if (perimeter.Count == 0)
-                    perimeter.Add(left);
-                perimeter.Add(right);
-
-                var edge = GenerateRoadEdge(node, next, 1);
-                var points = GenerateSplinePoints(edge, accuracy);
-                var end = i == nodes.Count - 1 ? points.Length - 1 : points.Length;
-                for (int j = 1; j < end; j++)
+            for (int i = 0; i < nodes.Length; i++) {
+                var prev = nodes[i];
+                var next = nodes[(i + 1) % nodes.Length];
+                var prevframe = prev.Cache.ReferenceFrame;
+                var nextframe = next.Cache.ReferenceFrame;
+                var prevpos = prevframe.O + prevframe.X * prev.Bounds.Max;
+                var nextpos = nextframe.O + nextframe.X * next.Bounds.Min;
+                var spline = GeometryUtils.GenerateJoinSpline(prevpos, nextpos, prevframe.Z, nextframe.Z);
+                var points = GenerateSplinePoints(spline, accuracy);
+                for (int j = 1; j < points.Length; j++)
                     perimeter.Add(points[j]);
             }
-
+            perimeter.Reverse();
             return perimeter.ToArray();
         }
 

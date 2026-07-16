@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 
 namespace TranSimCS.Spline {
-    public struct Strip(Bezier3 left, Bezier3 right): IPatch {
+    public struct SplineStrip(Bezier3 left, Bezier3 right): IPatch {
         public Bezier3 left = left;
         public Bezier3 right = right;
         public Bezier3 Middle => (left+right)/2;
@@ -22,9 +22,13 @@ namespace TranSimCS.Spline {
             var rightSubstrip = right.SubRange(y0, y1);
             var leftSubstrip2 = Bezier3.Lerp(leftSubstrip, rightSubstrip, x0);
             var rightSubstrip2 = Bezier3.Lerp(leftSubstrip, rightSubstrip, x1);
-            return new Strip(leftSubstrip2, rightSubstrip2);
+            return new SplineStrip(leftSubstrip2, rightSubstrip2);
         }
 
+        public void Deconstruct(out Bezier3 left, out Bezier3 right) {
+            left = this.left;
+            right = this.right;
+        }
         
     }
 }

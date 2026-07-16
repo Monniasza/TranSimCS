@@ -26,14 +26,13 @@ namespace TranSimCS.Roads.Strip {
             //Generate arrows
             float aoffset = 0.15f;
             var t = 0.5f;
-            var avgspline = (Right + Left) / 2;
-            var lpoint = Left[t];
-            var rpoint = Right[t];
-            var midpoint = (lpoint + rpoint) / 2;
-            var tangent = avgspline.Tangential(t);
+            var centerline = (Right + Left) / 2;
+            var siding = Right - Left;
+            var midpoint = centerline[t];
+            var tangent = centerline.Tangential(t);
             if (tangent.LengthSquared() < 0.0000001) return; //Zero tangential. It's wrong!
             tangent.Normalize();
-            var fakebinormal = rpoint - lpoint;
+            var fakebinormal = siding[t];
             var width = Vector3.Cross(tangent, fakebinormal).Length();
             var normalfakebirnormal = Vector3.Normalize(fakebinormal);
             var nrm = Vector3.Cross(tangent, normalfakebirnormal);
@@ -47,7 +46,7 @@ namespace TranSimCS.Roads.Strip {
             var arrowBin = renderer.GetOrCreateRenderBinForced(Assets.Arrow);
             arrowBin.DrawLine(midpoint - displacement, midpoint + displacement, nrm, Color.White, arrowWidth);
 
-            GenerateStripEdgeLines(laneStrip, renderer, voffset);
+            GenerateStripEdgeLines(laneStrip, renderer, voffset + 0.05f);
 
             renderer.AddTagsToAll(laneStrip);
         }
@@ -73,10 +72,10 @@ namespace TranSimCS.Roads.Strip {
 
             void DrawSide(LaneRange laneRange, LaneFlags flag, float bias) {
                 bool isEdge = IsRangeTouchingEdge(laneRange.startRange, roadTag.startRange) && IsRangeTouchingEdge(laneRange.endRange, roadTag.endRange);
-                var lineSplines = RoadRenderer.GenerateSplines(laneRange, voffset + 0.05f);
+                var lineSplines = RoadRenderer.GenerateSplines(laneRange, voffset);
                 var lineTexture = ((laneStrip.Spec.Flags & flag) != 0 || isEdge) ? solidTexture : dashedTexture;
-                var leftLinePoints = GeometryUtils.GenerateSplinePoints(lineSplines.Left, accuracy);
-                var rightLinePoints = GeometryUtils.GenerateSplinePoints(lineSplines.Right, accuracy);
+                var leftLinePoints = GeometryUtils.GenerateSplinePoints(lineSplines.left, accuracy);
+                var rightLinePoints = GeometryUtils.GenerateSplinePoints(lineSplines.right, accuracy);
                 var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftLinePoints, rightLinePoints, GenerateLaneStripVertexGen(Color.White), bias);
                 var lineBin = renderer.GetOrCreateRenderBinForced(lineTexture);
                 lineBin.DrawStrip(generatedVertStripPair);

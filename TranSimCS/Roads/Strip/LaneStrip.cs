@@ -115,14 +115,25 @@ namespace TranSimCS.Roads.Strip {
         }
 
         //Spline cache
-        private (Bezier3, Bezier3)? splineCache = null;
-        public (Bezier3, Bezier3) SplineCache => splineCache ??= RecalcSplines();
+        private SplineStrip? splineCache = null;
+        public SplineStrip SplineCache => splineCache ??= RecalcSplines();
+
+        private SplineStrip? drivableAreaStripCache = null;
+        public SplineStrip DrivableAreaStrip() {
+            if(drivableAreaStripCache == null) {
+                var tag = Tag();
+                tag.startRange = new(tag.startRange.Min + Spec.LineWidth, tag.startRange.Max - Spec.LineWidth);
+                tag.endRange = new(tag.endRange.Min + Spec.LineWidth, tag.endRange.Max - Spec.LineWidth);
+                drivableAreaStripCache = RoadRenderer.GenerateSplines(tag);
+            }
+            return drivableAreaStripCache.Value;
+        }
 
         private SplineLUT? splineLUT = null;
-        public SplineLUT SplineLUT => splineLUT ??= new SplineLUT((SplineCache.Item1 + SplineCache.Item2) / 2);
+        public SplineLUT SplineLUT => splineLUT ??= new SplineLUT(SplineCache.Middle);
 
         private SplineLUT? lateralLUT = null;
-        public SplineLUT LateralLUT => lateralLUT ??= new SplineLUT(SplineCache.Item2 - SplineCache.Item1);
+        public SplineLUT LateralLUT => lateralLUT ??= new SplineLUT(SplineCache.right - SplineCache.left);
 
 
         //Mesh cache
@@ -140,7 +151,7 @@ namespace TranSimCS.Roads.Strip {
             splineLUT = null;
             lateralLUT = null;
         }
-        private (Bezier3, Bezier3) RecalcSplines() {
+        private SplineStrip RecalcSplines() {
             var splines = RoadRenderer.GenerateSplines(Tag());
             splineCache = splines;
             return splines;
