@@ -103,41 +103,20 @@ namespace TranSimCS.Roads.Strip {
             return new LaneRange(road, startRange, endRange);
         }// Create a LaneTag for the lane strip, which includes the road and the start and end lanes
 
-        public LaneStrip(LaneEnd startLane, LaneEnd endLane) {
-            StartLane = startLane!; // Starting lane of the lane strip
-            EndLane = endLane!; // Ending lane of the lane strip
-            Spec = LaneSpec.Default; // Default specification for the lane strip
-        }
-
-        public LaneStrip(LaneEnd start, LaneEnd end, LaneSpec spec) {
-            StartLane = start;
-            EndLane = end;
-            Spec = spec;
+        public LaneStrip(LaneEnd startLane, LaneEnd endLane, LaneSpec? spec = null){
+            _cache = new(this);
+            StartLane = startLane;
+            EndLane = endLane;
+            Spec = spec ?? LaneSpec.Default;
         }
 
         //Spline cache
-        private SplineStrip? splineCache = null;
-        public SplineStrip SplineCache => splineCache ??= RecalcSplines();
-
-        private SplineStrip? drivableAreaStripCache = null;
-        public SplineStrip DrivableAreaStrip() {
-            if(drivableAreaStripCache == null) {
-                var tag = Tag();
-                tag.startRange = new(tag.startRange.Min + Spec.LineWidth, tag.startRange.Max - Spec.LineWidth);
-                tag.endRange = new(tag.endRange.Min + Spec.LineWidth, tag.endRange.Max - Spec.LineWidth);
-                drivableAreaStripCache = RoadRenderer.GenerateSplines(tag);
-            }
-            return drivableAreaStripCache.Value;
-        }
-
-        private SplineLUT? splineLUT = null;
-        public SplineLUT SplineLUT => splineLUT ??= new SplineLUT(SplineCache.Middle);
-
-        private SplineLUT? lateralLUT = null;
-        public SplineLUT LateralLUT => lateralLUT ??= new SplineLUT(SplineCache.right - SplineCache.left);
-
-        private ImmutableArray<RoadSplineComponent>? lines;
-        public ImmutableArray<RoadSplineComponent> Lines => lines ??= StripRenderer.GenerateStripEdgeLines(this, 0.05f).ToImmutableArray();
+        private readonly LaneStripCache _cache;
+        public RoadSplineComponent SplineCache => _cache.AsphaltCache;
+        public RoadSplineComponent DrivableAreaStrip => _cache.DrivableAreaCache;
+        public SplineLUT SplineLUT => _cache.CenterLUT;
+        public SplineLUT LateralLUT => _cache.LateralLUT;
+        public ImmutableArray<RoadSplineComponent> Lines => _cache.Lines;
 
 
         //Mesh cache
@@ -151,16 +130,7 @@ namespace TranSimCS.Roads.Strip {
         }
         public void InvalidateMesh() {
             mesh = null; // Invalidate the cached mesh, forcing it to be regenerated next time
-            splineCache = null;
-            splineLUT = null;
-            lateralLUT = null;
-            drivableAreaStripCache = null;
-            lines = null;
-        }
-        private SplineStrip RecalcSplines() {
-            var splines = RoadRenderer.GenerateSplines(Tag());
-            splineCache = splines;
-            return splines;
+            _cache.Invalidate();
         }
 
         public LaneEnd GetHalf(SegmentHalf selectedRoadHalf) {
@@ -180,6 +150,7 @@ namespace TranSimCS.Roads.Strip {
             StartLane = new LaneEnd(startEnd, null);
             EndLane = new LaneEnd(endEnd, null);
             currentRoad?.RemoveLaneStrip(this);
+            InvalidateMesh();
         }
 
         //Dragging

@@ -185,7 +185,7 @@ namespace TranSimCS.Worlds.Car {
                 var t = xyzt.W;
                 if (!float.IsFinite(t)) throw new ArithmeticException("Invalid spline paramater ");
 
-                var lateralSpline = laneStrip.SplineCache.right - laneStrip.SplineCache.left;
+                var lateralSpline = laneStrip.SplineCache.Strip.right - laneStrip.SplineCache.Strip.left;
                 var lateral = lateralSpline[t];
                 VectorMethods.CheckVector(lateral, "lateral");
                 var tangential = positionCache.Spline.Tangential(t);
