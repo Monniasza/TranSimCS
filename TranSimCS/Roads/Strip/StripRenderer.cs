@@ -49,17 +49,18 @@ namespace TranSimCS.Roads.Strip {
 
             var stripEdgeLines = laneStrip.Lines;
             foreach (var line in stripEdgeLines) {
+                var mat = line.Type.GetMaterial();
+                if(mat == null) continue;
                 var leftLinePoints = GeometryUtils.GenerateSplinePoints(line.Strip.left, accuracy);
                 var rightLinePoints = GeometryUtils.GenerateSplinePoints(line.Strip.right, accuracy);
-                var generatedLineVertStripPair = UniformTexturing.UniformTexturedTwin(leftLinePoints, rightLinePoints, GenerateLaneStripVertexGen(Color.White), line.Bias);
-                var lineBin = renderer.GetOrCreateRenderBinForced(line.Type.GetMaterial());
+                var generatedLineVertStripPair = UniformTexturing.UniformTexturedTwin(leftLinePoints, rightLinePoints, GenerateLaneStripVertexGen(Color.White), line.Bias);             
+                var lineBin = renderer.GetOrCreateRenderBinForced(mat.Value);
                 lineBin.DrawStrip(generatedLineVertStripPair);
             }
 
             renderer.AddTagsToAll(laneStrip);
         }
 
-        //TODO return an array
         public static RoadSplineComponent[] GenerateStripEdgeLines(LaneStrip laneStrip, float voffset = 0) {
             //Get side-line flags
             var mergeLeft = (laneStrip.Spec.Flags & LaneFlags.MergeLeft) != 0;
