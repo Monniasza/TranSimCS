@@ -21,6 +21,7 @@ namespace TranSimCS.Roads.Strip {
             _drivableAreaCache = null;
             _centerLUT = null;
             _lateralLUT = null;
+            _allStrips = null;
             _lines = null;
         }
 
