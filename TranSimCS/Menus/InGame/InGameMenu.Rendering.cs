@@ -63,6 +63,7 @@ namespace TranSimCS.Menus.InGame {
             // Draw the asphalt texture for the road
             stats.Segments = World.RoadSegments.data.Count;
             foreach (var roadSegment in World.RoadSegments.data) {
+                if (roadSegment.BelongsToRoadSection() != null) continue;
                 stats.Strips += roadSegment.Lanes.Count;
                 renderHelper.AddAll(roadSegment.Mesh.GetMesh());
             }

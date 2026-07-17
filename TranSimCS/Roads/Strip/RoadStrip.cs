@@ -135,8 +135,6 @@ namespace TranSimCS.Roads.Strip {
         }
         public IReadOnlyCollection<LaneStrip> Lanes => lanes.AsReadOnly(); // Get the list of lane strips associated with this road connection
 
-        
-
         public LaneRange FullSizeTag() {
             var bounds = Bounds;
             return new LaneRange(this, new(Bounds.leftStart, Bounds.rightStart), new(Bounds.leftEnd, Bounds.rightEnd));
@@ -213,7 +211,9 @@ namespace TranSimCS.Roads.Strip {
 
         IPosition[] IDraggableObj.DraggableComponents() => [StartNode, EndNode];
 
-        public void GenerateGeometry(RenderTarget target) => target.Draw(Mesh.GetMesh());
+        public void GenerateGeometry(RenderTarget target) {
+            target.Draw(Mesh.GetMesh());
+        }
         public BoundingBox GetBounds() => Mesh.GetMesh().GetBounds();
         public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => Mesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
 

@@ -177,8 +177,8 @@ namespace TranSimCS.Roads.Node {
             GeometryChanged?.Invoke(this);
 
             foreach (var connection in Connections) connection.Mesh.Invalidate();
-            RearEnd.ConnectedSection.Value?.Regenerate();
-            FrontEnd.ConnectedSection.Value?.Regenerate();
+            RearEnd.ConnectedSection.Value?.Mesh.Invalidate();
+            FrontEnd.ConnectedSection.Value?.Mesh.Invalidate();
         }
 
         //Halves of this road node

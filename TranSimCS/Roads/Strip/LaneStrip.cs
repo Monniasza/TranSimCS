@@ -30,7 +30,7 @@ namespace TranSimCS.Roads.Strip {
         public int XDiscriminant() => 0;
         public int ZDiscriminant() => half.Discriminant();
         public LaneEnd? GetLaneEnd() => laneEnd;
-        public RoadNodeEnd? GetNodeEnd() => null;
+        public RoadNodeEnd? GetNodeEnd() => strip.GetHalf(half).RoadNodeEnd;
 
         public IPosition[] DraggableComponents() => ((IDraggableObj)strip).DraggableComponents();
     }
@@ -117,7 +117,7 @@ namespace TranSimCS.Roads.Strip {
         public SplineLUT SplineLUT => _cache.CenterLUT;
         public SplineLUT LateralLUT => _cache.LateralLUT;
         public ImmutableArray<RoadSplineComponent> Lines => _cache.Lines;
-
+        public ImmutableArray<RoadSplineComponent> AllStrips => _cache.AllStrips;
 
         //Mesh cache
         private MultiMesh? mesh; // Cached mesh for the lane strip

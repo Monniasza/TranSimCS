@@ -35,6 +35,17 @@ namespace TranSimCS.Roads.Strip {
         public SplineLUT LateralLUT => _lateralLUT ??= new SplineLUT(AsphaltCache.Strip.right - AsphaltCache.Strip.left);
         private ImmutableArray<RoadSplineComponent>? _lines;
         public ImmutableArray<RoadSplineComponent> Lines => _lines ??= StripRenderer.GenerateStripEdgeLines(LaneStrip, 0.05f).ToImmutableArray();
+        private ImmutableArray<RoadSplineComponent>? _allStrips;
+        public ImmutableArray<RoadSplineComponent> AllStrips => _allStrips ??= GenerateStripList();
+
+        private ImmutableArray<RoadSplineComponent> GenerateStripList(){
+            var builder = new List<RoadSplineComponent>();
+            builder.Add(AsphaltCache);
+            builder.Add(DrivableAreaCache);
+            builder.AddRange(Lines);
+            return builder.ToImmutableArray();
+        }
+            
 
         private RoadSplineComponent GenerateDrivableCache() {
             var linewidth = LaneStrip.Spec.LineWidth;

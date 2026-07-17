@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using TranSimCS.Collections;
@@ -34,6 +35,7 @@ namespace TranSimCS.Roads.Section {
         public Vector3 Center { get; private set; }
         public Vector3 Normal { get; private set; }
         public Mesh Surface { get; private set; }
+        public WorkingPlane WorkingPlane { get; private set; }
 
         public RoadSection() {
             MainSlopeNodes = new(default, "slopeNodes", this);
@@ -88,6 +90,19 @@ namespace TranSimCS.Roads.Section {
             //Sort the nodes clockwise
             Comparison<RoadNodeEnd> comparer = CompareNodes2;
             nodes.Sort(comparer);
+
+            //Find arbitrary vectors for the working plane
+            var frame0 = nodes[0].CalcReferenceFrame();
+            var tangential = frame0.Z;
+            var binormal = frame0.X;
+            WorkingPlane = new(Center, binormal, tangential);
+
+            Debug.Assert(Math.Abs(Vector3.Dot(WorkingPlane.X, Normal)) < 1e-4f);
+            Debug.Assert(Math.Abs(Vector3.Dot(WorkingPlane.Y, Normal)) < 1e-4f);
+            Debug.Assert(Math.Abs(Vector3.Dot(Vector3.Cross(
+                WorkingPlane.X,
+                WorkingPlane.Y),
+                Normal)) > 0.99f);
         }
 
         public int CompareNodes(RoadNodeEnd n1, RoadNodeEnd n2) {

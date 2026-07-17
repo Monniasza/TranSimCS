@@ -230,6 +230,8 @@ namespace TranSimCS.Tools {
                     startPos = plan.startPos;
                     startTangent = plan.startTangent;
 
+                    if (!endLateral.IsFinite() || !endTangent.IsFinite() || !endPos.IsFinite()) return;
+
                     if (RoadTools.flattenTilt.Checked) endLateral = Vector3.Normalize(new Vector3(endLateral.X, 0, endLateral.Z));
                     if (RoadTools.flattenIncline.Checked) endTangent = Vector3.Normalize(new Vector3(endTangent.X, 0, endTangent.Z));
                     var endLeftPos = endPos - endLateral * node.Value.lane.Width / 2;
@@ -263,6 +265,8 @@ namespace TranSimCS.Tools {
                 Bezier3 rbound = GeometryUtils.GenerateJoinSpline(startPos + startDiff, endPos + endDiff, startTangent, -endTangent) + offset;
 
                 GeneratedSpline = (lbound + rbound) / 2;
+
+                
 
                 Mesh renderBin = menu.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
                 RoadRenderer.DrawBezierStrip(lbound, rbound, renderBin, previewColor);

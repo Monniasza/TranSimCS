@@ -37,11 +37,9 @@ namespace TranSimCS.Roads.Strip {
                         guid = Guid.Parse(reader0.GetString()!);
                         break;
                     case "start":
-                        reader0.Read();
                         start = roadNodeEndConverter.Read(ref reader0, typeof(RoadNodeEnd), options);
                         break;
                     case "end":
-                        reader0.Read();
                         end = roadNodeEndConverter.Read(ref reader0, typeof(RoadNodeEnd), options);
                         break;
                     case "lanes":

@@ -28,14 +28,13 @@ namespace TranSimCS.Roads.Section {
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propName) => {
                 switch (propName.ToLower()) {
                     case "guid":
-                        guid = JsonSerializer.Deserialize<Guid>(ref reader0, options);
+                        reader0.Read();
+                        guid = Guid.Parse(reader0.GetString()!);
                         break;
                     case "start":
-                        reader0.Read();
                         start = nodeEndConverter.Read(ref reader0, typeof(RoadNodeEnd), options);
                         break;
                     case "end":
-                        reader0.Read();
                         end = nodeEndConverter.Read(ref reader0, typeof(RoadNodeEnd), options);
                         break;
                     case "nodes":
@@ -51,8 +50,6 @@ namespace TranSimCS.Roads.Section {
                 }
             });
             if (guid == null) JsonProcessor.Fail(reader, "Missing id property");
-            if (start == null) JsonProcessor.Fail(reader, $"Missing start node for section {guid}");
-            if (end == null) JsonProcessor.Fail(reader, $"Missing end node for section {guid}");
             if (list.Count == 0) JsonProcessor.Fail(reader, $"No attached nodes for section {guid}");
             RoadSection section = new RoadSection();
             section.Guid = guid.Value;

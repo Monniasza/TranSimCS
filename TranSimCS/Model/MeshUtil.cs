@@ -105,9 +105,10 @@ namespace TranSimCS.Model {
             var missedVertices = 0;
 
             foreach (var vertex in projection.Vertices) {
-                if (targetBvh.RayIntersect(new Ray(vertex.Position, direction), minDistance, maxDistance, out _, out var distance)) {
+                var ray = new Ray(vertex.Position + minDistance * direction, direction);
+                if (targetBvh.RayIntersect(ray, 0, maxDistance, out _, out var distance)) {
                     projectedVertices.Add(new VertexPositionColorTexture(
-                        vertex.Position + direction * distance,
+                        ray.Position + ray.Direction * distance,
                         vertex.Color,
                         vertex.TextureCoordinate));
                 } else {
@@ -122,6 +123,11 @@ namespace TranSimCS.Model {
             return new Mesh(null, projectedVertices, projection.Indices, projection.Tags);
         }
 
+        public static void ReverseWinding(this Mesh mesh) {
+            for (int i = 0; i < mesh.Indices.Count; i += 3) {
+                DataUtil.Swap(mesh.Indices, i, i + 1);
+            }
+        }
         public static T[] TriangleFan<T>(IList<T> polygon) {
             int tricount = polygon.Count - 2;
             T[] values = new T[tricount * 3];

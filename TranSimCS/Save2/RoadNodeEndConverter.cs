@@ -5,17 +5,20 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Save2 {
-    public class RoadNodeEndConverter : JsonConverter<RoadNodeEnd> {
+    public class RoadNodeEndConverter : JsonConverter<RoadNodeEnd?> {
         private readonly TSWorld _world;
 
         public RoadNodeEndConverter(TSWorld world) {
             _world = world;
         }
 
-        public override RoadNodeEnd Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            if (reader.TokenType != JsonTokenType.StartArray) {
-                throw new JsonException("Expected StartArray token");
+        public override RoadNodeEnd? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+            if (reader.TokenType != JsonTokenType.StartArray && reader.TokenType != JsonTokenType.Null) reader.Read();
+            if (reader.TokenType != JsonTokenType.StartArray && reader.TokenType != JsonTokenType.Null) {
+                JsonProcessor.FailTokenTypes(ref reader, JsonTokenType.StartArray, JsonTokenType.Null);
             }
+
+            if (reader.TokenType == JsonTokenType.Null) return null;
 
             reader.Read();
             if (reader.TokenType != JsonTokenType.String) {
@@ -42,7 +45,7 @@ namespace TranSimCS.Save2 {
             return foundNode.GetEnd(nodeEnd);
         }
 
-        public override void Write(Utf8JsonWriter writer, RoadNodeEnd value, JsonSerializerOptions options) {
+        public override void Write(Utf8JsonWriter writer, RoadNodeEnd? value, JsonSerializerOptions options) {
             if (value == null) {
                 writer.WriteNullValue();
                 return;

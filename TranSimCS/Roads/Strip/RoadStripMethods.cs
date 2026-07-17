@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Section;
 using TranSimCS.Spline;
 
 namespace TranSimCS.Roads.Strip {
@@ -17,6 +18,11 @@ namespace TranSimCS.Roads.Strip {
             IndexPoint left = new(bounds.Min, scaledTangent);
             IndexPoint right = new(bounds.Max, scaledTangent);
             return new(left, right, left, right);
+        }
+        public static RoadSection? BelongsToRoadSection(this RoadStrip strip) {
+            if(strip.StartNode.ConnectedSection.Value == null) return null;
+            if(strip.EndNode.ConnectedSection.Value != strip.StartNode.ConnectedSection.Value) return null;
+            return strip.EndNode.ConnectedSection.Value;
         }
     }
 }

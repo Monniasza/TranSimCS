@@ -24,6 +24,11 @@ namespace TranSimCS {
             array[a] = array[b];
             array[b] = tmp;
         }
+        public static void Swap<T>(IList<T> array, int a, int b) {
+            var tmp = array[a];
+            array[a] = array[b];
+            array[b] = tmp;
+        }
         public static int SwapFlags(int source, int leftFlag, int rightFlag) {
             bool left = (source & leftFlag) != 0;
             bool right = (source & rightFlag) != 0;

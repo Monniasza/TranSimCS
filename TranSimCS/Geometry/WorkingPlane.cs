@@ -11,6 +11,12 @@ namespace TranSimCS.Geometry {
         public Vector3 X;
         public Vector3 Y;
 
+        public WorkingPlane(Vector3 o, Vector3 x, Vector3 y) {
+            O = o;
+            X = x;
+            Y = y;
+        }
+
         public Vector2 Project(Vector3 p) {
             var d = p - O;
             var cx = Vector3.Dot(d, X);
