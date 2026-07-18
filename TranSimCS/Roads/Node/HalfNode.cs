@@ -32,7 +32,7 @@ namespace TranSimCS.Roads.Node {
             End = end;
             _connectedRoadStrips = new();
             ConnectedRoadStrips = new(_connectedRoadStrips);
-            ConnectedSection = new Property<RoadSection?>(null, "connection");
+            ConnectedSection = new Property<RoadSection?>(null, end.GetConditional(PropertyNames.RearSection, PropertyNames.FrontSection), roadNode);
             ConnectedSection.ValueChanged += ConnectedSection_ValueChanged;
             PositionProp = end.GetConditional(roadNode.InversePositionProp, roadNode.PositionProp);
         }

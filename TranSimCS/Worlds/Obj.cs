@@ -14,6 +14,8 @@ namespace TranSimCS.Worlds {
         public Guid Guid { get; }
     }
 
+    public delegate void DependencyHandler(Obj targetObject, Obj dependencyObject, string? propertyName);
+
     /// <summary>
     /// An object placed in the world. Worlds themselves are objects
     /// </summary>
@@ -32,11 +34,25 @@ namespace TranSimCS.Worlds {
             } 
         }
 
-        public Obj() {}
+        public Obj() {
+            PropertyChanged += HandlePropertyChanged;
+        }
+        private void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e) => FireDependencyEvent(this, this, e.PropertyName);
+
         public void FirePropertyEvent(object sender, PropertyChangedEventArgs eventArgs){
             PropertyChanged?.Invoke(sender, eventArgs);
         }
+        public void FireDependencyEvent(Obj targetObject, Obj dependencyObject, string? propertyName) {
+            DependencyChanged?.Invoke(targetObject, dependencyObject, propertyName);
+        }
+        /// <summary>
+        /// Invoked when any property of the object changes
+        /// </summary>
         public event PropertyChangedEventHandler? PropertyChanged;
+        /// <summary>
+        /// Invoked when any dependency changes (including itself)
+        /// </summary>
+        public event DependencyHandler? DependencyChanged;
 
         public bool Equals(Obj? other) {
             return ReferenceEquals(this, other);

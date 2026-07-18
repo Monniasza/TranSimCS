@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using Iesi.Collections.Generic;
 using Microsoft.Xna.Framework;
 using TranSimCS.Collections;
 using TranSimCS.Geometry;
@@ -17,6 +18,10 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Section {
     public class RoadSection : Obj, IObjMesh, IRoadFinish, IDraggableObj{
+        //Contents managed by TSWorld
+        internal HashSet<RoadStrip> _containedSegments = new HashSet<RoadStrip>();
+        public ReadOnlySet<RoadStrip> ContainedSegments => new(_containedSegments);
+
         //Added nodes, maintained by the road section
         private List<RoadNodeEnd> nodes = new();
         public IList<RoadNodeEnd> Nodes => new ReadOnlyCollection<RoadNodeEnd>(nodes);

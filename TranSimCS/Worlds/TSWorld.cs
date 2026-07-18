@@ -27,12 +27,9 @@ namespace TranSimCS.Worlds
         private static Logger log = LogManager.GetCurrentClassLogger();
 
         //The contents of the world
-        public SegmentStack RoadSegments { get; }
-        public SectionStack RoadSections { get; }
+        
         public BuildingStack Buildings { get; }
         public CarStack Cars { get; }
-        public NodeStack Nodes { get; }
-        public World ECS { get; private set; }
 
         private float _daytime;
         public float DayTime {
@@ -92,50 +89,11 @@ namespace TranSimCS.Worlds
             RoadSegments.data.ItemRemoved += HandleRemoveRoadSegment;
             Nodes.data.ItemAdded += HandleAddRoadNode;
             Nodes.data.ItemRemoved += HandleRemoveRoadNode;
-
-            ECS = World.Create();
+            RoadSections.data.ItemAdded += HandleAddRoadSection;
+            RoadSections.data.ItemRemoved += HandleRemoveRoadSection;
         }
 
-        private void HandleAddRoadSegment(RoadStrip segment) {
-            // Handle the addition of a new road segment
-            segment.OnLaneRemoved += LaneRemovedFromRoad; // Subscribe to lane removal events in the road segment
-            segment.OnLaneAdded += LaneAddedToRoad; // Subscribe to lane addition events in the road segment
-            segment.StartNode.connectedSegments.Add(segment);
-            segment.EndNode.connectedSegments.Add(segment);
-
-            var startHalf = segment.StartNode.Node.GetHalfNode(segment.StartNode.End);
-            var endHalf = segment.EndNode.Node.GetHalfNode(segment.EndNode.End);
-            startHalf._connectedRoadStrips.Add(new(segment, SegmentHalf.Start));
-            endHalf._connectedRoadStrips.Add(new(segment, SegmentHalf.End));
-
-            AddIfAbsent(segment.StartNode.Node);
-            AddIfAbsent(segment.EndNode.Node);
-        }        
-
-        private void HandleRemoveRoadSegment(RoadStrip segment) {
-            // Handle the removal of a road segment
-            segment.OnLaneAdded -= LaneAddedToRoad; // Unsubscribe from lane addition events in the road segment
-            segment.OnLaneRemoved -= LaneRemovedFromRoad; // Unsubscribe from lane removal events in the road segment
-            segment.StartNode.connectedSegments.Remove(segment);
-            segment.EndNode.connectedSegments.Remove(segment);
-
-            var startHalf = segment.StartNode.Node.GetHalfNode(segment.StartNode.End);
-            var endHalf = segment.EndNode.Node.GetHalfNode(segment.EndNode.End);
-            startHalf._connectedRoadStrips.Remove(new(segment, SegmentHalf.Start));
-            endHalf._connectedRoadStrips.Remove(new(segment, SegmentHalf.End));
-
-            //Remove node connections that are no longer valid
-            var lanes = segment.Lanes.ToArray();
-            foreach(var lane in lanes){
-                lane.Destroy();
-            };
-        }
-        private void LaneAddedToRoad(object sender, RoadStripEventArgs e) {
-            //Handle the addition of a new lane to a road segment
-        }
-        private void LaneRemovedFromRoad(object sender, RoadStripEventArgs e) {
-            //Handle the removal of a lane from a road segment
-        }
+        
 
 
         //Every 60 frames, log tree parameters
@@ -166,7 +124,6 @@ namespace TranSimCS.Worlds
             RoadSegments.data.Clear();
             Nodes.data.Clear();
             Buildings.data.Clear();
-            ECS.Clear();
             Cars.data.Clear();
         }
     }

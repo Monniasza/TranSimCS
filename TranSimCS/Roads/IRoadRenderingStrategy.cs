@@ -9,7 +9,7 @@ using TranSimCS.Model;
 using TranSimCS.Polygons;
 using TranSimCS.Roads.Strip;
 
-namespace TranSimCS.Roads.RoadRendering {
+namespace TranSimCS.Roads {
     /// <summary>
     /// The <see cref="IRoadRenderingStrategy{T}"/> defines how roads are rendered. The interface exposes methods used by the main rendering method,
     /// <see cref="RenderRoad(T, MultiMesh)"/>. Look at the method's documentation for a full explanation of the <b>road rendering pipeline</b>.

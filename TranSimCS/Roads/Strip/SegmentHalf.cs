@@ -17,5 +17,11 @@ namespace TranSimCS.Roads.Strip {
             SegmentHalf.End => end,
             _ => invalid,
         };
+
+        public static SegmentHalf Inverse(this SegmentHalf half) => half switch {
+            SegmentHalf.End => SegmentHalf.Start,
+            SegmentHalf.Start => SegmentHalf.End,
+            _ => half
+        }
     }
 }

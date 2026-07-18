@@ -7,6 +7,7 @@ using TranSimCS.Geometry.SplineFrames;
 using TranSimCS.Model;
 using TranSimCS.Property;
 using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Section;
 using TranSimCS.Roads.StripGenerator;
 using TranSimCS.SceneGraph;
 using TranSimCS.Spline;
@@ -29,6 +30,7 @@ namespace TranSimCS.Roads.Strip {
             RoadStrip = roadStrip;
             SegmentHalf = segmentHalf;
         }
+        public RoadStripHalf OppositeHalf() => new(RoadStrip, SegmentHalf.Inverse());
 
         public override bool Equals(object? obj) {
             return obj is RoadStripHalf half && Equals(half);
@@ -68,6 +70,9 @@ namespace TranSimCS.Roads.Strip {
         public int ZDiscriminant() => 0;
         public LaneEnd? GetLaneEnd() => null;
         public RoadNodeEnd? GetNodeEnd() => null;
+
+        //Managed by TSWorld
+        public RoadSection? Section { get; internal set; }
 
         //Events
         public event EventHandler<RoadStripEventArgs>? OnLaneAdded; // Event triggered when lanes are added or removed

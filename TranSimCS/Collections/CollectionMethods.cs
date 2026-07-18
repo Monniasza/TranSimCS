@@ -13,6 +13,9 @@ namespace TranSimCS.Collections {
         public static void AddRange<T>(this ICollection<T> collection, IEnumerable<T> data) {
             foreach(var element in data) collection.Add(element);
         }
+        public static void RemoveRange<T>(this ICollection<T> collection, IEnumerable<T> data) {
+            foreach(var element in data) collection.Remove(element);
+        }
         public static void TransformInPlace<T>(this IList<T> list, Func<T, T> transform) {
             for (int i = 0; i < list.Count; i++) {
                 list[i] = transform(list[i]);
