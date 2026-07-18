@@ -14,8 +14,8 @@ namespace TranSimCS.Property {
                 this.Value = _backingProp.Value;
 
             // Subscribe to changes in the source (the property of properties)
-            Source.ValueChanged += (s, e) => {
-                var newBacking = e.NewValue;
+            Source.ValueChanged += (s, old, val) => {
+                var newBacking = val;
                 if (_backingProp != null) _backingProp.ValueChanged -= HandleBackingValueChanged;
                 _backingProp = newBacking;
                 if (_backingProp != null) _backingProp.ValueChanged += HandleBackingValueChanged;
@@ -25,14 +25,14 @@ namespace TranSimCS.Property {
                     this.Value = _backingProp.Value;
             };
 
-            ValueChanged += (s, e) => _backingProp?.Value = e.NewValue;
+            ValueChanged += (s, old, val) => _backingProp?.Value = val;
 
             if (_backingProp != null) _backingProp.ValueChanged += HandleBackingValueChanged;
             
         }
 
-        private void HandleBackingValueChanged(object? sender, PropertyChangedEventArgs2<T> e) {
-            this.Value = e.NewValue;
+        private void HandleBackingValueChanged(object? sender, T _, T newValue) {
+            this.Value = newValue;
         }
     }
 }

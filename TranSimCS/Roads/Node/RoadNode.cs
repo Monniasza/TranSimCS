@@ -116,8 +116,7 @@ namespace TranSimCS.Roads.Node {
             LaneXRef = new ReadOnlyDictionary<Guid, Lane>(lanesSet);
             Lanes = new ReadOnlySet<Lane>(lanesDict);
         }
-        private void PositionProp_ValueChanged(object? sender, PropertyChangedEventArgs2<PositionEulerAngles> e) {
-            var value = e.NewValue;
+        private void PositionProp_ValueChanged(object? sender, PositionEulerAngles old, PositionEulerAngles value) {
             var pos = value.Position;
             if (float.IsNaN(pos.X)) throw new ArgumentException("X === NaN");
             if (float.IsNaN(pos.Y)) throw new ArgumentException("Y === NaN");

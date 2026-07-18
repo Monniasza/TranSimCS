@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace TranSimCS.Property {
     public interface IProperty<T> {
         T Value { get; set; }
-        public event EventHandler<PropertyChangedEventArgs2<T>> ValueChanged;
-        public event EventHandler<PropertyChangedEventArgs2<T>> ValidateChanges;
+        public event PropertyEventHandler<T> ValueChanged;
+        public event PropertyEventHandler<T> ValidateChanges;
     }
 }

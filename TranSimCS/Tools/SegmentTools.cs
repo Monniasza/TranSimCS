@@ -111,6 +111,6 @@ namespace TranSimCS.Tools {
             GlobalSettingsTab.AddSetting(this, null, uint.Parse, x => x.ToString(), IncludeExcludeRight);
         }
 
-        private void IsInclusive_ValueChanged(object? sender, PropertyChangedEventArgs2<bool> e) => IncludeExcludeLeft.Value = IncludeExcludeRight.Value = 0;
+        private void IsInclusive_ValueChanged(object? sender, bool old, bool val) => IncludeExcludeLeft.Value = IncludeExcludeRight.Value = 0;
     }
 }

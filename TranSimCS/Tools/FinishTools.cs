@@ -38,13 +38,13 @@ namespace TranSimCS.Tools.Panels {
             Finish.ValueChanged += FinishProp_ValueChanged;
         }
 
-        private void FinishProp_ValueChanged(object? sender, PropertyChangedEventArgs2<RoadFinish> e) {
-            surfaceDropdown.SelectedValue = e.NewValue.subsurface;
+        private void FinishProp_ValueChanged(object? sender, RoadFinish old, RoadFinish roadFinish) {
+            surfaceDropdown.SelectedValue = roadFinish.subsurface;
         }
 
-        private void Surface_ValueChanged(object? sender, PropertyChangedEventArgs2<Surface> e) {
+        private void Surface_ValueChanged(object? sender, Surface oldSurface, Surface newSurface) {
             var finish = Finish.Value;
-            finish.subsurface = e.NewValue;
+            finish.subsurface = newSurface;
             Finish.Value = finish;
         }
     }

@@ -18,8 +18,8 @@ namespace TranSimCS.Tools {
                 CameraProp = menu.renderManager.CameraProp;
                 PositionProp = new(PositionEulerAngles.Zero, "pos");
                 Camera2Pos(CameraProp.Value);
-                CameraProp.ValueChanged += (s, e) => Camera2Pos(e.NewValue);
-                PositionProp.ValueChanged += (s, e) => Pos2Camera(e.NewValue);
+                CameraProp.ValueChanged += (s, old, value) => Camera2Pos(value);
+                PositionProp.ValueChanged += (s, old, value) => Pos2Camera(value);
             }
 
             private void Camera2Pos(Camera camera) {

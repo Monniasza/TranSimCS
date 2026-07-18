@@ -34,8 +34,7 @@ namespace TranSimCS.Menus {
                 AddElement(button);
             }
 
-            SelectedValueProp.ValueChanged += (s, e) => {
-                var value = e.NewValue;
+            SelectedValueProp.ValueChanged += (s, old, value) => {
                 var displayName = GetName(value);
                 Text.Text = displayName;
             };   

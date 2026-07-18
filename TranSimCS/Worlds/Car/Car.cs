@@ -72,7 +72,7 @@ namespace TranSimCS.Worlds.Car {
 
         public Car() {
             PositionProp = new(PositionEulerAngles.Zero, "position", this);
-            PositionProp.ValidateChanges += (s, e) => VectorMethods.CheckPosition(e.NewValue, "position");
+            PositionProp.ValidateChanges += (s, old, val) => VectorMethods.CheckPosition(val, "position");
             PositionProp.ValueChanged += PositionProp_ValueChanged;
             MeshIdProp = new(null, "meshId", this);
             MeshIdProp.ValueChanged += MeshIdProp_ValueChanged;
@@ -81,14 +81,13 @@ namespace TranSimCS.Worlds.Car {
         public TransformQ transformQ { get; private set; }
         public MeshInstance meshInstance { get; private set; }
 
-        private void PositionProp_ValueChanged(object? sender, PropertyChangedEventArgs2<PositionEulerAngles> e) {
-            transformQ = e.NewValue.ToTransformQ();
+        private void PositionProp_ValueChanged(object? sender, PositionEulerAngles old, PositionEulerAngles val) {
+            transformQ = val.ToTransformQ();
             meshInstance = new(BodyMesh, transformQ, this, true);
         }
 
-        private void MeshIdProp_ValueChanged(object? sender, PropertyChangedEventArgs2<string?> e) {
+        private void MeshIdProp_ValueChanged(object? sender, string old, string key) {
             BodyMesh = null;
-            var key = e.NewValue;
             if (loadedMeshes.TryGetValue(key, out var bm)) {
                 BodyMesh = bm;
             }

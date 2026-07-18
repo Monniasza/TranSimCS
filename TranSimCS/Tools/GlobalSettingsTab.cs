@@ -73,7 +73,7 @@ namespace TranSimCS.Tools {
 
             //When RMB is pressed, revert the value
             textField.OnSecondaryPressed = (e) => Revert();
-            prop.ValueChanged += (s, e) => Revert();
+            prop.ValueChanged += (s, old, value) => Revert();
             Revert();
             return textField;
         }

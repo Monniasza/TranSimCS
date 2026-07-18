@@ -7,21 +7,14 @@ using System.Threading.Tasks;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Property {
-    public class PropertyChangedEventArgs2<T> : EventArgs {
-        public T OldValue { get; init; }
-        public T NewValue { get; init; }
-        public PropertyChangedEventArgs2(T old, T newv) {
-            OldValue = old;
-            NewValue = newv;
-        }
-    }
+    public delegate void PropertyEventHandler<T>(IProperty<T> property, T oldValue, T newValue);
 
     public class Property<T> : IProperty<T> {
-        public T _val;
+        private T _val;
         public string name;
         public readonly Obj? Parent;
-        public event EventHandler<PropertyChangedEventArgs2<T>> ValueChanged;
-        public event EventHandler<PropertyChangedEventArgs2<T>> ValidateChanges;
+        public event PropertyEventHandler<T> ValueChanged;
+        public event PropertyEventHandler<T> ValidateChanges;
         public IEqualityComparer<T> comparer;
 
         public Property(T val, string name, Obj? parent = null, IEqualityComparer<T> equals = null) {
@@ -33,12 +26,14 @@ namespace TranSimCS.Property {
 
         public T Value {
             get => _val; set {
+                var oldValue = _val;
+                var newValue = value;
+
                 if (comparer.Equals(_val, value)) return;
-                var eventArgs = new PropertyChangedEventArgs2<T>(_val, value);
-                ValidateChanges?.Invoke(this, eventArgs);
-                _val = value;
+                ValidateChanges?.Invoke(this, oldValue, newValue);
+                _val = newValue;
                 var propEvent = new PropertyChangedEventArgs(name);
-                ValueChanged?.Invoke(this, eventArgs);
+                ValueChanged?.Invoke(this, oldValue, newValue);
                 Parent?.FirePropertyEvent(this, propEvent);
             }
         }
@@ -47,15 +42,15 @@ namespace TranSimCS.Property {
     public class UnidirectionalDerivedProperty<TOrigin, TSelf> : Property<TSelf> {
         public UnidirectionalDerivedProperty(string name, Property<TOrigin> source, Func<TOrigin, TSelf> derive, IEqualityComparer<TSelf> equals = null)
             : base(derive(source.Value), name, source.Parent, equals) {
-            source.ValueChanged += (s, e) => this.Value = derive(e.NewValue);
+            source.ValueChanged += (s, old, val) => this.Value = derive(val);
         }
     }
 
     public class BidirectionalDerivedProperty<TOrigin, TSelf> : Property<TSelf> {
         public BidirectionalDerivedProperty(string name, Property<TOrigin> source, Func<TOrigin, TSelf> derive, Func<TSelf, TOrigin> reverse, IEqualityComparer<TSelf> equals = null)
             : base(derive(source.Value), name, source.Parent, equals) {
-            source.ValueChanged += (s, e) => this.Value = derive(e.NewValue);
-            this.ValueChanged += (s, e) => source.Value = reverse(e.NewValue);
+            source.ValueChanged += (s, old, val) => this.Value = derive(val);
+            this.ValueChanged += (s, old, val) => source.Value = reverse(val);
         }
     }
 }

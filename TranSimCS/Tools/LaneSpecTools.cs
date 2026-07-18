@@ -196,7 +196,7 @@ namespace TranSimCS.Tools {
                 check.Checkmark = newState ? checkedBitmap : uncheckedBitmap;
             }
             check.OnCheckStateChange += (s, e) => setter(UpdateValueFromCheck());
-            laneSpecProp.ValueChanged += (s, e) => UpdateCheckFromValue(e.NewValue);
+            laneSpecProp.ValueChanged += (s, old, val) => UpdateCheckFromValue(val);
             UpdateCheckFromValue(laneSpecProp.Value);
             check.AddTooltip(title);
             AddChild(check);
@@ -212,7 +212,7 @@ namespace TranSimCS.Tools {
             if (float.TryParse(s, out var value)) { return value; }
             return oldValue;
         }
-        private void OnChange(object sender, PropertyChangedEventArgs2<LaneSpec> e) => UpdateValues(e.NewValue);
+        private void OnChange(object sender, LaneSpec old, LaneSpec val) => UpdateValues(val);
 
         private event Action<LaneSpec> OnValuesChanged;
         private void UpdateValues(LaneSpec laneSpec) {

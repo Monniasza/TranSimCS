@@ -104,7 +104,7 @@ namespace TranSimCS.Render {
             this.gpu = gpu;
             CameraProp = new(Camera.Default, "camera", null);
             AmbientColor = new(Vector4.One, "ambientColor", null);
-            CameraProp.ValueChanged += (s, e) => SetUpEffects();
+            CameraProp.ValueChanged += (s, old, value) => SetUpEffects();
             SetUpEffects();
             VertexBufferPool = new(
                 x => new VertexBuffer(gpu, typeof(VertexPositionColorTexture), x, BufferUsage.WriteOnly),

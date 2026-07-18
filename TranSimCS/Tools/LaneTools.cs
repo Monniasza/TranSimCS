@@ -60,9 +60,9 @@ namespace TranSimCS.Tools {
             AddChild(snapField);
             AddChild(snapAbsolute);
 
-            SnappingIncrementProp.ValueChanged += (s, e) => snapField.Value = e.NewValue;
-            SnappingEnabledProp.ValueChanged += (s, e) => snapLabel.Checked = e.NewValue;
-            SnappingIsAbsoluteProp.ValueChanged += (s, e) => snapAbsolute.Checked = e.NewValue;
+            SnappingIncrementProp.ValueChanged += (s, old, val) => snapField.Value = val;
+            SnappingEnabledProp.ValueChanged += (s, old, val) => snapLabel.Checked = val;
+            SnappingIsAbsoluteProp.ValueChanged += (s, old, val) => snapAbsolute.Checked = val;
             snapLabel.OnCheckStateChange += (s, v) => SnappingCheckEnabled = v;
             snapField.ValueChanged += (s, v) => SnappingSetting = v;
             snapAbsolute.OnCheckStateChange += (s, v) => SnappingIsAbsolute = v;

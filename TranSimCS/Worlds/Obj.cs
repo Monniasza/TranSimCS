@@ -36,34 +36,6 @@ namespace TranSimCS.Worlds {
         public void FirePropertyEvent(object sender, PropertyChangedEventArgs eventArgs){
             PropertyChanged?.Invoke(sender, eventArgs);
         }
-
-        //CHILDREN & PARENT
-        private Obj? _parent;
-        public Obj? Parent {
-            get => _parent;
-            private set {
-                var newParent = value;
-                var oldParent = _parent;
-                if (oldParent == newParent) return;
-                BeforeParentChanged?.Invoke(oldParent!, newParent!);
-                oldParent?.BeforeChildRemoved?.Invoke(this);
-                newParent?.BeforeChildAdded?.Invoke(this);
-                _parent = newParent;
-                oldParent?._children?.Remove(this);
-                newParent?._children?.Add(this);
-                AfterParentChanged?.Invoke(oldParent!, newParent!);
-                oldParent?.AfterChildRemoved?.Invoke(this);
-                newParent?.AfterChildAdded?.Invoke(this);
-            }
-        }
-        internal ISet<Obj> _children = new HashSet<Obj>();
-        public ISet<Obj> Children => new ReadOnlySet<Obj>(_children);
-        public event Action<Obj>? BeforeChildAdded;
-        public event Action<Obj>? BeforeChildRemoved;
-        public event Action<Obj>? AfterChildAdded;
-        public event Action<Obj>? AfterChildRemoved;
-        public event Action<Obj, Obj>? BeforeParentChanged;
-        public event Action<Obj, Obj>? AfterParentChanged;
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public bool Equals(Obj? other) {

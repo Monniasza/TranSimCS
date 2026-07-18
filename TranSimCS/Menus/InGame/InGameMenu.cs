@@ -93,9 +93,9 @@ namespace TranSimCS.Menus.InGame {
             configuration.ToolProp.ValueChanged += ToolProp_ValueChanged;
         }
 
-        private void ToolProp_ValueChanged(object? sender, PropertyChangedEventArgs2<ITool?> e) {
-            e.OldValue?.OnClose();
-            e.NewValue?.OnOpen();
+        private void ToolProp_ValueChanged(object? sender, ITool? oldTool, ITool? newTool) {
+            oldTool?.OnClose();
+            newTool?.OnOpen();
         }
 
         public override void Destroy() {

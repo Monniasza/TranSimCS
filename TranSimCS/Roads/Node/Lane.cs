@@ -54,7 +54,7 @@ namespace TranSimCS.Roads.Node {
             ArgumentNullException.ThrowIfNull(definition, nameof(definition));
             ArgumentNullException.ThrowIfNull(node, nameof(node));
             DefinitionProp = new(definition.ToLaneDefinition, "definition", node);
-            DefinitionProp.ValueChanged += (s, e) => {
+            DefinitionProp.ValueChanged += (s, old, value) => {
                 node.Mesh.Invalidate();
             };
             InverseDefinitionProp = new("invDefinition", DefinitionProp, LaneDefinitionMethods.Mirror, LaneDefinitionMethods.Mirror);

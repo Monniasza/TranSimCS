@@ -15,7 +15,7 @@ namespace TranSimCS.Menus {
         public static void AddProperty(this Checkbox check, Property<bool> prop) {
             check.Checked = prop.Value;
             check.OnCheckStateChange += (cb, isChecked) => prop.Value = isChecked;
-            prop.ValueChanged += (s, e) => check.Checked = e.NewValue;
+            prop.ValueChanged += (s, old, val) => check.Checked = val;
         }
         public static Checkbox CreateCheck(InGameMenu menu, Element container, string name, string? icon = null, Color? checkColor = null, Color? uncheckColor = null) {
             var check = new Checkbox(Anchor.AutoInline, new(21, 21), "", false);
@@ -38,9 +38,9 @@ namespace TranSimCS.Menus {
         }
         public static RadioButton CreateRadio<T>(InGameMenu menu, Element container, string name, string icon, Property<T> prop, T value){
             RadioButton radio = CreateRadio(menu, container, name, icon, () => prop.Value = value);
-            prop.ValueChanged += (s, e) => {
-                if (Object.Equals(e.OldValue, value)) radio.Checked = false;
-                if (Object.Equals(e.NewValue, value)) radio.Checked = true;
+            prop.ValueChanged += (s, old, val) => {
+                if (Object.Equals(old, value)) radio.Checked = false;
+                if (Object.Equals(val, value)) radio.Checked = true;
             };
             radio.Checked = Object.Equals(value, prop.Value);
             return radio;
@@ -62,7 +62,7 @@ namespace TranSimCS.Menus {
             var textfield = new NumberField(Anchor.AutoInline, textfieldSize, null, prop?.Value ?? 0);
             if (prop != null) {
                 textfield.ValueChanged += (c, v) => prop.Value = v;
-                prop.ValueChanged += (s, e) => textfield.Value = e.NewValue;
+                prop.ValueChanged += (s, old, val) => textfield.Value = val;
             }
             SetUpProp(title, panel, textfield);
             return textfield;

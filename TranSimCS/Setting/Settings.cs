@@ -30,8 +30,8 @@ namespace TranSimCS.Setting {
 
         static Settings(){
             RoadAccuracyProp = new(17, "roadAccuracy", null);
-            RoadAccuracyProp.ValidateChanges += (s, e) => {
-                if (e.NewValue < 2) throw new ArgumentException("Accuracy must be at least 2");
+            RoadAccuracyProp.ValidateChanges += (s, old, value) => {
+                if (value < 2) throw new ArgumentException("Accuracy must be at least 2");
             };
             InvertAllNormalsProp = new(false, "invertNormals");
             ShowGroundProp = new(true, "showGround");

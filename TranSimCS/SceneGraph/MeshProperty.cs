@@ -18,7 +18,7 @@ namespace TranSimCS.SceneGraph {
             prop.ValueChanged += Prop_ValueChanged;
         }
 
-        private void Prop_ValueChanged(object? sender, PropertyChangedEventArgs2<MultiMesh> e) => GeometryChanged(this);
+        private void Prop_ValueChanged(object? sender, MultiMesh old, MultiMesh value) => GeometryChanged(this);
         public void GenerateGeometry(RenderTarget target) => target.Draw(prop.Value);
         public BoundingBox GetBounds() => prop.Value.GetBounds();
         public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => prop.Value.ComputeIntersection(ray, out distance, out tag);

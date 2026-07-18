@@ -74,12 +74,10 @@ namespace TranSimCS.Roads.Node {
         public Range<float> Bounds => NodeSpec.Range;
 
         //Event listeners
-        private void ConnectedSection_ValueChanged(object sender, PropertyChangedEventArgs2<RoadSection?> e) {
+        private void ConnectedSection_ValueChanged(object sender, RoadSection oldSection, RoadSection newSection) {
             var rne = RoadNodeEnd;
-            var oldNode = e.OldValue;
-            oldNode?.OnDisconnect(rne);
-            var newNode = e.NewValue;
-            newNode?.OnConnect(rne);
+            oldSection?.OnDisconnect(rne);
+            newSection?.OnConnect(rne);
         }
     }
 }

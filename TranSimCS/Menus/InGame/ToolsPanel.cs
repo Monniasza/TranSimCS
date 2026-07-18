@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Iesi.Collections.Generic;
 using MLEM.Ui;
 using MLEM.Ui.Elements;
 using TranSimCS.Property;
@@ -38,8 +39,8 @@ namespace TranSimCS.Menus.InGame {
             panels.Add(attributeName, ctor(menu));
         }
 
-        private void ToolAttributesProp_ValueChanged(object? sender, PropertyChangedEventArgs2<Iesi.Collections.Generic.ReadOnlySet<string>> e) {
-            Rebuild(e.NewValue);
+        private void ToolAttributesProp_ValueChanged(object? sender, ReadOnlySet<string> oldValue, ReadOnlySet<string> newValue) {
+            Rebuild(newValue);
         }
 
         private void Rebuild(ISet<string> attribs) {
