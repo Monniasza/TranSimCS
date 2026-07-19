@@ -149,7 +149,7 @@ namespace TranSimCS.Roads.Section {
             } else if (roadSection.Nodes.Count > 2) {
                 GenerateSectionWithoutSlope(surfaceMesh, roadSection, accuracy);
             } else if (roadSection.Nodes.Count == 2) {
-                GenerateIntersectionStrip(surfaceMesh, roadSection.Nodes[0], roadSection.Nodes[1], accuracy);
+                GenerateIntersectionStrip(surfaceMesh, roadSection.SortedNodes[0], roadSection.SortedNodes[1], accuracy);
             } else {
                 GenerateSectionWithoutSlope(surfaceMesh, roadSection, accuracy);
             }
@@ -282,8 +282,8 @@ namespace TranSimCS.Roads.Section {
             var perimeterPointCount = splineCount * accuracy;
             for(int i = 0; i < splineCount; i++) {
                 var h = (i + 1) % splineCount;
-                var prev = roadSection.Nodes[i];
-                var next = roadSection.Nodes[h];
+                var prev = roadSection.SortedNodes[i];
+                var next = roadSection.SortedNodes[h];
 
                 var topSpline = GenerateRoadEdge(next, prev, 1);
                 var topPoints = GeometryUtils.GenerateSplinePoints(topSpline, accuracy);
@@ -307,7 +307,7 @@ namespace TranSimCS.Roads.Section {
 
             //Generate endcaps
             for (int i = 0; i < splineCount; i++) {
-                var node = roadSection.Nodes[i];
+                var node = roadSection.SortedNodes[i];
                 var refframe = node.Node.ReferenceFrame;
                 var bounds = node.Bounds();
                 var mulbreadth = breadth;
