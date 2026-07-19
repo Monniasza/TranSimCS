@@ -88,6 +88,20 @@ namespace TranSimCS.Roads.Strip {
         public RoadFinish Finish { get => FinishProperty.Value; set => FinishProperty.Value = value; }
         Property<RoadFinish> IRoadFinish.FinishProperty => FinishProperty;
 
+        //Cached properties
+        private RoadStripCache? _cache;
+        public RoadStripCache Cache => _cache ??= new RoadStripCache(this);
+        /// <summary>
+        /// Left start, right start, left end, right end
+        /// </summary>
+        public RoadBounds Bounds => Cache.Bounds;
+        public SplineFrame SplineFrame => Cache.SplineFrame;
+        public IndexStrip IndexStrip => Cache.IndexStrip;
+        public LaneRange FullSizeTag() {
+            var bounds = Bounds;
+            return new LaneRange(this, new(Bounds.leftStart, Bounds.rightStart), new(Bounds.leftEnd, Bounds.rightEnd));
+        }
+
         public RoadStrip(RoadNodeEnd startNode, RoadNodeEnd endNode) {
             StartNode = startNode;
             EndNode = endNode;
@@ -127,54 +141,17 @@ namespace TranSimCS.Roads.Strip {
         }
         public IReadOnlyCollection<LaneStrip> Lanes => lanes.AsReadOnly(); // Get the list of lane strips associated with this road connection
 
-        public LaneRange FullSizeTag() {
-            var bounds = Bounds;
-            return new LaneRange(this, new(Bounds.leftStart, Bounds.rightStart), new(Bounds.leftEnd, Bounds.rightEnd));
-        }
+        
 
         //Meshes for the lane connection (can be used for rendering and cached)
         public MeshGenerator<RoadStrip> Mesh { get; init; }
         protected void InvalidateMesh0() {
-            GeometryChanged?.Invoke(this);
+            _cache = null;
             foreach (var lane in lanes)
                 lane.InvalidateMesh(); // Invalidate the mesh for each lane strip
+            GeometryChanged?.Invoke(this);
         }
-
-        /// <summary>
-        /// Left start, right start, left end, right end
-        /// </summary>
-        public RoadBounds Bounds { get; private set; } 
         protected static void GenerateMesh(RoadStrip segment, MultiMesh mesh) {
-            var bounds = new RoadBounds();
-            //Generate bounds
-            foreach (var lane in segment.Lanes) {
-                var startLane = lane.StartLane;
-                var endLane = lane.EndLane;
-                if(startLane.RoadNodeEnd == segment.EndNode & endLane.RoadNodeEnd == segment.StartNode && startLane.RoadNodeEnd != endLane.RoadNodeEnd) {
-                    (startLane, endLane) = (endLane, startLane);
-                }
-
-                var startBounds = startLane.lane.Bounds;
-                var endBounds = endLane.lane.Bounds;
-
-                bounds = bounds
-                    .Update(startBounds.Min, endBounds.Min)
-                    .Update(startBounds.Max, endBounds.Max);
-            }
-            if(bounds.leftStart > bounds.rightStart || bounds.leftEnd > bounds.rightEnd) {
-                bounds.leftStart = bounds.rightStart = bounds.leftEnd = bounds.rightEnd = 0;
-            }
-            segment.Bounds = bounds;
-
-            //Generate splines
-            if (segment.IsSingleEnded()) {
-                //The segment has only one end
-                segment.IndexStrip = segment.StartNode.GenerateDegenerateIndexStrips();
-            } else {
-                //The segment joins node-ends
-                segment.IndexStrip = segment.SplineGenerator.GenerateSplines(segment);
-            }
-            segment.SplineFrame = segment.IndexStrip.ToSplineFrame(segment.StartNode, segment.EndNode);
 
             //Check: If the road segment is a part of a road section, do not create its mesh
             var roadSectionA = segment.StartNode.ConnectedSection.Value;
@@ -209,7 +186,6 @@ namespace TranSimCS.Roads.Strip {
         public BoundingBox GetBounds() => Mesh.GetMesh().GetBounds();
         public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => Mesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
 
-        public SplineFrame SplineFrame { get; private set; }
-        public IndexStrip IndexStrip { get; private set; }
+        
     }
 }
