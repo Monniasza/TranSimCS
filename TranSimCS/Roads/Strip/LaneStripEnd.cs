@@ -12,11 +12,11 @@ namespace TranSimCS.Roads.Strip {
         IPosition[] IDraggableObj.DraggableComponents() => ((IDraggableObj)strip).DraggableComponents();
 
         //ROAD ELEMENT
-        public Guid Guid => strip.road.Guid;
+        public Guid Guid => strip.Road.Guid;
         public Lane? GetLane() => strip.GetHalf(half).lane;
         public LaneStrip? GetLaneStrip() => strip;
         public RoadNode? GetRoadNode() => strip.GetHalf(half).RoadNodeEnd.Node;
-        public RoadStrip? GetRoadStrip() => strip.road;
+        public RoadStrip? GetRoadStrip() => strip.Road;
         public int XDiscriminant() => 0;
         public int ZDiscriminant() => half.Discriminant();
         public LaneEnd? GetLaneEnd() => laneEnd;

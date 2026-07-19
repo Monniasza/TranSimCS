@@ -22,12 +22,14 @@ namespace TranSimCS.Tools
             if (button == MouseButton.Left) {
                 var laneStrip = game.MouseOver?.GetLaneStrip();
                 laneStrip?.ReverseDirection();
+                game.MouseOver = null;
             }
             if(button == MouseButton.Right) {
                 var roadStrip = game.MouseOver?.GetRoadStrip();
                 if (roadStrip == null) return;
                 var lanes = roadStrip.Lanes.ToArray();
                 foreach(var lane in lanes) lane.ReverseDirection();
+                game.MouseOver = null;
             }
         }
     }

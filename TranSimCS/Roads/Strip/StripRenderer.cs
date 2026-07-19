@@ -14,7 +14,7 @@ namespace TranSimCS.Roads.Strip {
         public static void GenerateLaneStripMesh(LaneStrip laneStrip, MultiMesh renderer, float voffset = 0) {
             var accuracy = Settings.RoadAccuracy;
             var tag = laneStrip.Tag();
-            var roadTag = laneStrip.road.FullSizeTag();
+            var roadTag = laneStrip.Road.FullSizeTag();
             var (Left, Right) = RoadRenderer.GenerateSplines(tag, voffset); // Generate the splines for the left and right lanes
 
             var apshaltBin = renderer.GetOrCreateRenderBinForced(Assets.Asphalt);
@@ -72,7 +72,7 @@ namespace TranSimCS.Roads.Strip {
             if (swapMerges) DataUtil.Swap(ref mergeLeft, ref mergeRight);
 
             //Get tags
-            var roadTag = laneStrip.road.FullSizeTag();
+            var roadTag = laneStrip.Road.FullSizeTag();
 
             //Generate side-lines
             var lineWidth = laneStrip.Spec.LineWidth;
@@ -141,7 +141,7 @@ namespace TranSimCS.Roads.Strip {
 
         public static LaneRange LaneStripToRoadStripRange(LaneStrip strip, Range<float> startRange, Range<float> endRange) {
             if (strip.IsReverse()) DataUtil.Swap(ref startRange, ref endRange);
-            return new(strip.road, startRange, endRange);
+            return new(strip.Road, startRange, endRange);
         }
 
         public static VertexGen2<VertexPositionColorTexture> GenerateLaneStripVertexGen(LaneSpec spec) => GenerateLaneStripVertexGen(spec.Color);

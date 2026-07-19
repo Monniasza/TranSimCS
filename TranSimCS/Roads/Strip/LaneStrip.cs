@@ -16,11 +16,11 @@ using TranSimCS.Worlds;
 namespace TranSimCS.Roads.Strip {
     public class LaneStrip : IEquatable<LaneStrip?>, IDraggableObj, IRoadElement {
         //ROAD ELEMENT
-        public Guid Guid => road.Guid;
+        public Guid Guid => Road.Guid;
         public Lane? GetLane() => null;
         public LaneStrip? GetLaneStrip() => this;
         public RoadNode? GetRoadNode() => null;
-        public RoadStrip? GetRoadStrip() => road;
+        public RoadStrip? GetRoadStrip() => Road;
         public int XDiscriminant() => 0;
         public int ZDiscriminant() => 0;
         public LaneEnd? GetLaneEnd() => null;
@@ -29,7 +29,7 @@ namespace TranSimCS.Roads.Strip {
         //Constant contents
         public LaneEnd StartLane { get; private set; }
         public LaneEnd EndLane { get; private set; }
-        public RoadStrip road { get; internal set; }
+        public RoadStrip Road { get; internal set; }
         private LaneSpec _spec;
         /// <summary>
         /// Specification of this <see cref="LaneStrip"/>, including properties like width, type, etc.
@@ -51,7 +51,7 @@ namespace TranSimCS.Roads.Strip {
             }
             set {
                 if (_spec == value) return;
-                road?.FirePropertyEvent(road, new(Guid + PropertyNames.NodeSpecSuffix));
+                Road?.FirePropertyEvent(Road, new(Guid + PropertyNames.NodeSpecSuffix));
                 _spec = value;
             }
         }
@@ -60,8 +60,8 @@ namespace TranSimCS.Roads.Strip {
         public LaneRange Tag() {
             var startRange = StartLane.Range();
             var endRange = EndLane.Range();
-            if(StartLane.RoadNodeEnd == road.EndNode) DataUtil.Swap(ref startRange, ref endRange);
-            return new LaneRange(road, startRange, endRange);
+            if(StartLane.RoadNodeEnd == Road.EndNode) DataUtil.Swap(ref startRange, ref endRange);
+            return new LaneRange(Road, startRange, endRange);
         }// Create a LaneTag for the lane strip, which includes the road and the start and end lanes
 
         public LaneStrip(LaneEnd startLane, LaneEnd endLane, LaneSpec? spec = null){
@@ -105,12 +105,7 @@ namespace TranSimCS.Roads.Strip {
         }
 
         public void Destroy() {
-            var currentRoad = road;
-            var startEnd = StartLane.end;
-            var endEnd = EndLane.end;
-            StartLane = new LaneEnd(startEnd, null);
-            EndLane = new LaneEnd(endEnd, null);
-            currentRoad?.RemoveLaneStrip(this);
+            Road?.RemoveLaneStrip(this);
             InvalidateMesh();
         }
 
@@ -125,12 +120,12 @@ namespace TranSimCS.Roads.Strip {
             return other is not null &&
                    EqualityComparer<LaneEnd>.Default.Equals(StartLane, other.StartLane) &&
                    EqualityComparer<LaneEnd>.Default.Equals(EndLane, other.EndLane) &&
-                   EqualityComparer<RoadStrip>.Default.Equals(road, other.road) &&
+                   EqualityComparer<RoadStrip>.Default.Equals(Road, other.Road) &&
                    EqualityComparer<LaneSpec>.Default.Equals(Spec, other.Spec);
         }
 
         public override int GetHashCode() {
-            return HashCode.Combine(StartLane, EndLane, road, Spec);
+            return HashCode.Combine(StartLane, EndLane, Road, Spec);
         }
 
         public bool IsBetween(LaneEnd start, LaneEnd end) {
@@ -160,15 +155,17 @@ namespace TranSimCS.Roads.Strip {
         /// </summary>
         /// <returns>a new lane strip in reverse direction</returns>
         public LaneStrip ReverseDirection() {
+            var road = Road;
             var newStart = EndLane;
             var newEnd = StartLane;
             var newSpec = Spec.Reverse();
+
             LaneStrip newLaneStrip = new LaneStrip(newStart, newEnd, newSpec);
             road?.RemoveLaneStrip(this);
             road?.AddLaneStrip(newLaneStrip);
             return newLaneStrip;
         }
 
-        public bool IsReverse() => StartLane.RoadNodeEnd == road.EndNode && EndLane != StartLane;
+        public bool IsReverse() => StartLane.RoadNodeEnd == Road.EndNode && EndLane != StartLane;
     }
 }

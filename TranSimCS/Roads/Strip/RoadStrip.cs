@@ -124,7 +124,7 @@ namespace TranSimCS.Roads.Strip {
         public bool RemoveLaneStrip(LaneStrip laneStrip) {
             var removal = lanes.Remove(laneStrip); // Remove a lane strip from the connection
             if(!removal) return false;
-            laneStrip.road = null;
+            laneStrip.Road = null;
             OnLaneRemoved?.Invoke(this, new RoadStripEventArgs(laneStrip)); // Trigger the OnLaneRemoved event
             FirePropertyEvent(this, new(PropertyNames.SegmentLanes));
             Mesh.Invalidate(); // Invalidate the mesh for the lane strip to ensure it is regenerated
@@ -133,7 +133,7 @@ namespace TranSimCS.Roads.Strip {
         public bool MaybeAddLaneStrip(LaneStrip laneStrip) {
             if (lanes.Contains(laneStrip)) return false;
             lanes.Add(laneStrip); // Add a new lane strip to the connection
-            laneStrip.road = this;
+            laneStrip.Road = this;
             OnLaneAdded?.Invoke(this, new RoadStripEventArgs(laneStrip)); // Trigger the OnLaneAdded event
             FirePropertyEvent(this, new(PropertyNames.SegmentLanes));
             Mesh.Invalidate(); // Invalidate the mesh for the lane strip to ensure it is regenerated

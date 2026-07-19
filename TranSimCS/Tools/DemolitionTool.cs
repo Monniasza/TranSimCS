@@ -70,7 +70,7 @@ namespace TranSimCS.Tools {
                 }
             } else if(selStrip != null) {
                 //Deleting segment/strip
-                var segment = selStrip.road;
+                var segment = selStrip.Road;
                 var segmentTag = segment.FullSizeTag();
                 RoadRenderer.GenerateLaneRangeMesh(segmentTag, renderBin, R, v1);
                 var stripTag = selStrip.Tag();
