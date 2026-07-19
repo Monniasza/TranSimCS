@@ -44,7 +44,6 @@ namespace TranSimCS.Roads.Node {
         //Position
         public Property<PositionEulerAngles> PositionProp => Node.PositionProp;
         public Vector3 CenterPosition => Node.CenterPosition;
-        public Vector3 CenterOffset => Node.CenterOffset;
 
         public LaneEnd GetLaneEnd(int x) {
             return new LaneEnd(End, Node.SortedLanes[x]);

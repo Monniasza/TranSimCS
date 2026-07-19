@@ -32,7 +32,6 @@ namespace TranSimCS.Roads.Node {
         public RoadNodeCache Cache => _cache ??= new RoadNodeCache(this);
         public Vector3 CenterPosition => Cache.CenterPosition;
         public Range<float> Bounds => NodeSpec.Range;
-        //NodeSpec
         public Transform3 ReferenceFrame => Cache.ReferenceFrame;
         public IList<Lane> SortedLanes => Cache.SortedLanes;
 
@@ -99,12 +98,14 @@ namespace TranSimCS.Roads.Node {
             PositionProp = new(positionData, "Position", this);
             Name = name;
             InversePositionProp = new("invPos", PositionProp, PositionEulerAnglesMethods.Around, PositionEulerAnglesMethods.Around);
+
             RearEnd = new RoadNodeEnd(NodeEnd.Backward, this);
             FrontEnd = new RoadNodeEnd(NodeEnd.Forward, this);
             RearHalf = new HalfNode(this, NodeEnd.Backward);
             FrontHalf = new HalfNode(this, NodeEnd.Forward);
-            Mesh = new MeshGenerator<RoadNode>(this, (node, mesh) => NodeRenderer.GenerateNodeVisualMesh(node, mesh));
-            Mesh.OnMeshInvalidated += InvalidateMesh0;
+
+            Mesh = new MeshGenerator<RoadNode>(this, NodeRenderer.GenerateNodeVisualMesh);
+            DependencyChanged += HandleDependencyChanged;
             SelectionMesh = new(this, (node, mesh) => {
                 var roadBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
                 NodeRenderer.GenerateRoadNodeSelectionMesh(node, roadBin, null);
@@ -116,6 +117,19 @@ namespace TranSimCS.Roads.Node {
             LaneXRef = new ReadOnlyDictionary<Guid, Lane>(lanesSet);
             Lanes = new ReadOnlySet<Lane>(lanesDict);
         }
+
+        private void HandleDependencyChanged(Obj targetObject, Obj dependencyObject, string? propertyName) {
+            // Clears cached data when the base mesh invalidation occurs.
+            _cache = null;
+            FrontHalf._cache = null;
+            RearHalf._cache = null;
+            SelectionMesh.Invalidate();
+            foreach (var connection in Connections) connection.Mesh.Invalidate();
+            RearEnd.ConnectedSection.Value?.Mesh.Invalidate();
+            FrontEnd.ConnectedSection.Value?.Mesh.Invalidate();
+            GeometryChanged?.Invoke(this);
+        }
+
         private void PositionProp_ValueChanged(object? sender, PositionEulerAngles old, PositionEulerAngles value) {
             var pos = value.Position;
             if (float.IsNaN(pos.X)) throw new ArgumentException("X === NaN");
@@ -124,12 +138,18 @@ namespace TranSimCS.Roads.Node {
         }
 
         //Lane structure
-        // Adds a lane to this node while maintaining lane ordering and indices.
+        /// <summary>
+        /// Adds a lane to this node while maintaining lane ordering and indices.
+        /// </summary>
+        /// <param name="definition">new lane to be added</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">if <paramref name="definition"/> is <see langword="null"/></exception>
+        /// <exception cref="InvalidOperationException">if this <see cref="RoadNode"/> already contains a <see cref="Lane"/> with given <see cref="LaneNode.ID"/></exception>
         public Lane AddLane(LaneNode definition) {
             if(definition == null) throw new ArgumentNullException(nameof(definition), "Lane cannot be null.");
             if(LaneXRef.ContainsKey(definition.ID)) throw new InvalidOperationException("Lane is already assigned to this road node.");
 
-            Lane lane = new Lane(this, definition);
+            Lane lane = new(this, definition);
             lane.RoadNode = this;
 
             lanesSet.Add(definition.ID, lane);
@@ -139,7 +159,7 @@ namespace TranSimCS.Roads.Node {
             FrontHalf.FireLaneAdded(lane);
             RearHalf.FireLaneAdded(lane);
 
-            Mesh.Invalidate();
+            FirePropertyEvent(this, new(PropertyNames.LaneListOfNode));
 
             return lane;
         }
@@ -150,9 +170,9 @@ namespace TranSimCS.Roads.Node {
 
             //Remove all connections to the lane
             var connections = lane.Connections.ToArray();
-            foreach (var connection in connections) {
+            foreach (var connection in connections) 
                 connection.Destroy();
-            }
+            
 
             lanesSet.Remove(lane.Guid);
             lanesDict.Remove(lane);
@@ -162,23 +182,10 @@ namespace TranSimCS.Roads.Node {
             FrontHalf.FireLaneRemoved(lane);
             RearHalf.FireLaneRemoved(lane);
 
-            Mesh.Invalidate();
+            FirePropertyEvent(this, new(PropertyNames.LaneListOfNode));
         }
 
         public void ClearLanes() => NodeSpec = NodeSpec.Empty;
-
-        // Clears cached data when the base mesh invalidation occurs.
-        protected void InvalidateMesh0(){
-            _cache = null;
-            FrontHalf._cache = null;
-            RearHalf._cache = null;
-            SelectionMesh.Invalidate();
-            GeometryChanged?.Invoke(this);
-
-            foreach (var connection in Connections) connection.Mesh.Invalidate();
-            RearEnd.ConnectedSection.Value?.Mesh.Invalidate();
-            FrontEnd.ConnectedSection.Value?.Mesh.Invalidate();
-        }
 
         //Halves of this road node
         public readonly RoadNodeEnd RearEnd;
@@ -200,10 +207,5 @@ namespace TranSimCS.Roads.Node {
 
         //Connections (maintained by the node ends)
         public IEnumerable<RoadStrip> Connections => RearEnd.ConnectedSegments.Union(FrontEnd.ConnectedSegments);
-
-        public Vector3 CenterOffset { get; internal set; }
-
-        public const Lane? nullLane = null;
-        public Lane? LastLane => (lanesDict.Count == 0) ? null : SortedLanes[^1];
     }
 }
