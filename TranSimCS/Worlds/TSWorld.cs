@@ -60,11 +60,12 @@ namespace TranSimCS.Worlds
                 if(lane.IsBetween(start, end)) return lane;
             return null;
         }
-        public LaneStrip GetOrMakeLaneStrip(LaneEnd start, LaneEnd end, RoadFinish? finish = null) {
+        public LaneStrip GetOrMakeLaneStrip(LaneEnd start, LaneEnd end, RoadFinish? finish = null, LaneSpec? laneSpec = null) {
             var roadStrip = GetOrMakeRoadStrip(start.RoadNodeEnd, end.RoadNodeEnd, finish);
             foreach (var lane in roadStrip.Lanes)
                 if (lane.IsBetween(start, end)) return lane;
             LaneStrip strip = new LaneStrip(start, end);
+            strip.Spec = laneSpec ?? LaneSpec.Default;
             roadStrip.AddLaneStrip(strip);
             return strip;
         }

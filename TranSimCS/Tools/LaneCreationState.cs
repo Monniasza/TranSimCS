@@ -45,7 +45,7 @@ namespace TranSimCS.Tools {
         //GENERATION
         public void Generate(InGameMenu menu) {
             var stripTools = menu.ToolsPanel.GetPanel<StripTools>(ToolAttribs.showRoadTools);
-            SplineMode = menu.ConnectionTool.Mode;
+            SplineMode = stripTools.RoadMode.Value;
             Alignment = stripTools.AlignmentProp.Value;
 
             DeltaOffset = 0;

@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Formats.Asn1;
 using System.Security.AccessControl;
+using LanguageExt.Common;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using MLEM.Ui;
+using MonoGame.Extended;
 using NLog;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
@@ -14,141 +16,119 @@ using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
+using TranSimCS.Setting;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Tools {
-    public class RoadPlan {
-        public Vector3 startTangent;
-        public Vector3 startPos;
-        public Vector3 startLateral;
-
-        public Vector3 endTangent;
-        public Vector3 endPos;
-        public Vector3 endLateral;
-
-        public InGameMenu menu;
-
-        public void Align(Alignment alignment, float width) {
-            var calculatedAlignments = alignment.GetAlignments();
-            var moveRight = calculatedAlignments.r - 0.5f;
-            startPos += moveRight * startLateral * width;
-            endPos += moveRight * endLateral * width;
-        }
-    }
-    public interface ChainMode: IEquatable<ChainMode?> {
-        public string Name { get; }
-        public LaneSpec ChainValues(InGameMenu game);
-        bool IEquatable<ChainMode?>.Equals(ChainMode? other) {
-            return ReferenceEquals(this, other);
-        }
-    }
-    public class ChainModeChained: ChainMode {
-        public static ChainModeChained value = new ChainModeChained();
-        private ChainModeChained() { }
-        public string Name => "From previous";
-        public LaneSpec ChainValues(InGameMenu game) =>
-            game.ConnectionTool.node?.lane?.Spec
-            ?? ChainModeCustom.value.ChainValues(game);
-    }
-    public class ChainModeCustom : ChainMode {
-        public static ChainModeCustom value = new ChainModeCustom();
-        private ChainModeCustom() { }
-        public string Name => "Custom from road configurator";
-        public LaneSpec ChainValues(InGameMenu game) => game.configurator.laneSpecProp.Value;
-    }
-
     /// <summary>
     /// A road strip tool.
     /// </summary>
     /// BUG: might create NaN positions when hovering over the source lane with snapping on.
     public class ConnectionTool: ITool {
         private static Logger log = LogManager.GetCurrentClassLogger();
-        public static readonly ChainMode chained = ChainModeChained.value;
-        public static readonly ChainMode custom = ChainModeCustom.value;
+        public static readonly IChainMode chained = ChainModeChained.value;
+        public static readonly IChainMode custom = ChainModeCustom.value;
         static readonly Vector3 offset = new Vector3(0, 0.01f, 0);
 
         public readonly InGameMenu menu;
         public readonly StripTools RoadTools;
 
-        public Bezier3 GeneratedSpline { get; private set; }
-        public LaneEnd? node { get; set; }
-        public LaneStrip? SegmentAlreadyExists { get; private set; } = null;
-        public PositionEulerAngles? NewNodePosition { get; private set; }
-        public RoadMode Mode { get; set; } = new CircMode();
+        public HalfLane? SourceNode { get; private set; }
+        public HalfLane? DestNode { get; private set; }
+        public LaneStrip? LaneStrip { get; private set; }
 
-        string ITool.Name => "Road strip creation tool";
+        string ITool.Name => "Road Connection Editor";
 
-        string ITool.Description => node == null ? "Pick a lane"
-            : $"Creating a segment. Chord-length: {GeneratedSpline.ChordLength()}, arc-length: {GeneratedSpline.ArcLength()}";
+        private string _description;
+        string ITool.Description => _description;
 
         public (object[], string)[] PromptKeys() {
-            (object[], string) countPrompt = ([Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9], "to set number of lanes");
-            List<(object[], string)> keys = [countPrompt];
-            keys.Add(([Keys.LeftControl], "to connect inline"));
-            keys.Add(([Keys.LeftAlt], "to reverse lane direction"));
-            if (node == null) {
-                keys.Add(([MouseButton.Left], "Select a road node end to create a lane strip."));
-                keys.Add(([MouseButton.Left], "elsewhere to set direction manually"));
-            } else {
-                keys.Add(([MouseButton.Right], "to cancel"));
-            }
-            return keys.ToArray();
+            if (SourceNode == null) return [
+                ([MouseButton.Left], "Select a lane to start editing connections")
+            ]; else return [
+                ([MouseButton.Right], "to cancel"),
+                ([MouseButton.Left], "to add/remove/modify a connection")
+            ];
+            
         }
 
-        
+        private NextAction nextAction;
+        private Color actionColor;
+        private enum NextAction{
+            Pick, Hover, Add, Reverse, Edit, Delete
+        }
+        private static (string description, Color color) GetForAction(NextAction nextAction) => nextAction switch {
+            NextAction.Pick => ("Pick a lane end to start editing connections", Color.Transparent),
+            NextAction.Hover => ("Editing connections. Hove over lane ends to add, remove and modify connections", Color.White),
+            NextAction.Add => ("Editing connections. About to add a connection. [LAlt] for reverse", Color.Lime),
+            NextAction.Reverse => ("Editing connections. About to reverse a connection.", Color.Cyan),
+            NextAction.Edit => ("Editing connections. About to modify a connection. [LAlt] to reverse instead", Color.Yellow),
+            NextAction.Delete => ("Editing connections. About to delete a connection. [LAlt] to reverse instead", Color.Red),
+            _ => throw new ArgumentException("Invalid NextAction: " + nextAction)
+        };
+
         public ConnectionTool(InGameMenu menu) {
             this.menu = menu;
             RoadTools = menu.ToolsPanel.GetPanel<StripTools>(ToolAttribs.showRoadTools);
         }
 
-        private LaneEnd? GetLaneEnd() {
-            var candidate = menu.MouseOver?.Tag;
-            if (candidate == null) return null;
-            var le = (candidate as IRoadElement)?.GetLaneEnd();
-            if (le == null) return null;
-            var le1 = le.Value;
-            if (menu.Game.KeyboardState.IsKeyDown(Keys.LeftControl)) le1 = le1.OppositeEnd;
-            if (node != null) return le1.OppositeEnd;
-            return le1;
+        void ITool.Update(GameTime gameTime) {
+            if(SourceNode != null) DestNode = menu.MouseOver?.As<LaneEnd>().ToHalfLane();
+            if (SourceNode == DestNode) DestNode = null;
+
+            if (SourceNode == null || DestNode == null) {
+                LaneStrip = null;
+            }else{
+                LaneStrip = menu.World.FindLaneStrip(SourceNode.LaneEnd, DestNode.LaneEnd);
+            }
+
+            if (SourceNode == null)  nextAction = NextAction.Pick;
+            else if (DestNode == null) nextAction = NextAction.Hover;
+            else if (LaneStrip == null) nextAction = NextAction.Add;
+            else if (menu.Game.KeyboardState.IsKeyDown(Keys.LeftAlt)) nextAction = NextAction.Reverse;
+            else if (!LaneStrip.Spec.EqualsExceptWidth(menu.configuration.LaneSpec)) nextAction = NextAction.Edit;
+            else nextAction = NextAction.Delete;
+
+            (_description, actionColor) = GetForAction(nextAction);
         }
 
         void ITool.OnClick(MouseButton button) {
-            if(button == MouseButton.Left) {
-                var selectedNode = GetLaneEnd();
-                if (menu.MouseOver?.Tag is AddLaneSelection als) {
-                    //The user wants to create a new lane
-                    var newLaneEnd = als.NewLane(GetActualLaneSpec(menu));
-                    var spec = RoadTools.ChainMode.Value.ChainValues(menu);
-                    selectedNode = newLaneEnd;
-                    newLaneEnd.lane.Spec = spec;
-                }
-                if (node == null) {
-                    node = selectedNode;
-                    log.Trace($"Selected node: {selectedNode}");
-                } else {
-                    var world = menu.World;
-                    var spec = RoadTools.ChainMode.Value.ChainValues(menu);
-                    if (selectedNode == null && NewNodePosition != null) {
-                        //Create a new node
-                        var newNode = new RoadNode("", NewNodePosition.Value);
-                        var lanenode = LaneNode.FromBounds(spec, new(0, node.Value.lane.Width));
-                        var newLane = newNode.AddLane(lanenode);
-                        selectedNode = newLane.Front;
-                        world.Nodes.data.Add(newNode);
-                    }
-                    if(selectedNode != null) {
-                        var startLane = node.Value;
-                        var endLane = selectedNode.Value.OppositeEnd;
-                        if (menu.Game.KeyboardState.IsKeyDown(Keys.LeftAlt))
-                            (startLane, endLane) = (endLane, startLane);
-                        var strip = world.GetOrMakeLaneStrip(startLane, endLane, menu.configuration.RoadFinish);
-                        strip.Spec = spec;
-                        node = selectedNode;
-                    }
-                }
-            } else if(button == MouseButton.Right) {
-                node = null;
+            if(button == MouseButton.Right) {
+                SourceNode = DestNode = null;
+                LaneStrip = null;
+                return;
+            }
+
+            var pickedLaneEnd = menu.MouseOver?.As<LaneEnd>();
+            if (button == MouseButton.Left) switch (nextAction) {
+                case NextAction.Pick:
+                    SourceNode = pickedLaneEnd?.ToHalfLane();
+                    break;
+                case NextAction.Edit:
+                    Debug.Assert(LaneStrip != null, "Invalid lane strip for Edit");
+                    LaneStrip.Spec = menu.configuration.LaneSpec;
+                    break;
+                case NextAction.Delete:
+                    Debug.Assert(LaneStrip != null, "Invalid lane strip for Delete");
+                    LaneStrip.Destroy();
+                    menu.MouseOver = null;
+                    break;
+                case NextAction.Add:
+                    Debug.Assert(LaneStrip == null, "Got Add with an already existing lane strip");
+                    Debug.Assert(DestNode != null, "Invalid destination for AddNode");
+                    Debug.Assert(SourceNode != null, "Invalid source for AddNode");
+                    var sourceLane = SourceNode.LaneEnd;
+                    var destLane = DestNode.LaneEnd;
+                    if(menu.Game.KeyboardState.IsKeyDown(Keys.LeftAlt))
+                        DataUtil.Swap(ref sourceLane, ref destLane);
+                    menu.World.GetOrMakeLaneStrip(sourceLane, destLane, menu.configuration.RoadFinish, menu.configuration.LaneSpec);
+                    break;
+                case NextAction.Reverse:
+                    Debug.Assert(LaneStrip != null, "Invalid lane strip for Reverse");
+                    LaneStrip.ReverseDirection();
+                    menu.MouseOver = null;
+                    break;
             }
         }
 
@@ -164,126 +144,42 @@ namespace TranSimCS.Tools {
         }
 
         public void Draw(GameTime gameTime) {
-            //Draw the preview of the road segment
-            if(node != null) {
-                var node0 = node.Value;
-                var lane0 = node0.lane;
-                var alignment = RoadTools.AlignmentProp.Value;
+            if (SourceNode == null) return;
 
-                var startingPositionRef = LineEnd.calcLineEnd(node0.RoadNodeEnd, lane0.MiddlePosition);
-                var startTangent = startingPositionRef.Tangential;
-                var startLateral = startingPositionRef.Lateral;
-                var startPos = startingPositionRef.Position;
-                var startWidth = lane0.Width;
+            var sourceLane = SourceNode;
+            var sourceFrame = sourceLane.HalfNode.Cache.ReferenceFrame;
+            var centerStartIndex = sourceLane.MiddlePosition;
+            var startPos = sourceFrame.O + sourceFrame.X * centerStartIndex;
 
-                //Initial placeholders for new values
-                var endPos = Vector3.Zero;
-                var endTangent = Vector3.Zero;
-                var endLateral = Vector3.Zero;
-                var endWidth = startWidth;
+            var renderBin = menu.renderHelper.GetOrCreateRenderBinForced(Assets.WhiteTransparent);
+            var color = actionColor * 0.5f;
+            float width = 0.5f;
+            
+            if(DestNode == null) {
+                var endPos = menu.GroundSelection;
+                var dist = Vector3.DistanceSquared(startPos, endPos);
+                if(dist > 0.0001) renderBin.DrawLine(startPos, endPos, sourceFrame.Y, color, width);
+            } else {
+                var endLane = DestNode;
+                var endFrame = endLane.HalfNode.Cache.ReferenceFrame;
+                var centerEndIndex = endLane.MiddlePosition;
+                var endPos = endFrame.O + endFrame.X * centerEndIndex;
 
-                //Calculate the new values
-                var mouseOverLaneEnd = GetLaneEnd();
-                var mouseOverLane = mouseOverLaneEnd?.lane;
+                var dist = Vector3.DistanceSquared(startPos, endPos);
+                if (dist < 0.0001f) return;
 
-                if (menu.MouseOver?.Tag is AddLaneSelection als) {
-                    //The user wants to create a new lane
-                    var mouseOverNodeEnd = als.nodeEnd;
-                    endWidth = GetActualLaneSpec(menu).Width;
-                    var range = als.CalculateOffset(endWidth/2);
-                    var end = LineEnd.calcLineEnd(mouseOverNodeEnd, range);
-                    endTangent = end.Tangential;
-                    endPos = end.Position;
-                    endLateral = end.Lateral;
-                    SegmentAlreadyExists = null;
-                    NewNodePosition = null;
-                } else if (mouseOverLaneEnd == null) {
-                    //Create a synthetic end
-                    SegmentAlreadyExists = null;
-                    Plane selectionPlane = menu.ReferencePlane;
-                    endPos = GeometryUtils.IntersectRayPlane(menu.MouseRay, selectionPlane);
-                    if (menu.CheckSnap.Checked) {
-                        //Snap the position
-                        endPos = menu.configuration.SnapGrid.Snap(endPos);
-                    }
-
-                    RoadPlan plan = new RoadPlan {
-                        startLateral = startLateral,
-                        endLateral = endLateral,
-                        startPos = startPos,
-                        endPos = endPos,
-                        startTangent = startTangent,
-                        endTangent = endTangent,
-                        menu = menu
-                    };
-
-                    plan.Align(alignment, startWidth);
-
-                    //Apply the road mode
-                    Mode.CreateValues(plan);
-
-                    plan.Align(alignment.Inverse(), startWidth);
-
-                    endTangent = plan.endTangent;
-                    endLateral = plan.endLateral;
-                    endPos = plan.endPos;
-                    startLateral = plan.startLateral;
-                    startPos = plan.startPos;
-                    startTangent = plan.startTangent;
-
-                    if (!endLateral.IsFinite() || !endTangent.IsFinite() || !endPos.IsFinite()) return;
-
-                    if (RoadTools.flattenTilt.Checked) endLateral = Vector3.Normalize(new Vector3(endLateral.X, 0, endLateral.Z));
-                    if (RoadTools.flattenIncline.Checked) endTangent = Vector3.Normalize(new Vector3(endTangent.X, 0, endTangent.Z));
-                    var endLeftPos = endPos - endLateral * node.Value.lane.Width / 2;
-
-                    //Flatten tilt or inclination
-                    //Calculate the NodePosition
-                    var newNodePosition = PositionEulerAngles.FromPosTangentLateral(endLeftPos, endTangent, endLateral);
-                    NewNodePosition = newNodePosition;
-                    if (RoadTools.flattenTilt.Checked) newNodePosition.Tilt = 0;
-                    if (RoadTools.flattenIncline.Checked) newNodePosition.Inclination = 0;
-
-                } else {
-                    //Take an existing end
-                    var mouseOverNodeEnd = mouseOverLaneEnd.Value.RoadNodeEnd;
-                    var end = LineEnd.calcLineEnd(mouseOverNodeEnd, mouseOverLane.MiddlePosition);
-                    endTangent = end.Tangential;
-                    endLateral = end.Lateral;
-                    endPos = end.Position;
-                    endWidth = mouseOverLane.Width;
-                    SegmentAlreadyExists = menu.World.FindLaneStrip(node.Value, mouseOverLaneEnd.Value);
-                    NewNodePosition = null;
+                var spline = GeometryUtils.GenerateJoinSpline(startPos, endPos, sourceFrame.Z, endFrame.Z);
+                var points = GeometryUtils.GenerateSplinePoints(spline, Settings.RoadAccuracy);
+                for(int i = 1; i < points.Length; i++) {
+                    var a = points[i];
+                    var b = points[i - 1];
+                    renderBin.DrawLine(a, b, sourceFrame.Y, color, width);
                 }
-
-                //Draw the preview
-                Color previewColor = lane0.Spec.Color;
-                previewColor.A = 100;
-                if (SegmentAlreadyExists != null) previewColor = Color.Red;
-                var startDiff = startLateral * startWidth / 2;
-                var endDiff = endLateral * endWidth / 2;
-                Bezier3 lbound = GeometryUtils.GenerateJoinSpline(startPos - startDiff, endPos - endDiff, startTangent, -endTangent) + offset;
-                Bezier3 rbound = GeometryUtils.GenerateJoinSpline(startPos + startDiff, endPos + endDiff, startTangent, -endTangent) + offset;
-
-                GeneratedSpline = (lbound + rbound) / 2;
-
-                
-
-                Mesh renderBin = menu.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
-                RoadRenderer.DrawBezierStrip(lbound, rbound, renderBin, previewColor);
             }
         }
 
-        void ITool.AddSelectors(MultiMesh addTo, MultiMesh visibleSelectors) {
-            if(menu.CheckAddLanes.Checked)
-                SelectionUtils.AddAddLaneSelectors(menu);
-        }
-
-
         void ITool.AddAttributes(ISet<string> action) {
             action.Add(ToolAttribs.showFinishes);
-            action.Add(ToolAttribs.showRoadTools);
-            action.Add(ToolAttribs.showSnapOptions);
             action.Add(ToolAttribs.showLaneSpecs);
         }
 

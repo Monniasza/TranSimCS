@@ -20,8 +20,9 @@ namespace TranSimCS.Tools {
         public TextField HeightField { get; private set; }
         public Property<float> HeightStep { get; private set; }
         public Property<float> Height {  get; private set; }
-        public Property<ChainMode> ChainMode { get; private set; }
+        public Property<IChainMode> ChainMode { get; private set; }
         public Property<Alignment> AlignmentProp { get; private set; }
+        public Property<RoadMode> RoadMode { get; private set; }
 
 
         public StyleProp<TextureRegion> LoadStyleProp(string name) {
@@ -31,6 +32,8 @@ namespace TranSimCS.Tools {
         public StripTools(InGameMenu game)
             : base(Anchor.AutoLeft, new(1, 1), true) {
             Game = game;
+
+            
 
             var settingsLabel = new Paragraph(Anchor.AutoInline, 0.5f, "Settings");
             AddChild(settingsLabel);
@@ -44,8 +47,10 @@ namespace TranSimCS.Tools {
             var modesLabel = new Paragraph(Anchor.AutoInlineBottom, 0.5f, "Modes");
             AddChild(modesLabel);
 
+            var circMode = new CircMode();
+            RoadMode = new(circMode, "roadMore");
             CreateModeButton(new StraightMode(), "ui/line");
-            var curvedButton = CreateModeButton(new CircMode(), "ui/curved");
+            var curvedButton = CreateModeButton(circMode, "ui/curved");
             CreateModeButton(new SBendMode(), "ui/sbend");
             curvedButton.Checked = true;
             CreateModeButton(new FromReferenceMode(), "ui/snap");
@@ -63,7 +68,7 @@ namespace TranSimCS.Tools {
             //Spec-transfer modes
             var specTransferLabel = new Paragraph(Anchor.AutoInlineBottom, 0.5f, "Lane-spec transfer method");
             AddChild(specTransferLabel);
-            ChainMode = new Property<ChainMode>(ConnectionTool.chained, "chainMode");
+            ChainMode = new Property<IChainMode>(ConnectionTool.chained, "chainMode");
             UI.CreateRadio(game, this, "From previous", "ui/chain", ChainMode, ConnectionTool.chained);
             UI.CreateRadio(game, this, "Custom from road configurator", "ui/customsettings", ChainMode, ConnectionTool.custom);
 
@@ -84,7 +89,7 @@ namespace TranSimCS.Tools {
             radio.UncheckColor = Color.Gray;
             radio.CheckColor = Color.White;
             radio.AddTooltip((p) => mode.Name);
-            radio.OnSelected += (a) => Game.ConnectionTool.Mode = mode;
+            radio.OnSelected += (a) => RoadMode.Value = mode;
             AddChild(radio);
             return radio;
         }

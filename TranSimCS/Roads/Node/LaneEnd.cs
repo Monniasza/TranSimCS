@@ -53,7 +53,7 @@ namespace TranSimCS.Roads.Node {
             lane == other.lane;
         public override int GetHashCode() => HashCode.Combine(end, lane);
 
-        public HalfLane ToHalfLane() => lane.GetHalfLane(end);
+        public HalfLane ToHalfLane() => lane?.GetHalfLane(end);
 
         public static bool operator ==(LaneEnd left, LaneEnd right) => left.Equals(right);
         public static bool operator !=(LaneEnd left, LaneEnd right) => !left.Equals(right);

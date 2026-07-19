@@ -35,14 +35,15 @@ namespace TranSimCS.Roads {
             return obj is LaneSpec spec && Equals(spec);
         }
 
-        public bool Equals(LaneSpec other) {
-            return Color.Equals(other.Color) &&
-                   VehicleTypes == other.VehicleTypes &&
-                   Flags == other.Flags &&
-                   Width == other.Width &&
-                   SpeedLimit == other.SpeedLimit &&
-                   LineWidth == other.LineWidth;
-        }
+        public bool Equals(LaneSpec other) =>
+            EqualsExceptWidth(other) && Width == other.Width;
+
+        public bool EqualsExceptWidth(LaneSpec other) =>
+            Color.Equals(other.Color) &&
+            VehicleTypes == other.VehicleTypes &&
+            Flags == other.Flags &&
+            SpeedLimit == other.SpeedLimit &&
+            LineWidth == other.LineWidth;
 
         public override int GetHashCode() {
             return HashCode.Combine(Color, VehicleTypes, Flags, Width, SpeedLimit, LineWidth);
