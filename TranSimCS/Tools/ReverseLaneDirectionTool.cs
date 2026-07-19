@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
@@ -24,7 +25,9 @@ namespace TranSimCS.Tools
             }
             if(button == MouseButton.Right) {
                 var roadStrip = game.MouseOver?.GetRoadStrip();
-                if(roadStrip != null) foreach(var lane in roadStrip.Lanes) lane.ReverseDirection();
+                if (roadStrip == null) return;
+                var lanes = roadStrip.Lanes.ToArray();
+                foreach(var lane in lanes) lane.ReverseDirection();
             }
         }
     }

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
+using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Spline;
@@ -47,22 +48,24 @@ namespace TranSimCS.Roads.Strip {
         public LaneEnd? GetLaneEnd() => null;
         public RoadNodeEnd? GetNodeEnd() => null;
 
-        private LaneEnd startLane;
-        private LaneEnd endLane;
-        public RoadStrip road { get; internal set;}
-
-        private LaneSpec _spec; // Specification of the lane strip, including properties like width, type, etc.
-
+        //Constant contents
+        public LaneEnd StartLane { get; private set; }
+        public LaneEnd EndLane { get; private set; }
+        public RoadStrip road { get; internal set; }
+        private LaneSpec _spec;
+        /// <summary>
+        /// Specification of this <see cref="LaneStrip"/>, including properties like width, type, etc.
+        /// </summary>
         public LaneSpec Spec {
             get {
                 var width = 0f;
                 var n = 0;
-                if(startLane.lane != null) {
-                    width += startLane.lane.Width;
+                if(StartLane.lane != null) {
+                    width += StartLane.lane.Width;
                     n++;
                 }
-                if(endLane.lane != null) {
-                    width += endLane.lane.Width;
+                if(EndLane.lane != null) {
+                    width += EndLane.lane.Width;
                     n++;
                 }
                 if(n != 0) _spec.Width = width / n;
@@ -70,31 +73,11 @@ namespace TranSimCS.Roads.Strip {
             }
             set {
                 if (_spec == value) return;
-                InvalidateMesh();
-                road?.Mesh.Invalidate();
+                road?.FirePropertyEvent(road, new(Guid + PropertyNames.NodeSpecSuffix));
                 _spec = value;
             }
         }
-        public LaneEnd StartLane {
-            get => startLane;
-            set {
-                var old = startLane;
-                old.lane?.connections.Remove(this); // Remove the current lane strip from the old starting lane's connections
-                value.lane?.connections.Add(this); // Add the lane strip to the new starting lane's connections
-                InvalidateMesh();
-                startLane = value;
-            }
-        }
-        public LaneEnd EndLane {
-            get => endLane;
-            set {
-                var old = endLane;
-                old.lane?.connections.Remove(this); // Remove the current lane strip from the old starting lane's connections
-                value.lane?.connections.Add(this); // Add the lane strip to the new starting lane's connections
-                InvalidateMesh();
-                endLane = value;
-            }
-        }
+        
 
         public LaneRange Tag() {
             var startRange = StartLane.Range();
@@ -145,8 +128,8 @@ namespace TranSimCS.Roads.Strip {
 
         public void Destroy() {
             var currentRoad = road;
-            var startEnd = startLane.end;
-            var endEnd = endLane.end;
+            var startEnd = StartLane.end;
+            var endEnd = EndLane.end;
             StartLane = new LaneEnd(startEnd, null);
             EndLane = new LaneEnd(endEnd, null);
             currentRoad?.RemoveLaneStrip(this);
@@ -162,22 +145,18 @@ namespace TranSimCS.Roads.Strip {
 
         public bool Equals(LaneStrip? other) {
             return other is not null &&
-                   EqualityComparer<LaneEnd>.Default.Equals(startLane, other.startLane) &&
-                   EqualityComparer<LaneEnd>.Default.Equals(endLane, other.endLane) &&
+                   EqualityComparer<LaneEnd>.Default.Equals(StartLane, other.StartLane) &&
+                   EqualityComparer<LaneEnd>.Default.Equals(EndLane, other.EndLane) &&
                    EqualityComparer<RoadStrip>.Default.Equals(road, other.road) &&
                    EqualityComparer<LaneSpec>.Default.Equals(Spec, other.Spec);
         }
 
         public override int GetHashCode() {
-            return HashCode.Combine(startLane, endLane, road, Spec);
+            return HashCode.Combine(StartLane, EndLane, road, Spec);
         }
 
         public bool IsBetween(LaneEnd start, LaneEnd end) {
             return start == StartLane && end == EndLane || start == EndLane && end == StartLane;
-        }
-
-        public void Rotate(int fieldAzimuth, float pitch, float tilt) {
-            //unused
         }
 
         public bool IsConnected(LaneEnd end) {
@@ -196,18 +175,20 @@ namespace TranSimCS.Roads.Strip {
         public static bool operator !=(LaneStrip? left, LaneStrip? right) {
             return !(left == right);
         }
-        public void ReverseDirection() {
-            var oldStart = StartLane;
-            var oldEnd = EndLane;
-            StartLane = oldEnd;
-            EndLane = oldStart;
 
-            //Modify relevant flags
-            Spec = Spec.Reverse();
-
-            road?.Mesh.Invalidate();
-            InvalidateMesh();
-            road?.InvalidateNodes();
+        /// <summary>
+        /// Replaces this lane strip with a new lane strip in the opposite direction.
+        /// If this lane strip was added to a road strip, it mutates the road strip.
+        /// </summary>
+        /// <returns>a new lane strip in reverse direction</returns>
+        public LaneStrip ReverseDirection() {
+            var newStart = EndLane;
+            var newEnd = StartLane;
+            var newSpec = Spec.Reverse();
+            LaneStrip newLaneStrip = new LaneStrip(newStart, newEnd, newSpec);
+            road?.RemoveLaneStrip(this);
+            road?.AddLaneStrip(newLaneStrip);
+            return newLaneStrip;
         }
 
         public bool IsReverse() => StartLane.RoadNodeEnd == road.EndNode && EndLane != StartLane;
