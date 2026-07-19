@@ -19,7 +19,7 @@ namespace TranSimCS.SceneGraph {
         public MeshGenerator(T obj, Action<T, MultiMesh> func) {
             this.obj = obj;
             this.func = func;
-            obj.PropertyChanged += (s, e) => Invalidate();
+            obj.DependencyChanged += (s, o, n) => Invalidate();
         }
 
         public MultiMesh GetMesh() {
