@@ -155,15 +155,7 @@ namespace TranSimCS.Roads.Section {
             }
 
             //Find qualifying road strips
-            var qualifyingRoadStrips = new HashSet<RoadStrip>();
-            foreach (var node in roadSection.Nodes) {
-                foreach(var roadStrip in node.ConnectedSegments) {
-                    if(roadSection.Nodes.Contains(roadStrip.StartNode) && roadSection.Nodes.Contains(roadStrip.EndNode)) {
-                        qualifyingRoadStrips.Add(roadStrip);
-                    }
-                }
-            }
-
+            var qualifyingRoadStrips = roadSection.ContainedSegments;
             var laneStrips = qualifyingRoadStrips.SelectMany(x => x.Lanes).ToArray();
 
             //Group elements by type (dashed, solid, drivable, asphalt)
