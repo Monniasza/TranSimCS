@@ -177,6 +177,11 @@ namespace TranSimCS.Tools {
             action.Add(ToolAttribs.showRoadTools);
             action.Add(ToolAttribs.showSnapOptions);
             action.Add(ToolAttribs.showSegmentTools);
+            action.Add(ToolAttribs.addLaneSelection);
+        }
+        void ITool.AddSelectors(MultiMesh addTo, MultiMesh visibleSelectors) {
+            if (Menu.CheckAddLanes.Checked)
+                SelectionUtils.AddAddLaneSelectors(Menu);
         }
     }
 }

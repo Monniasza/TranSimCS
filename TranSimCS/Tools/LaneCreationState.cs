@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
+using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Spline;
@@ -25,7 +26,7 @@ namespace TranSimCS.Tools {
         public SplineStrip GeneratedSplines;
         public PositionEulerAngles GeneratedNodePosition;
         public float DeltaOffset;
-        public LaneEnd? SnappedLane;
+        public IRoadElement? SnappedLane;
         public NodeEnd DestinationNodeEnd;
 
         //DERIVED STATE
@@ -60,16 +61,23 @@ namespace TranSimCS.Tools {
             var startLateral = startingPositionRef.Lateral;
             var startLanePos = startingPositionRef.Position;
             var startWidth = StartLane.Width;
-
-            var selectedRoadLane = menu.MouseOver?.As<LaneEnd>() ?? default;
-            if (selectedRoadLane.lane != null && selectedRoadLane.ToHalfLane() != StartLane) {
-                //Picked a lane. Match it to the target road node
-                var targetCenterPos = -selectedRoadLane.ToHalfLane().MiddlePosition;
+            var selectedRoadLane = menu.MouseOver?.As<IRoadElement>();
+            if(selectedRoadLane is AddLaneSelection als) {
+                //Picked an Add Lane Selection
+                var targetCenterPos = -(als.CalculateOffset(StartLane.Width/2)) * als.ZDiscriminant();
                 var sourceCenterPos = StartLane.MiddlePosition;
                 DeltaOffset = targetCenterPos - sourceCenterPos;
-                GeneratedNodePosition = selectedRoadLane.GetRoadNode().InversePositionProp.Value;
+                GeneratedNodePosition = als.GetRoadNode().InversePositionProp.Value;
                 SnappedLane = selectedRoadLane;
-                DestinationNodeEnd = selectedRoadLane.end;
+                DestinationNodeEnd = als.nodeEnd.End;
+            }else if (selectedRoadLane is LaneEnd laneEnd && laneEnd.ToHalfLane() != StartLane) {
+                //Picked a lane or an Add Lane Selection. Match it to the target road node
+                var targetCenterPos = -laneEnd.ToHalfLane().MiddlePosition;
+                var sourceCenterPos = StartLane.MiddlePosition;
+                DeltaOffset = targetCenterPos - sourceCenterPos;
+                GeneratedNodePosition = laneEnd.GetRoadNode().InversePositionProp.Value;
+                SnappedLane = selectedRoadLane;
+                DestinationNodeEnd = laneEnd.end;
             } else {
                 //Create a synthetic end
                 Plane selectionPlane = menu.ReferencePlane;

@@ -28,5 +28,6 @@ namespace TranSimCS.Roads {
         public Lane? GetLane();
         public LaneEnd? GetLaneEnd();
         public RoadNodeEnd? GetNodeEnd();
+        public int? GetIndexInHalfNode() => null;
     }
 }

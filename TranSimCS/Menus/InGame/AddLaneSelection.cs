@@ -1,12 +1,16 @@
-﻿using MonoGame.Extended;
+﻿using System;
+using MonoGame.Extended;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Strip;
 
 namespace TranSimCS.Menus.InGame {
-    public struct AddLaneSelection {
+    public struct AddLaneSelection: IRoadElement {
         public sbyte side; //-1 for left, 1 for right
         public float position;
         public RoadNodeEnd nodeEnd;
+
+        public Guid Guid => throw new NotImplementedException();
 
         public AddLaneSelection(sbyte side, float position, RoadNodeEnd nodeEnd) {
             this.side = side;
@@ -35,5 +39,15 @@ namespace TranSimCS.Menus.InGame {
             Lane newLane = nodeEnd.Node.AddLane(laneNode);
             return newLane.GetEnd(nodeEnd.End);
         }
+
+        public int ZDiscriminant() => nodeEnd.ZDiscriminant();
+        public int XDiscriminant() => side;
+        public LaneStrip? GetLaneStrip() => null;
+        public RoadStrip? GetRoadStrip() => null;
+        public RoadNode GetRoadNode() => nodeEnd.Node;
+        public Lane? GetLane() => null;
+        public LaneEnd? GetLaneEnd() => null;
+        public RoadNodeEnd GetNodeEnd() => nodeEnd;
+        int? IRoadElement.GetIndexInHalfNode() => (side * ZDiscriminant() > 0) ? nodeEnd.Node.Lanes.Count : -1;
     }
 }

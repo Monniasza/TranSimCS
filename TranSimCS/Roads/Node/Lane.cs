@@ -106,5 +106,7 @@ namespace TranSimCS.Roads.Node {
         public RoadNodeEnd? GetNodeEnd() {
             return null;
         }
+
+        int? IRoadElement.GetIndexInHalfNode() => Index;
     }
 }

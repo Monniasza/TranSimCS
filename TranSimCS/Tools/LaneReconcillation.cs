@@ -17,8 +17,11 @@ namespace TranSimCS.Tools {
         public static LaneCreationState? BuildConnections(LaneCreationState startingState, LaneMappings laneMappings, InGameMenu menu) {
             //Get the state
             var destLane = startingState.SnappedLane;
+
+            var destinationNode = destLane?.GetNodeEnd()?.HalfNode;
+            var destinationIndex = destLane?.GetIndexInHalfNode();
             var world = menu.World;
-            if (destLane?.lane == null) {
+            if (destinationIndex == null) {
                 //Place the road node 
                 //Build the node
                 RoadNode roadNode = new RoadNode("", startingState.GeneratedNodePosition);
@@ -45,9 +48,19 @@ namespace TranSimCS.Tools {
                 return new LaneCreationState(newLaneEnd);
             }
 
+            Debug.Assert(destinationNode != null, "Valid lane index without a road node");
+
             //There's a connection
-            var destinationHalfLane = destLane.Value.ToHalfLane();
-            var destinationNode = destinationHalfLane.HalfNode;
+            LaneEnd? passthroughEnd = null;
+            var destinationHalfLane = destLane?.GetLaneEnd()?.ToHalfLane();
+            if(destinationHalfLane == null && destLane is AddLaneSelection als) {
+                //Materialize the half-lane
+                LaneSpec laneSpec = startingState.StartLane.Spec;
+                var lanePos = als.CalculateOffset(laneSpec.Width / 2) * als.ZDiscriminant();
+                destinationHalfLane = destinationNode.AddLane(new(laneSpec, lanePos));
+                passthroughEnd = destinationHalfLane.LaneEnd.OppositeEnd;
+            }
+            if (destinationHalfLane == null) return null;
             var destIndex = destinationHalfLane.Index;
             var passthroughIndex = laneMappings.LaneIndexGoingToSource;
             /*
@@ -81,7 +94,7 @@ namespace TranSimCS.Tools {
              * 
              * Equations:
              * 5a + 7b + 2c + 3d + e = -1
-             * 3a + 7b + 2c + 2d + e = -1
+             * 3a + 7b + 2c + 2d + e = -2
              * 6a + 7b + 5c      + e = -1
              * 5a + 8b      + 3d + e = -4
              *  a +  b           + e =  0
@@ -108,7 +121,7 @@ namespace TranSimCS.Tools {
                 var leftLaneOffset = bounds.Min - rightmostLeftLane.Bounds.Max;
                 for(int i = 0; i < addLeftLanes; i++) {
                     LaneNode ln = laneMappings.EndingLanes[i];
-                    destinationNode.OppositeHalf.AddLane(new LaneNode(ln.LaneSpec, ln.CenterPos + leftLaneOffset, ln.ID));
+                    var halflane = destinationNode.OppositeHalf.AddLane(new LaneNode(ln.LaneSpec, ln.CenterPos + leftLaneOffset, ln.ID));
                 }
             }
             if (addRightLanes > 0) {
@@ -143,7 +156,7 @@ namespace TranSimCS.Tools {
             }
 
             GenerateLaneConnections(startingState.StartLane.HalfNode, destinationNode.OppositeHalf, laneMappings.StartingLanes, destLanes, laneMappings.Mappings, menu.configuration.RoadFinish, menu.World);
-            return null;
+            return (passthroughEnd == null) ? null : new LaneCreationState(passthroughEnd.Value.ToHalfLane());
         }
 
         public static void GenerateLaneConnections(HalfNode startNode, HalfNode endNode, IList<HalfLane> startLanes, IList<HalfLane> endLanes, IList<LaneMapping> mappings, RoadFinish roadFinish, TSWorld world) {
