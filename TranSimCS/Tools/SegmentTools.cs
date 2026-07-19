@@ -9,6 +9,8 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
 
 namespace TranSimCS.Tools {
+    
+
     public class SegmentTools: Panel {
         public readonly InGameMenu Menu;
         public readonly Property<int> AddRemoveLeft;
@@ -16,6 +18,7 @@ namespace TranSimCS.Tools {
         public readonly Property<uint> IncludeExcludeLeft;
         public readonly Property<uint> IncludeExcludeRight;
         public readonly Property<bool> IsInclusive;
+        public readonly Property<DirectionChoice> DirectionChoice;
 
         public Presets CurrentPresets {
             get => new Presets() {
@@ -24,12 +27,14 @@ namespace TranSimCS.Tools {
                 IncludeExcludeLeft = IncludeExcludeLeft.Value,
                 IncludeExcludeRight = IncludeExcludeRight.Value,
                 IsInclusive = IsInclusive.Value,
+                DirectionChoice = DirectionChoice.Value
             }; set {
                 AddRemoveLeft.Value = value.AddRemoveLeft;
                 AddRemoveRight.Value = value.AddRemoveRight;
                 IncludeExcludeLeft.Value = value.IncludeExcludeLeft;
                 IncludeExcludeRight.Value = value.IncludeExcludeRight;
                 IsInclusive.Value = value.IsInclusive;
+                DirectionChoice.Value = value.DirectionChoice;
             }
         }
 
@@ -39,6 +44,7 @@ namespace TranSimCS.Tools {
             public uint IncludeExcludeLeft;
             public uint IncludeExcludeRight;
             public bool IsInclusive;
+            public DirectionChoice DirectionChoice;
             public override bool Equals(object? obj) {
                 return obj is Presets presets && Equals(presets);
             }
@@ -48,11 +54,12 @@ namespace TranSimCS.Tools {
                        AddRemoveRight == other.AddRemoveRight &&
                        IncludeExcludeLeft == other.IncludeExcludeLeft &&
                        IncludeExcludeRight == other.IncludeExcludeRight &&
-                       IsInclusive == other.IsInclusive;
+                       IsInclusive == other.IsInclusive &&
+                       DirectionChoice == other.DirectionChoice;
             }
 
             public override int GetHashCode() {
-                return HashCode.Combine(AddRemoveLeft, AddRemoveRight, IncludeExcludeLeft, IncludeExcludeRight, IsInclusive);
+                return HashCode.Combine(AddRemoveLeft, AddRemoveRight, IncludeExcludeLeft, IncludeExcludeRight, IsInclusive, DirectionChoice);
             }
 
             public static bool operator ==(Presets left, Presets right) {
@@ -63,6 +70,7 @@ namespace TranSimCS.Tools {
                 return !(left == right);
             }
         }
+
         public SegmentTools(InGameMenu menu): base(MLEM.Ui.Anchor.AutoLeft, new(1,1), true) {
             this.Menu = menu;
             this.AddRemoveLeft = new(0, "addRemoveLeft");
@@ -70,6 +78,7 @@ namespace TranSimCS.Tools {
             this.IncludeExcludeLeft = new(0, "includeExcludeLeft");
             this.IncludeExcludeRight = new(0, "includeExcludeRight");
             this.IsInclusive = new(false, "isInclusive");
+            this.DirectionChoice = new(Tools.DirectionChoice.Auto, "directionChoice");
             IsInclusive.ValueChanged += IsInclusive_ValueChanged;
 
             Paragraph addRemoveParagraph = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 1, "Lanes to merge or expand");
@@ -109,6 +118,19 @@ namespace TranSimCS.Tools {
             
             GlobalSettingsTab.AddSetting(this, null, uint.Parse, x => x.ToString(), IncludeExcludeLeft);
             GlobalSettingsTab.AddSetting(this, null, uint.Parse, x => x.ToString(), IncludeExcludeRight);
+
+            //Direction presets
+            Paragraph directionParagraph = new(MLEM.Ui.Anchor.AutoLeft, 1, "Lane direction mode");
+            directionParagraph.AddTooltip("""
+                Determines which way lanes will go. Cycle with [Alt]
+                Forward and Reverse are explicit, making all lanes go in the same direction.
+                Auto determines lane direction automatically, but might be inaccurate. If you want to specify direction, pick Forward or Reverse.
+                """
+            );
+            AddChild(directionParagraph);
+            UI.CreateRadio(menu, this, "Auto", "signs/bidirectional", DirectionChoice, Tools.DirectionChoice.Auto);
+            UI.CreateRadio(menu, this, "Auto", "signs/forward", DirectionChoice, Tools.DirectionChoice.Forward);
+            UI.CreateRadio(menu, this, "Auto", "signs/backward", DirectionChoice, Tools.DirectionChoice.Reverse);
         }
 
         private void IsInclusive_ValueChanged(object? sender, bool old, bool val) => IncludeExcludeLeft.Value = IncludeExcludeRight.Value = 0;

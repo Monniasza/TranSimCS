@@ -58,6 +58,7 @@ namespace TranSimCS.Tools {
                 ([Keys.OemPeriod], "to move starting right border right"),
                 ([Keys.X], "to swap left and right include/exclude counts"),
                 ([Keys.OemQuestion], "to toggle include/exclude"),
+                ([Keys.LeftAlt], "to cycle direction modes"),
             ]; return [
                 ([MouseButton.Right], "to cancel"),
                 ([MouseButton.Left], "to place a point. Changes will be reset afterwards."),
@@ -72,6 +73,7 @@ namespace TranSimCS.Tools {
                 ([Keys.OemPeriod], "to move starting right border right"),
                 ([Keys.OemQuestion], "to swap left and right include/exclude counts"),
                 ([Keys.X], "to toggle include/exclude"),
+                ([Keys.LeftAlt], "to cycle direction modes"),
             ];
         }
 
@@ -110,6 +112,9 @@ namespace TranSimCS.Tools {
                     var r = SegmentTools.IncludeExcludeLeft.Value;
                     SegmentTools.IncludeExcludeRight.Value = r;
                     SegmentTools.IncludeExcludeLeft.Value = l;
+                    break;
+                case Keys.LeftAlt:
+                    SegmentTools.DirectionChoice.Value = SegmentTools.DirectionChoice.Value.Next();
                     break;
             }
         }
@@ -155,7 +160,6 @@ namespace TranSimCS.Tools {
             State?.StartRange = LaneMappings!.StartRange;
             State?.EndRange = LaneMappings!.EndRange;
             State?.Generate(Menu);
-            
         }
         void ITool.Draw(GameTime gameTime) {
             if (State == null || !float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt)) return;

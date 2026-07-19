@@ -43,7 +43,7 @@ namespace TranSimCS.Tools {
                 //List previous lanes
                 var prevLanes = laneMappings.StartingLanes;
 
-                GenerateLaneConnections(startingState.StartLane.HalfNode, nodeHalf, prevLanes, newLanes, laneMappings.Mappings, menu.configuration.RoadFinish, menu.World);
+                GenerateLaneConnections(laneMappings.Presets.DirectionChoice, startingState.StartLane.HalfNode, nodeHalf, prevLanes, newLanes, laneMappings.Mappings, menu.configuration.RoadFinish, menu.World);
 
                 return new LaneCreationState(newLaneEnd);
             }
@@ -155,20 +155,27 @@ namespace TranSimCS.Tools {
                 destLanes[i] = destinationNode.GetLaneByIndex(endingLaneIndex).OppositeHalf;
             }
 
-            GenerateLaneConnections(startingState.StartLane.HalfNode, destinationNode.OppositeHalf, laneMappings.StartingLanes, destLanes, laneMappings.Mappings, menu.configuration.RoadFinish, menu.World);
+            GenerateLaneConnections(laneMappings.Presets.DirectionChoice, startingState.StartLane.HalfNode, destinationNode.OppositeHalf, laneMappings.StartingLanes, destLanes, laneMappings.Mappings, menu.configuration.RoadFinish, menu.World);
             return (passthroughEnd == null) ? null : new LaneCreationState(passthroughEnd.Value.ToHalfLane());
         }
 
-        public static void GenerateLaneConnections(HalfNode startNode, HalfNode endNode, IList<HalfLane> startLanes, IList<HalfLane> endLanes, IList<LaneMapping> mappings, RoadFinish roadFinish, TSWorld world) {
+        public static void GenerateLaneConnections(DirectionChoice dirChoice, HalfNode startNode, HalfNode endNode, IList<HalfLane> startLanes, IList<HalfLane> endLanes, IList<LaneMapping> mappings, RoadFinish roadFinish, TSWorld world) {
             //Build the road strip
             RoadStrip road = world.GetOrMakeRoadStrip(startNode.RoadNodeEnd, endNode.OppositeHalf.RoadNodeEnd, roadFinish);
             foreach (var connection in mappings) {
                 var startLane = startLanes[connection.StartIndex];
                 var endLane = endLanes[connection.EndIndex].OppositeHalf;
-                var isBackwards = LaneMappings.IsReverseLaneHeuristic(startLane.Lane);
 
+                //Determine if lane should be backward to travel direction
+                var isBackwardsToBuildDirection = dirChoice switch {
+                    DirectionChoice.Auto => LaneMappings.IsReverseLaneHeuristic(startLane.Lane) ^ endNode.End == NodeEnd.Backward,
+                    DirectionChoice.Forward => false,
+                    DirectionChoice.Reverse => true,
+                    _ => throw new ArgumentException($"Invalid direction choice: {dirChoice}")
+                };
+                var isBackwards = isBackwardsToBuildDirection ^ endNode.End == NodeEnd.Backward;
                 //backwards if backwards is clearly preferred or equally preferred but going from the back
-                if (isBackwards ^ endNode.End == NodeEnd.Backward) DataUtil.Swap(ref startLane, ref endLane);
+                if (isBackwardsToBuildDirection) DataUtil.Swap(ref startLane, ref endLane);
                 LaneStrip laneStrip = new LaneStrip(startLane.LaneEnd, endLane.LaneEnd);
                 var spec = connection.LaneSpec;
                 if (isBackwards) spec.Flags = spec.Flags.LongitudinalReverse();
