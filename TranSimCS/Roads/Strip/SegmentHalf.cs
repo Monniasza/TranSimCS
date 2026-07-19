@@ -22,6 +22,6 @@ namespace TranSimCS.Roads.Strip {
             SegmentHalf.End => SegmentHalf.Start,
             SegmentHalf.Start => SegmentHalf.End,
             _ => half
-        }
+        };
     }
 }
