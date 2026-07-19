@@ -34,7 +34,7 @@ namespace TranSimCS.Property {
                 _val = newValue;
                 var propEvent = new PropertyChangedEventArgs(name);
                 ValueChanged?.Invoke(this, oldValue, newValue);
-                Parent?.FirePropertyEvent(this, propEvent);
+                Parent?.FirePropertyEvent(Parent, propEvent);
             }
         }
     }
