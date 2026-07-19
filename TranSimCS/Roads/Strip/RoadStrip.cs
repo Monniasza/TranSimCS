@@ -95,21 +95,6 @@ namespace TranSimCS.Roads.Strip {
             SplineGeneratorProp = new(AnisotropicStripSplineGenerator.Instance, "splineformat", this);
             Mesh = new MeshGenerator<RoadStrip>(this, GenerateMesh);
             Mesh.OnMeshInvalidated += InvalidateMesh0;
-            PropertyChanged += (s, e) => Mesh.Invalidate();
-            OnLaneAdded += RoadStrip_OnLaneAdded;
-            OnLaneRemoved += RoadStrip_OnLaneRemoved;
-        }
-
-        private void RoadStrip_OnLaneRemoved(object? sender, RoadStripEventArgs e) {
-            InvalidateNodes();
-        }
-
-        private void RoadStrip_OnLaneAdded(object? sender, RoadStripEventArgs e) {
-            InvalidateNodes();
-        }
-        public void InvalidateNodes() {
-            StartNode?.Node?.Mesh?.Invalidate();
-            EndNode?.Node?.Mesh?.Invalidate();
         }
 
         public RoadNodeEnd GetHalf(SegmentHalf selectedRoadHalf) => selectedRoadHalf.GetConditional(StartNode, EndNode);

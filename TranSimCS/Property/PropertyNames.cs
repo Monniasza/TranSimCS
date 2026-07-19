@@ -9,5 +9,6 @@
         public const string SegmentLanes = "segmentLanes";
         public const string NodeSpecSuffix = ".spec";
         public const string LaneListOfNode = "nodeLanes";
+        public const string NodeOfSection = "sectionNode";
     }
 }
