@@ -27,8 +27,6 @@ namespace TranSimCS.Tools {
     /// BUG: might create NaN positions when hovering over the source lane with snapping on.
     public class ConnectionTool: ITool {
         private static Logger log = LogManager.GetCurrentClassLogger();
-        public static readonly IChainMode chained = ChainModeChained.value;
-        public static readonly IChainMode custom = ChainModeCustom.value;
         static readonly Vector3 offset = new Vector3(0, 0.01f, 0);
 
         public readonly InGameMenu menu;
@@ -181,11 +179,6 @@ namespace TranSimCS.Tools {
         void ITool.AddAttributes(ISet<string> action) {
             action.Add(ToolAttribs.showFinishes);
             action.Add(ToolAttribs.showLaneSpecs);
-        }
-
-        public static LaneSpec GetActualLaneSpec(InGameMenu menu) {
-            var roadTab = menu.ToolsPanel.GetPanel<StripTools>(ToolAttribs.showRoadTools);
-            return roadTab.ChainMode.Value.ChainValues(menu);
         }
     }
 }

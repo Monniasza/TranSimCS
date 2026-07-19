@@ -20,7 +20,6 @@ namespace TranSimCS.Tools {
         public TextField HeightField { get; private set; }
         public Property<float> HeightStep { get; private set; }
         public Property<float> Height {  get; private set; }
-        public Property<IChainMode> ChainMode { get; private set; }
         public Property<Alignment> AlignmentProp { get; private set; }
         public Property<RoadMode> RoadMode { get; private set; }
 
@@ -64,13 +63,6 @@ namespace TranSimCS.Tools {
             UI.CreateRadio(game, this, "Left", "ui/alignl", AlignmentProp, Alignment.Left);
             UI.CreateRadio(game, this, "Center", "ui/alignc", AlignmentProp, Alignment.Center);
             UI.CreateRadio(game, this, "Right", "ui/alignr", AlignmentProp, Alignment.Right);
-
-            //Spec-transfer modes
-            var specTransferLabel = new Paragraph(Anchor.AutoInlineBottom, 0.5f, "Lane-spec transfer method");
-            AddChild(specTransferLabel);
-            ChainMode = new Property<IChainMode>(ConnectionTool.chained, "chainMode");
-            UI.CreateRadio(game, this, "From previous", "ui/chain", ChainMode, ConnectionTool.chained);
-            UI.CreateRadio(game, this, "Custom from road configurator", "ui/customsettings", ChainMode, ConnectionTool.custom);
 
             //Height adjustment
             Height = new Property<float>(0f, "height");
