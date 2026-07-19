@@ -118,9 +118,17 @@ namespace TranSimCS.Tools {
             var pickedGroundPosition = Menu.GroundSelection;
             if(State == null && button == MouseButton.Left){
                 //Pick a new selection
-                var pickedLaneEnd = Menu.MouseOver?.As<LaneEnd>();
-                if (pickedLaneEnd == null || pickedLaneEnd.Value.lane == null) return;
-                State = new LaneCreationState(pickedLaneEnd.Value.ToHalfLane());
+                var picked = Menu.MouseOver?.As<IRoadElement>();
+                if (picked is AddLaneSelection als) {
+                    var nodeEnd = als.nodeEnd;
+                    var insertPos = als.CalculateOffset(Menu.configuration.LaneSpec.Width / 2);
+                    picked = nodeEnd.Node.AddLane(new(Menu.configuration.LaneSpec, insertPos)).GetEnd(nodeEnd.End);
+                }
+                if (picked is LaneEnd pickedLaneEnd && pickedLaneEnd.lane != null) {
+                    //Start from an existing lane
+                    State = new LaneCreationState(pickedLaneEnd.ToHalfLane());
+                }
+                
             }else if(State != null && button == MouseButton.Left) {
                 //Validate the position
                 if (LaneMappings == null || !float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt)) return;
