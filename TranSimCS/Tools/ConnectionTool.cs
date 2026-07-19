@@ -36,9 +36,6 @@ namespace TranSimCS.Tools {
             endPos += moveRight * endLateral * width;
         }
     }
-
-    
-
     public interface ChainMode: IEquatable<ChainMode?> {
         public string Name { get; }
         public LaneSpec ChainValues(InGameMenu game);
@@ -51,7 +48,7 @@ namespace TranSimCS.Tools {
         private ChainModeChained() { }
         public string Name => "From previous";
         public LaneSpec ChainValues(InGameMenu game) =>
-            game.RoadCreationTool.node?.lane?.Spec
+            game.ConnectionTool.node?.lane?.Spec
             ?? ChainModeCustom.value.ChainValues(game);
     }
     public class ChainModeCustom : ChainMode {
@@ -61,7 +58,11 @@ namespace TranSimCS.Tools {
         public LaneSpec ChainValues(InGameMenu game) => game.configurator.laneSpecProp.Value;
     }
 
-    public class StripTool: ITool {
+    /// <summary>
+    /// A road strip tool.
+    /// </summary>
+    /// BUG: might create NaN positions when hovering over the source lane with snapping on.
+    public class ConnectionTool: ITool {
         private static Logger log = LogManager.GetCurrentClassLogger();
         public static readonly ChainMode chained = ChainModeChained.value;
         public static readonly ChainMode custom = ChainModeCustom.value;
@@ -96,7 +97,7 @@ namespace TranSimCS.Tools {
         }
 
         
-        public StripTool(InGameMenu menu) {
+        public ConnectionTool(InGameMenu menu) {
             this.menu = menu;
             RoadTools = menu.ToolsPanel.GetPanel<StripTools>(ToolAttribs.showRoadTools);
         }

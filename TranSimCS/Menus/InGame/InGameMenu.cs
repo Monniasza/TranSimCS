@@ -83,7 +83,7 @@ namespace TranSimCS.Menus.InGame {
         public static readonly Color roadSegmentHighlightColor = new Color(0, 128, 255, 100); //Color for highlighting selected road segments
         
         //Tools
-        public StripTool RoadCreationTool { get; private set; }
+        public ConnectionTool ConnectionTool { get; private set; }
         public PrecPosTool PrecPosTool { get; private set; }
         public ReadOnlySet<string> ToolAttributes { get => ToolAttributesProp.Value; set => ToolAttributesProp.Value = value; }
         public Property<ReadOnlySet<string>> ToolAttributesProp = new(new ReadOnlySet<string>(new HashSet<string>()), "attributes", null, Equality.SetEquals<string>());
@@ -146,14 +146,14 @@ namespace TranSimCS.Menus.InGame {
             configurator = ToolsPanel.GetPanel<LaneSpecTools>(ToolAttribs.showLaneSpecs);
 
             PrecPosTool = new PrecPosTool(this);
-            RoadCreationTool = new StripTool(this);
+            ConnectionTool = new ConnectionTool(this);
 
             RoadToolsPanel = ToolsPanel.GetPanel<StripTools>(ToolAttribs.showRoadTools);
 
             SetUpToolPictureButton("ui/settings", new GlobalSettingsTool());
             SetUpToolPictureButton("noTool", null);
             SetUpToolPictureButton("ui/blast2", new DemolitionTool(this));
-            SetUpToolPictureButton("addRoadTool", RoadCreationTool);
+            SetUpToolPictureButton("ui/graphedit", ConnectionTool);
             SetUpToolPictureButton("addNodeTool", new AddNodeTool(this));
             SetUpToolPictureButton("moveTool", new MoveTool(this));
             SetUpToolPictureButton("bucket", new LaneSpecTool(this));

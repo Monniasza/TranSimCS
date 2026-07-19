@@ -63,9 +63,9 @@ namespace TranSimCS.Tools {
             //Spec-transfer modes
             var specTransferLabel = new Paragraph(Anchor.AutoInlineBottom, 0.5f, "Lane-spec transfer method");
             AddChild(specTransferLabel);
-            ChainMode = new Property<ChainMode>(StripTool.chained, "chainMode");
-            UI.CreateRadio(game, this, "From previous", "ui/chain", ChainMode, StripTool.chained);
-            UI.CreateRadio(game, this, "Custom from road configurator", "ui/customsettings", ChainMode, StripTool.custom);
+            ChainMode = new Property<ChainMode>(ConnectionTool.chained, "chainMode");
+            UI.CreateRadio(game, this, "From previous", "ui/chain", ChainMode, ConnectionTool.chained);
+            UI.CreateRadio(game, this, "Custom from road configurator", "ui/customsettings", ChainMode, ConnectionTool.custom);
 
             //Height adjustment
             Height = new Property<float>(0f, "height");
@@ -84,7 +84,7 @@ namespace TranSimCS.Tools {
             radio.UncheckColor = Color.Gray;
             radio.CheckColor = Color.White;
             radio.AddTooltip((p) => mode.Name);
-            radio.OnSelected += (a) => Game.RoadCreationTool.Mode = mode;
+            radio.OnSelected += (a) => Game.ConnectionTool.Mode = mode;
             AddChild(radio);
             return radio;
         }
