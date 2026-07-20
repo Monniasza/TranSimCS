@@ -24,14 +24,11 @@ namespace TranSimCS.Tools {
     /// <summary>
     /// A road strip tool.
     /// </summary>
-    /// BUG: might create NaN positions when hovering over the source lane with snapping on.
     public class ConnectionTool: ITool {
-        private static Logger log = LogManager.GetCurrentClassLogger();
-        static readonly Vector3 offset = new Vector3(0, 0.01f, 0);
-
+        //Tool definition
         public readonly InGameMenu menu;
-        public readonly StripTools RoadTools;
 
+        //Tool state
         public HalfLane? SourceNode { get; private set; }
         public HalfLane? DestNode { get; private set; }
         public LaneStrip? LaneStrip { get; private set; }
@@ -68,7 +65,6 @@ namespace TranSimCS.Tools {
 
         public ConnectionTool(InGameMenu menu) {
             this.menu = menu;
-            RoadTools = menu.ToolsPanel.GetPanel<StripTools>(ToolAttribs.showRoadTools);
         }
 
         void ITool.Update(GameTime gameTime) {
@@ -126,17 +122,6 @@ namespace TranSimCS.Tools {
                     Debug.Assert(LaneStrip != null, "Invalid lane strip for Reverse");
                     LaneStrip.ReverseDirection();
                     menu.MouseOver = null;
-                    break;
-            }
-        }
-
-        void ITool.OnKeyDown(Keys key) {
-            switch (key) {
-                case Keys.PageUp:
-                    RoadTools.Height.Value += RoadTools.HeightStep.Value;
-                    break;
-                case Keys.PageDown:
-                    RoadTools.Height.Value -= RoadTools.HeightStep.Value;
                     break;
             }
         }

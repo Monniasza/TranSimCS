@@ -9,8 +9,6 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
 
 namespace TranSimCS.Tools {
-    
-
     public class SegmentTools: Panel {
         public readonly InGameMenu Menu;
         public readonly Property<int> AddRemoveLeft;

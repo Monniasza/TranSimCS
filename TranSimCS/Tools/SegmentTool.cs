@@ -59,6 +59,8 @@ namespace TranSimCS.Tools {
                 ([Keys.X], "to swap left and right include/exclude counts"),
                 ([Keys.OemQuestion], "to toggle include/exclude"),
                 ([Keys.LeftAlt], "to cycle direction modes"),
+                ([Keys.PageUp], "to increase the height"),
+                ([Keys.LeftAlt], "to decrease the height"),
             ]; return [
                 ([MouseButton.Right], "to cancel"),
                 ([MouseButton.Left], "to place a point. Changes will be reset afterwards."),
@@ -74,6 +76,8 @@ namespace TranSimCS.Tools {
                 ([Keys.OemQuestion], "to swap left and right include/exclude counts"),
                 ([Keys.X], "to toggle include/exclude"),
                 ([Keys.LeftAlt], "to cycle direction modes"),
+                ([Keys.PageUp], "to increase the height"),
+                ([Keys.LeftAlt], "to decrease the height"),
             ];
         }
 
@@ -115,6 +119,12 @@ namespace TranSimCS.Tools {
                     break;
                 case Keys.LeftAlt:
                     SegmentTools.DirectionChoice.Value = SegmentTools.DirectionChoice.Value.Next();
+                    break;
+                case Keys.PageUp:
+                    StripTools.Height.Value += StripTools.HeightStep.Value;
+                    break;
+                case Keys.PageDown:
+                    StripTools.Height.Value -= StripTools.HeightStep.Value;
                     break;
             }
         }
