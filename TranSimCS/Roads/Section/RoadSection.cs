@@ -38,6 +38,7 @@ namespace TranSimCS.Roads.Section {
 
         //Cached contents
         public MeshGenerator<RoadSection> Mesh { get; private set; }
+        public MeshGenerator<RoadSection> SelectionMesh { get; private set; }
         private SectionCache? _cache;
         public SectionCache Cache => _cache ??= new SectionCache(this);
         public Vector3 Center => Cache.Center;
@@ -48,8 +49,9 @@ namespace TranSimCS.Roads.Section {
         public RoadSection() {
             MainSlopeNodes = new(default, "slopeNodes", this);
             FinishProperty = new(RoadFinish.Embankment, "finish", this);
-            Mesh = new MeshGenerator<RoadSection>(this, (rs, mesh) => SectionRenderer.GenerateSectionMesh(rs, mesh));
-            Mesh.OnMeshInvalidated += HandleMeshInvalidated;
+            Mesh = new MeshGenerator<RoadSection>(this, SectionRenderer.GenerateSectionMesh);
+            SelectionMesh = new MeshGenerator<RoadSection>(this, SectionRenderer.GenerateSectionSelectionMesh);
+            SelectionMesh.OnMeshInvalidated += HandleMeshInvalidated;
         }
 
         private void HandleMeshInvalidated() {
@@ -80,7 +82,7 @@ namespace TranSimCS.Roads.Section {
         IPosition[] IDraggableObj.DraggableComponents() => Nodes.ToArray();
 
         public void GenerateGeometry(RenderTarget target) => target.Draw(Mesh.GetMesh());
-        public BoundingBox GetBounds() => Mesh.GetMesh().GetBounds();
-        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => Mesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
+        public BoundingBox GetBounds() => SelectionMesh.GetMesh().GetBounds();
+        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => SelectionMesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
     }
 }

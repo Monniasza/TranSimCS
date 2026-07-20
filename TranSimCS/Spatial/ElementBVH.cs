@@ -12,6 +12,11 @@ namespace TranSimCS.Spatial {
         }
             
         public bool ComputeIntersection(Ray ray, out float distance, out object? tag);
+        public static bool Reject(Ray ray, out float distance, out object? tag) {
+            distance = float.PositiveInfinity;
+            tag = null;
+            return false;
+        }
     }
     public sealed class ElementBVH<T> where T : IBVHElement {
         private const int LeafSize = 4;

@@ -10,6 +10,7 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Section;
 using TranSimCS.Roads.StripGenerator;
 using TranSimCS.SceneGraph;
+using TranSimCS.Spatial;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
 using static TranSimCS.Roads.Roads;
@@ -19,38 +20,6 @@ namespace TranSimCS.Roads.Strip {
         public LaneStrip lane { get; } // The road strip associated with the event
         public RoadStripEventArgs(LaneStrip strip) {
             lane = strip; // Initialize the road strip associated with the event
-        }
-    }
-
-    public struct RoadStripHalf : IEquatable<RoadStripHalf> {
-        public RoadStrip RoadStrip;
-        public SegmentHalf SegmentHalf;
-
-        public RoadStripHalf(RoadStrip roadStrip, SegmentHalf segmentHalf) {
-            RoadStrip = roadStrip;
-            SegmentHalf = segmentHalf;
-        }
-        public RoadStripHalf OppositeHalf() => new(RoadStrip, SegmentHalf.Inverse());
-
-        public override bool Equals(object? obj) {
-            return obj is RoadStripHalf half && Equals(half);
-        }
-
-        public bool Equals(RoadStripHalf other) {
-            return EqualityComparer<RoadStrip>.Default.Equals(RoadStrip, other.RoadStrip) &&
-                   SegmentHalf == other.SegmentHalf;
-        }
-
-        public override int GetHashCode() {
-            return HashCode.Combine(RoadStrip, SegmentHalf);
-        }
-
-        public static bool operator ==(RoadStripHalf left, RoadStripHalf right) {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(RoadStripHalf left, RoadStripHalf right) {
-            return !(left == right);
         }
     }
 
@@ -87,6 +56,8 @@ namespace TranSimCS.Roads.Strip {
         public readonly Property<RoadFinish> FinishProperty;
         public RoadFinish Finish { get => FinishProperty.Value; set => FinishProperty.Value = value; }
         Property<RoadFinish> IRoadFinish.FinishProperty => FinishProperty;
+        private List<LaneStrip> lanes = new(); // List of lane strips associated with this road connection
+        public IReadOnlyCollection<LaneStrip> Lanes => lanes.AsReadOnly(); // Get the list of lane strips associated with this road connection
 
         //Cached properties
         private RoadStripCache? _cache;
@@ -117,7 +88,7 @@ namespace TranSimCS.Roads.Strip {
             return first == StartNode && second == EndNode || first == EndNode && second == StartNode;
         }
 
-        private List<LaneStrip> lanes = new(); // List of lane strips associated with this road connection
+        
         public void AddLaneStrip(LaneStrip laneStrip) {
             if(!MaybeAddLaneStrip(laneStrip)) throw new ArgumentException("Lanes must not be duplicated");
         }
@@ -139,7 +110,6 @@ namespace TranSimCS.Roads.Strip {
             Mesh.Invalidate(); // Invalidate the mesh for the lane strip to ensure it is regenerated
             return true;
         }
-        public IReadOnlyCollection<LaneStrip> Lanes => lanes.AsReadOnly(); // Get the list of lane strips associated with this road connection
 
         
 
@@ -184,7 +154,10 @@ namespace TranSimCS.Roads.Strip {
             target.Draw(Mesh.GetMesh());
         }
         public BoundingBox GetBounds() => Mesh.GetMesh().GetBounds();
-        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => Mesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
+        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) {
+            if (Section != null) return IBVHElement.Reject(ray, out distance, out tag);
+            return Mesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
+        }
 
         
     }

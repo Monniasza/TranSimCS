@@ -132,9 +132,9 @@ namespace TranSimCS.Roads.Section {
             surfaceMesh.DrawCenteredPoly(center, perimeter.ToArray());
         }
 
-        internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh, int accuracy = -1) {
+        internal static void GenerateSectionSelectionMesh(RoadSection roadSection, MultiMesh multimesh) {
             if (roadSection.Nodes.Count < 1) return; //Guard agains empty sections
-            if (accuracy < 0) accuracy = Settings.RoadAccuracy;
+            var accuracy = Settings.RoadAccuracy;
 
             var surfaceMesh = new Mesh();
             var endsPair = roadSection.MainSlopeNodes.Value;
@@ -153,6 +153,17 @@ namespace TranSimCS.Roads.Section {
             } else {
                 GenerateSectionWithoutSlope(surfaceMesh, roadSection, accuracy);
             }
+
+            var renderBin = multimesh.GetOrCreateRenderBinForced(Assets.Asphalt);
+            renderBin.DrawModel(surfaceMesh);
+            renderBin.AddTagsToLastTriangles(-1, roadSection);
+        }
+
+        internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh) {
+            if (roadSection.Nodes.Count < 1) return; //Guard agains empty sections
+            var accuracy = Settings.RoadAccuracy;
+
+            var surfaceMesh = new Mesh();
 
             //Find qualifying road strips
             var qualifyingRoadStrips = roadSection.ContainedSegments;
@@ -224,13 +235,10 @@ namespace TranSimCS.Roads.Section {
             whiteMesh.DrawModel(projectedWhite);
             dashedMesh.DrawModel(projectedDashes);
 
-            //asphaltMesh.DrawModel(surfaceMesh);
-            
-            asphaltMesh.AddTagsToLastTriangles(-1, roadSection);
-            whiteMesh.AddTagsToLastTriangles(-1, roadSection);
-            dashedMesh.AddTagsToLastTriangles(-1, roadSection);
-
             GenerateSectionFinish(roadSection, multimesh, accuracy);
+
+            //Add tags to all
+            multimesh.AddTagsToAll(roadSection);
         }
 
         private static Func<PointD, VertexPositionColorTexture> CreateMeshingFunction(WorkingPlane projectionPlane, Color color, Vector3? offset = null) =>
