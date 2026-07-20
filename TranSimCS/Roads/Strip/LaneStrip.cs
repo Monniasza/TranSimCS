@@ -161,8 +161,8 @@ namespace TranSimCS.Roads.Strip {
             var newSpec = Spec.Reverse();
 
             LaneStrip newLaneStrip = new LaneStrip(newStart, newEnd, newSpec);
-            road?.RemoveLaneStrip(this);
             road?.AddLaneStrip(newLaneStrip);
+            road?.RemoveLaneStrip(this);
             return newLaneStrip;
         }
 

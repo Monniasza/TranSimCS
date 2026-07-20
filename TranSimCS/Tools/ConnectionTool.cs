@@ -144,10 +144,12 @@ namespace TranSimCS.Tools {
         public void Draw(GameTime gameTime) {
             if (SourceNode == null) return;
 
+            var yoffset = 0.1f;
+
             var sourceLane = SourceNode;
             var sourceFrame = sourceLane.HalfNode.Cache.ReferenceFrame;
             var centerStartIndex = sourceLane.MiddlePosition;
-            var startPos = sourceFrame.O + sourceFrame.X * centerStartIndex;
+            var startPos = sourceFrame.O + sourceFrame.X * centerStartIndex + sourceFrame.Y * yoffset;
 
             var renderBin = menu.renderHelper.GetOrCreateRenderBinForced(Assets.WhiteTransparent);
             var color = actionColor * 0.5f;
@@ -161,7 +163,7 @@ namespace TranSimCS.Tools {
                 var endLane = DestNode;
                 var endFrame = endLane.HalfNode.Cache.ReferenceFrame;
                 var centerEndIndex = endLane.MiddlePosition;
-                var endPos = endFrame.O + endFrame.X * centerEndIndex;
+                var endPos = endFrame.O + endFrame.X * centerEndIndex + sourceFrame.Y * yoffset;
 
                 var dist = Vector3.DistanceSquared(startPos, endPos);
                 if (dist < 0.0001f) return;
