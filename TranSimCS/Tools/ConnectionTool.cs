@@ -33,9 +33,8 @@ namespace TranSimCS.Tools {
         public HalfLane? DestNode { get; private set; }
         public LaneStrip? LaneStrip { get; private set; }
 
+        //Tool properties
         string ITool.Name => "Road Connection Editor";
-
-        private string _description;
         string ITool.Description => _description;
 
         public (object[], string)[] PromptKeys() {
@@ -48,8 +47,10 @@ namespace TranSimCS.Tools {
             
         }
 
+        //Cached state
         private NextAction nextAction;
         private Color actionColor;
+        private string _description;
         private enum NextAction{
             Pick, Hover, Add, Reverse, Edit, Delete
         }
