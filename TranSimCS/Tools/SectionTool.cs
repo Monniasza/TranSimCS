@@ -8,30 +8,32 @@ using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Section;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Tools {
     public class SectionTool: ITool {
         public readonly InGameMenu Menu;
-        public RoadSection? section;
+        public RoadSection? Section;
 
         public SectionTool(InGameMenu world) {
             Menu = world;
         }
 
         public string Name => "Create and modify road sections";
-        public string Description => (section == null) ? "Pick a node or a section to start editing" : "Editing a road section";
+        public string Description => (Section == null) ? "Pick a node or a section to start editing" : "Editing a road section";
 
         public (object[], string)[] PromptKeys() {
-            if(section == null) {
+            if(Section == null) {
                 return [
                     ([MouseButton.Left], "Pick a node to start creating a section"),
                     ([MouseButton.Left], "Pick a section to edit it")
                 ];
             } else {
                 return [
-                    ([MouseButton.Left], "Add or remove a road node from/to a section"),
+                    ([MouseButton.Left], "on a road not to add or remove a road node from/to a section"),
+                    ([MouseButton.Left], "on a road section to union it in"),
                     ([MouseButton.Right], "Quit editing/finish creation"),
                     ([MouseButton.Middle], "Pick the first slope node"),
                     ([Keys.LeftControl, MouseButton.Middle], "Pick the second slope node"),
@@ -43,10 +45,10 @@ namespace TranSimCS.Tools {
             action.Add(ToolAttribs.showFinishes);
         }
         void ITool.OnClick(MouseButton button) {
-            if (section == null && button == MouseButton.Left) {
+            if (Section == null && button == MouseButton.Left) {
                 var asSection = Menu.MouseOver?.As<RoadSection>();
                 if(asSection != null) {
-                    section = asSection;
+                    Section = asSection;
                     return;
                 }
 
@@ -55,34 +57,45 @@ namespace TranSimCS.Tools {
                 if (element == null) return;
                 var node = element.GetNodeEnd();
                 if (node == null) return;
-                section = node.GetOrCreateSection();
-                section.Finish = Menu.configuration.RoadFinish;
+                Section = node.GetOrCreateSection();
+                Section.Finish = Menu.configuration.RoadFinish;
                 return;
-            }else if(section != null) {
+            }
+            if(Section != null) {
                 var hitObject = Menu.MouseOver?.SelectedObj;
                 switch (button) {
                     case MouseButton.Left:
                         //Add/remove a node
-                        var nodeEnd = Menu.MouseOver?.GetRoadNodeEnd();
-                        if (nodeEnd == null) return;
-                        nodeEnd.ConnectedSection.Value = nodeEnd.ConnectedSection.Value == section ? null : section;
+                        switch (Menu.MouseOver?.Tag) {
+                            case RoadSection section:
+                                //Union the road section into the current road section
+                                var nodes = section.Nodes.ToArray();
+                                foreach (var item in nodes) {
+                                    item.ConnectedSection.Value = Section;
+                                }
+                                break;
+                            case LaneEnd laneEnd:
+                                var nodeEnd = laneEnd.RoadNodeEnd;
+                                nodeEnd.ConnectedSection.Value = nodeEnd.ConnectedSection.Value == Section ? null : Section;
+                                break;
+                        }
                         break;
                     case MouseButton.Middle:
                         //Set a slope node
                         if (hitObject is IRoadElement element0) {
                             var node = element0.GetNodeEnd();
                             if (node == null) return;
-                            var slopeNodes = section.MainSlopeNodes.Value;
+                            var slopeNodes = Section.MainSlopeNodes.Value;
                             if (Menu.Game.KeyboardState.IsKeyDown(Keys.LeftControl)) {
                                 slopeNodes.End = node;
                             } else {
                                 slopeNodes.Start = node;
                             }
-                            section.MainSlopeNodes.Value = slopeNodes;
+                            Section.MainSlopeNodes.Value = slopeNodes;
                         }
                         break;
                     case MouseButton.Right:
-                        section = null;
+                        Section = null;
                         break;
                 }
             }

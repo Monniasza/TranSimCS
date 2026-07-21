@@ -160,7 +160,7 @@ namespace TranSimCS.Menus.InGame {
             SetUpToolPictureButton("inspect", new InspectTool(this));
             SetUpToolPictureButton("finish", new FinishTool(this));
             SetUpToolPictureButton("precpos", PrecPosTool);
-            SetUpToolPictureButton("sectionedit", new SectionTool(this));
+            SetUpToolPictureButton("ui/sectionweld", new SectionTool(this));
             SetUpToolPictureButton("reverse", new ReverseLaneDirectionTool(this));
             SetUpToolPictureButton("ui/preceditor", new LaneTool(this));
             SetUpToolPictureButton("stats", new StatTool(this));
