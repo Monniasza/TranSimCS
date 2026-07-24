@@ -4,7 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TranSimCS.Geometry.SplineFrames {
-    internal class NodeConvention {
+namespace TranSimCS.Spline {
+    public enum InterpolationQuality {
+        Fast, Normal, High, Extreme
     }
 }

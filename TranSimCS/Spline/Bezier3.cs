@@ -3,9 +3,7 @@ using System.Runtime.Intrinsics.X86;
 using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 
-namespace TranSimCS.Spline
-{
-
+namespace TranSimCS.Spline{
     public struct LineSegment: ISpline<Vector3> {
         public Vector3 a;
         public Vector3 b;
@@ -56,6 +54,11 @@ namespace TranSimCS.Spline
             var d2 = d - c;
             var u = 1 - t;
             return (3 * u * u * d0) + (6 * t * u * d1) + (3 * t * t * d2);
+        }
+        public Vector3 Acceleration(float t) {
+            var x = c + a - (2 * b);
+            var y = d + b - (2 * c);
+            return Vector3.Lerp(x, y, t);
         }
 
         public static Vector3 Interpolate(Vector3 a, Vector3 b, Vector3 c, Vector3 d, float t) {
@@ -248,7 +251,5 @@ namespace TranSimCS.Spline
             maxT = MathHelper.Lerp(lowerLimit, upperLimit, maxT); // Scale maxT to the original range
             return FindT(spline, pos, pointsPerCycle, depth - 1, minT, maxT); // Recursively find the closest t value in the range
         }
-
-        
     }
 }

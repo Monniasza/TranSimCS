@@ -260,5 +260,88 @@ namespace TranSimCS.Geometry
         public static float UnLerp(float start, float end, float point) {
             return (start - point) / (start - end);
         }
+
+        public static float CosBetweenLines(Vector3 start, Vector3 mid, Vector3 end) {
+            var a = mid - start;
+            var b = end - mid;
+            return Vector3.Dot(a, b) / MathF.Sqrt(a.LengthSquared() * b.LengthSquared());
+        }
+        public static float DistanceToLine(Vector3 start, Vector3 end, Vector3 point) {
+            var vector = end - start;
+            var toPoint = point - start;
+            return Vector3.Cross(vector, toPoint).Length() / vector.Length();
+        }
+        public static Quaternion QuaternionFromBasisVectors(Vector3 X, Vector3 Y, Vector3 Z) {
+            var T = X.X + Y.Y + Z.Z;
+            if(T > 0) {
+                //Case 1: Trace is positive
+                var s = 2 * MathF.Sqrt(T + 1);
+                var w = s / 4;
+                var x = (Z.Y - Y.Z) / s;
+                var y = (X.Z - Z.X) / s;
+                var z = (Y.X - X.Y) / s;
+                return new Quaternion(x, y, z, w);
+            }
+            if(X.X > Y.Y && X.X > Z.Z) {
+                //Case 2: R11 is the largest on the diagonal
+                var s = 2 * MathF.Sqrt(1 + X.X - Y.Y - Z.Z);
+                var w = (Z.Y - Y.Z) / s; 
+                var x = s / 4;
+                var y = (X.Z - Z.X) / s;
+                var z = (Y.X - X.Y) / s;
+                return new Quaternion(x, y, z, w);
+            }
+            if (Y.Y > Z.Z && Y.Y > X.X) {
+                //Case 3: R22 is the largest on the diagonal
+                var s = 2 * MathF.Sqrt(1 + Y.Y - X.X - Z.Z);
+                var w = (Z.Y - Y.Z) / s;
+                var x = (X.Z - Z.X) / s;
+                var y = s / 4;
+                var z = (Y.X - X.Y) / s;
+                return new Quaternion(x, y, z, w);
+            }
+            if (Z.Z > X.X && Z.Z > Y.Y) {
+                //Case 4: R33 is the largest on the diagonal
+                var s = 2 * MathF.Sqrt(1 + Y.Y - X.X - Z.Z);
+                var w = (Z.Y - Y.Z) / s;
+                var x = (X.Z - Z.X) / s;
+                var y = (Y.X - X.Y) / s;
+                var z = s / 4;
+                return new Quaternion(x, y, z, w);
+            }
+            //Case 5: pathological input
+            throw new InvalidOperationException("Failed to calculate the quaternion");
+        }
+        /// <summary>
+        /// Rotation-minimizing transport of <paramref name="vector"/>
+        /// from (<paramref name="startPos"/>, <paramref name="startTangent"/>)
+        /// to (<paramref name="endPos"/>, <paramref name="endTangent"/>)
+        /// </summary>
+        /// <param name="startTangent">start tangent</param>
+        /// <param name="endTangent">end tangent</param>
+        /// <param name="startPos">start position</param>
+        /// <param name="endPos">end position</param>
+        /// <param name="vector">vector to transport</param>
+        /// <returns></returns>
+        public static Vector3 DoubleReflection(Vector3 startTangent, Vector3 endTangent, Vector3 startPos, Vector3 endPos, Vector3 vector) {
+            var v1 = endPos - startPos;
+            var v2 = endTangent - ReflectVectorByNormal(startTangent, v1);
+            return ReflectVectorByNormal(ReflectVectorByNormal(vector, v1), v2);
+        }
+        /// <summary>
+        /// Calculates the counter-clockwise signed angle from <paramref name="a"/> to <paramref name="b"/> when viewed in the direction of <paramref name="normal"/>
+        /// </summary>
+        /// <param name="normal">view direction</param>
+        /// <param name="a">starting vector</param>
+        /// <param name="b">ending vector</param>
+        /// <returns></returns>
+        public static float SignedAngle(Vector3 normal, Vector3 a, Vector3 b) {
+            var c = Vector3.Dot(a, b);
+            var x = Vector3.Cross(a, b);
+            var s = Vector3.Dot(normal, x);
+            return MathF.Atan2(s, c);
+        }
+
+        public static float RoughSine(float x) => x * (1 - x * x * 0.16666666f);
     }
 }

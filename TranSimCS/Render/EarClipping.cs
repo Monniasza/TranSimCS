@@ -12,6 +12,19 @@ using TranSimCS.Model;
 
 namespace TranSimCS.Render {
     public class DLNode<T> {
+        public static DLNode<T> CreateLinear(params T[] list) => CreateLinear((IEnumerable<T>)list);
+        public static DLNode<T> CreateLinear(IEnumerable<T> list) {
+            DLNode<T>? currentNode = null;
+            DLNode<T>? startNode = null;
+            foreach(var element in list) {
+                var node = new DLNode<T>(element);
+                startNode ??= node;
+                node.Prev = currentNode;
+                currentNode = node;
+            }
+            if (startNode == null) throw new ArgumentException("The input list is empty");
+            return startNode;
+        }
         public static DLNode<T> CreateCircular(IEnumerable<T> list) {
             var nodes = list.Select(x => new DLNode<T>(x)).ToArray();
             for (int i = 0; i < nodes.Length; i++) {
@@ -58,6 +71,28 @@ namespace TranSimCS.Render {
             Next = null;
             prev.Next = next;
             next.Prev = prev;
+        }
+
+        /// <summary>
+        /// Iterates over values from this node and next values.
+        /// WARNING: If the list is circular, this iterator will not finish.
+        /// If you want to be sure, use <see cref="IterateValuesNextNoCycle()"/>
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<T> IterateValuesNext() {
+            var node = this;
+            while (node != null) {
+                yield return node.val;
+                node = node.Next;
+            }
+        }
+        public IEnumerable<T> IterateValuesNextNoCycle() {
+            var node = this;
+            while (node != null) {
+                yield return node.val;
+                node = node.Next;
+                if (node == this) yield break;
+            }
         }
     }
 

@@ -46,5 +46,7 @@ namespace TranSimCS.Spline {
 
             return length;
         }
+
+        //public static bool IsBezierValid()
     }
 }
