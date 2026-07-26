@@ -17,13 +17,13 @@ namespace TranSimCS.Spline {
         public Transform3 Sample(float t, float offsetStart, float offsetEnd) => Sample(t, offsetStart * Vector3.UnitX, offsetEnd * Vector3.UnitX);
         public Transform3 Sample(float t, Vector3 offsetStart, Vector3 offsetEnd) {
             var startPosition = offsetStart + Vector3.UnitX * StartEndPosition.X;
-            var endPosition = offsetEnd + Vector3.UnitZ * StartEndPosition.Y;
+            var endPosition = offsetEnd + Vector3.UnitX * StartEndPosition.Y;
 
             //Calculate the OrthonormalBasis parameters
             var sampledPosition = ReferenceSpline[t];
             var sampledNormal = NormalSpline[t];
             var sampledTangent = ReferenceSpline.Tangential(t);
-            var binormal = Vector3.Cross(sampledTangent, sampledNormal).Normalized();
+            var binormal = Vector3.Cross(sampledNormal, sampledTangent).Normalized();
             var normal = Vector3.Cross(sampledTangent, binormal).Normalized();
             var tangent = sampledTangent.Normalized();
 
@@ -32,7 +32,8 @@ namespace TranSimCS.Spline {
             var sideVelocity = (endPosition - startPosition) * 6 * t * (1 - t);
             var linearVelocity = sampledTangent + sideVelocity;
             
-            binormal = Vector3.Cross(linearVelocity, sampledNormal).Normalized();
+            tangent = linearVelocity.Normalized();
+            binormal = Vector3.Cross(sampledNormal, linearVelocity).Normalized();
             normal = Vector3.Cross(linearVelocity, binormal).Normalized();
 
             return new(binormal, normal, tangent, position);

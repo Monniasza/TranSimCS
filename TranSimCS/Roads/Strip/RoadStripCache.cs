@@ -4,14 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MonoGame.Extended;
+using TranSimCS.Geometry;
 using TranSimCS.Spline;
 
 namespace TranSimCS.Roads.Strip {
     public class RoadStripCache {
         public RoadStrip RoadStrip { get; private set; }
 
-        private RoadBounds? _bounds;
-        public RoadBounds Bounds => _bounds ??= GenerateBounds();
+        private LaneRange? _bounds;
+        public LaneRange Bounds => _bounds ??= GenerateBounds();
         private OrthodistantBasis? _splineFrame;
         public OrthodistantBasis OrthodistantBasis => _splineFrame ??= GenerateOrthodistantBasis();
         private IndexSpline? _indexStrip;
@@ -31,26 +32,17 @@ namespace TranSimCS.Roads.Strip {
             }
         }
         private OrthodistantBasis GenerateOrthodistantBasis() => IndexStrip.ToOrthodistantBasis(RoadStrip.StartNode, RoadStrip.EndNode);
-        private RoadBounds GenerateBounds() {
-            var bounds = new RoadBounds();
+        private LaneRange GenerateBounds() {
+            Range<float> startRange = default;
+            Range<float> endRange = default;
             foreach (var lane in RoadStrip.Lanes) {
                 var startLane = lane.StartLane;
                 var endLane = lane.EndLane;
-                if (startLane.HalfNode == RoadStrip.EndNode & endLane.HalfNode == RoadStrip.StartNode && startLane.HalfNode != endLane.HalfNode) {
-                    (startLane, endLane) = (endLane, startLane);
-                }
-
-                var startBounds = startLane.Lane.Bounds;
-                var endBounds = endLane.Lane.Bounds;
-
-                bounds = bounds
-                    .Update(startBounds.Min, endBounds.Min)
-                    .Update(startBounds.Max, endBounds.Max);
+                if (lane.IsReverse()) DataUtil.Swap(ref startLane, ref endLane);
+                startRange = startRange.Union(startLane.Bounds);
+                endRange = endRange.Union(endLane.Bounds);
             }
-            if (bounds.leftStart > bounds.rightStart || bounds.leftEnd > bounds.rightEnd) {
-                bounds.leftStart = bounds.rightStart = bounds.leftEnd = bounds.rightEnd = 0;
-            }
-            return bounds;
+            return new(RoadStrip, startRange, endRange);
         }
     }
 }

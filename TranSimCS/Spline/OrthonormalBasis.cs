@@ -33,7 +33,7 @@ namespace TranSimCS.Spline {
             var sampledPosition = CenterSpline[t];
             var sampledNormal = NormalSpline[t];
             var sampledTangent = CenterSpline.Tangential(t);
-            var binormal = Vector3.Cross(sampledTangent, sampledNormal).Normalized();
+            var binormal = Vector3.Cross(sampledNormal, sampledTangent).Normalized();
             var normal = Vector3.Cross(sampledTangent, binormal).Normalized();
             var tangent = sampledTangent.Normalized();
             return new Transform3(binormal, normal, tangent, sampledPosition);

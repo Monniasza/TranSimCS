@@ -45,7 +45,7 @@ namespace TranSimCS.Tools {
             switch (selection) {
                 case LaneStrip laneStrip:
                     var segment = laneStrip.Road;
-                    var segmentTag = segment.FullSizeTag();
+                    var segmentTag = segment.Bounds;
                     RoadRenderer.GenerateLaneRangeMesh(segmentTag, renderBin, red, v1);
                     var stripTag = laneStrip.Tag();
                     RoadRenderer.GenerateLaneRangeMesh(stripTag, renderBin, orange, v2);
@@ -60,7 +60,7 @@ namespace TranSimCS.Tools {
                     dependencies.AddRange(fw.ConnectedSegments);
                     dependencies.AddRange(bw.ConnectedSegments);
                     foreach (var dependency in dependencies) {
-                        var segmentTag2 = dependency.FullSizeTag();
+                        var segmentTag2 = dependency.Bounds;
                         RoadRenderer.GenerateLaneRangeMesh(segmentTag2, renderBin, red, v1);
                     }
                     //Strips

@@ -34,7 +34,7 @@ namespace TranSimCS.Roads.Strip {
         /// </summary>
         /// <param name="connection">road segment</param>
         /// <param name="renderHelper">render helper</param>
-        public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MultiMesh renderHelper, float voffset = 0) {
+        public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MultiMesh renderHelper) {
             if(connection == null || connection.Lanes.Count == 0) return;
 
             foreach (var lane in connection.Lanes) {
@@ -57,7 +57,7 @@ namespace TranSimCS.Roads.Strip {
             var accuracy = Settings.RoadAccuracy;
 
             //Calculate road length
-            LaneRange topRange = connection.FullSizeTag();
+            LaneRange topRange = connection.Bounds;
             var (leftTop, rightTop) = RoadRenderer.GenerateSplines(topRange);
             var lengthL = CountLength(leftTop);
             var lengthR = CountLength(rightTop);
@@ -80,14 +80,9 @@ namespace TranSimCS.Roads.Strip {
             var splineFrame = connection.OrthodistantBasis;
             var bounds = connection.Bounds;
 
-            var swidth = MathF.Abs(bounds.rightStart - bounds.leftStart);
-            var ewidth = MathF.Abs(bounds.rightEnd - bounds.leftEnd);
+            var swidth = bounds.startRange.Width();
+            var ewidth = bounds.endRange.Width();
             var avgWidth = (swidth + ewidth) / 2;
-
-            var leftStart = Vector3.UnitX * bounds.leftStart;
-            var rightStart = Vector3.UnitX * bounds.rightStart;
-            var leftEnd = Vector3.UnitX * bounds.leftEnd;
-            var rightEnd = Vector3.UnitX * bounds.rightEnd;
 
             var sideLen = new Vector2(height, breadth).Length();
 
@@ -163,7 +158,7 @@ namespace TranSimCS.Roads.Strip {
 
             //Find fill polygons for lane strips
             var laneRanges = new List<LaneRange>();
-            var fstag = connection.FullSizeTag();
+            var fstag = connection.Bounds;
             laneRanges.Add(fstag);
             laneRanges.AddRange(connection.Lanes.Select(lane => lane.Tag()));
 

@@ -29,7 +29,7 @@ namespace TranSimCS.Menus.InGame {
 
             var roadStrip = MouseOver?.GetRoadStrip();
             if((MouseOver?.SelectedObj is RoadStrip strip)) {
-                var fstag = strip.FullSizeTag();
+                var fstag = strip.Bounds;
                 RoadRenderer.GenerateLaneRangeMesh(fstag, renderBin, nodecolor, 0.45f);
             }
 

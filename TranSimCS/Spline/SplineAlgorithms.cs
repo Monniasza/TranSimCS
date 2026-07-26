@@ -49,8 +49,8 @@ namespace TranSimCS.Spline {
             var end = road.EndNode.Cache.ReferenceFrame;
 
             var roadBounds = road.Bounds;
-            var startT = (roadBounds.leftStart + roadBounds.rightStart) / 2;
-            var endT = (roadBounds.leftEnd + roadBounds.rightEnd) / 2;
+            var startT = roadBounds.startRange.Middle();
+            var endT = roadBounds.endRange.Middle();
 
             var startPoint = start.O + start.X * startT;
             var endPoint = end.O + end.X * endT;
@@ -63,8 +63,8 @@ namespace TranSimCS.Spline {
             //Test for NaN values
             if (!float.IsFinite(startT)) throw new ArgumentException("start offset");
             if (!float.IsFinite(endT)) throw new ArgumentException("end offset");
-            VectorMethods.CheckVector(startIndexPoint.Tangent, "sl.Tangent");
-            VectorMethods.CheckVector(endIndexPoint.Tangent, "sr.Tangent");
+            VectorMethods.CheckVector(startIndexPoint.Tangent, "start.Tangent");
+            VectorMethods.CheckVector(endIndexPoint.Tangent, "end.Tangent");
 
             return new(startIndexPoint, endIndexPoint);
         }

@@ -42,18 +42,17 @@ namespace TranSimCS.Roads.Strip {
         public static void GenerateLaneStripMesh(LaneStrip laneStrip, MultiMesh renderer, float voffset = 0) {
             var accuracy = Settings.RoadAccuracy;
             var tag = laneStrip.Tag();
-            var roadTag = laneStrip.Road.FullSizeTag();
+            var roadTag = laneStrip.Road.Bounds;
             var (Left, Right) = RoadRenderer.GenerateSplines(tag, voffset); // Generate the splines for the left and right lanes
 
             //Generate arrows
             var averageStripWidth = (tag.endRange.Max + tag.startRange.Max - tag.startRange.Min - tag.endRange.Min)/2;
-            var middleSlope = (tag.endRange.Max - tag.startRange.Max - tag.startRange.Min + tag.endRange.Min)/2;
 
             float aoffset = 0.15f;
             var centerframe = laneStrip.Road.OrthodistantBasis.Sample(0.5f);
             var binormal = centerframe.X;
             var midpoint = centerframe.O;
-            var tangent = centerframe.Z + 0.75f * centerframe.X * middleSlope;
+            var tangent = centerframe.Z;
             var nrm = centerframe.Y;
             if (tangent.LengthSquared() >= 0.0000001){
                 tangent.Normalize();
@@ -144,7 +143,7 @@ namespace TranSimCS.Roads.Strip {
             if (swapMerges) DataUtil.Swap(ref mergeLeft, ref mergeRight);
 
             //Get tags
-            var roadTag = laneStrip.Road.FullSizeTag();
+            var roadTag = laneStrip.Road.Bounds;
 
             //Generate side-lines
             var lineWidth = laneStrip.Spec.LineWidth;

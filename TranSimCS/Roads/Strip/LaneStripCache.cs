@@ -36,7 +36,7 @@ namespace TranSimCS.Roads.Strip {
             var range = LaneStrip.Tag();
             var startT = range.startRange.Middle();
             var endT = range.endRange.Middle();
-            var points = LaneStrip.Road.GenerateOrthodistant(startT, endT);
+            var points = LaneStrip.Road.GenerateOrthodistant(startT, -endT);
             return new OrthodistantLUT(points);
         }
 

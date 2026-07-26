@@ -46,7 +46,7 @@ namespace TranSimCS.Spline {
                 endYVector
             );
 
-            return new OrthodistantBasis(positionSpline, ySpline, new(-Start.Offset, -End.Offset));
+            return new OrthodistantBasis(positionSpline, ySpline, new(-Start.Offset, End.Offset));
         }
     }
     public struct IndexPoint(float offset, Vector3 tangent) {

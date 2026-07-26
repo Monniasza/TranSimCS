@@ -66,13 +66,9 @@ namespace TranSimCS.Roads.Strip {
         /// <summary>
         /// Left start, right start, left end, right end
         /// </summary>
-        public RoadBounds Bounds => Cache.Bounds;
+        public LaneRange Bounds => Cache.Bounds;
         public OrthodistantBasis OrthodistantBasis => Cache.OrthodistantBasis;
         public IndexSpline IndexStrip => Cache.IndexStrip;
-        public LaneRange FullSizeTag() {
-            var bounds = Bounds;
-            return new LaneRange(this, new(Bounds.leftStart, Bounds.rightStart), new(Bounds.leftEnd, Bounds.rightEnd));
-        }
 
         public RoadStrip(HalfNode startNode, HalfNode endNode) {
             StartNode = startNode;
@@ -156,7 +152,7 @@ namespace TranSimCS.Roads.Strip {
                 //Sample the OrthonormalBasis
                 for(int i = 0; i < accuracy; i++) {
                     var t = i * step;
-                    var sample = OrthodistantBasis.Sample(t, start, end);
+                    var sample = OrthodistantBasis.Sample(t, start, end * new Vector3(-1, 1, -1));
                     result[i] = sample.O;
                 }
             }
