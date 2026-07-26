@@ -15,8 +15,8 @@ namespace TranSimCS.Save2 {
         }
 
         public override LaneStrip Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            LaneEnd? start = null;
-            LaneEnd? end = null;
+            HalfLane? start = null;
+            HalfLane? end = null;
             LaneSpec spec = LaneSpec.Default;
 
             var laneEndConverter = new LaneEndConverter(_world);
@@ -25,10 +25,10 @@ namespace TranSimCS.Save2 {
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
                 switch (propertyName.ToLower()) {
                     case "start":
-                        start = laneEndConverter.Read(ref reader0, typeof(LaneEnd), options);
+                        start = laneEndConverter.Read(ref reader0, typeof(LaneEnd), options).ToHalfLane();
                         break;
                     case "end":
-                        end = laneEndConverter.Read(ref reader0, typeof(LaneEnd), options);
+                        end = laneEndConverter.Read(ref reader0, typeof(LaneEnd), options).ToHalfLane();
                         break;
                     case "spec":
                         spec = laneSpecConverter.Read(ref reader0, typeof(LaneSpec), options);
@@ -39,7 +39,7 @@ namespace TranSimCS.Save2 {
             if (start == null) JsonProcessor.Fail(reader, "Missing start property");
             if (end == null) JsonProcessor.Fail(reader, "Missing end property");
 
-            var laneStrip = new LaneStrip(start.Value, end.Value);
+            var laneStrip = new LaneStrip(start, end);
             laneStrip.Spec = spec;
             return laneStrip;
         }
@@ -54,10 +54,10 @@ namespace TranSimCS.Save2 {
 
             writer.WritePropertyName("start");
             var laneEndConverter = new LaneEndConverter(_world);
-            laneEndConverter.Write(writer, value.StartLane, options);
+            laneEndConverter.Write(writer, value.StartLane.LaneEnd, options);
 
             writer.WritePropertyName("end");
-            laneEndConverter.Write(writer, value.EndLane, options);
+            laneEndConverter.Write(writer, value.EndLane.LaneEnd, options);
 
             writer.WritePropertyName("spec");
             var laneSpecConverter = new LaneSpecConverter();

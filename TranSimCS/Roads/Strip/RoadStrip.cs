@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using NLog;
-using TranSimCS.Geometry.SplineFrames;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Property;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Section;
 using TranSimCS.Roads.StripGenerator;
 using TranSimCS.SceneGraph;
+using TranSimCS.Setting;
 using TranSimCS.Spatial;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
@@ -51,8 +52,8 @@ namespace TranSimCS.Roads.Strip {
         //Road strip contents
         public readonly Property<StripSplineGenerator> SplineGeneratorProp;
         public StripSplineGenerator SplineGenerator { get => SplineGeneratorProp.Value; set => SplineGeneratorProp.Value = value; }
-        public readonly RoadNodeEnd StartNode;
-        public readonly RoadNodeEnd EndNode;
+        public readonly HalfNode StartNode;
+        public readonly HalfNode EndNode;
         public readonly Property<RoadFinish> FinishProperty;
         public RoadFinish Finish { get => FinishProperty.Value; set => FinishProperty.Value = value; }
         Property<RoadFinish> IRoadFinish.FinishProperty => FinishProperty;
@@ -66,14 +67,14 @@ namespace TranSimCS.Roads.Strip {
         /// Left start, right start, left end, right end
         /// </summary>
         public RoadBounds Bounds => Cache.Bounds;
-        public SplineFrame SplineFrame => Cache.SplineFrame;
-        public IndexStrip IndexStrip => Cache.IndexStrip;
+        public OrthodistantBasis OrthodistantBasis => Cache.OrthodistantBasis;
+        public IndexSpline IndexStrip => Cache.IndexStrip;
         public LaneRange FullSizeTag() {
             var bounds = Bounds;
             return new LaneRange(this, new(Bounds.leftStart, Bounds.rightStart), new(Bounds.leftEnd, Bounds.rightEnd));
         }
 
-        public RoadStrip(RoadNodeEnd startNode, RoadNodeEnd endNode) {
+        public RoadStrip(HalfNode startNode, HalfNode endNode) {
             StartNode = startNode;
             EndNode = endNode;
             FinishProperty = new(RoadFinish.Embankment, "finish", this);
@@ -82,9 +83,9 @@ namespace TranSimCS.Roads.Strip {
             Mesh.OnMeshInvalidated += InvalidateMesh0;
         }
 
-        public RoadNodeEnd GetHalf(SegmentHalf selectedRoadHalf) => selectedRoadHalf.GetConditional(StartNode, EndNode);
+        public HalfNode GetHalf(SegmentHalf selectedRoadHalf) => selectedRoadHalf.GetConditional(StartNode, EndNode);
 
-        public bool CheckEnds(RoadNodeEnd first, RoadNodeEnd second) {
+        public bool CheckEnds(HalfNode first, HalfNode second) {
             return first == StartNode && second == EndNode || first == EndNode && second == StartNode;
         }
 
@@ -133,19 +134,33 @@ namespace TranSimCS.Roads.Strip {
             SegmentRenderer.GenerateRoadSegmentFullMesh(segment, mesh); // Otherwise, render the road segment
         }
 
-        public Bezier3 GenerateSpline(float startT, float endT, float y = 0) => GenerateSpline(new Vector3(startT, y, 0), new Vector3(endT, y, 0));
-        public Bezier3 GenerateSpline(Vector3 start, Vector3 end) {
-            if(StartNode == EndNode) {
-                //Generate a solution bypassing the SplineFrame
-                var refframe = StartNode.CalcReferenceFrame();
-                if (StartNode.End == NodeEnd.Backward) refframe.X *= -1;
-                var tfStart = refframe.Transform(start);
-                var tfEnd = refframe.Transform(end);
-                var distance = Vector3.Distance(start, end);
-                var tangent = 0.6667f * refframe.Z * distance;
-                return new(tfStart, tfStart + tangent, tfEnd + tangent, tfEnd);
+        public Vector3[] GenerateSpline(float startT, float endT, float y = 0) => GenerateSpline(new Vector3(startT, y, 0), new Vector3(endT, y, 0));
+        public OrthodistantBasis GenerateOrthodistant(float startT, float endT) => new(OrthodistantBasis.ReferenceSpline, OrthodistantBasis.NormalSpline, OrthodistantBasis.StartEndPosition + new Vector2(startT, endT));
+        public Vector3[] GenerateSpline(Vector3 start, Vector3 end) {
+            var accuracy = Settings.RoadAccuracy;
+            float step = 1 / (accuracy - 1.0f);
+            var result = new Vector3[accuracy];
+            if (StartNode == EndNode) {
+                //Generate a solution bypassing the OrthonormalBasis
+                var refframe = StartNode.Cache.ReferenceFrame;
+                var centerOfRevolutionT = (start + end) / 2;
+                var xBasis = (end - start) / 2;
+                var yBasis = refframe.Y.Orthogonalize(xBasis).Normalized() * xBasis.Length();
+                float radianStep = MathF.PI * step;
+                for(int i = 0; i < accuracy; i++) {
+                    var (sin, cos) = MathF.SinCos(i * radianStep);
+                    var point = centerOfRevolutionT + xBasis * cos + yBasis * sin;
+                    result[i] = point;
+                }
+            } else {
+                //Sample the OrthonormalBasis
+                for(int i = 0; i < accuracy; i++) {
+                    var t = i * step;
+                    var sample = OrthodistantBasis.Sample(t, start, end);
+                    result[i] = sample.O;
+                }
             }
-            return SplineFrame.CreateFromStartEnd(start, end);
+            return result;
         }
 
         IPosition[] IDraggableObj.DraggableComponents() => [StartNode, EndNode];

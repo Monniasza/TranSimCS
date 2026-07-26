@@ -75,7 +75,7 @@ namespace TranSimCS.Tools {
             if (SourceNode == null || DestNode == null) {
                 LaneStrip = null;
             }else{
-                LaneStrip = menu.World.FindLaneStrip(SourceNode.LaneEnd, DestNode.LaneEnd);
+                LaneStrip = menu.World.FindLaneStrip(SourceNode, DestNode);
             }
 
             if (SourceNode == null)  nextAction = NextAction.Pick;
@@ -113,8 +113,8 @@ namespace TranSimCS.Tools {
                     Debug.Assert(LaneStrip == null, "Got Add with an already existing lane strip");
                     Debug.Assert(DestNode != null, "Invalid destination for AddNode");
                     Debug.Assert(SourceNode != null, "Invalid source for AddNode");
-                    var sourceLane = SourceNode.LaneEnd;
-                    var destLane = DestNode.LaneEnd;
+                    var sourceLane = SourceNode;
+                    var destLane = DestNode;
                     if(menu.Game.KeyboardState.IsKeyDown(Keys.LeftAlt))
                         DataUtil.Swap(ref sourceLane, ref destLane);
                     menu.World.GetOrMakeLaneStrip(sourceLane, destLane, menu.configuration.RoadFinish, menu.configuration.LaneSpec);

@@ -61,7 +61,7 @@ namespace TranSimCS.Roads.Strip {
             if (start == null) throw new JsonException("Missing start property");
             if (end == null) throw new JsonException("Missing end property");
 
-            var roadStrip = new RoadStrip(start, end);
+            var roadStrip = new RoadStrip(start.HalfNode, end.HalfNode);
             roadStrip.Guid = guid ?? Guid.NewGuid();
             roadStrip.Finish = finish;
             roadStrip.SplineGenerator = splineGenerator;
@@ -85,10 +85,10 @@ namespace TranSimCS.Roads.Strip {
 
             writer.WritePropertyName("start");
             var roadNodeEndConverter = new RoadNodeEndConverter(World);
-            roadNodeEndConverter.Write(writer, value.StartNode, options);
+            roadNodeEndConverter.Write(writer, value.StartNode.RoadNodeEnd, options);
 
             writer.WritePropertyName("end");
-            roadNodeEndConverter.Write(writer, value.EndNode, options);
+            roadNodeEndConverter.Write(writer, value.EndNode.RoadNodeEnd, options);
 
             writer.WritePropertyName("lanes");
             writer.WriteStartArray();

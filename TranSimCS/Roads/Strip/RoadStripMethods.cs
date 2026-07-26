@@ -10,14 +10,14 @@ using TranSimCS.Spline;
 namespace TranSimCS.Roads.Strip {
     public static class RoadStripMethods {
         public static bool IsSingleEnded(this RoadStrip strip) => strip.StartNode == strip.EndNode;
-        public static IndexStrip GenerateDegenerateIndexStrips(this RoadNodeEnd node) {
-            var tangent = node.CalcReferenceFrame().Z;
-            var bounds = node.Range();
+        public static IndexSpline GenerateDegenerateIndexStrips(this HalfNode node) {
+            var tangent = node.Cache.ReferenceFrame.Z;
+            var bounds = node.Bounds;
             var scale = 2.0f / 3;
             var scaledTangent = (bounds.Max - bounds.Min) * tangent * scale;
             IndexPoint left = new(bounds.Min, scaledTangent);
             IndexPoint right = new(bounds.Max, scaledTangent);
-            return new(left, right, left, right);
+            return new(left, right);
         }
         public static RoadSection? BelongsToRoadSection(this RoadStrip strip) {
             if(strip.StartNode.ConnectedSection.Value == null) return null;

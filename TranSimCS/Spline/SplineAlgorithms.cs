@@ -44,38 +44,29 @@ namespace TranSimCS.Spline {
         }
         public static Bezier3 IsotropicSpline(Vector3 start, Vector3 startTangent, Vector3 end, Vector3 endTangent) => GeometryUtils.GenerateJoinSpline(start, end, startTangent, endTangent);
 
-        public static IndexStrip GenerateSegmentSplinedUsingAlg(RoadStrip road, SplineAlgorithm algorithm) {
-            var start = road.StartNode.Node.PositionProp.Value.CalcReferenceFrame();
-            var end = road.EndNode.Node.PositionProp.Value.CalcReferenceFrame();
-            if (road.StartNode.End == NodeEnd.Backward) start.Z *= -1;
-            if (road.EndNode.End == NodeEnd.Backward) end.Z *= -1;
-            var (StartMin, StartMax, StartLocalLeft, StartLocalRight) = road.StartNode.Bounds();
-            var (EndMin, EndMax, EndLocalLeft, EndLocalRight) = road.EndNode.Bounds();
+        public static IndexSpline GenerateSegmentSplinedUsingAlg(RoadStrip road, SplineAlgorithm algorithm) {
+            var start = road.StartNode.Cache.ReferenceFrame;
+            var end = road.EndNode.Cache.ReferenceFrame;
 
-            var slPoint = start.O + start.X * StartLocalLeft;
-            var srPoint = start.O + start.X * StartLocalRight;
-            var elPoint = end.O + end.X * EndLocalRight;
-            var erPoint = end.O + end.X * EndLocalLeft;
+            var roadBounds = road.Bounds;
+            var startT = (roadBounds.leftStart + roadBounds.rightStart) / 2;
+            var endT = (roadBounds.leftEnd + roadBounds.rightEnd) / 2;
 
-            var leftSpline = algorithm(slPoint, start.Z, elPoint, end.Z);
-            var rightSpline = algorithm(srPoint, start.Z, erPoint, end.Z);
+            var startPoint = start.O + start.X * startT;
+            var endPoint = end.O + end.X * endT;
 
-            IndexPoint sl = new(StartLocalLeft, leftSpline.b - leftSpline.a);
-            IndexPoint sr = new(StartLocalRight, rightSpline.b - rightSpline.a);
-            IndexPoint el = new(EndLocalRight, leftSpline.c - leftSpline.d);
-            IndexPoint er = new(EndLocalLeft, rightSpline.c - rightSpline.d);
+            var generatedSpline = algorithm(startPoint, start.Z, endPoint, end.Z);
+
+            IndexPoint startIndexPoint = new(startT, generatedSpline.b - generatedSpline.a);
+            IndexPoint endIndexPoint = new(endT, generatedSpline.c - generatedSpline.d);
 
             //Test for NaN values
-            if (!float.IsFinite(sl.Offset)) throw new ArgumentException("start left offset");
-            if (!float.IsFinite(sr.Offset)) throw new ArgumentException("start right offset");
-            if (!float.IsFinite(el.Offset)) throw new ArgumentException("end left offset");
-            if (!float.IsFinite(er.Offset)) throw new ArgumentException("end right offset");
-            VectorMethods.CheckVector(sl.Tangent, "sl.Tangent");
-            VectorMethods.CheckVector(sr.Tangent, "sr.Tangent");
-            VectorMethods.CheckVector(el.Tangent, "el.Tangent");
-            VectorMethods.CheckVector(er.Tangent, "er.Tangent");
+            if (!float.IsFinite(startT)) throw new ArgumentException("start offset");
+            if (!float.IsFinite(endT)) throw new ArgumentException("end offset");
+            VectorMethods.CheckVector(startIndexPoint.Tangent, "sl.Tangent");
+            VectorMethods.CheckVector(endIndexPoint.Tangent, "sr.Tangent");
 
-            return new(sl, sr, el, er);
+            return new(startIndexPoint, endIndexPoint);
         }
     }
 }

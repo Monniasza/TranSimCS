@@ -161,7 +161,7 @@ namespace TranSimCS.Tools {
 
         public static void GenerateLaneConnections(DirectionChoice dirChoice, HalfNode startNode, HalfNode endNode, IList<HalfLane> startLanes, IList<HalfLane> endLanes, IList<LaneMapping> mappings, RoadFinish roadFinish, TSWorld world) {
             //Build the road strip
-            RoadStrip road = world.GetOrMakeRoadStrip(startNode.RoadNodeEnd, endNode.OppositeHalf.RoadNodeEnd, roadFinish);
+            RoadStrip road = world.GetOrMakeRoadStrip(startNode, endNode.OppositeHalf, roadFinish);
             foreach (var connection in mappings) {
                 var startLane = startLanes[connection.StartIndex];
                 var endLane = endLanes[connection.EndIndex].OppositeHalf;
@@ -176,7 +176,7 @@ namespace TranSimCS.Tools {
                 var isBackwards = isBackwardsToBuildDirection ^ endNode.End == NodeEnd.Backward;
                 //backwards if backwards is clearly preferred or equally preferred but going from the back
                 if (isBackwardsToBuildDirection) DataUtil.Swap(ref startLane, ref endLane);
-                LaneStrip laneStrip = new LaneStrip(startLane.LaneEnd, endLane.LaneEnd);
+                LaneStrip laneStrip = new LaneStrip(startLane, endLane);
                 var spec = connection.LaneSpec;
                 if (isBackwards) spec.Flags = spec.Flags.LongitudinalReverse();
                 if (endNode.End == NodeEnd.Backward) spec.Flags = spec.Flags.LongitudinalReverse();

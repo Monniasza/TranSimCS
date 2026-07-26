@@ -67,7 +67,7 @@ namespace TranSimCS.Tools {
                     var fwe = selLane.Front;
                     var bwe = selLane.Rear;
                     var laneDependencies = new List<LaneStrip>();
-                    laneDependencies.AddRange(dependencies.SelectMany(x => x.Lanes).Where(x => (x.StartLane.lane == selLane || x.EndLane.lane == selLane)));
+                    laneDependencies.AddRange(dependencies.SelectMany(x => x.Lanes).Where(x => (x.StartLane.Lane == selLane || x.EndLane.Lane == selLane)));
                     foreach (var laneDependency in laneDependencies) {
                         var laneTag = laneDependency.Tag();
                         RoadRenderer.GenerateLaneRangeMesh(laneTag, renderBin, orange, v2);

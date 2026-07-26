@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -57,11 +58,11 @@ namespace TranSimCS {
         }
     }
     public sealed class LUT: IEnumerable<LUTKey> {
-        private LUTKey[] Data;
+        public ImmutableArray<LUTKey> Data {get; private set;}
         public LUT(IEnumerable<LUTKey> y) {
             ArgumentNullException.ThrowIfNull(y, nameof(y));
             if (y.Count() == 0) throw new ArgumentException("The list must not be empty");
-            Data = y.OrderBy(x => x.X).ToArray();
+            Data = y.OrderBy(x => x.X).ToImmutableArray();
         }
         public Vector4 this[float x] { get {
                 if (Data.Length == 1) return Data[0].Y;
@@ -72,8 +73,8 @@ namespace TranSimCS {
                     return Vector4.Lerp(Data[0].Y, Data[1].Y, unlerp);
                 }
                 var dummy = new LUTKey() { X = x };
-                var binarySearch = Array.BinarySearch(Data, dummy);
-                if(binarySearch < 0) {
+                var binarySearch = Data.BinarySearch(dummy);
+                if (binarySearch < 0) {
                     //Interpolated find
                     var next = ~binarySearch;
                     if (next == 0) next = 1;
@@ -89,8 +90,23 @@ namespace TranSimCS {
                 }
         }}
 
-        public IEnumerator<LUTKey> GetEnumerator() => ((IEnumerable<LUTKey>)Data).GetEnumerator();
+        public static LUT CreateFromPoints(params Vector3[] points) {
+            float step = 1.0f / (points.Length - 1);
+            float length = 0;
+            var prev = points[0];
+            LUTKey[] keys = new LUTKey[points.Length];
+            for (int i = 0; i < points.Length; ++i) {
+                var t = step * i;
+                var point = points[i];
+                var distance = Vector3.Distance(prev, point);
+                length += distance;
+                prev = point;
+                keys[i] = new(length, point, t);
+            }
+            return new(keys);
+        }
 
+        public IEnumerator<LUTKey> GetEnumerator() => ((IEnumerable<LUTKey>)Data).GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

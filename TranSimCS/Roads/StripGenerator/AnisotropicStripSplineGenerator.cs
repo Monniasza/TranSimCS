@@ -7,7 +7,7 @@ namespace TranSimCS.Roads.StripGenerator {
         private AnisotropicStripSplineGenerator() : base("anisotropic") { }
         public static AnisotropicStripSplineGenerator Instance = new();
 
-        public override IndexStrip GenerateSplines(RoadStrip road)
+        public override IndexSpline GenerateSplines(RoadStrip road)
             => SplineAlgorithms.GenerateSegmentSplinedUsingAlg(road, SplineAlgorithms.AnisotropicSpline);
     }
 }

@@ -42,7 +42,6 @@ namespace TranSimCS.Roads.Strip {
         }
     }
     public struct RoadSplineComponent {
-        public SplineStrip Strip;
         public Color Color;
         public RoadSplineComponentType Type;
         public float Bias;

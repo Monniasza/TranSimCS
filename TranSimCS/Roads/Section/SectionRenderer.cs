@@ -170,17 +170,18 @@ namespace TranSimCS.Roads.Section {
             var laneStrips = qualifyingRoadStrips.SelectMany(x => x.Lanes).ToArray();
 
             //Group elements by type (dashed, solid, drivable, asphalt)
-            var roadSplineComponents = new List<RoadSplineComponent>? [(int)RoadSplineComponentType.Count];
-            foreach (var lane in laneStrips) foreach(var stripSplineComponent in lane.AllStrips) {
-                var row = roadSplineComponents[(int)stripSplineComponent.Type] ??= new();
-                row.Add(stripSplineComponent);
+            var roadSplineComponents = new List<PathD>? [(int)RoadSplineComponentType.Count];
+            foreach (var lane in laneStrips) foreach(var stripSplineComponent in lane.AllStrips.CrossSections) {
+                var projection = ProjectStripOntoWorkingPlane(roadSection, stripSplineComponent, lane.AllStrips);
+                var row = roadSplineComponents[(int)stripSplineComponent.Value.Type] ??= new();
+                row.Add(projection);
             }
 
             //Project each type of strip and also the boundary
             //Generate markings
-            var solidLines = ProjectStripsOntoWorkingPlane(roadSection, roadSplineComponents[(int)RoadSplineComponentType.Solid]);
-            var drivingLines = ProjectStripsOntoWorkingPlane(roadSection, roadSplineComponents[(int)RoadSplineComponentType.DrivingAreaMarker]);
-            var asphaltLines = ProjectStripsOntoWorkingPlane(roadSection, roadSplineComponents[(int)RoadSplineComponentType.Asphalt]);
+            var solidLines = roadSplineComponents[(int)RoadSplineComponentType.Solid];
+            var drivingLines = roadSplineComponents[(int)RoadSplineComponentType.DrivingAreaMarker];
+            var asphaltLines = roadSplineComponents[(int)RoadSplineComponentType.Asphalt];
 
             //Build geometry for solid lines, and apshalt
             var mergedWhites = (solidLines ?? []).Select(x => new Polygon(x, FillRule.EvenOdd)).AggregateOrDefault(new Polygon(), (x, y) => x | y);
@@ -208,10 +209,10 @@ namespace TranSimCS.Roads.Section {
             var rawDashes = roadSplineComponents[(int)RoadSplineComponentType.Dashed];
             var meshedDashes = new Mesh();
             foreach(var meshElement in rawDashes ?? []) {
-                var leftPoints = GeometryUtils.GenerateSplinePoints(meshElement.Strip.left, accuracy);
-                var rightPoints = GeometryUtils.GenerateSplinePoints(meshElement.Strip.right, accuracy);
-                var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftPoints, rightPoints, StripRenderer.GenerateLaneStripVertexGen(Color.White), meshElement.Bias);
-                meshedDashes.DrawStrip(generatedVertStripPair);
+                var polygon = new Polygon(meshElement, FillRule.EvenOdd);
+                var triagulation = PathsDTriangulation.Triangulate(polygon);
+                var points = triagulation.points.Select(CreateMeshingFunction(projectionPlane, Color.White, roadSection.Normal * 0.05f));
+                meshedDashes.DrawModel(points.ToArray(), triagulation.triangles.Select(x => (ushort)x).ToArray());
             }
 
             float reach = surfaceMesh.BoundingBox().Extent();
@@ -247,11 +248,13 @@ namespace TranSimCS.Roads.Section {
                 var pos = projectionPlane.Unproject(projected) + (offset ?? Vector3.Zero);
                 return new VertexPositionColorTexture(pos, color, projected);
             };
-        private static PathD[]? ProjectStripsOntoWorkingPlane(RoadSection roadSection, IEnumerable<RoadSplineComponent>? components)
-            => components?.Select(x => ProjectStripOntoWorkingPlane(roadSection, x.Strip)).ToArray();
-        private static PathD ProjectStripOntoWorkingPlane(RoadSection roadSection, SplineStrip strip) {
-            var accuracy = Settings.RoadAccuracy;
-            var points3d = GeometryUtils.GenerateSplinePoints(strip.left, accuracy).Append(GeometryUtils.GenerateSplinePoints(strip.right.Inverse(), accuracy)).ToArray();
+        private static PathD ProjectStripOntoWorkingPlane(RoadSection roadSection, GridCrossSectionalRecord<RoadSplineComponent> component, GridMesh<Vector3, RoadSplineComponent> gridMesh) {
+            var h = gridMesh.Vertices.Height();
+            var points3d = new Vector3[h * 2];
+            for(int i = 0; i < h; i++) {
+                points3d[i] = gridMesh.Vertices[component.MinIndex, i];
+                points3d[h + i] = gridMesh.Vertices[component.MaxIndex, h - i - 1];
+            }
             var referencePlane = roadSection.WorkingPlane;
             PathD result = new PathD();
             foreach (var point in points3d) {

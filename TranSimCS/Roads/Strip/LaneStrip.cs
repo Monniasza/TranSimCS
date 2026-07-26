@@ -27,8 +27,8 @@ namespace TranSimCS.Roads.Strip {
         public RoadNodeEnd? GetNodeEnd() => null;
 
         //Constant contents
-        public LaneEnd StartLane { get; private set; }
-        public LaneEnd EndLane { get; private set; }
+        public HalfLane StartLane { get; private set; }
+        public HalfLane EndLane { get; private set; }
         public RoadStrip Road { get; internal set; }
         private LaneSpec _spec;
         /// <summary>
@@ -38,12 +38,12 @@ namespace TranSimCS.Roads.Strip {
             get {
                 var width = 0f;
                 var n = 0;
-                if(StartLane.lane != null) {
-                    width += StartLane.lane.Width;
+                if(StartLane.Lane != null) {
+                    width += StartLane.Lane.Width;
                     n++;
                 }
-                if(EndLane.lane != null) {
-                    width += EndLane.lane.Width;
+                if(EndLane.Lane != null) {
+                    width += EndLane.Lane.Width;
                     n++;
                 }
                 if(n != 0) _spec.Width = width / n;
@@ -58,13 +58,13 @@ namespace TranSimCS.Roads.Strip {
         
 
         public LaneRange Tag() {
-            var startRange = StartLane.Range();
-            var endRange = EndLane.Range();
-            if(StartLane.RoadNodeEnd == Road.EndNode) DataUtil.Swap(ref startRange, ref endRange);
+            var startRange = StartLane.Bounds;
+            var endRange = EndLane.Bounds;
+            if(StartLane.HalfNode == Road.EndNode) DataUtil.Swap(ref startRange, ref endRange);
             return new LaneRange(Road, startRange, endRange);
         }// Create a LaneTag for the lane strip, which includes the road and the start and end lanes
 
-        public LaneStrip(LaneEnd startLane, LaneEnd endLane, LaneSpec? spec = null){
+        public LaneStrip(HalfLane startLane, HalfLane endLane, LaneSpec? spec = null){
             _cache = new(this);
             StartLane = startLane;
             EndLane = endLane;
@@ -73,12 +73,8 @@ namespace TranSimCS.Roads.Strip {
 
         //Spline cache
         private readonly LaneStripCache _cache;
-        public RoadSplineComponent SplineCache => _cache.AsphaltCache;
-        public RoadSplineComponent DrivableAreaStrip => _cache.DrivableAreaCache;
-        public SplineLUT SplineLUT => _cache.CenterLUT;
-        public SplineLUT LateralLUT => _cache.LateralLUT;
-        public ImmutableArray<RoadSplineComponent> Lines => _cache.Lines;
-        public ImmutableArray<RoadSplineComponent> AllStrips => _cache.AllStrips;
+        public OrthodistantLUT SplineLUT => _cache.CenterLUT;
+        public GridMesh<Vector3, RoadSplineComponent> AllStrips => _cache.AllStrips;
 
         //Mesh cache
         private MultiMesh? mesh; // Cached mesh for the lane strip
@@ -94,7 +90,7 @@ namespace TranSimCS.Roads.Strip {
             _cache.Invalidate();
         }
 
-        public LaneEnd GetHalf(SegmentHalf selectedRoadHalf) {
+        public HalfLane GetHalf(SegmentHalf selectedRoadHalf) {
             if(selectedRoadHalf == SegmentHalf.Start) {
                 return StartLane; // Return the starting lane if the selected half is Start
             } else if (selectedRoadHalf == SegmentHalf.End) {
@@ -110,7 +106,7 @@ namespace TranSimCS.Roads.Strip {
         }
 
         //Dragging
-        IPosition[] IDraggableObj.DraggableComponents() => [StartLane.RoadNodeEnd, EndLane.RoadNodeEnd];
+        IPosition[] IDraggableObj.DraggableComponents() => [StartLane.HalfNode, EndLane.HalfNode];
 
         public override bool Equals(object? obj) {
             return Equals(obj as LaneStrip);
@@ -118,8 +114,8 @@ namespace TranSimCS.Roads.Strip {
 
         public bool Equals(LaneStrip? other) {
             return other is not null &&
-                   EqualityComparer<LaneEnd>.Default.Equals(StartLane, other.StartLane) &&
-                   EqualityComparer<LaneEnd>.Default.Equals(EndLane, other.EndLane) &&
+                   EqualityComparer<HalfLane>.Default.Equals(StartLane, other.StartLane) &&
+                   EqualityComparer<HalfLane>.Default.Equals(EndLane, other.EndLane) &&
                    EqualityComparer<RoadStrip>.Default.Equals(Road, other.Road) &&
                    EqualityComparer<LaneSpec>.Default.Equals(Spec, other.Spec);
         }
@@ -128,14 +124,14 @@ namespace TranSimCS.Roads.Strip {
             return HashCode.Combine(StartLane, EndLane, Road, Spec);
         }
 
-        public bool IsBetween(LaneEnd start, LaneEnd end) {
+        public bool IsBetween(HalfLane start, HalfLane end) {
             return start == StartLane && end == EndLane || start == EndLane && end == StartLane;
         }
 
-        public bool IsConnected(LaneEnd end) {
+        public bool IsConnected(HalfLane end) {
             return end == StartLane || end == EndLane;
         }
-        public SegmentHalf? WhichEnd(LaneEnd end) {
+        public SegmentHalf? WhichEnd(HalfLane end) {
             if (end == StartLane) return SegmentHalf.Start;
             if (end == EndLane) return SegmentHalf.End;
             return null;
@@ -166,6 +162,6 @@ namespace TranSimCS.Roads.Strip {
             return newLaneStrip;
         }
 
-        public bool IsReverse() => StartLane.RoadNodeEnd == Road.EndNode && EndLane != StartLane;
+        public bool IsReverse() => StartLane.HalfNode == Road.EndNode && EndLane != StartLane;
     }
 }

@@ -22,17 +22,15 @@ namespace TranSimCS.Worlds {
         //Segment handlers
         private void HandleAddRoadSegment(RoadStrip segment) {
             //Add missing dependencies
-            AddIfAbsent(segment.StartNode.Node);
-            AddIfAbsent(segment.EndNode.Node);
+            AddIfAbsent(segment.StartNode.RoadNode);
+            AddIfAbsent(segment.EndNode.RoadNode);
 
             //Add road segment listeners
             segment.PropertyChanged += HandleChangeRoadSegment;
 
             //Link the road strip to half-nodes
-            var startHalf = segment.StartNode.Node.GetHalfNode(segment.StartNode.End);
-            var endHalf = segment.EndNode.Node.GetHalfNode(segment.EndNode.End);
-            segment.StartNode.connectedSegments.Add(segment);
-            segment.EndNode.connectedSegments.Add(segment);
+            var startHalf = segment.StartNode.RoadNode.GetHalfNode(segment.StartNode.End);
+            var endHalf = segment.EndNode.RoadNode.GetHalfNode(segment.EndNode.End);
             startHalf._connectedRoadStrips.Add(new(segment, SegmentHalf.Start));
             endHalf._connectedRoadStrips.Add(new(segment, SegmentHalf.End));
 
@@ -58,10 +56,8 @@ namespace TranSimCS.Worlds {
             section?._containedSegments.Remove(segment);
 
             //Remove the road segment from nodes
-            var startHalf = segment.StartNode.Node.GetHalfNode(segment.StartNode.End);
-            var endHalf = segment.EndNode.Node.GetHalfNode(segment.EndNode.End);
-            segment.StartNode.connectedSegments.Remove(segment);
-            segment.EndNode.connectedSegments.Remove(segment);
+            var startHalf = segment.StartNode.RoadNode.GetHalfNode(segment.StartNode.End);
+            var endHalf = segment.EndNode.RoadNode.GetHalfNode(segment.EndNode.End);
             startHalf._connectedRoadStrips.Remove(new(segment, SegmentHalf.Start));
             endHalf._connectedRoadStrips.Remove(new(segment, SegmentHalf.End));
 
@@ -84,8 +80,8 @@ namespace TranSimCS.Worlds {
                 return;
             }
             var section = segment.Section;
-            segment.StartNode.Node.FireDependencyEvent(segment.StartNode.Node, segment, "connections");
-            segment.EndNode.Node.FireDependencyEvent(segment.EndNode.Node, segment, "connections");
+            segment.StartNode.RoadNode.FireDependencyEvent(segment.StartNode.RoadNode, segment, "connections");
+            segment.EndNode.RoadNode.FireDependencyEvent(segment.EndNode.RoadNode, segment, "connections");
             section?.FireDependencyEvent(section, segment, PropertyNames.SegmentOfSection);
         }
 

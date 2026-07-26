@@ -12,10 +12,10 @@ namespace TranSimCS.Roads.Node {
         public static bool IsLanePassable(this Lane lane) {
             bool fromBack = false, toBack = false, fromFront = false, toFront = false;
             foreach (var strip in lane.Connections) {
-                fromFront |= strip.StartLane == lane.Front;
-                toFront |= strip.EndLane == lane.Front;
-                fromBack |= strip.StartLane == lane.Rear;
-                toBack |= strip.EndLane == lane.Rear;
+                fromFront |= strip.StartLane == lane.FrontHalf;
+                toFront |= strip.EndLane == lane.FrontHalf;
+                fromBack |= strip.StartLane == lane.RearHalf;
+                toBack |= strip.EndLane == lane.RearHalf;
             }
             return (fromBack && toFront) || (fromFront && toBack);
         }
@@ -23,10 +23,10 @@ namespace TranSimCS.Roads.Node {
             int forward = 0;
             int backward = 0;
             foreach (var strip in lane.Connections) {
-                if (strip.StartLane == lane.Front) forward++;
-                if (strip.EndLane == lane.Front) backward++;
-                if (strip.StartLane == lane.Rear) backward++;
-                if (strip.EndLane == lane.Rear) forward++;
+                if (strip.StartLane == lane.FrontHalf) forward++;
+                if (strip.EndLane == lane.FrontHalf) backward++;
+                if (strip.StartLane == lane.RearHalf) backward++;
+                if (strip.EndLane == lane.RearHalf) forward++;
             }
             return (forward, backward);
         }

@@ -38,7 +38,7 @@ namespace TranSimCS.Worlds.Car {
             var chance = Settings.CarSpawnRate * seconds;
 
             foreach(var node in World.Nodes.data) foreach(var lane in node.Lanes) foreach(var strip in lane.Connections) {
-                if (strip.EndLane.lane == lane) continue; //Strip ends here, do not spawn
+                if (strip.EndLane.Lane == lane) continue; //Strip ends here, do not spawn
                 //Check if a strip is a dead end
                 var passable = lane.IsLanePassable();
                 if (passable) continue;

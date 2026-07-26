@@ -59,10 +59,8 @@ namespace TranSimCS.Roads.Strip {
             //Calculate road length
             LaneRange topRange = connection.FullSizeTag();
             var (leftTop, rightTop) = RoadRenderer.GenerateSplines(topRange);
-            var leftTopPoints = GenerateSplinePoints(leftTop, accuracy);
-            var rightTopPoints = GenerateSplinePoints(rightTop, accuracy);
-            var lengthL = CountLength(leftTopPoints);
-            var lengthR = CountLength(rightTopPoints);
+            var lengthL = CountLength(leftTop);
+            var lengthR = CountLength(rightTop);
             var length = lengthL + lengthR;
 
             //Draw the road finish
@@ -79,7 +77,7 @@ namespace TranSimCS.Roads.Strip {
             );
             var (leftDown, rightDown) = RoadRenderer.GenerateSplines(bottomRange, -height);
 
-            var splineFrame = connection.SplineFrame;
+            var splineFrame = connection.OrthodistantBasis;
             var bounds = connection.Bounds;
 
             var swidth = MathF.Abs(bounds.rightStart - bounds.leftStart);
@@ -91,21 +89,18 @@ namespace TranSimCS.Roads.Strip {
             var leftEnd = Vector3.UnitX * bounds.leftEnd;
             var rightEnd = Vector3.UnitX * bounds.rightEnd;
 
-            var leftDownPoints = GenerateSplinePoints(leftDown, accuracy);
-            var rightDownPoints = GenerateSplinePoints(rightDown, accuracy);
-
             var sideLen = new Vector2(height, breadth).Length();
 
             var zeroFn = UniformTexturing.WithFixedU(0);
             var sideLenFn = UniformTexturing.WithFixedU(sideLen);
             var avgWidthFn = UniformTexturing.WithFixedU(avgWidth);
 
-            var leftPointsL = UniformTexturing.UniformTextured(leftDownPoints, zeroFn);
-            var leftPointsR = UniformTexturing.UniformTextured(leftTopPoints, sideLenFn);
-            var rightPointsL = UniformTexturing.UniformTextured(rightTopPoints, zeroFn);
-            var rightPointsR = UniformTexturing.UniformTextured(rightDownPoints, sideLenFn);
-            var bottomPointsL = UniformTexturing.UniformTextured(rightDownPoints, zeroFn);
-            var bottomPointsR = UniformTexturing.UniformTextured(leftDownPoints, avgWidthFn);
+            var leftPointsL = UniformTexturing.UniformTextured(leftDown, zeroFn);
+            var leftPointsR = UniformTexturing.UniformTextured(leftTop, sideLenFn);
+            var rightPointsL = UniformTexturing.UniformTextured(rightTop, zeroFn);
+            var rightPointsR = UniformTexturing.UniformTextured(rightDown, sideLenFn);
+            var bottomPointsL = UniformTexturing.UniformTextured(rightDown, zeroFn);
+            var bottomPointsR = UniformTexturing.UniformTextured(leftDown, avgWidthFn);
 
             //Draw the strips
             Mesh finishBin = renderHelper.GetOrCreateRenderBinForced(texture.Value);
@@ -114,16 +109,16 @@ namespace TranSimCS.Roads.Strip {
             finishBin.DrawStrip(bottomPointsL, bottomPointsR);
 
             //Draw the endcaps
-            var leftUpStartPos = leftTopPoints[0];
-            var rightUpStartPos = rightTopPoints[0];
-            var rightDownStartPos = rightDownPoints[0];
-            var leftDownStartPos = leftDownPoints[0];
+            var leftUpStartPos = ((Vector3[]?)leftTop)[0];
+            var rightUpStartPos = ((Vector3[]?)rightTop)[0];
+            var rightDownStartPos = ((Vector3[]?)rightDown)[0];
+            var leftDownStartPos = ((Vector3[]?)leftDown)[0];
             GenerateEndCap(leftUpStartPos, rightUpStartPos, rightDownStartPos, leftDownStartPos, swidth, height, breadth, finishBin);
 
-            var leftUpEndPos = leftTopPoints.Last();
-            var rightUpEndPos = rightTopPoints.Last();
-            var rightDownEndPos = rightDownPoints.Last();
-            var leftDownEndPos = leftDownPoints.Last();
+            var leftUpEndPos = leftTop.Last();
+            var rightUpEndPos = rightTop.Last();
+            var rightDownEndPos = rightDown.Last();
+            var leftDownEndPos = leftDown.Last();
             GenerateEndCap(rightUpEndPos, leftUpEndPos, leftDownEndPos, rightDownEndPos, swidth, height, breadth, finishBin);
 
             return length;
@@ -134,8 +129,8 @@ namespace TranSimCS.Roads.Strip {
             //Conpute the limits of the road segment
             Range<float> leftBounds = default, rightBounds = default;
             foreach (LaneStrip lane in connection.Lanes) {
-                var boundsA = lane.StartLane.Range();
-                var boundsB = lane.EndLane.Range();
+                var boundsA = lane.StartLane.Bounds;
+                var boundsB = lane.EndLane.Bounds;
                 var centerA = boundsA.Middle();
                 var centerB = boundsB.Middle();
                 if (centerA > centerB) DataUtil.Swap(ref boundsA, ref boundsB);
@@ -154,18 +149,17 @@ namespace TranSimCS.Roads.Strip {
                 new(b, 0, 0), new(b, 0, d), new(a, 0, d), new(a, 0, 0)
             );
             var points = GeometryUtils.GenerateSplinePoints(spline, accuracy);
-            var refframe = connection.StartNode.CalcReferenceFrame();
-            var nodeSplineFrame = new SplineFrame();
-            nodeSplineFrame.CenterSpline = new(refframe.O, refframe.O + refframe.Z);
-            nodeSplineFrame.XPlusSpline = new(refframe.X);
-            nodeSplineFrame.YPlusSpline = new(refframe.Y);
+            var refframe = connection.StartNode.Cache.ReferenceFrame;
+            var nodeSplineFrame = new OrthodistantBasis();
+            nodeSplineFrame.NormalSpline = new(refframe.Y);
+            nodeSplineFrame.ReferenceSpline = new(refframe.O, refframe.O+refframe.X);
 
             var pointsFlat = FlattenPath(points);
             DrawIsland(Surface.Grass, Surface.Concrete, renderHelper, nodeSplineFrame, new PathD(pointsFlat), 0.1f, 1);
         }
 
         public static void RenderRoadSegmentPolygons(RoadStrip connection, MultiMesh renderHelper, float length) {
-            var splineFrame = connection.SplineFrame.ConvertConventions(connection.StartNode.End, connection.EndNode.End);
+            var splineFrame = connection.OrthodistantBasis;
 
             //Find fill polygons for lane strips
             var laneRanges = new List<LaneRange>();
@@ -180,8 +174,6 @@ namespace TranSimCS.Roads.Strip {
                 var widened = lane;
                 widened.startRange = new(widened.startRange.Min - dwidth, widened.startRange.Max + dwidth);
                 widened.endRange = new(widened.endRange.Min - dwidth, widened.endRange.Max + dwidth);
-                widened.startRange = connection.StartNode.End.ConvertConventions(widened.startRange);
-                widened.endRange = connection.EndNode.OppositeEnd.End.ConvertConventions(widened.endRange);
                 var pos1L = widened.startRange.Min;
                 var pos1R = widened.startRange.Max;
                 var pos2L = widened.endRange.Min;
@@ -215,7 +207,7 @@ namespace TranSimCS.Roads.Strip {
 
         public static PathD FlattenPath(IEnumerable<Vector3> points) => new PathD(points.Select(v => new PointD(v.X, v.Z)));
 
-        public static void DrawIsland(Surface surface, Surface sideSurface, MultiMesh mesh, SplineFrame frm, PathD path, float h, float stretch) {
+        public static void DrawIsland(Surface surface, Surface sideSurface, MultiMesh mesh, OrthodistantBasis frm, PathD path, float h, float stretch) {
             var area = Clipper.Area(path);
             if (area < 0) {
                 path.Reverse();
@@ -259,8 +251,12 @@ namespace TranSimCS.Roads.Strip {
             }
         }
 
-        public static IEnumerable<Vector3> Retransform(SplineFrame frame, IEnumerable<PointD> pts, float z = 0) {
-            return pts.Select(pt => frame.TransformNodeConvention(new((float)pt.x, z, (float)pt.y)));
+        public static IEnumerable<Vector3> Retransform(OrthodistantBasis frame, IEnumerable<PointD> pts, float z = 0) {
+            return pts.Select(pt => RetransformOne(frame, pt, z));
+        }
+        public static Vector3 RetransformOne(OrthodistantBasis frame, PointD vector, float z = 0){
+            var offsetVector = new Vector3((float)vector.x, z, 0);
+            return frame.Sample((float)vector.y, offsetVector, offsetVector).O;
         }
 
         public static void GenerateEndCap(Vector3 ul, Vector3 ur, Vector3 dr, Vector3 dl, float width, float height, float expand, Mesh mesh) {

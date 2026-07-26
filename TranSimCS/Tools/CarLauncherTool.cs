@@ -43,7 +43,7 @@ namespace TranSimCS.Tools {
                     if (strip != null) {
                         var startingLane = strip.StartLane;
                         newCarPosition = startingLane.GetRoadNode().PositionProp.Value;
-                        if (startingLane.end == NodeEnd.Backward) newCarPosition.Azimuth ^= (1 << 31);
+                        if (startingLane.End == NodeEnd.Backward) newCarPosition.Azimuth ^= (1 << 31);
                     } else {
                         if(selection != null && selection.Value.Distance < float.MaxValue) {
                             newCarPosition.Position = selection.Value.Coordinates;
@@ -68,7 +68,7 @@ namespace TranSimCS.Tools {
         public static Car LaunchCar(TSWorld world, LaneStrip strip, float speed = 25) {
             var startingLane = strip.StartLane;
             var newCarPosition = startingLane.GetRoadNode().PositionProp.Value;
-            if (startingLane.end == NodeEnd.Backward) newCarPosition.Azimuth ^= (1 << 31);
+            if (startingLane.End == NodeEnd.Backward) newCarPosition.Azimuth ^= (1 << 31);
             Car car = new Car();
             car.Randomize();
             if (strip != null) {

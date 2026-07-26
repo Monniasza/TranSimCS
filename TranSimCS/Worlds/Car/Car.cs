@@ -137,17 +137,10 @@ namespace TranSimCS.Worlds.Car {
                 pr.Position = xyz;
                 PositionProp.Value = pr;
             } else {
-                //If the car has an undeterminate position, infer direction from velocity and arc-length from FindT
+                //If the car has an undeterminate position, place it on the start of a lane strip
                 if (!float.IsFinite(LanePosition.LaneArcLength)) {
-                    var spline = LanePosition.LaneStrip.SplineLUT.Spline;
-                    var inverseInterpolatedT = Bezier3.FindT(spline, PositionProp.Value.Position, lowerLimit: -1, upperLimit: 2);
-                    var splineTangential = spline.Tangential(inverseInterpolatedT);
-                    var discriminant = Vector3.Dot(splineTangential, Velocity);
-                    var isReverse = discriminant < 0;
-                    var forwardReverseT = LanePosition.LaneStrip.SplineLUT.ByT[inverseInterpolatedT];
-
-                    LanePosition.LaneArcLength = isReverse ? forwardReverseT.Y : forwardReverseT.X;
-                    LanePosition.IsReverse = isReverse;
+                    LanePosition.LaneArcLength = 0;
+                    LanePosition.IsReverse = false;
                 }
 
                 //Interpolate
@@ -155,7 +148,8 @@ namespace TranSimCS.Worlds.Car {
 
                 //Overflow
                 var splineCache = LanePosition.LaneStrip.SplineLUT;
-                while (LanePosition.LaneArcLength < 0 || LanePosition.LaneArcLength > splineCache.Length) {
+                var maxLength = splineCache.Reverse.Data[0].Y.W;
+                while (LanePosition.LaneArcLength < 0 || LanePosition.LaneArcLength > maxLength) {
                     if (LanePosition.LaneStrip == null) return;
                     
                     //ASSERT T is valid
@@ -164,7 +158,7 @@ namespace TranSimCS.Worlds.Car {
                     if (LanePosition.LaneArcLength < 0) {
                         //Passed the beginning
                         Overflow(SegmentHalf.Start);
-                    } else if (LanePosition.LaneArcLength > splineCache.Length) {
+                    } else if (LanePosition.LaneArcLength > maxLength) {
                         //Passed the end
                         Overflow(SegmentHalf.End);
                     }
@@ -176,7 +170,7 @@ namespace TranSimCS.Worlds.Car {
                 var laneStrip = LanePosition.LaneStrip;
                 var positionCache = laneStrip.SplineLUT;
                 var positionLUT = laneStrip.IsReverse() ?
-                    positionCache.ReverseLUT : positionCache.ForwardLUT;
+                    positionCache.Reverse : positionCache.Forward;
 
                 var xyzt = positionLUT[LanePosition.LaneArcLength];
                 var xyz = xyzt.ToXYZ();
@@ -184,10 +178,10 @@ namespace TranSimCS.Worlds.Car {
                 var t = xyzt.W;
                 if (!float.IsFinite(t)) throw new ArithmeticException("Invalid spline paramater ");
 
-                var lateralSpline = laneStrip.SplineCache.Strip.right - laneStrip.SplineCache.Strip.left;
-                var lateral = lateralSpline[t];
+                var referenceFrame = laneStrip.Road.OrthodistantBasis.Sample(t);
+                var lateral = referenceFrame.X;
                 VectorMethods.CheckVector(lateral, "lateral");
-                var tangential = positionCache.Spline.Tangential(t);
+                var tangential = referenceFrame.Z;
                 VectorMethods.CheckVector(tangential, "tangential");
                 if (LanePosition.IsReverse ^ laneStrip.IsReverse()) {
                     tangential *= -1;
@@ -204,11 +198,11 @@ namespace TranSimCS.Worlds.Car {
         }
         private void Overflow(SegmentHalf half) {
             if (LanePosition.LaneStrip == null) return;
-            LanePosition.LaneArcLength -= LanePosition.LaneStrip.SplineLUT.Length;
+            LanePosition.LaneArcLength -= LanePosition.LaneStrip.SplineLUT.Reverse.Data[0].Y.W;
 
             var nextLane = LanePosition.LaneStrip.GetHalf(half);
-            nextLane = nextLane.OppositeEnd;
-            var candidates = World.FindLaneStrips(nextLane);
+            nextLane = nextLane.OppositeHalf;
+            var candidates = nextLane.ConnectedLaneStrips;
 
             //If there are no more candidates, destroy the car
             if (candidates.Count == 0) {
@@ -218,11 +212,11 @@ namespace TranSimCS.Worlds.Car {
 
             //Car gets stuck when hitting a next segment
             var choice = rnd.GetRandomEntry(candidates);
-            if (choice == LanePosition.LaneStrip)
+            if (choice.strip == LanePosition.LaneStrip)
                 throw new Exception("Transitioned to same strip");
 
-            var isEntryFromEnd = choice.EndLane == nextLane;
-            LanePosition.LaneStrip = choice;
+            var isEntryFromEnd = choice.strip.EndLane == nextLane;
+            LanePosition.LaneStrip = choice.strip;
             LanePosition.IsReverse = isEntryFromEnd;
         }
 

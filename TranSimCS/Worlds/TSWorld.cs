@@ -37,13 +37,13 @@ namespace TranSimCS.Worlds
             set => _daytime = ((value % 60) + 60) % 60;
         }
 
-        public RoadStrip? FindRoadStrip(RoadNodeEnd start, RoadNodeEnd end) {
+        public RoadStrip? FindRoadStrip(HalfNode start, HalfNode end) {
             foreach (var strip in RoadSegments.data) 
                 if (strip.CheckEnds(start, end)) 
                     return strip;
             return null;
         }
-        public RoadStrip GetOrMakeRoadStrip(RoadNodeEnd start, RoadNodeEnd end, RoadFinish? finish = null) {
+        public RoadStrip GetOrMakeRoadStrip(HalfNode start, HalfNode end, RoadFinish? finish = null) {
             RoadStrip? result = FindRoadStrip(start, end);
             if (result == null) {
                 result = new RoadStrip(start, end);
@@ -53,15 +53,15 @@ namespace TranSimCS.Worlds
             return result;
         }
 
-        public LaneStrip? FindLaneStrip(LaneEnd start, LaneEnd end) {
-            var roadStrip = FindRoadStrip(start.RoadNodeEnd, end.RoadNodeEnd);
+        public LaneStrip? FindLaneStrip(HalfLane start, HalfLane end) {
+            var roadStrip = FindRoadStrip(start.HalfNode, end.HalfNode);
             if (roadStrip == null) return null;
             foreach (var lane in roadStrip.Lanes) 
                 if(lane.IsBetween(start, end)) return lane;
             return null;
         }
-        public LaneStrip GetOrMakeLaneStrip(LaneEnd start, LaneEnd end, RoadFinish? finish = null, LaneSpec? laneSpec = null) {
-            var roadStrip = GetOrMakeRoadStrip(start.RoadNodeEnd, end.RoadNodeEnd, finish);
+        public LaneStrip GetOrMakeLaneStrip(HalfLane start, HalfLane end, RoadFinish? finish = null, LaneSpec? laneSpec = null) {
+            var roadStrip = GetOrMakeRoadStrip(start.HalfNode, end.HalfNode, finish);
             foreach (var lane in roadStrip.Lanes)
                 if (lane.IsBetween(start, end)) return lane;
             LaneStrip strip = new LaneStrip(start, end);

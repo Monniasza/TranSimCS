@@ -12,7 +12,7 @@ namespace TranSimCS.Roads.StripGenerator {
     public sealed class ClassicStripSplineGenerator: StripSplineGenerator {
         private ClassicStripSplineGenerator() : base("isotropic") { }
         public static ClassicStripSplineGenerator Instance = new();
-        public override IndexStrip GenerateSplines(RoadStrip road)
+        public override IndexSpline GenerateSplines(RoadStrip road)
             => SplineAlgorithms.GenerateSegmentSplinedUsingAlg(road, SplineAlgorithms.IsotropicSpline);
     }
 }
