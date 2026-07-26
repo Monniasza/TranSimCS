@@ -54,7 +54,7 @@ namespace TranSimCS.Roads.Strip {
             //Generate a GridMesh
             for (int i = 0; i < vertcount; i += 2) {
                 var j = i / 2;
-                var component = generatedComponents[i];
+                var component = generatedComponents[j];
                 var surface = component.Item1;
                 var range = component.Item2;
                 var lspline = LaneStrip.Road.GenerateSpline(range.startLeft, range.endLeft);
@@ -63,7 +63,7 @@ namespace TranSimCS.Roads.Strip {
                     vertices[i, k] = lspline[k];
                     vertices[i+1, k] = rspline[k];
                 }
-                records[i] = new(i, i + 1, surface);
+                records[j] = new(i, i + 1, surface);
             }
 
             return new GridMesh<Vector3, RoadSplineComponent>(Immutable2DArray<Vector3>.Wrap(vertices), records.ToImmutableArray());
