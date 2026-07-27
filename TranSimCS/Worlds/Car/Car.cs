@@ -145,10 +145,13 @@ namespace TranSimCS.Worlds.Car {
 
                 //Interpolate
                 LanePosition.LaneArcLength += Speed * time.GetElapsedSeconds();
+                //ASSERT T is valid
+                if (!float.IsFinite(LanePosition.LaneArcLength)) throw new ArithmeticException("Invalid newT");
 
                 //Overflow
                 var splineCache = LanePosition.LaneStrip.SplineLUT;
-                var maxLength = splineCache.Reverse.Data[0].Y.W;
+                var maxLength = splineCache.Length;
+                if (maxLength < 0.1) throw new ArithmeticException("Zero or negative length");
                 while (LanePosition.LaneArcLength < 0 || LanePosition.LaneArcLength > maxLength) {
                     if (LanePosition.LaneStrip == null) return;
                     
@@ -198,7 +201,7 @@ namespace TranSimCS.Worlds.Car {
         }
         private void Overflow(SegmentHalf half) {
             if (LanePosition.LaneStrip == null) return;
-            LanePosition.LaneArcLength -= LanePosition.LaneStrip.SplineLUT.Reverse.Data[0].Y.W;
+            LanePosition.LaneArcLength -= LanePosition.LaneStrip.SplineLUT.Length;
 
             var nextLane = LanePosition.LaneStrip.GetHalf(half);
             nextLane = nextLane.OppositeHalf;

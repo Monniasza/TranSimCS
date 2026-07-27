@@ -14,28 +14,38 @@ namespace TranSimCS.Roads.Strip {
         public readonly OrthodistantBasis spline;
         public LUT Forward {  get; private set; }
         public LUT Reverse { get; private set; }
+        public float Length { get; private set; }
 
         public OrthodistantLUT(OrthodistantBasis spline, int numPoints = 129, float minT = 0, float maxT = 1) {
             this.spline = spline;
-            var nodes = new LUTKey[numPoints];
+
+            //Sample the spline
+            var samples = new Vector4[numPoints];
             var t = minT;
             var inc = (maxT - minT) / (numPoints - 1);
             for (int i = 0; i < numPoints; i++) {
-                var node = new LUTKey(t, spline.Sample(t).O, 0);
+                var sample = spline.Sample(t);
+                samples[i] = new(sample.O, t);
                 t += inc;
             }
-            for (int i = 1; i < numPoints; i++) {
-                var prevnode = nodes[i - 1];
-                var nextnode = nodes[i];
-                nextnode.Y.W = prevnode.Y.W + Vector3.Distance(prevnode.Y.ToXYZ(), nextnode.Y.ToXYZ());
-                nodes[i] = nextnode;
+
+            float cumulativeDistance = 0;
+            Vector4 previousSample = samples[0];
+            LUTKey[] keys = new LUTKey[numPoints];
+            for (int i = 0; i < numPoints; i++) {
+                var sample = samples[i];
+                var distance = Vector3.Distance(sample.ToXYZ(), previousSample.ToXYZ());
+                cumulativeDistance += distance;
+                keys[i] = new(cumulativeDistance, sample);
+                previousSample = sample;
             }
-            this.Forward = new(nodes);
+            this.Forward = new(keys);
+            this.Length = cumulativeDistance;
 
             var reverseNodes = new LUTKey[numPoints];
             for (int i = 0; i < numPoints; i++) {
-                var node = nodes[^(i + 1)];
-                node.Y.W = nodes[^1].Y.W - node.Y.W;
+                var node = keys[^(i + 1)];
+                node.Y.W = keys[^1].Y.W - node.Y.W;
                 reverseNodes[i] = node;
             }
             this.Reverse = new(reverseNodes);
