@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using TranSimCS.Collections;
 using TranSimCS.Geometry;
+using TranSimCS.Roads.Range;
 using TranSimCS.Setting;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
@@ -36,7 +37,7 @@ namespace TranSimCS.Roads.Strip {
             var range = LaneStrip.Tag();
             var startT = range.startRange.Middle();
             var endT = range.endRange.Middle();
-            var points = LaneStrip.Road.GenerateOrthodistant(startT, -endT);
+            var points = LaneStrip.Road.GenerateOrthodistant(startT, endT);
             return new OrthodistantLUT(points);
         }
 
@@ -57,8 +58,7 @@ namespace TranSimCS.Roads.Strip {
                 var component = generatedComponents[j];
                 var surface = component.Item1;
                 var range = component.Item2;
-                var lspline = LaneStrip.Road.GenerateSpline(range.startLeft, range.endLeft);
-                var rspline = LaneStrip.Road.GenerateSpline(range.startRight, range.endRight);
+                var (lspline, rspline) = range.GenerateRoadSplineRange(LaneStrip.Road);
                 for(int k = 0; k < accuracy; k++) {
                     vertices[i, k] = lspline[k];
                     vertices[i+1, k] = rspline[k];

@@ -1,22 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using Clipper2Lib;
-using LanguageExt.ClassInstances;
-using LanguageExt.UnitsOfMeasure;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
-using MonoGame.Extended.Collections;
 using TranSimCS.Debugging;
 using TranSimCS.Geometry;
-using TranSimCS.Geometry.SplineFrames;
 using TranSimCS.Model;
-using TranSimCS.ModelOld;
 using TranSimCS.Polygons;
 using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Range;
 using TranSimCS.Setting;
 using TranSimCS.Spline;
 using static TranSimCS.Geometry.GeometryUtils;
@@ -58,7 +53,7 @@ namespace TranSimCS.Roads.Strip {
 
             //Calculate road length
             LaneRange topRange = connection.Bounds;
-            var (leftTop, rightTop) = RoadRenderer.GenerateSplines(topRange);
+            var (leftTop, rightTop) = LaneRangeMethods.GenerateSplines(topRange);
             var lengthL = CountLength(leftTop);
             var lengthR = CountLength(rightTop);
             var length = lengthL + lengthR;
@@ -75,7 +70,7 @@ namespace TranSimCS.Roads.Strip {
                 new(topRange.startRange.Min - breadth, topRange.startRange.Max + breadth),
                 new(topRange.endRange.Min - breadth, topRange.endRange.Max + breadth)
             );
-            var (leftDown, rightDown) = RoadRenderer.GenerateSplines(bottomRange, -height);
+            var (leftDown, rightDown) = LaneRangeMethods.GenerateSplines(bottomRange, -height);
 
             var splineFrame = connection.OrthodistantBasis;
             var bounds = connection.Bounds;
@@ -104,10 +99,10 @@ namespace TranSimCS.Roads.Strip {
             finishBin.DrawStrip(bottomPointsL, bottomPointsR);
 
             //Draw the endcaps
-            var leftUpStartPos = ((Vector3[]?)leftTop)[0];
-            var rightUpStartPos = ((Vector3[]?)rightTop)[0];
-            var rightDownStartPos = ((Vector3[]?)rightDown)[0];
-            var leftDownStartPos = ((Vector3[]?)leftDown)[0];
+            var leftUpStartPos = leftTop[0];
+            var rightUpStartPos = rightTop[0];
+            var rightDownStartPos = rightDown[0];
+            var leftDownStartPos = leftDown[0];
             GenerateEndCap(leftUpStartPos, rightUpStartPos, rightDownStartPos, leftDownStartPos, swidth, height, breadth, finishBin);
 
             var leftUpEndPos = leftTop.Last();
@@ -171,8 +166,8 @@ namespace TranSimCS.Roads.Strip {
                 widened.endRange = new(widened.endRange.Min - dwidth, widened.endRange.Max + dwidth);
                 var pos1L = widened.startRange.Min;
                 var pos1R = widened.startRange.Max;
-                var pos2L = widened.endRange.Min;
-                var pos2R = widened.endRange.Max;
+                var pos2L = -widened.endRange.Max;
+                var pos2R = -widened.endRange.Min;
                 int numberOfPoints = Settings.RoadAccuracy;
                 var path = new PathD();
                 for(int i = 0; i < numberOfPoints; i++) {

@@ -19,9 +19,9 @@ namespace TranSimCS.Model.OBJ {
         }
         public string MTLSibling(string sibling, string name) {
             name = name.EndsWith(".mtl") ? name : name + ".mtl";
-            try {
+            if (Path.IsPathFullyQualified(name)){
                 return fileOpener(name);
-            } catch (FileNotFoundException) {
+            } else {
                 var root = RemoveTopLevel(sibling);
                 var newpath = Path.Combine(root, name);
                 return newpath;

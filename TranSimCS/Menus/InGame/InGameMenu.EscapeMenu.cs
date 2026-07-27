@@ -70,6 +70,9 @@ namespace TranSimCS.Menus.InGame {
                     if (Debugger.IsAttached) throw; //Re-throw for debugging
                     OptionsDialog.FromError(parent, e, this).Show();
                     Logger.Error(e);
+                    #if (DEBUG)
+                    throw;
+                    #endif
                     return false;
                 }
                 return true;
@@ -86,6 +89,9 @@ namespace TranSimCS.Menus.InGame {
                     parent.World.SaveToFile(filename);
                 } catch (Exception e) {
                     OptionsDialog.FromError(parent, e, this).Show();
+                    #if (DEBUG)
+                    throw;
+                    #endif
                     return false;
                 }
                 parent.Overlay = this;

@@ -11,6 +11,7 @@ using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Marking;
 using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Setting;
 using TranSimCS.Spline;
@@ -30,14 +31,14 @@ namespace TranSimCS.Menus.InGame {
             var roadStrip = MouseOver?.GetRoadStrip();
             if((MouseOver?.SelectedObj is RoadStrip strip)) {
                 var fstag = strip.Bounds;
-                RoadRenderer.GenerateLaneRangeMesh(fstag, renderBin, nodecolor, 0.45f);
+                LaneRangeMethods.GenerateLaneRangeMesh(fstag, renderBin, nodecolor, 0.45f);
             }
 
             //If a road segment is selected, draw the selection
             if ((MouseOver?.Tag) is LaneStrip laneStrip) {
                 // Draw the selected lane tag with a different color
                 var laneTag = laneStrip.Tag();
-                RoadRenderer.GenerateLaneRangeMesh(laneTag, renderBin, lanecolor, 0.5f);
+                LaneRangeMethods.GenerateLaneRangeMesh(laneTag, renderBin, lanecolor, 0.5f);
             }
 
             //Draw the selected road node

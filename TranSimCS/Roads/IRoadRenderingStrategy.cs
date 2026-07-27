@@ -7,7 +7,7 @@ using Clipper2Lib;
 using TranSimCS.Geometry.SplineFrames;
 using TranSimCS.Model;
 using TranSimCS.Polygons;
-using TranSimCS.Roads.Strip;
+using TranSimCS.Roads.Range;
 
 namespace TranSimCS.Roads {
     /// <summary>

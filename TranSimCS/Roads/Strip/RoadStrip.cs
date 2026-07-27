@@ -7,6 +7,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Property;
 using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Section;
 using TranSimCS.Roads.StripGenerator;
 using TranSimCS.SceneGraph;
@@ -119,7 +120,6 @@ namespace TranSimCS.Roads.Strip {
             GeometryChanged?.Invoke(this);
         }
         protected static void GenerateMesh(RoadStrip segment, MultiMesh mesh) {
-
             //Check: If the road segment is a part of a road section, do not create its mesh
             var roadSectionA = segment.StartNode.ConnectedSection.Value;
             var roadSectionB = segment.EndNode.ConnectedSection.Value;
@@ -130,9 +130,9 @@ namespace TranSimCS.Roads.Strip {
             SegmentRenderer.GenerateRoadSegmentFullMesh(segment, mesh); // Otherwise, render the road segment
         }
 
-        public Vector3[] GenerateSpline(float startT, float endT, float y = 0) => GenerateSpline(new Vector3(startT, y, 0), new Vector3(endT, y, 0));
-        public OrthodistantBasis GenerateOrthodistant(float startT, float endT) => new(OrthodistantBasis.ReferenceSpline, OrthodistantBasis.NormalSpline, OrthodistantBasis.StartEndPosition + new Vector2(startT, endT));
-        public Vector3[] GenerateSpline(Vector3 start, Vector3 end) {
+        public Vector3[] GenerateSpline(float startT, float endT, float y = 0) => GenerateSplineHalfNode(new Vector3(startT, y, 0), new Vector3(endT, y, 0));
+        public OrthodistantBasis GenerateOrthodistant(float startT, float endT) => new(OrthodistantBasis.ReferenceSpline, OrthodistantBasis.NormalSpline, OrthodistantBasis.StartEndPosition + new Vector2(startT, -endT));
+        public Vector3[] GenerateSplineHalfNode(Vector3 start, Vector3 end) {
             var accuracy = Settings.RoadAccuracy;
             float step = 1 / (accuracy - 1.0f);
             var result = new Vector3[accuracy];

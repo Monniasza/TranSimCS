@@ -14,6 +14,7 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Section;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Worlds;
@@ -46,9 +47,9 @@ namespace TranSimCS.Tools {
                 case LaneStrip laneStrip:
                     var segment = laneStrip.Road;
                     var segmentTag = segment.Bounds;
-                    RoadRenderer.GenerateLaneRangeMesh(segmentTag, renderBin, red, v1);
+                    LaneRangeMethods.GenerateLaneRangeMesh(segmentTag, renderBin, red, v1);
                     var stripTag = laneStrip.Tag();
-                    RoadRenderer.GenerateLaneRangeMesh(stripTag, renderBin, orange, v2);
+                    LaneRangeMethods.GenerateLaneRangeMesh(stripTag, renderBin, orange, v2);
                     break;
                 case LaneEnd laneEnd:
                     selLane = laneEnd.lane;
@@ -61,7 +62,7 @@ namespace TranSimCS.Tools {
                     dependencies.AddRange(bw.ConnectedSegments);
                     foreach (var dependency in dependencies) {
                         var segmentTag2 = dependency.Bounds;
-                        RoadRenderer.GenerateLaneRangeMesh(segmentTag2, renderBin, red, v1);
+                        LaneRangeMethods.GenerateLaneRangeMesh(segmentTag2, renderBin, red, v1);
                     }
                     //Strips
                     var fwe = selLane.Front;
@@ -70,7 +71,7 @@ namespace TranSimCS.Tools {
                     laneDependencies.AddRange(dependencies.SelectMany(x => x.Lanes).Where(x => (x.StartLane.Lane == selLane || x.EndLane.Lane == selLane)));
                     foreach (var laneDependency in laneDependencies) {
                         var laneTag = laneDependency.Tag();
-                        RoadRenderer.GenerateLaneRangeMesh(laneTag, renderBin, orange, v2);
+                        LaneRangeMethods.GenerateLaneRangeMesh(laneTag, renderBin, orange, v2);
                     }
                     break;
                 case RoadSection roadSection:

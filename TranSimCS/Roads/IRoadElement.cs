@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Worlds;
 

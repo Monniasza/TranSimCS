@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MonoGame.Extended;
 using TranSimCS.Geometry;
+using TranSimCS.Roads.Range;
 using TranSimCS.Spline;
 
 namespace TranSimCS.Roads.Strip {
