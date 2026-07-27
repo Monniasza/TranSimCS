@@ -22,15 +22,24 @@ namespace TranSimCS.Spline {
             //Calculate the OrthonormalBasis parameters
             var sampledPosition = ReferenceSpline[t];
             var sampledNormal = NormalSpline[t];
-            var sampledTangent = ReferenceSpline.Tangential(t);
-            var binormal = Vector3.Cross(sampledNormal, sampledTangent).Normalized();
-            var normal = Vector3.Cross(sampledTangent, binormal).Normalized();
-            var tangent = sampledTangent.Normalized();
+            var sampledVelocity = ReferenceSpline.Tangential(t);
+            var binormal = Vector3.Cross(sampledNormal, sampledVelocity).Normalized();
+            var normal = Vector3.Cross(sampledVelocity, binormal).Normalized();
+            var tangent = sampledVelocity.Normalized();
+            const float epsilon = 0.001f;
+            var nextTangent = ReferenceSpline.Tangential(t + epsilon);
+            var nextNormal = NormalSpline[t + epsilon];
+            var nextBinormal = Vector3.Cross(nextNormal, nextTangent).Normalized();
+            var binormalVelocity = (nextBinormal - binormal) / epsilon;
+            var tangentVelocity = (nextTangent - tangent) / epsilon;
+            var normalVelocity = (nextNormal - normal) / epsilon;
 
             var distanceSmoothstep = Vector3.SmoothStep(startPosition, endPosition, t);
-            var position = sampledPosition + binormal*distanceSmoothstep.X + normal*distanceSmoothstep.Y + tangent*distanceSmoothstep.Z;
+            var offset = binormal * distanceSmoothstep.X + normal * distanceSmoothstep.Y + tangent * distanceSmoothstep.Z;
+            var position = sampledPosition + offset;
             var sideVelocity = (endPosition - startPosition) * 6 * t * (1 - t);
-            var linearVelocity = sampledTangent + sideVelocity;
+            var frameVelocity = binormalVelocity * distanceSmoothstep.X + normalVelocity*distanceSmoothstep.Y + tangentVelocity*distanceSmoothstep.Z;
+            var linearVelocity = sampledVelocity + sideVelocity + frameVelocity;
             
             tangent = linearVelocity.Normalized();
             binormal = Vector3.Cross(sampledNormal, linearVelocity).Normalized();

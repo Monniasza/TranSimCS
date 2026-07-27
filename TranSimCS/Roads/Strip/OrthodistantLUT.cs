@@ -34,7 +34,7 @@ namespace TranSimCS.Roads.Strip {
 
             var reverseNodes = new LUTKey[numPoints];
             for (int i = 0; i < numPoints; i++) {
-                var node = nodes[^(i - 1)];
+                var node = nodes[^(i + 1)];
                 node.Y.W = nodes[^1].Y.W - node.Y.W;
                 reverseNodes[i] = node;
             }
