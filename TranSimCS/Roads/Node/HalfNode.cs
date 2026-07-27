@@ -26,6 +26,10 @@ namespace TranSimCS.Roads.Node {
         internal HashSet<RoadStripHalf> _connectedRoadStrips;
         public ReadOnlySet<RoadStripHalf> ConnectedRoadStrips { get; private set; }
 
+        //Indexing component for the road node, maintained by the World class
+        internal ISet<RoadStrip> connectedSegments = new HashSet<RoadStrip>(); // Connections to other road segments
+        public ISet<RoadStrip> ConnectedSegments => new ReadOnlySet<RoadStrip>(connectedSegments); // Expose the connections set
+
         //The constructor
         internal HalfNode(RoadNode roadNode, NodeEnd end) {
             RoadNode = roadNode;

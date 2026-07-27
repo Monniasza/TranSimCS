@@ -206,6 +206,6 @@ namespace TranSimCS.Roads.Node {
         public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => SelectionMesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
 
         //Connections (maintained by the node ends)
-        public IEnumerable<RoadStrip> Connections => RearEnd.ConnectedSegments.Union(FrontEnd.ConnectedSegments);
+        public IEnumerable<RoadStrip> Connections => RearHalf.ConnectedSegments.Union(FrontHalf.ConnectedSegments);
     }
 }

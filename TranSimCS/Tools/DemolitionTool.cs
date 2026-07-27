@@ -55,8 +55,8 @@ namespace TranSimCS.Tools {
                     selLane = laneEnd.lane;
 
                     //Segments
-                    var fw = roadNode.FrontEnd;
-                    var bw = roadNode.RearEnd;
+                    var fw = roadNode.FrontHalf;
+                    var bw = roadNode.RearHalf;
                     var dependencies = new List<RoadStrip>();
                     dependencies.AddRange(fw.ConnectedSegments);
                     dependencies.AddRange(bw.ConnectedSegments);

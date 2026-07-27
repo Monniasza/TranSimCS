@@ -29,10 +29,12 @@ namespace TranSimCS.Worlds {
             segment.PropertyChanged += HandleChangeRoadSegment;
 
             //Link the road strip to half-nodes
-            var startHalf = segment.StartNode.RoadNode.GetHalfNode(segment.StartNode.End);
-            var endHalf = segment.EndNode.RoadNode.GetHalfNode(segment.EndNode.End);
+            var startHalf = segment.StartNode;
+            var endHalf = segment.EndNode;
             startHalf._connectedRoadStrips.Add(new(segment, SegmentHalf.Start));
             endHalf._connectedRoadStrips.Add(new(segment, SegmentHalf.End));
+            startHalf.connectedSegments.Add(segment);
+            endHalf.connectedSegments.Add(segment);
 
             //Link the road strip to a section
             var sectionA = segment.StartNode.ConnectedSection.Value;
@@ -60,6 +62,8 @@ namespace TranSimCS.Worlds {
             var endHalf = segment.EndNode.RoadNode.GetHalfNode(segment.EndNode.End);
             startHalf._connectedRoadStrips.Remove(new(segment, SegmentHalf.Start));
             endHalf._connectedRoadStrips.Remove(new(segment, SegmentHalf.End));
+            startHalf.connectedSegments.Remove(segment);
+            endHalf.connectedSegments.Remove(segment);
 
             //Remove connections from the road segment. More events will be fired.
             var lanes = segment.Lanes.ToArray();

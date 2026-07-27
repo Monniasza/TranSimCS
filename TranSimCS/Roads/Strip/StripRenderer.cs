@@ -37,13 +37,10 @@ namespace TranSimCS.Roads.Strip {
             var nrm = centerframe.Y;
             if (tangent.LengthSquared() >= 0.0000001){
                 tangent.Normalize();
-                var fakebinormal = binormal;
-                var width = Vector3.Cross(tangent, fakebinormal).Length() * averageStripWidth;
-                var normalfakebirnormal = Vector3.Normalize(fakebinormal);
                 nrm.Normalize();
 
-                var arrowWidth = width / 2;
-                var displacement = tangent * width / 2;
+                var arrowWidth = averageStripWidth / 2;
+                var displacement = tangent * averageStripWidth / 2;
                 midpoint += nrm * aoffset;
                 if (laneStrip.IsReverse()) displacement *= -1;
 
@@ -120,8 +117,6 @@ namespace TranSimCS.Roads.Strip {
             var isMerge = (laneStrip.Spec.Flags & LaneFlags.IsMerge) != 0;
 
             if (mergeLeft && mergeRight) return;
-            var swapMerges = isMerge ? laneStrip.EndLane.End == Node.NodeEnd.Backward : laneStrip.StartLane.End == Node.NodeEnd.Backward;
-            if (swapMerges) DataUtil.Swap(ref mergeLeft, ref mergeRight);
 
             //Get tags
             var roadTag = laneStrip.Road.Bounds;
@@ -158,8 +153,8 @@ namespace TranSimCS.Roads.Strip {
             //Do merges
             if (isMerge) {
                 //Merge the end
-                if (mergeLeft) endRight = endLeft + linewidth;
-                if (mergeRight) endLeft = endRight - linewidth;
+                if (mergeLeft) endLeft = endRight + linewidth;
+                if (mergeRight) endRight = endLeft - linewidth;
             } else {
                 //Merge the start
                 if (mergeLeft) startRight = startLeft + linewidth;
