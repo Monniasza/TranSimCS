@@ -158,10 +158,12 @@ namespace TranSimCS.Worlds.Car {
                     //ASSERT T is valid
                     if (!float.IsFinite(LanePosition.LaneArcLength)) throw new ArithmeticException("Invalid newT");
 
-                    if (LanePosition.LaneArcLength < 0) {
+                    var overflowIsRear = LanePosition.LaneArcLength < 0 ^ LanePosition.IsReverse;
+
+                    if (overflowIsRear) {
                         //Passed the beginning
                         Overflow(SegmentHalf.Start);
-                    } else if (LanePosition.LaneArcLength > maxLength) {
+                    } else {
                         //Passed the end
                         Overflow(SegmentHalf.End);
                     }
@@ -171,8 +173,8 @@ namespace TranSimCS.Worlds.Car {
 
                 //Put the car in the world
                 var laneStrip = LanePosition.LaneStrip;
-                var positionCache = laneStrip.SplineLUT;
                 var isReverseToRoadDirection = laneStrip.IsReverse() ^ LanePosition.IsReverse;
+                var positionCache = laneStrip.SplineLUT;
                 var positionLUT = isReverseToRoadDirection ?
                     positionCache.Reverse : positionCache.Forward;
 
