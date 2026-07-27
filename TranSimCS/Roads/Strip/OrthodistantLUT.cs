@@ -24,8 +24,8 @@ namespace TranSimCS.Roads.Strip {
             var t = minT;
             var inc = (maxT - minT) / (numPoints - 1);
             for (int i = 0; i < numPoints; i++) {
-                var sample = spline.Sample(t);
-                samples[i] = new(sample.O, t);
+                var sample = spline.SamplePosition(t);
+                samples[i] = new(sample, t);
                 t += inc;
             }
 
@@ -45,7 +45,7 @@ namespace TranSimCS.Roads.Strip {
             var reverseNodes = new LUTKey[numPoints];
             for (int i = 0; i < numPoints; i++) {
                 var node = keys[^(i + 1)];
-                node.Y.W = keys[^1].Y.W - node.Y.W;
+                node.X = cumulativeDistance - node.X;
                 reverseNodes[i] = node;
             }
             this.Reverse = new(reverseNodes);

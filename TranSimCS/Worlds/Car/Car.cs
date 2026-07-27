@@ -172,7 +172,8 @@ namespace TranSimCS.Worlds.Car {
                 //Put the car in the world
                 var laneStrip = LanePosition.LaneStrip;
                 var positionCache = laneStrip.SplineLUT;
-                var positionLUT = laneStrip.IsReverse() ?
+                var isReverseToRoadDirection = laneStrip.IsReverse() ^ LanePosition.IsReverse;
+                var positionLUT = isReverseToRoadDirection ?
                     positionCache.Reverse : positionCache.Forward;
 
                 var xyzt = positionLUT[LanePosition.LaneArcLength];
@@ -181,15 +182,17 @@ namespace TranSimCS.Worlds.Car {
                 var t = xyzt.W;
                 if (!float.IsFinite(t)) throw new ArithmeticException("Invalid spline paramater ");
 
-                var referenceFrame = laneStrip.Road.OrthodistantBasis.Sample(t);
+                var referenceFrame = laneStrip.SplineLUT.spline.SampleFrame(t);
                 var lateral = referenceFrame.X;
                 VectorMethods.CheckVector(lateral, "lateral");
                 var tangential = referenceFrame.Z;
                 VectorMethods.CheckVector(tangential, "tangential");
-                if (LanePosition.IsReverse ^ laneStrip.IsReverse()) {
+                if (isReverseToRoadDirection) {
                     tangential *= -1;
                     lateral *= -1;
                 }
+
+                xyz = referenceFrame.O;
 
                 var newCoords = PositionEulerAngles.FromPosTangentLateral(xyz, tangential, lateral);
                 

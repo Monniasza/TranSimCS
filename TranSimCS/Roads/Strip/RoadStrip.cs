@@ -160,8 +160,8 @@ namespace TranSimCS.Roads.Strip {
                 //Sample the OrthonormalBasis
                 for(int i = 0; i < accuracy; i++) {
                     var t = i * step;
-                    var sample = OrthodistantBasis.Sample(t, start, end * new Vector3(-1, 1, -1));
-                    result[i] = sample.O;
+                    var sample = OrthodistantBasis.SamplePosition(t, start, end * new Vector3(-1, 1, -1));
+                    result[i] = sample;
                 }
             }
             return result;

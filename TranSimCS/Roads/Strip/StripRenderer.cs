@@ -30,7 +30,7 @@ namespace TranSimCS.Roads.Strip {
             var basis = laneStrip.Road.GenerateOrthodistant(tag.startRange.Middle(), tag.endRange.Middle());
 
             float aoffset = 0.15f;
-            var centerframe = basis.Sample(0.5f);
+            var centerframe = basis.SampleFrame(0.5f);
             var binormal = centerframe.X;
             var midpoint = centerframe.O;
             var tangent = centerframe.Z;

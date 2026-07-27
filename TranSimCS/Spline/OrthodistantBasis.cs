@@ -13,39 +13,31 @@ namespace TranSimCS.Spline {
             StartEndPosition = startEndPosition;
         }
 
-        public Transform3 Sample(float t) => Sample(t, 0, 0);
-        public Transform3 Sample(float t, float offsetStart, float offsetEnd) => Sample(t, offsetStart * Vector3.UnitX, offsetEnd * Vector3.UnitX);
-        public Transform3 Sample(float t, Vector3 offsetStart, Vector3 offsetEnd) {
+        public Transform3 SampleFrame(float t) => SampleFrame(t, 0, 0);
+        public Transform3 SampleFrame(float t, float offsetStart, float offsetEnd) => SampleFrame(t, offsetStart * Vector3.UnitX, offsetEnd * Vector3.UnitX);
+        public Transform3 SampleFrame(float t, Vector3 offsetStart, Vector3 offsetEnd) {
+            const float epsilon = 0.001f;
+            var prevPos = SamplePosition(t, offsetStart, offsetEnd);
+            var nextPos = SamplePosition(t+epsilon, offsetStart, offsetEnd);
+
+            var velocity = (nextPos - prevPos) / epsilon;
+            var sampledNormal = NormalSpline[t];
+
+            var tangent = velocity.Normalized();
+            var binormal = Vector3.Cross(sampledNormal, velocity).Normalized();
+            var normal = Vector3.Cross(velocity, binormal).Normalized();
+
+            return new(binormal, normal, tangent, prevPos);
+        }
+
+        public Vector3 SamplePosition(float t) => SamplePosition(t, 0, 0);
+        public Vector3 SamplePosition(float t, float offsetStart, float offsetEnd) => SamplePosition(t, offsetStart * Vector3.UnitX, offsetEnd * Vector3.UnitX);
+        public Vector3 SamplePosition(float t, Vector3 offsetStart, Vector3 offsetEnd) {
             var startPosition = offsetStart + Vector3.UnitX * StartEndPosition.X;
             var endPosition = offsetEnd + Vector3.UnitX * StartEndPosition.Y;
-
-            //Calculate the OrthonormalBasis parameters
-            var sampledPosition = ReferenceSpline[t];
-            var sampledNormal = NormalSpline[t];
-            var sampledVelocity = ReferenceSpline.Tangential(t);
-            var binormal = Vector3.Cross(sampledNormal, sampledVelocity).Normalized();
-            var normal = Vector3.Cross(sampledVelocity, binormal).Normalized();
-            var tangent = sampledVelocity.Normalized();
-            const float epsilon = 0.001f;
-            var nextTangent = ReferenceSpline.Tangential(t + epsilon);
-            var nextNormal = NormalSpline[t + epsilon];
-            var nextBinormal = Vector3.Cross(nextNormal, nextTangent).Normalized();
-            var binormalVelocity = (nextBinormal - binormal) / epsilon;
-            var tangentVelocity = (nextTangent - tangent) / epsilon;
-            var normalVelocity = (nextNormal - normal) / epsilon;
-
-            var distanceSmoothstep = Vector3.SmoothStep(startPosition, endPosition, t);
-            var offset = binormal * distanceSmoothstep.X + normal * distanceSmoothstep.Y + tangent * distanceSmoothstep.Z;
-            var position = sampledPosition + offset;
-            var sideVelocity = (endPosition - startPosition) * 6 * t * (1 - t);
-            var frameVelocity = binormalVelocity * distanceSmoothstep.X + normalVelocity*distanceSmoothstep.Y + tangentVelocity*distanceSmoothstep.Z;
-            var linearVelocity = sampledVelocity + sideVelocity + frameVelocity;
-            
-            tangent = linearVelocity.Normalized();
-            binormal = Vector3.Cross(sampledNormal, linearVelocity).Normalized();
-            normal = Vector3.Cross(linearVelocity, binormal).Normalized();
-
-            return new(binormal, normal, tangent, position);
+            var smoothstepOffset = Vector3.SmoothStep(startPosition, endPosition, t);
+            var orthonormalSample = new OrthonormalBasis(ReferenceSpline, NormalSpline).Sample(t);
+            return orthonormalSample.Transform(smoothstepOffset);
         }
     }
 }

@@ -246,7 +246,7 @@ namespace TranSimCS.Roads.Strip {
         }
         public static Vector3 RetransformOne(OrthodistantBasis frame, PointD vector, float z = 0){
             var offsetVector = new Vector3((float)vector.x, z, 0);
-            return frame.Sample((float)vector.y, offsetVector, offsetVector).O;
+            return frame.SamplePosition((float)vector.y, offsetVector, offsetVector);
         }
 
         public static void GenerateEndCap(Vector3 ul, Vector3 ur, Vector3 dr, Vector3 dl, float width, float height, float expand, Mesh mesh) {
