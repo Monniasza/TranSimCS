@@ -52,7 +52,7 @@ namespace TranSimCS.Roads.Strip {
             }
         }
 
-        private List<LaneConnectionData> data;
+        private List<LaneConnectionData> data = new();
         public ReadOnlyCollection<LaneConnectionData> LaneConnections => new(data);
         public void AddConnection(LaneConnectionData connection) {
             ArgumentNullException.ThrowIfNull(connection.StartNode, "connection.StartNode");
@@ -82,6 +82,7 @@ namespace TranSimCS.Roads.Strip {
         //Caches
         private OrthodistantBasis? _splineFrame;
         public OrthodistantBasis OrthodistantBasis => _splineFrame ??= GenerateOrthodistantBasis();
+        private OrthodistantBasis GenerateOrthodistantBasis() => IndexSpline.ToOrthodistantBasis(StartPos, EndPos);
 
         internal RoadStripData(RoadDataBuilder rdb) {
             Finish = rdb.RoadFinish;
@@ -107,10 +108,10 @@ namespace TranSimCS.Roads.Strip {
         }
 
         //Caches
-        private OrthodistantLUT? _centerLUT;
+        /*private OrthodistantLUT? _centerLUT;
         public OrthodistantLUT CenterLUT => _centerLUT ??= GenerateCenterLineLUT();
 
         private GridMesh<Vector3, RoadSplineComponent>? _allStrips;
-        public GridMesh<Vector3, RoadSplineComponent> AllStrips => _allStrips ??= GenerateStripList();
+        public GridMesh<Vector3, RoadSplineComponent> AllStrips => _allStrips ??= GenerateStripList();*/
     }
 }

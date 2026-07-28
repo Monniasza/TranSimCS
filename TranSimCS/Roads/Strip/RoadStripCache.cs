@@ -12,15 +12,34 @@ namespace TranSimCS.Roads.Strip {
     public class RoadStripCache {
         public RoadStrip RoadStrip { get; private set; }
 
+        private RoadStripData? _roadStripData;
+        public RoadStripData RoadStripData => _roadStripData ??= GenerateRoadStripData();
+
         private LaneRange? _bounds;
         public LaneRange Bounds => _bounds ??= GenerateBounds();
-        private OrthodistantBasis? _splineFrame;
-        public OrthodistantBasis OrthodistantBasis => _splineFrame ??= GenerateOrthodistantBasis();
+        public OrthodistantBasis OrthodistantBasis => RoadStripData.OrthodistantBasis;
         private IndexSpline? _indexStrip;
-        public IndexSpline IndexStrip => _indexStrip ??= GenerateIndexStrip();
+        public IndexSpline IndexStrip => RoadStripData.IndexSpline;
 
         public RoadStripCache(RoadStrip roadStrip) {
             RoadStrip = roadStrip;
+        }
+
+        private RoadStripData GenerateRoadStripData() {
+            RoadDataBuilder builder = new();
+            builder.RoadFinish = RoadStrip.Finish;
+            builder.EndLanes = RoadStrip.EndNode.NodeSpec;
+            builder.StartLanes = RoadStrip.StartNode.NodeSpec;
+            builder.EndPos = RoadStrip.EndNode.PositionProp.Value;
+            builder.StartPos = RoadStrip.StartNode.PositionProp.Value;
+            builder.IndexSpline = GenerateIndexStrip();
+            foreach(var strip in RoadStrip.Lanes) {
+                var start = strip.StartLane.LaneNode;
+                var end = strip.EndLane.LaneNode;
+                var spec = strip.Spec;
+                builder.AddConnection(start, end, spec);
+            }
+            return builder.Create();
         }
 
         private IndexSpline GenerateIndexStrip() {
@@ -32,7 +51,7 @@ namespace TranSimCS.Roads.Strip {
                 return RoadStrip.SplineGenerator.GenerateSplines(RoadStrip);
             }
         }
-        private OrthodistantBasis GenerateOrthodistantBasis() => IndexStrip.ToOrthodistantBasis(RoadStrip.StartNode, RoadStrip.EndNode);
+        
         private LaneRange GenerateBounds() {
             Range<float> startRange = default;
             Range<float> endRange = default;

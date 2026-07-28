@@ -9,6 +9,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Geometry.SplineFrames;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.Spline {
     public struct IndexSpline{
@@ -20,24 +21,19 @@ namespace TranSimCS.Spline {
             End = end;
         }
 
-        public Bezier3 Derive(HalfNode startNode, HalfNode endNode) {
-            var start = startNode.Cache.ReferenceFrame;
-            var end = endNode.Cache.ReferenceFrame;
-            Bezier3 result = new();
-            result.a = start.O + start.X * Start.Offset;
-            result.d = end.O + end.X * End.Offset;
-            result.b = result.a + Start.Tangent;
-            result.c = result.d + End.Tangent;
-            return result;
-        }
-
-        public OrthodistantBasis ToOrthodistantBasis(HalfNode startNode, HalfNode endNode) {
+        public OrthodistantBasis ToOrthodistantBasis(PositionEulerAngles startNode, PositionEulerAngles endNode) {
             //Derive the index splines
-            var positionSpline = Derive(startNode, endNode);
+            var start = startNode.CalcReferenceFrame();
+            var end = endNode.CalcReferenceFrame();
+            Bezier3 positionSpline = new();
+            positionSpline.a = start.O + start.X * Start.Offset;
+            positionSpline.d = end.O + end.X * End.Offset;
+            positionSpline.b = positionSpline.a + Start.Tangent;
+            positionSpline.c = positionSpline.d + End.Tangent;
 
             //Calculate the Y spline
-            var startYVector = startNode.Cache.ReferenceFrame.Y;
-            var endYVector = endNode.Cache.ReferenceFrame.Y;
+            var startYVector = start.Y;
+            var endYVector = end.Y;
 
             Bezier3 ySpline = new(
                 startYVector,
