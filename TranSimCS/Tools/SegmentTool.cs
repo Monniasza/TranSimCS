@@ -181,7 +181,7 @@ namespace TranSimCS.Tools {
             var apshaltBin = Menu.renderHelper.GetOrCreateRenderBinForced(material);
             var leftPoints = GeometryUtils.GenerateSplinePoints(State.GeneratedSplines.left, accuracy);
             var rightPoints = GeometryUtils.GenerateSplinePoints(State.GeneratedSplines.right, accuracy);
-            var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftPoints, rightPoints, StripRenderer.GenerateLaneStripVertexGen(previewColor));
+            var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftPoints, rightPoints, UniformTexturing.GenerateLaneStripVertexGen(previewColor));
             apshaltBin.DrawStrip(generatedVertStripPair);
 
             //Generate a preview of the node position

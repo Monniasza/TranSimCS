@@ -9,7 +9,7 @@ using TranSimCS.Roads.Range;
 using TranSimCS.Setting;
 
 namespace TranSimCS.Roads.Strip {
-    public static partial class StripRenderer {
+    public static class StripRenderer {
 
         public delegate void StripBoundsGenerator(LaneStrip laneStrip, Action<RoadSplineComponent, RoadSplineRange> pushResults);
         public static event StripBoundsGenerator OnLaneStripGenerated;
@@ -61,7 +61,7 @@ namespace TranSimCS.Roads.Strip {
                 if(mat == null) continue;
                 var leftLinePoints = arrays[line.MinIndex];
                 var rightLinePoints = arrays[line.MaxIndex];
-                var generatedLineVertStripPair = UniformTexturing.UniformTexturedTwin(leftLinePoints, rightLinePoints, GenerateLaneStripVertexGen(line.Value.Color), line.Value.Bias);             
+                var generatedLineVertStripPair = UniformTexturing.UniformTexturedTwin(leftLinePoints, rightLinePoints, TranSimCS.Model.UniformTexturing.GenerateLaneStripVertexGen(line.Value.Color), line.Value.Bias);             
                 var lineBin = renderer.GetOrCreateRenderBinForced(mat.Value);
                 lineBin.DrawStrip(generatedLineVertStripPair);
             }
@@ -178,18 +178,6 @@ namespace TranSimCS.Roads.Strip {
         public static LaneRange LaneStripToRoadStripRange(LaneStrip strip, Range<float> startRange, Range<float> endRange) {
             if (strip.IsReverse()) DataUtil.Swap(ref startRange, ref endRange);
             return new(strip.Road, startRange, endRange);
-        }
-
-        public static VertexGen2<VertexPositionColorTexture> GenerateLaneStripVertexGen(LaneSpec spec) => GenerateLaneStripVertexGen(spec.Color);
-        public static VertexGen2<VertexPositionColorTexture> GenerateLaneStripVertexGen(Color c) {
-            (VertexPositionColorTexture, VertexPositionColorTexture) GenerateVertices(Vector3 l, Vector3 r, float distance, int index) {
-                float mutualDistance = Vector3.Distance(l, r) / 2;
-                return (
-                    new VertexPositionColorTexture(l, c, new(-mutualDistance, distance)),
-                    new VertexPositionColorTexture(r, c, new(mutualDistance, distance))
-                );
-            }
-            return GenerateVertices;
         }
     }
 }

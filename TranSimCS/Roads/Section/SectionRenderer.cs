@@ -304,7 +304,7 @@ namespace TranSimCS.Roads.Section {
                 }
                 
 
-                var generatedSplines = UniformTexturing.UniformTexturedTwin(topPoints, bottomPoints, UniformTexturing.PairStrip(0, sideLen, Color.White));
+                var generatedSplines = UniformTexturing.UniformTexturedTwin(topPoints, bottomPoints, UniformTexturing.GenerateLaneStripVertexGen(Color.White));
                 finishMesh.DrawStrip(generatedSplines);
             }
 

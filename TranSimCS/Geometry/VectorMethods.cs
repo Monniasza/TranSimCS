@@ -41,5 +41,8 @@ namespace TranSimCS.Geometry {
 
         public static Vector3 ToXYZ(this Vector4 vector) =>
             new Vector3(vector.X, vector.Y, vector.Z);
+
+        public static float Average(this Vector2 vector) => (vector.X + vector.Y) / 2;
+        public static float Lerp(this Vector2 vector, float t) => MathHelper.Lerp(vector.X, vector.Y, t);
     }
 }

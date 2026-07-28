@@ -225,7 +225,7 @@ namespace TranSimCS.Roads.Strip {
                 var retransformedPoints = Retransform(frm, untransformedPath, 0);
                 var retransformedPointsCyclic = retransformedPoints.Append(retransformedPoints.First()).ToArray();
                 var retransformedPointsUpCyclic = retransformedPointsUp.Append(retransformedPointsUp.First()).ToArray();
-                var texturedStrip = UniformTexturing.UniformTexturedTwin(retransformedPointsCyclic, retransformedPointsUpCyclic, UniformTexturing.PairStrip());
+                var texturedStrip = UniformTexturing.UniformTexturedTwin(retransformedPointsCyclic, retransformedPointsUpCyclic, UniformTexturing.GenerateLaneStripVertexGen(Color.White));
                 sideRenderBin.DrawStrip(texturedStrip.Item2, texturedStrip.Item1);
             }
             if(mesh.TryGetOrCreateRenderBin(surface.GetTexture(), out var topRenderBin)) {
