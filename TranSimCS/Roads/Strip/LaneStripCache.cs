@@ -22,54 +22,22 @@ namespace TranSimCS.Roads.Strip {
             LaneStrip = laneStrip;
         }
         public void Invalidate() {
-            _centerLUT = null;
-            _allStrips = null;
+            _laneStripData = null;
         }
 
         //Caches
-        private OrthodistantLUT? _centerLUT;
-        public OrthodistantLUT CenterLUT => _centerLUT ??= GenerateCenterLineLUT();
+        public OrthodistantLUT CenterLUT => LaneStripData.CenterLUT;
+        public GridMesh<Vector3, RoadSplineComponent> AllStrips => LaneStripData.AllStrips;
 
-        private GridMesh<Vector3, RoadSplineComponent>? _allStrips;
-        public GridMesh<Vector3, RoadSplineComponent> AllStrips => _allStrips ??= GenerateStripList();
+        private LaneStripData? _laneStripData;
+        public LaneStripData LaneStripData => _laneStripData ??= GenerateLaneStripData();
 
-        private OrthodistantLUT? GenerateCenterLineLUT() {
-            var range = LaneStrip.Tag();
-            var startT = range.startRange.Middle();
-            var endT = range.endRange.Middle();
-            var points = LaneStrip.Road.GenerateOrthodistant(startT, endT);
-            return new OrthodistantLUT(points);
-        }
-
-        private GridMesh<Vector3, RoadSplineComponent> GenerateStripList(){
-            //Accumulate components from listeners
-            var generatedComponents = StripRenderer.GenerateStripSplineComponents(LaneStrip);
-
-            //Generate spline strips
-            var vertcount = generatedComponents.Length * 2;
-            var accuracy = Settings.RoadAccuracy;
-            Vector3[,] vertices = new Vector3[vertcount, accuracy];
-
-            var records = new GridCrossSectionalRecord<RoadSplineComponent>[generatedComponents.Length];
-
-            //Generate a GridMesh
-            for (int i = 0; i < vertcount; i += 2) {
-                var j = i / 2;
-                var component = generatedComponents[j];
-                var surface = component.Item1;
-                var range = component.Item2;
-                var (lspline, rspline) = range.GenerateRoadSplineRange(LaneStrip.Road);
-                for(int k = 0; k < accuracy; k++) {
-                    vertices[i, k] = lspline[k];
-                    vertices[i+1, k] = rspline[k];
-                }
-                records[j] = new(i, i + 1, surface);
-            }
-
-            return new GridMesh<Vector3, RoadSplineComponent>(Immutable2DArray<Vector3>.Wrap(vertices), records.ToImmutableArray());
-        }
-        
         //Generation methods
-        
+        private LaneStripData GenerateLaneStripData() {
+            var rsd = LaneStrip.Road.RoadStripData;
+            var foundLSD = rsd.LaneConnections[LaneStrip.LaneConnectionData];
+            Debug.Assert(foundLSD != null, "Lane not found in LaneStrip.Road.RoadStripData");
+            return foundLSD;
+        }
     }
 }

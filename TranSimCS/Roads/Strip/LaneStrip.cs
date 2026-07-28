@@ -13,6 +13,7 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
+using static TranSimCS.Roads.Strip.RoadDataBuilder;
 
 namespace TranSimCS.Roads.Strip {
     public class LaneStrip : IEquatable<LaneStrip?>, IDraggableObj, IRoadElement {
@@ -56,8 +57,8 @@ namespace TranSimCS.Roads.Strip {
                 _spec = value;
             }
         }
-        
 
+        public LaneConnectionData LaneConnectionData => new(Spec, StartLane.LaneNode, EndLane.LaneNode);
         public LaneRange Tag() {
             var startRange = StartLane.Bounds;
             var endRange = EndLane.Bounds;
@@ -76,13 +77,14 @@ namespace TranSimCS.Roads.Strip {
         private readonly LaneStripCache _cache;
         public OrthodistantLUT SplineLUT => _cache.CenterLUT;
         public GridMesh<Vector3, RoadSplineComponent> AllStrips => _cache.AllStrips;
+        public LaneStripData LaneStripData => _cache.LaneStripData;
 
         //Mesh cache
         private MultiMesh? mesh; // Cached mesh for the lane strip
         public MultiMesh GetMesh() {
             if (mesh == null) {
                 mesh = new MultiMesh(); // Create a new mesh if it doesn't exist
-                StripRenderer.GenerateLaneStripMesh(this, mesh); // Generate the mesh for the lane strip if it doesn't exist
+                StripRenderer.GenerateLaneStripMesh(LaneStripData, mesh, this); // Generate the mesh for the lane strip if it doesn't exist
             }
             return mesh; // Return the cached mesh
         }

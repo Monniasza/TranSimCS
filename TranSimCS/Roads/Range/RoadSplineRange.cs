@@ -20,9 +20,9 @@ namespace TranSimCS.Roads.Range {
         }
     }
     public static class RoadSplineRangeMethods {
-        public static (Vector3[] Left, Vector3[] Right) GenerateRoadSplineRange(this RoadSplineRange range, RoadStrip strip) => (
-            strip.GenerateSplineHalfNode(range.startLeft, range.endLeft),
-            strip.GenerateSplineHalfNode(range.startRight, range.endRight)
+        public static (Vector3[] Left, Vector3[] Right) GenerateRoadSplineRange(this RoadSplineRange range, RoadStripData strip) => (
+            RoadStrip.GenerateSplineHalfNode(strip, range.startLeft, range.endLeft),
+            RoadStrip.GenerateSplineHalfNode(strip, range.startRight, range.endRight)
         );
     }
 }

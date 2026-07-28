@@ -13,6 +13,9 @@ namespace TranSimCS.Spline {
             StartEndPosition = startEndPosition;
         }
 
+        public OrthodistantBasis Offset(float startOffset, float endOffset) => Offset(new(startOffset, endOffset));
+        public OrthodistantBasis Offset(Vector2 offset) => new OrthodistantBasis(ReferenceSpline, NormalSpline, StartEndPosition + offset);
+
         public Transform3 SampleFrame(float t) => SampleFrame(t, 0, 0);
         public Transform3 SampleFrame(float t, float offsetStart, float offsetEnd) => SampleFrame(t, offsetStart * Vector3.UnitX, offsetEnd * Vector3.UnitX);
         public Transform3 SampleFrame(float t, Vector3 offsetStart, Vector3 offsetEnd) {

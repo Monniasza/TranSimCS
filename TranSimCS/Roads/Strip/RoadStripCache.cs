@@ -33,12 +33,8 @@ namespace TranSimCS.Roads.Strip {
             builder.EndPos = RoadStrip.EndNode.PositionProp.Value;
             builder.StartPos = RoadStrip.StartNode.PositionProp.Value;
             builder.IndexSpline = GenerateIndexStrip();
-            foreach(var strip in RoadStrip.Lanes) {
-                var start = strip.StartLane.LaneNode;
-                var end = strip.EndLane.LaneNode;
-                var spec = strip.Spec;
-                builder.AddConnection(start, end, spec);
-            }
+            foreach(var strip in RoadStrip.Lanes) 
+                builder.AddConnection(strip.LaneConnectionData);
             return builder.Create();
         }
 

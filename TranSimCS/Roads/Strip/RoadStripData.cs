@@ -5,9 +5,13 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Iesi.Collections.Generic;
+using Microsoft.Xna.Framework;
+using TranSimCS.Collections;
 using TranSimCS.Geometry;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
+using TranSimCS.Setting;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
@@ -52,11 +56,12 @@ namespace TranSimCS.Roads.Strip {
             }
         }
 
-        private List<LaneConnectionData> data = new();
-        public ReadOnlyCollection<LaneConnectionData> LaneConnections => new(data);
+        private HashSet<LaneConnectionData> data = new();
+        public ReadOnlySet<LaneConnectionData> LaneConnections => new(data);
         public void AddConnection(LaneConnectionData connection) {
             ArgumentNullException.ThrowIfNull(connection.StartNode, "connection.StartNode");
             ArgumentNullException.ThrowIfNull(connection.EndNode, "connection.EndNode");
+            if (data.Contains(connection)) throw new ArgumentException("Connection already exists");
             bool isContained = StartLanes.Contains(connection.StartNode) ? EndLanes.Contains(connection.EndNode)
                 : StartLanes.Contains(connection.EndNode) && EndLanes.Contains(connection.StartNode);
             if (!isContained) throw new ArgumentException("Connection is not contained within lane set. Try setting lanes first.");
@@ -69,20 +74,26 @@ namespace TranSimCS.Roads.Strip {
     }
 
     public sealed class RoadStripData {
-        
-
         public RoadFinish Finish {get; private set; }
         public IndexSpline IndexSpline { get; private set; }
         public NodeSpec StartLanes { get; private set; }
         public NodeSpec EndLanes { get; private set; }
         public PositionEulerAngles StartPos {  get; private set; }
         public PositionEulerAngles EndPos { get; private set; }
-        public ImmutableArray<LaneStripData> LaneConnections { get; private set; }
+        public ImmutableDictionary<RoadDataBuilder.LaneConnectionData, LaneStripData> LaneConnections { get; private set; }
 
         //Caches
         private OrthodistantBasis? _splineFrame;
         public OrthodistantBasis OrthodistantBasis => _splineFrame ??= GenerateOrthodistantBasis();
         private OrthodistantBasis GenerateOrthodistantBasis() => IndexSpline.ToOrthodistantBasis(StartPos, EndPos);
+        private DualRange? _bounds;
+        public DualRange Bounds => _bounds ??= CalculateBounds();
+        private DualRange CalculateBounds() {
+            DualRange result = default;
+            foreach(var strip in LaneConnections) 
+                result |= strip.Value.Bounds;
+            return result;
+        }
 
         internal RoadStripData(RoadDataBuilder rdb) {
             Finish = rdb.RoadFinish;
@@ -91,7 +102,9 @@ namespace TranSimCS.Roads.Strip {
             EndLanes = rdb.EndLanes;
             StartPos = rdb.StartPos;
             EndPos = rdb.EndPos;
-            LaneConnections = rdb.LaneConnections.Select(x => new LaneStripData(this, x)).ToImmutableArray();
+            LaneConnections = rdb.LaneConnections
+                .Select(x => new KeyValuePair<RoadDataBuilder.LaneConnectionData, LaneStripData>(x, new LaneStripData(this, x)))
+                .ToImmutableDictionary();
         }
     }
 
@@ -108,10 +121,55 @@ namespace TranSimCS.Roads.Strip {
         }
 
         //Caches
-        /*private OrthodistantLUT? _centerLUT;
+        private bool? _isReverse;
+        public bool IsReverse => _isReverse ??= Parent.StartLanes != Parent.EndLanes && Parent.StartLanes.Contains(EndNode);
+        private OrthodistantLUT? _centerLUT;
         public OrthodistantLUT CenterLUT => _centerLUT ??= GenerateCenterLineLUT();
+        private OrthodistantLUT? GenerateCenterLineLUT() {
+            var startT = StartNode.CenterPos;
+            var endT = EndNode.CenterPos;
+            if(IsReverse) DataUtil.Swap(ref startT, ref endT);
+            var points = Parent.OrthodistantBasis.Offset(startT, -endT);
+            return new OrthodistantLUT(points);
+        }
+        private DualRange? _bounds;
+        public DualRange Bounds => _bounds ??= GenerateBounds();
+        private DualRange GenerateBounds() {
+            var startLane = StartNode;
+            var endLane = EndNode;
+            if(IsReverse) DataUtil.Swap(ref startLane, ref endLane);
+            return new(startLane.Bounds, endLane.Bounds);
+        }
 
+        
         private GridMesh<Vector3, RoadSplineComponent>? _allStrips;
-        public GridMesh<Vector3, RoadSplineComponent> AllStrips => _allStrips ??= GenerateStripList();*/
+        public GridMesh<Vector3, RoadSplineComponent> AllStrips => _allStrips ??= GenerateStripList();
+        private GridMesh<Vector3, RoadSplineComponent> GenerateStripList() {
+            //Accumulate components from listeners
+            var generatedComponents = StripRenderer.GenerateStripSplineComponents(this);
+
+            //Generate spline strips
+            var vertcount = generatedComponents.Length * 2;
+            var accuracy = Settings.RoadAccuracy;
+            Vector3[,] vertices = new Vector3[vertcount, accuracy];
+
+            var records = new GridCrossSectionalRecord<RoadSplineComponent>[generatedComponents.Length];
+
+            //Generate a GridMesh
+            for (int i = 0; i < vertcount; i += 2) {
+                var j = i / 2;
+                var component = generatedComponents[j];
+                var surface = component.Item1;
+                var range = component.Item2;
+                var (lspline, rspline) = range.GenerateRoadSplineRange(Parent);
+                for (int k = 0; k < accuracy; k++) {
+                    vertices[i, k] = lspline[k];
+                    vertices[i + 1, k] = rspline[k];
+                }
+                records[j] = new(i, i + 1, surface);
+            }
+
+            return new GridMesh<Vector3, RoadSplineComponent>(Immutable2DArray<Vector3>.Wrap(vertices), records.ToImmutableArray());
+        }
     }
 }

@@ -70,6 +70,7 @@ namespace TranSimCS.Roads.Strip {
         public LaneRange Bounds => Cache.Bounds;
         public OrthodistantBasis OrthodistantBasis => Cache.OrthodistantBasis;
         public IndexSpline IndexStrip => Cache.IndexStrip;
+        public RoadStripData RoadStripData => Cache.RoadStripData;
 
         public RoadStrip(HalfNode startNode, HalfNode endNode) {
             StartNode = startNode;
@@ -139,7 +140,6 @@ namespace TranSimCS.Roads.Strip {
         }
 
         public Vector3[] GenerateSpline(float startT, float endT, float y = 0) => GenerateSplineHalfNode(new Vector3(startT, y, 0), new Vector3(endT, y, 0));
-        public OrthodistantBasis GenerateOrthodistant(float startT, float endT) => new(OrthodistantBasis.ReferenceSpline, OrthodistantBasis.NormalSpline, OrthodistantBasis.StartEndPosition + new Vector2(startT, -endT));
         public Vector3[] GenerateSplineHalfNode(Vector3 start, Vector3 end) {
             var accuracy = Settings.RoadAccuracy;
             float step = 1 / (accuracy - 1.0f);
@@ -161,6 +161,32 @@ namespace TranSimCS.Roads.Strip {
                 for(int i = 0; i < accuracy; i++) {
                     var t = i * step;
                     var sample = OrthodistantBasis.SamplePosition(t, start, end * new Vector3(-1, 1, -1));
+                    result[i] = sample;
+                }
+            }
+            return result;
+        }
+        public static Vector3[] GenerateSplineHalfNode(RoadStripData rsd, Vector3 start, Vector3 end) {
+            var accuracy = Settings.RoadAccuracy;
+            float step = 1 / (accuracy - 1.0f);
+            var result = new Vector3[accuracy];
+            if (rsd.StartLanes == rsd.EndLanes) {
+                //Generate a solution bypassing the OrthonormalBasis
+                var refframe = rsd.StartPos.CalcReferenceFrame();
+                var centerOfRevolutionT = (start + end) / 2;
+                var xBasis = (end - start) / 2;
+                var yBasis = refframe.Y.Orthogonalize(xBasis).Normalized() * xBasis.Length();
+                float radianStep = MathF.PI * step;
+                for (int i = 0; i < accuracy; i++) {
+                    var (sin, cos) = MathF.SinCos(i * radianStep);
+                    var point = centerOfRevolutionT + xBasis * cos + yBasis * sin;
+                    result[i] = point;
+                }
+            } else {
+                //Sample the OrthonormalBasis
+                for (int i = 0; i < accuracy; i++) {
+                    var t = i * step;
+                    var sample = rsd.OrthodistantBasis.SamplePosition(t, start, end * new Vector3(-1, 1, -1));
                     result[i] = sample;
                 }
             }

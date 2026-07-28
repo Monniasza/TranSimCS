@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
@@ -8,6 +9,16 @@ using static TranSimCS.Geometry.GeometryUtils;
 using static TranSimCS.Roads.Strip.StripRenderer;
 
 namespace TranSimCS.Roads.Range {
+    public struct DualRange(Range<float> startRange, Range<float> endRange) {
+        public Range<float> startRange = startRange;
+        public Range<float> endRange = endRange;
+
+        public static DualRange operator |(DualRange a, DualRange b) {
+            var newEnd = a.endRange.Union(b.endRange);
+            var newStart = a.startRange.Union(b.startRange);
+            return new(newStart, newEnd);
+        }
+    }
     public struct LaneRange(RoadStrip road, Range<float> startRange, Range<float> endRange): IRoadElement {
         public RoadStrip road = road; // The road connection this tag is associated with
         public Range<float> startRange = startRange;
@@ -48,7 +59,7 @@ namespace TranSimCS.Roads.Range {
                 laneRange.road.GenerateSpline(laneRange.startRange.Max, laneRange.endRange.Min, voffset)
             );
         }
-        public static RoadSplineRange ToRoadSplineRange(this LaneRange laneRange, float voffset = 0) => new(
+        public static RoadSplineRange ToRoadSplineRange(this DualRange laneRange, float voffset = 0) => new(
             VOffset(laneRange.startRange.Min, voffset),
             VOffset(laneRange.endRange.Max, voffset),
             VOffset(laneRange.startRange.Max, voffset),
