@@ -5,21 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Geometry;
 
 namespace TranSimCS.Model {
     public delegate T VertexGen<T>(Vector3 vector, float distance, int index);
-    public delegate (T, T) VertexGen2<T>(Vector3 l, Vector3 r, float distance, int index);
+    public delegate (T, T) VertexGen2<T>(Vector3 l, Vector3 r, float distanceL, float distanceR, int index);
 
     public static class UniformTexturing {
         public static VertexGen<VertexPositionColorTexture> WithFixedU(float u, Color? color = null) {
             var color0 = color ?? Color.White;
             return (p, d, i) => new VertexPositionColorTexture(p, color0, new(u, d));
-        }
-        public static VertexGen2<VertexPositionColorTexture> PairStrip(float l = 0, float r = 1, Color? color = null) {
-            return FromTwo<VertexPositionColorTexture>(WithFixedU(l, color), WithFixedU(r, color));
-        }
-        public static VertexGen2<T> FromTwo<T>(VertexGen<T> l, VertexGen<T> r) {
-            return (ll, rr, d, i) => (l(ll, d, i), r(rr, d, i));
         }
 
         public static T[] UniformTextured<T>(Vector3[] vectors, VertexGen<T> vertexer) {
@@ -38,33 +33,55 @@ namespace TranSimCS.Model {
             }
             return verts;
         }
-        public static (T[], T[]) UniformTexturedTwin<T>(Vector3[] l, Vector3[] r, VertexGen2<T> vertexer, float bias = 0.5f) {
+        public static (T[], T[]) UniformTexturedTwin<T>(Vector3[] l, Vector3[] r, VertexGen2<T> vertexer, float bias = 0.5f, float leftSkew = 0, float rightSkew = 0) {
             ArgumentNullException.ThrowIfNull(l, nameof(l));
             ArgumentNullException.ThrowIfNull(r, nameof(r));
             if (l.Length != r.Length) throw new ArgumentException("Lengths are not equal");
+            var count = l.Length;
+            if (count == 0) return ([], []);
 
+            //Generate cumulative lookup table
+            var previousL = l[0];
+            var previousR = r[0];
+            Vector2[] cumulativeDistances = new Vector2[count];
+            Vector2 cumulativeDistance = Vector2.Zero;
+            for(int i = 0; i < count; i++) {
+                var left = l[i];
+                var right = r[i];
+                var leftLength = Vector3.Distance(previousL, left);
+                var rightLength = Vector3.Distance(previousR, right);
+                cumulativeDistance += new Vector2(leftLength, rightLength);
+                cumulativeDistances[i] = cumulativeDistance;
+                previousL = left;
+                previousR = right;
+            }
+
+            //Compensate arc-lengths
+            var arclength = cumulativeDistance.Lerp(bias);
+            var arclengthCorrectiveMultipliers = new Vector2(arclength) / cumulativeDistance;
+            var skewDistances = new Vector2(leftSkew, rightSkew);
+
+            //Generate vertices
             T[] lverts = new T[l.Length];
             T[] rverts = new T[l.Length];
-
-            var vert = vertexer(l[0], r[0], 0, 0);
-            lverts[0] = vert.Item1;
-            rverts[0] = vert.Item2;
-
-            float distance = 0;
-            for (int i = 1; i < l.Length; i++) {
-                var prevl = l[i - 1];
-                var nextl = l[i];
-                var prevr = r[i - 1];
-                var nextr = r[i];
-                var distLeft = Vector3.Distance(prevl, nextl);
-                var distRight = Vector3.Distance(prevr, nextr);
-                var dDistance = MathHelper.Lerp(distLeft, distRight, bias);
-                distance += dDistance;
-                vert = vertexer(nextl, nextr, distance, 0);
-                lverts[i] = vert.Item1;
-                rverts[i] = vert.Item2;
+            for (int i = 0; i < l.Length; i++) {
+                var currentDistance = cumulativeDistances[i] * arclengthCorrectiveMultipliers + skewDistances;
+                var vertices = vertexer(l[i], r[i], currentDistance.X, currentDistance.Y, i);
+                lverts[i] = vertices.Item1;
+                rverts[i] = vertices.Item2;
             }
             return (lverts, rverts);
+        }
+
+        public static VertexGen2<VertexPositionColorTexture> GenerateLaneStripVertexGen(Color c) {
+            (VertexPositionColorTexture, VertexPositionColorTexture) GenerateVertices(Vector3 l, Vector3 r, float distanceL, float distanceR, int index) {
+                float mutualDistance = Vector3.Distance(l, r) / 2;
+                return (
+                    new VertexPositionColorTexture(l, c, new(-mutualDistance, distanceL)),
+                    new VertexPositionColorTexture(r, c, new(mutualDistance, distanceR))
+                );
+            }
+            return GenerateVertices;
         }
     }
 }
