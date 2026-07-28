@@ -38,6 +38,12 @@ namespace TranSimCS.Roads.Node {
             return true;
         }
 
+        public bool Contains(LaneNode laneNode) {
+            if (!LaneXRef.TryGetValue(laneNode.ID, out var value)) return false;
+            return value.LaneSpec == laneNode.LaneSpec && value.CenterPos == laneNode.CenterPos;
+        }
+
+
         public IEnumerator<LaneNode> GetEnumerator() => ((IEnumerable<LaneNode>)Lanes).GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         
