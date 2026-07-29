@@ -30,6 +30,7 @@ namespace TranSimCS.Tools {
         //TOOL STATE
         public LaneCreationState? State { get; private set; }
         public LaneMappings? LaneMappings { get; private set; }
+        public SegmentToolVisualCache? VisualCache { get; private set; }
 
         //PROPERTIES
         public string Name => "Road Creation Tool 2";
@@ -172,25 +173,26 @@ namespace TranSimCS.Tools {
             State?.Generate(Menu);
         }
         void ITool.Draw(GameTime gameTime) {
-            if (State == null || !float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt)) return;
-            Color previewColor = Colors.SemiClearWhite;
-            var material = Assets.Asphalt;
-            material.BlendMode = ModelOld.MaterialBlendMode.Transparent;
+            if (State == null || !float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt)){
+                VisualCache = null;
+            } else {
+                var currentState = new SegmentToolVisualCache.Inputs();
+                currentState.StartPosition = State.StartLane.HalfNode.PositionProp.Value;
+                currentState.EndPosition = State.GeneratedNodePosition;
+                if (State.DestinationNodeEnd == NodeEnd.Forward) currentState.EndPosition.Azimuth += int.MinValue;
+                currentState.LaneMappings = LaneMappings!;
+                currentState.RoadFinish = Menu.configuration.RoadFinish;
+                var existingState = VisualCache?.InputData;
+                if (existingState != currentState) VisualCache = new(currentState);
+            }
 
-            var accuracy = Settings.RoadAccuracy;
-            var apshaltBin = Menu.renderHelper.GetOrCreateRenderBinForced(material);
-            var leftPoints = GeometryUtils.GenerateSplinePoints(State.GeneratedSplines.left, accuracy);
-            var rightPoints = GeometryUtils.GenerateSplinePoints(State.GeneratedSplines.right, accuracy);
-            var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftPoints, rightPoints, UniformTexturing.GenerateLaneStripVertexGen(previewColor));
-            apshaltBin.DrawStrip(generatedVertStripPair);
-
-            //Generate a preview of the node position
-            var refframe = State.GeneratedNodePosition.CalcReferenceFrame();
-            var roadRenderBin = Menu.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
-            var front = refframe.O + refframe.Z * 2;
-            var back = refframe.O - refframe.Z * 2;
-            roadRenderBin.DrawLine(refframe.O, front, refframe.Y, Color.Red);
-            roadRenderBin.DrawLine(refframe.O, back, refframe.Y, Color.Maroon);
+            //Generate a preview
+            var generatedData = VisualCache?.GeneratedData;
+            if(generatedData != null) {
+                var generatedMesh = new MultiMesh();
+                SegmentRenderer.GenerateRoadSegmentFullMesh(generatedData, generatedMesh);
+                Menu.renderHelper.AddAll(generatedMesh);
+            }
         }
 
 
