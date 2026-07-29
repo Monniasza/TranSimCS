@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Strip;
 
 namespace TranSimCS.Spline {
@@ -44,11 +45,7 @@ namespace TranSimCS.Spline {
         }
         public static Bezier3 IsotropicSpline(Vector3 start, Vector3 startTangent, Vector3 end, Vector3 endTangent) => GeometryUtils.GenerateJoinSpline(start, end, startTangent, endTangent);
 
-        public static IndexSpline GenerateSegmentSplinedUsingAlg(RoadStrip road, SplineAlgorithm algorithm) {
-            var start = road.StartNode.Cache.ReferenceFrame;
-            var end = road.EndNode.Cache.ReferenceFrame;
-
-            var roadBounds = road.Bounds;
+        public static IndexSpline GenerateSegmentSplinedUsingAlg(Transform3 start, Transform3 end, DualRange roadBounds, SplineAlgorithm algorithm) {
             var startT = roadBounds.startRange.Middle();
             var endT = roadBounds.endRange.Middle();
 

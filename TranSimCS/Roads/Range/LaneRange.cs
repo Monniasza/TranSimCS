@@ -36,6 +36,7 @@ namespace TranSimCS.Roads.Range {
         public RoadNodeEnd? GetNodeEnd() => null;
     }
     public static class LaneRangeMethods {
+        public static DualRange ToDualRange(this LaneRange laneRange) => new(laneRange.startRange, laneRange.endRange);
         public static void GenerateLaneRangeMesh(this LaneRange range, Mesh renderer, Color color, float voffset = 0.3f, object? tag = null) {
             //Generate border curves
             var (leftBorder, rightBorder) = GenerateSplines(range, voffset); // Generate the splines for the left and right lanes

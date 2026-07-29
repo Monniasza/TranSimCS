@@ -44,7 +44,10 @@ namespace TranSimCS.Roads.Strip {
                 return RoadStrip.StartNode.GenerateDegenerateIndexStrips();
             } else {
                 //The RoadStrip joins node-ends
-                return RoadStrip.SplineGenerator.GenerateSplines(RoadStrip);
+                var startReference = RoadStrip.StartNode.Cache.ReferenceFrame;
+                var endReference = RoadStrip.EndNode.Cache.ReferenceFrame;
+                var range = RoadStrip.Bounds.ToDualRange();
+                return RoadStrip.SplineGenerator.GenerateSplines(startReference, endReference, range);
             }
         }
         
