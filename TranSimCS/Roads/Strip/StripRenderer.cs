@@ -23,7 +23,7 @@ namespace TranSimCS.Roads.Strip {
             OnLaneStripGenerated += GenerateStripAllComponents;
         }
 
-        public static void GenerateLaneStripMesh(LaneStripData laneStrip, MultiMesh renderer, object? tag = null, float voffset = 0) {
+        public static void GenerateLaneStripMesh(LaneStripData laneStrip, MultiMesh renderer, float voffset = 0) {
             //Generate arrows
             var bounds = laneStrip.Bounds;
             var averageStripWidth = (bounds.endRange.Max + bounds.startRange.Max - bounds.startRange.Min - bounds.endRange.Min)/2;
@@ -66,7 +66,7 @@ namespace TranSimCS.Roads.Strip {
                 lineBin.DrawStrip(generatedLineVertStripPair);
             }
 
-            renderer.AddTagsToAll(tag);
+            renderer.AddTagsToAll(laneStrip.Tag);
         }
 
         public static void GenerateStripAllComponents(LaneStripData strip, Action<RoadSplineComponent, RoadSplineRange> target) {

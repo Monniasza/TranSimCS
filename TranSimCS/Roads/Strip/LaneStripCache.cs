@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using TranSimCS.Collections;
 using TranSimCS.Geometry;
+using TranSimCS.Model;
 using TranSimCS.Roads.Range;
 using TranSimCS.Setting;
 using TranSimCS.Spline;
@@ -31,6 +32,7 @@ namespace TranSimCS.Roads.Strip {
 
         private LaneStripData? _laneStripData;
         public LaneStripData LaneStripData => _laneStripData ??= GenerateLaneStripData();
+        public MultiMesh Mesh => LaneStripData.Mesh;
 
         //Generation methods
         private LaneStripData GenerateLaneStripData() {

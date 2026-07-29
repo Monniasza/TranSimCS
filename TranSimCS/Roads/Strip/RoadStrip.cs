@@ -136,7 +136,7 @@ namespace TranSimCS.Roads.Strip {
                 //Belongs to a road section, abort
                 return;
 
-            SegmentRenderer.GenerateRoadSegmentFullMesh(segment, mesh); // Otherwise, render the road segment
+            SegmentRenderer.GenerateRoadSegmentFullMesh(segment.RoadStripData, mesh); // Otherwise, render the road segment
         }
 
         public Vector3[] GenerateSpline(float startT, float endT, float y = 0) => GenerateSplineHalfNode(new Vector3(startT, y, 0), new Vector3(endT, y, 0));
@@ -166,6 +166,8 @@ namespace TranSimCS.Roads.Strip {
             }
             return result;
         }
+
+        public static Vector3[] GenerateSpline(RoadStripData rsd, float startT, float endT, float y = 0) => GenerateSplineHalfNode(rsd, new Vector3(startT, y, 0), new Vector3(endT, y, 0));
         public static Vector3[] GenerateSplineHalfNode(RoadStripData rsd, Vector3 start, Vector3 end) {
             var accuracy = Settings.RoadAccuracy;
             float step = 1 / (accuracy - 1.0f);

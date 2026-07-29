@@ -9,6 +9,7 @@ using Iesi.Collections.Generic;
 using Microsoft.Xna.Framework;
 using TranSimCS.Collections;
 using TranSimCS.Geometry;
+using TranSimCS.Model;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
 using TranSimCS.Setting;
@@ -44,15 +45,41 @@ namespace TranSimCS.Roads.Strip {
             get => _endPos ?? throw new InvalidOperationException("EndPos not initialized");
             set => _endPos = value;
         }
-        public struct LaneConnectionData{
+        public struct LaneConnectionData : IEquatable<LaneConnectionData> {
             public LaneSpec LaneSpec = LaneSpec.Default;
             public LaneNode StartNode;
             public LaneNode EndNode;
+            public object? Tag;
+
             public LaneConnectionData() { }
-            public LaneConnectionData(LaneSpec laneSpec, LaneNode startNode, LaneNode endNode) {
+            public LaneConnectionData(LaneSpec laneSpec, LaneNode startNode, LaneNode endNode, object? tag = null) {
                 LaneSpec = laneSpec;
                 StartNode = startNode;
                 EndNode = endNode;
+                Tag = tag;
+            }
+
+            public override bool Equals(object? obj) {
+                return obj is LaneConnectionData data && Equals(data);
+            }
+
+            public bool Equals(LaneConnectionData other) {
+                return LaneSpec.Equals(other.LaneSpec) &&
+                       EqualityComparer<LaneNode>.Default.Equals(StartNode, other.StartNode) &&
+                       EqualityComparer<LaneNode>.Default.Equals(EndNode, other.EndNode) &&
+                       EqualityComparer<object?>.Default.Equals(Tag, other.Tag);
+            }
+
+            public override int GetHashCode() {
+                return HashCode.Combine(LaneSpec, StartNode, EndNode, Tag);
+            }
+
+            public static bool operator ==(LaneConnectionData left, LaneConnectionData right) {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(LaneConnectionData left, LaneConnectionData right) {
+                return !(left == right);
             }
         }
 
@@ -67,8 +94,8 @@ namespace TranSimCS.Roads.Strip {
             if (!isContained) throw new ArgumentException("Connection is not contained within lane set. Try setting lanes first.");
             data.Add(connection);
         }
-        public void AddConnection(LaneNode start, LaneNode end, LaneSpec? laneSpec = null)
-            => AddConnection(new(laneSpec ?? LaneSpec.Default, start, end));
+        public void AddConnection(LaneNode start, LaneNode end, LaneSpec? laneSpec = null, object? tag = null)
+            => AddConnection(new(laneSpec ?? LaneSpec.Default, start, end, tag));
 
         public RoadStripData Create() => new RoadStripData(this);
     }
@@ -94,6 +121,7 @@ namespace TranSimCS.Roads.Strip {
                 result |= strip.Value.Bounds;
             return result;
         }
+        public bool IsSingleEnded => StartLanes == EndLanes;
 
         internal RoadStripData(RoadDataBuilder rdb) {
             Finish = rdb.RoadFinish;
@@ -113,11 +141,13 @@ namespace TranSimCS.Roads.Strip {
         public LaneSpec Spec { get; private set; }
         public LaneNode StartNode { get; private set; }
         public LaneNode EndNode { get; private set; }
+        public object? Tag { get; private set; }
         internal LaneStripData(RoadStripData parent, RoadDataBuilder.LaneConnectionData lcd) {
             Parent = parent;
             Spec = lcd.LaneSpec;
             StartNode = lcd.StartNode;
             EndNode = lcd.EndNode;
+            Tag = lcd.Tag;
         }
 
         //Caches
@@ -170,6 +200,14 @@ namespace TranSimCS.Roads.Strip {
             }
 
             return new GridMesh<Vector3, RoadSplineComponent>(Immutable2DArray<Vector3>.Wrap(vertices), records.ToImmutableArray());
+        }
+
+        private MultiMesh? _mesh;
+        public MultiMesh Mesh => _mesh ??= GenerateMesh();
+        private MultiMesh GenerateMesh() {
+            MultiMesh result = new();
+            StripRenderer.GenerateLaneStripMesh(this, result);
+            return result;
         }
     }
 }

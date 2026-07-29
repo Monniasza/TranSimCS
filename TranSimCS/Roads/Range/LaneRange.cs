@@ -59,6 +59,12 @@ namespace TranSimCS.Roads.Range {
                 laneRange.road.GenerateSpline(laneRange.startRange.Max, laneRange.endRange.Min, voffset)
             );
         }
+        public static (Vector3[] Left, Vector3[] Right) GenerateSplines(this DualRange laneRange, RoadStripData basis, float voffset = 0) {
+            return (
+                RoadStrip.GenerateSpline(basis, laneRange.startRange.Min, laneRange.endRange.Max, voffset),
+                RoadStrip.GenerateSpline(basis, laneRange.startRange.Max, laneRange.endRange.Min, voffset)
+            );
+        }
         public static RoadSplineRange ToRoadSplineRange(this DualRange laneRange, float voffset = 0) => new(
             VOffset(laneRange.startRange.Min, voffset),
             VOffset(laneRange.endRange.Max, voffset),
