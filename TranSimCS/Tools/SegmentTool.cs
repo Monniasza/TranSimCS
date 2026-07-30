@@ -191,6 +191,29 @@ namespace TranSimCS.Tools {
             var back = refframe.O - refframe.Z * 2;
             roadRenderBin.DrawLine(refframe.O, front, refframe.Y, Color.Red);
             roadRenderBin.DrawLine(refframe.O, back, refframe.Y, Color.Maroon);
+
+            //Generate endpoint previews
+            if (LaneMappings == null) return;
+            var centerSpline = State.GeneratedSplines.Middle;
+            var splineEndTangent = Vector3.Normalize(centerSpline.d - centerSpline.c);
+            var arrowBin = Menu.renderHelper.GetOrCreateRenderBinForced(Assets.Arrow);
+            foreach(var laneNode in LaneMappings.EndingLanes) {
+                var laneCenter = laneNode.CenterPos;
+                var laneWidth = laneNode.LaneSpec.Width;
+                var laneLength = laneWidth * 2;
+
+                var startingPos = refframe.O + refframe.X * laneCenter * State.DestinationNodeEnd.Discriminant();
+                var endingPos = startingPos + splineEndTangent * laneLength;
+                arrowBin.DrawLine(startingPos, endingPos, refframe.Y, laneNode.LaneSpec.Color, laneWidth);
+            }
+
+            //Generate midpoint arrows
+            /*var alignedRefframe = refframe;
+            if (State.DestinationNodeEnd == NodeEnd.Backward) alignedRefframe = alignedRefframe.Around();
+            foreach(var connection in LaneMappings.Mappings) {
+                var startLane = LaneMappings.StartingLanes[connection.StartIndex];
+                var endLane = LaneMappings.E
+            }*/
         }
 
 
