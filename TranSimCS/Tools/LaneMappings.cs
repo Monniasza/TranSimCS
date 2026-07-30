@@ -57,6 +57,7 @@ namespace TranSimCS.Tools {
             StartingLanes = startingLanes.Skip(minIndex).Take((maxIndex - minIndex) + 1).ToImmutableArray();
             StartRange = new();
             foreach (var lane in StartingLanes) {
+                Debug.Assert(lane != null, "Invalid starting lane");
                 StartRange = StartRange.Union(lane.Bounds);
             }
 
@@ -146,9 +147,9 @@ namespace TranSimCS.Tools {
                 laneMappings[lmIndex++] = lm;
             }
             for (int i = 0; i < countSideRight; i++) {
-                var existingSidewalk = StartingLanes[^i];
+                var existingSidewalk = StartingLanes[^(i+1)];
                 var newSidewalk = new LaneNode(existingSidewalk.Spec, existingSidewalk.MiddlePosition + sidewalkOffsetRight);
-                endingLanes[^i] = newSidewalk;
+                endingLanes[^(i + 1)] = newSidewalk;
                 var lm = new LaneMapping(StartingLanes.Length - i - 1, newCount - i - 1, existingSidewalk.Spec, existingSidewalk.Guid);
                 ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
                 laneMappings[lmIndex++] = lm;
