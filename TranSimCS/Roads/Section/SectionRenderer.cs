@@ -159,6 +159,8 @@ namespace TranSimCS.Roads.Section {
             renderBin.AddTagsToLastTriangles(-1, roadSection);
         }
 
+        public record struct SectionTriangulationRow(Color color, PathD path) {}
+
         internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh) {
             if (roadSection.Nodes.Count < 1) return; //Guard agains empty sections
             var accuracy = Settings.RoadAccuracy;
@@ -170,11 +172,12 @@ namespace TranSimCS.Roads.Section {
             var laneStrips = qualifyingRoadStrips.SelectMany(x => x.Lanes).ToArray();
 
             //Group elements by type (dashed, solid, drivable, asphalt)
-            var roadSplineComponents = new List<PathD>? [(int)RoadSplineComponentType.Count];
+            var roadSplineComponents = new List<SectionTriangulationRow>? [(int)RoadSplineComponentType.Count];
             foreach (var lane in laneStrips) foreach(var stripSplineComponent in lane.AllStrips.CrossSections) {
                 var projection = ProjectStripOntoWorkingPlane(roadSection, stripSplineComponent, lane.AllStrips);
                 var row = roadSplineComponents[(int)stripSplineComponent.Value.Type] ??= new();
-                row.Add(projection);
+                var str = new SectionTriangulationRow(stripSplineComponent.Value.Color, projection);
+                row.Add(str);
             }
 
             //Project each type of strip and also the boundary
@@ -184,9 +187,9 @@ namespace TranSimCS.Roads.Section {
             var asphaltLines = roadSplineComponents[(int)RoadSplineComponentType.Asphalt];
 
             //Build geometry for solid lines, and apshalt
-            var mergedWhites = (solidLines ?? []).Select(x => new Polygon(x, FillRule.EvenOdd)).AggregateOrDefault(new Polygon(), (x, y) => x | y);
-            var mergedAsphalt = (asphaltLines ?? []).Select(x => new Polygon(x, FillRule.EvenOdd)).AggregateOrDefault(new Polygon(), (x, y) => x | y);
-            var mergedDrives = (drivingLines ?? []).Select(x => new Polygon(x, FillRule.EvenOdd)).AggregateOrDefault(new Polygon(), (x, y) => x | y);
+            var mergedWhites = (solidLines ?? []).Select(x => new Polygon(x.path, FillRule.EvenOdd)).AggregateOrDefault(new Polygon(), (x, y) => x | y);
+            var mergedAsphalt = (asphaltLines ?? []).Select(x => new Polygon(x.path, FillRule.EvenOdd)).AggregateOrDefault(new Polygon(), (x, y) => x | y);
+            var mergedDrives = (drivingLines ?? []).Select(x => new Polygon(x.path, FillRule.EvenOdd)).AggregateOrDefault(new Polygon(), (x, y) => x | y);
 
             //Execute gometry operations
             var whiteResult = mergedWhites - mergedDrives;
@@ -202,18 +205,22 @@ namespace TranSimCS.Roads.Section {
                 triangulatedWhite.points.Select(CreateMeshingFunction(projectionPlane, Color.White, roadSection.Normal * 0.05f)),
                 triangulatedWhite.triangles.Select(x => (ushort)x)
             );
-            var meshedAsphalt = new Mesh(null,
-                triangulatedAsphalt.points.Select(CreateMeshingFunction(projectionPlane, Color.Gray)),
-                triangulatedAsphalt.triangles.Select(x => (ushort)x)
-            );
+            var meshedAsphalt = new Mesh();
             var rawDashes = roadSplineComponents[(int)RoadSplineComponentType.Dashed];
             var meshedDashes = new Mesh();
-            foreach(var meshElement in rawDashes ?? []) {
-                var polygon = new Polygon(meshElement, FillRule.EvenOdd);
-                var triagulation = PathsDTriangulation.Triangulate(polygon);
-                var points = triagulation.points.Select(CreateMeshingFunction(projectionPlane, Color.White, roadSection.Normal * 0.05f));
-                meshedDashes.DrawModel(points.ToArray(), triagulation.triangles.Select(x => (ushort)x).ToArray());
+
+            void ConvertProjectionToMesh(List<SectionTriangulationRow>? list, Mesh mesh, float offset = 0) {
+                if (list == null) return;
+                foreach (var meshElement in list) {
+                    var polygon = new Polygon(meshElement.path, FillRule.EvenOdd);
+                    var triagulation = PathsDTriangulation.Triangulate(polygon);
+                    var points = triagulation.points.Select(CreateMeshingFunction(projectionPlane, meshElement.color, roadSection.Normal * offset));
+                    mesh.DrawModel(points.ToArray(), triagulation.triangles.Select(x => (ushort)x).ToArray());
+                }
             }
+
+            ConvertProjectionToMesh(rawDashes, meshedDashes, 0.05f);
+            ConvertProjectionToMesh(asphaltLines, meshedAsphalt);
 
             float reach = surfaceMesh.BoundingBox().Extent();
 
