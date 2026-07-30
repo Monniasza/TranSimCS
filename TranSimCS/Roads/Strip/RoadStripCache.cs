@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,6 +23,24 @@ namespace TranSimCS.Roads.Strip {
         public OrthodistantBasis OrthodistantBasis => RoadStripData.OrthodistantBasis;
         private IndexSpline? _indexStrip;
         public IndexSpline IndexStrip => RoadStripData.IndexSpline;
+
+        private Extents<LaneStrip>? _extents;
+        public Extents<LaneStrip> Extents => _extents ??= GenerateExtents();
+
+        private Extents<LaneStrip> GenerateExtents() {
+            var sourceExtents = RoadStripData.LaneStripExtents;
+            LaneStrip ExtractLaneStrip(LaneStripData lsd) {
+                var converted = lsd.Tag as LaneStrip;
+                Debug.Assert(converted != null, "LaneStripData does not hold a lane strip");
+                return converted;
+            }
+            Extent<LaneStrip> ExtractExtent(Extent<LaneStripData> extent) => new(extent.LaneStrips.Select(ExtractLaneStrip).ToImmutableArray());
+
+            var leftBoundarySet = sourceExtents.LeftEdgeStrips.Select(ExtractLaneStrip).ToImmutableHashSet();
+            var rightBoundarySet = sourceExtents.RightEdgeStrips.Select(ExtractLaneStrip).ToImmutableHashSet();
+            var extents = sourceExtents.Groups.Select(ExtractExtent).ToImmutableArray();
+            return new(leftBoundarySet, rightBoundarySet, extents);
+        }
 
         public RoadStripCache(RoadStrip roadStrip) {
             RoadStrip = roadStrip;

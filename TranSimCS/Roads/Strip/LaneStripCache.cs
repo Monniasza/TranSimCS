@@ -25,6 +25,7 @@ namespace TranSimCS.Roads.Strip {
         }
         public void Invalidate() {
             _laneStripData = null;
+            _extentIndex = null;
         }
 
         //Caches
@@ -33,6 +34,8 @@ namespace TranSimCS.Roads.Strip {
 
         private LaneStripData? _laneStripData;
         public LaneStripData LaneStripData => _laneStripData ??= GenerateLaneStripData();
+        public ExtentIndex? _extentIndex;
+        public ExtentIndex ExtentIndex => _extentIndex ??= LaneStrip.Road.Extents.ElementToIndex[LaneStrip];
         public MultiMesh Mesh => LaneStripData.Mesh;
 
         //Generation methods

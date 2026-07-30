@@ -47,9 +47,9 @@ namespace TranSimCS.Roads.StripData {
                 .ToImmutableDictionary();
         }
 
-        private LaneStripExtents? _laneStripExtents;
-        public LaneStripExtents LaneStripExtents => _laneStripExtents ??= GenerateExtents();
-        private LaneStripExtents GenerateExtents() {
+        private Extents<LaneStripData>? _laneStripExtents;
+        public Extents<LaneStripData> LaneStripExtents => _laneStripExtents ??= GenerateExtents();
+        private Extents<LaneStripData> GenerateExtents() {
             const float Tolerance = 0.10f;
 
             var startOrder = LaneConnections.Values
@@ -57,15 +57,15 @@ namespace TranSimCS.Roads.StripData {
                 .ThenByDescending(x => x.Bounds.endRange.Min)
                 .ToArray();
 
-            var extentBuilder = ImmutableArray.CreateBuilder<LaneStripExtent>();
+            var extentBuilder = ImmutableArray.CreateBuilder<Extent<LaneStripData>>();
             var leftBounds = ImmutableHashSet.CreateBuilder<LaneStripData>();
             var rightBounds = ImmutableHashSet.CreateBuilder<LaneStripData>();
 
             if (startOrder.Length == 0)
-                return new LaneStripExtents(
+                return new Extents<LaneStripData>(
                     leftBounds.ToImmutable(),
                     rightBounds.ToImmutable(),
-                    ImmutableArray<LaneStripExtent>.Empty);
+                    ImmutableArray<Extent<LaneStripData>>.Empty);
 
             var currentExtent = ImmutableArray.CreateBuilder<LaneStripData>();
 
@@ -118,7 +118,7 @@ namespace TranSimCS.Roads.StripData {
                 extentBuilder.Add(new(finished));
             }
 
-            return new LaneStripExtents(
+            return new Extents<LaneStripData>(
                 leftBounds.ToImmutable(),
                 rightBounds.ToImmutable(),
                 extentBuilder.ToImmutable());

@@ -12,7 +12,7 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Setting;
 
 namespace TranSimCS.Roads.StripData {
-    public sealed class LaneStripData {
+    public sealed class LaneStripData: IExtent {
         public RoadStripData Parent { get; private set; }
         public LaneSpec Spec { get; private set; }
         public LaneNode StartNode { get; private set; }
@@ -86,8 +86,8 @@ namespace TranSimCS.Roads.StripData {
             return result;
         }
 
-        internal LaneStripExtentIndex? _extentIndex;
-        public LaneStripExtentIndex GetLaneStripExtentIndex() {
+        internal ExtentIndex? _extentIndex;
+        public ExtentIndex GetLaneStripExtentIndex() {
             if( _extentIndex == null)  _ = Parent.LaneStripExtents; //generate extents
             Debug.Assert(_extentIndex != null, "Parent.LaneStripExtents didn't generate an index");
             return _extentIndex.Value;

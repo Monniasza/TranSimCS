@@ -17,7 +17,7 @@ using TranSimCS.Worlds;
 using static TranSimCS.Roads.StripData.RoadDataBuilder;
 
 namespace TranSimCS.Roads.Strip {
-    public class LaneStrip : IEquatable<LaneStrip?>, IDraggableObj, IRoadElement {
+    public class LaneStrip : IEquatable<LaneStrip?>, IDraggableObj, IRoadElement, IExtent {
         //ROAD ELEMENT
         public Guid Guid => Road.Guid;
         public Lane? GetLane() => null;
@@ -28,6 +28,7 @@ namespace TranSimCS.Roads.Strip {
         public int ZDiscriminant() => 0;
         public LaneEnd? GetLaneEnd() => null;
         public RoadNodeEnd? GetNodeEnd() => null;
+        public DualRange Bounds => Tag().ToDualRange();
 
         //Constant contents
         public HalfLane StartLane { get; private set; }
@@ -80,6 +81,7 @@ namespace TranSimCS.Roads.Strip {
         public GridMesh<Vector3, RoadSplineComponent> AllStrips => _cache.AllStrips;
         public LaneStripData LaneStripData => _cache.LaneStripData;
         public MultiMesh GetMesh() => _cache.Mesh;
+        public ExtentIndex ExtentIndex => _cache.ExtentIndex;
 
         public void InvalidateMesh() {
             _cache.Invalidate();// Invalidate the cached mesh, forcing it to be regenerated next time
