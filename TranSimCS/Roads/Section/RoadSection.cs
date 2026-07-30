@@ -68,7 +68,7 @@ namespace TranSimCS.Roads.Section {
             nodes.Remove(node);
 
             //If there are fewer than 1 node, demolish this
-            if(nodes.Count < 1) World.RoadSections.data.Remove(this);
+            if(World != null && nodes.Count < 1) World.RoadSections.data.Remove(this);
 
             // If one of the main-slope road node ends was disconnected, select the closest one to the existing other half
             var mainSlope = MainSlopeNodes.Value;
