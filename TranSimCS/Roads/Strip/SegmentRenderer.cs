@@ -156,7 +156,7 @@ namespace TranSimCS.Roads.Strip {
             var laneRanges = new List<DualRange>();
             var fstag = connection.Bounds;
             laneRanges.Add(fstag);
-            laneRanges.AddRange(connection.LaneStripExtents.Extents.Select(x => x.Bounds));
+            laneRanges.AddRange(connection.LaneStripExtents.Groups.Select(x => x.Bounds));
 
             List<Polygon> polygons = [];
             foreach (var lane in laneRanges) {
