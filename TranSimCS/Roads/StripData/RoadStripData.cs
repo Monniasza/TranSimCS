@@ -81,11 +81,11 @@ namespace TranSimCS.Roads.StripData {
 
                 bool sameExtent =
                     MathF.Abs(
-                        current.Bounds.startRange.Max -
+                        current.Bounds.startRange.Min -
                         previous.Bounds.startRange.Max) <= Tolerance
                     &&
                     MathF.Abs(
-                        current.Bounds.endRange.Min -
+                        current.Bounds.endRange.Max -
                         previous.Bounds.endRange.Min) <= Tolerance;
 
                 if (!sameExtent) {
