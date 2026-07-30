@@ -45,8 +45,12 @@ namespace TranSimCS.Roads.Strip {
                 midpoint += nrm * aoffset;
                 if (laneStrip.IsReverse) displacement *= -1;
 
+                var arrowColor = Color.White;
+                //Show direction by switchin to light yellow if reverse
+                if (laneStrip.IsReverse) arrowColor = Color.LightYellow;
+
                 var arrowBin = renderer.GetOrCreateRenderBinForced(Assets.Arrow);
-                arrowBin.DrawLine(midpoint - displacement, midpoint + displacement, nrm, Color.White, arrowWidth);
+                arrowBin.DrawLine(midpoint - displacement, midpoint + displacement, nrm, arrowColor, arrowWidth);
             } //else Zero tangential. It's wrong!
 
             //Generate strips themselves
@@ -127,8 +131,12 @@ namespace TranSimCS.Roads.Strip {
 
             RoadSplineComponent DrawSide(DualRange laneRange, LaneFlags flag, float bias) {
                 bool isEdge = IsRangeTouchingEdge(laneRange.startRange, roadTag.startRange) && IsRangeTouchingEdge(laneRange.endRange, roadTag.endRange);
-                bool isOnLeftExtent = (flag & LaneFlags.NoLeft) != 0 && laneStrip.Parent.LaneStripExtents.LeftEdgeStrips.Contains(laneStrip);
-                bool isOnRightExtent = (flag & LaneFlags.NoRight) != 0 && laneStrip.Parent.LaneStripExtents.RightEdgeStrips.Contains(laneStrip);
+                var leftEdges = laneStrip.Parent.LaneStripExtents.LeftEdgeStrips;
+                var rightEdges = laneStrip.Parent.LaneStripExtents.RightEdgeStrips;
+                if(laneStrip.IsReverse) DataUtil.Swap(ref leftEdges, ref rightEdges);
+                bool isOnLeftExtent = (flag & LaneFlags.NoLeft) != 0 && leftEdges.Contains(laneStrip);
+                bool isOnRightExtent = (flag & LaneFlags.NoRight) != 0 && rightEdges.Contains(laneStrip);
+
                 isEdge |= isOnLeftExtent || isOnRightExtent;
                 var lineTexture = ((laneStrip.Spec.Flags & flag) != 0 || isEdge) ? RoadSplineComponentType.Solid : RoadSplineComponentType.Dashed;
                 return new RoadSplineComponent() {
