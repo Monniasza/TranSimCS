@@ -52,15 +52,16 @@ namespace TranSimCS.Roads.StripData {
         private LaneStripExtents GenerateExtents() {
             const float Tolerance = 0.10f;
 
-            var strips = LaneConnections.Values
+            var startOrder = LaneConnections.Values
                 .OrderBy(x => x.Bounds.startRange.Max)
+                .ThenByDescending(x => x.Bounds.endRange.Min)
                 .ToArray();
 
             var extentBuilder = ImmutableArray.CreateBuilder<LaneStripExtent>();
             var leftBounds = ImmutableHashSet.CreateBuilder<LaneStripData>();
             var rightBounds = ImmutableHashSet.CreateBuilder<LaneStripData>();
 
-            if (strips.Length == 0)
+            if (startOrder.Length == 0)
                 return new LaneStripExtents(
                     leftBounds.ToImmutable(),
                     rightBounds.ToImmutable(),
@@ -68,7 +69,7 @@ namespace TranSimCS.Roads.StripData {
 
             var currentExtent = ImmutableArray.CreateBuilder<LaneStripData>();
 
-            LaneStripData previous = strips[0];
+            LaneStripData previous = startOrder[0];
 
             previous._extentIndex = new(0, 0);
 
@@ -76,17 +77,19 @@ namespace TranSimCS.Roads.StripData {
 
             int extentIndex = 0;
 
-            for (int i = 1; i < strips.Length; i++) {
-                var current = strips[i];
+            for (int i = 1; i < startOrder.Length; i++) {
+                var current = startOrder[i];
 
-                bool sameExtent =
-                    MathF.Abs(
+                bool isAdjacentStart = MathF.Abs(
                         current.Bounds.startRange.Min -
                         previous.Bounds.startRange.Max) <= Tolerance
-                    &&
-                    MathF.Abs(
+                        || previous.Bounds.startRange == current.Bounds.startRange;
+                bool isAdjacentEnd = MathF.Abs(
                         current.Bounds.endRange.Max -
-                        previous.Bounds.endRange.Min) <= Tolerance;
+                        previous.Bounds.endRange.Min) <= Tolerance
+                        || previous.Bounds.endRange == current.Bounds.endRange;
+
+                bool sameExtent = isAdjacentStart && isAdjacentEnd;
 
                 if (!sameExtent) {
                     var finished = currentExtent.ToImmutable();
