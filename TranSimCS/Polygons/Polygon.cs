@@ -69,22 +69,29 @@ namespace TranSimCS.Polygons {
             return new Polygon(path, rule);
         }
         public Polygon SubtractMore(IEnumerable<Polygon> subtractends) {
-            var result = this;
-            foreach (var polygon in subtractends)
-                result -= polygon;
-            return result;
+            return new Polygon(Clipper.Difference(path, BalancedMerge(subtractends.Select(x => x.path), fillRule), fillRule), fillRule);
         }
-        public static Polygon MultiSubtract(FillRule rule, IEnumerable<Polygon> addends, IEnumerable<Polygon> subtractends) {
-            var path = new PathsD();
-            var clipper = new ClipperD();
-            foreach (var polygon in addends) clipper.AddSubject(polygon.path);
-            foreach (var polygon in subtractends) clipper.AddClip(polygon.path);
-            clipper.Execute(ClipType.Difference, rule, path);
-            return new Polygon(path, rule);
+        public static Polygon MultiSubtract(FillRule fillRule, IEnumerable<Polygon> addends, IEnumerable<Polygon> subtractends, int precision = 6) {
+            var mergedAddends = BalancedMerge(addends.Select(x => x.path), fillRule);
+            var mergedSubtractends = BalancedMerge(addends.Select(x => x.path), fillRule);
+            return new Polygon(Clipper.Difference(mergedAddends, mergedSubtractends, fillRule, precision), fillRule);
         }
         public Polygon Offset(double expand, JoinType joinType = JoinType.Miter, EndType endType = EndType.Polygon, int miterLimit = 2, int precision = 2, double arcTolerance = 0) {
             var result = Clipper.InflatePaths(path, expand, joinType, endType, miterLimit, precision, arcTolerance);
             return new Polygon(result, fillRule);
+        }
+
+        public static PathsD BalancedMerge(IEnumerable<PathsD> paths, FillRule fillRule, int precision = 6) {
+            //Initialize a queue
+            Queue<PathsD> result = new Queue<PathsD>(paths);
+            if (result.Count == 0) return new PathsD();
+            while (result.Count > 1) {
+                var take1 = result.Dequeue();
+                var take2 = result.Dequeue();
+                var union = Clipper.Union(take1, take2, fillRule, precision);
+                result.Enqueue(union);
+            }
+            return result.Dequeue();
         }
 
         public static double Perimeter(PathD path) {
