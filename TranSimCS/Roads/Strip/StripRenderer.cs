@@ -127,6 +127,9 @@ namespace TranSimCS.Roads.Strip {
 
             RoadSplineComponent DrawSide(DualRange laneRange, LaneFlags flag, float bias) {
                 bool isEdge = IsRangeTouchingEdge(laneRange.startRange, roadTag.startRange) && IsRangeTouchingEdge(laneRange.endRange, roadTag.endRange);
+                bool isOnLeftExtent = (flag & LaneFlags.NoLeft) != 0 && laneStrip.Parent.LaneStripExtents.LeftEdgeStrips.Contains(laneStrip);
+                bool isOnRightExtent = (flag & LaneFlags.NoRight) != 0 && laneStrip.Parent.LaneStripExtents.RightEdgeStrips.Contains(laneStrip);
+                isEdge |= isOnLeftExtent || isOnRightExtent;
                 var lineTexture = ((laneStrip.Spec.Flags & flag) != 0 || isEdge) ? RoadSplineComponentType.Solid : RoadSplineComponentType.Dashed;
                 return new RoadSplineComponent() {
                     Bias = bias,
