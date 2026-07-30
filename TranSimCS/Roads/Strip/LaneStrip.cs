@@ -11,9 +11,10 @@ using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
+using TranSimCS.Roads.StripData;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
-using static TranSimCS.Roads.Strip.RoadDataBuilder;
+using static TranSimCS.Roads.StripData.RoadDataBuilder;
 
 namespace TranSimCS.Roads.Strip {
     public class LaneStrip : IEquatable<LaneStrip?>, IDraggableObj, IRoadElement {

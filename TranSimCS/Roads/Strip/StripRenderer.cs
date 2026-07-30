@@ -6,6 +6,7 @@ using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads.Range;
+using TranSimCS.Roads.StripData;
 using TranSimCS.Setting;
 
 namespace TranSimCS.Roads.Strip {

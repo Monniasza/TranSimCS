@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using TranSimCS.Roads.Strip;
+using TranSimCS.Roads.StripData;
 using TranSimCS.Spline;
 
 namespace TranSimCS.Roads.Range {

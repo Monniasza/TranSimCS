@@ -5,6 +5,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
+using TranSimCS.Roads.StripData;
 using static TranSimCS.Geometry.GeometryUtils;
 using static TranSimCS.Roads.Strip.StripRenderer;
 

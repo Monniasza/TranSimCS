@@ -10,6 +10,7 @@ using TranSimCS.Collections;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads.Range;
+using TranSimCS.Roads.StripData;
 using TranSimCS.Setting;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;

@@ -9,6 +9,7 @@ using TranSimCS.Property;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Section;
+using TranSimCS.Roads.StripData;
 using TranSimCS.Roads.StripGenerator;
 using TranSimCS.SceneGraph;
 using TranSimCS.Setting;

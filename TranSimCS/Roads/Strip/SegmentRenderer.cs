@@ -12,6 +12,7 @@ using TranSimCS.Model;
 using TranSimCS.Polygons;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
+using TranSimCS.Roads.StripData;
 using TranSimCS.Setting;
 using TranSimCS.Spline;
 using static TranSimCS.Geometry.GeometryUtils;
