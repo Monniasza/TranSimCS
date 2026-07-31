@@ -29,6 +29,26 @@ namespace TranSimCS.Tools.RoadConstruction {
             LeftAmount = leftAmount;
             RightAmount = rightAmount;
         }
+
+        /// <summary>
+        /// Classifies this <see cref="LaneMappingInputs"/> into one of 7 possible categories
+        /// </summary>
+        public LaneMappingInputClassification Classify() {
+            if (LeftAmount.IsStraight) {
+                if (RightAmount.IsStraight) return LaneMappingInputClassification.Straight;
+                if (RightAmount.IsExpand) return LaneMappingInputClassification.ExitRight;
+                if (RightAmount.IsMerge) return LaneMappingInputClassification.MergeLeft;
+            }
+            if (LeftAmount.IsExpand) {
+                if (RightAmount.IsExpand) return LaneMappingInputClassification.ExitLeftRight;
+                if (RightAmount.IsStraight) return LaneMappingInputClassification.ExitLeft;
+            }
+            if (LeftAmount.IsMerge) {
+                if (RightAmount.IsMerge) return LaneMappingInputClassification.End;
+                if (RightAmount.IsStraight) return LaneMappingInputClassification.MergeRight;
+            }
+            throw new InvalidOperationException("Bug in MergeAmount classification and validation");
+        }
     }
 
     /// <summary>
