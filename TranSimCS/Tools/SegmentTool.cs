@@ -17,8 +17,8 @@ using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Setting;
-using TranSimCS.Tools;
 using TranSimCS.Tools.Panels;
+using TranSimCS.Tools.RoadConstruction;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Tools {

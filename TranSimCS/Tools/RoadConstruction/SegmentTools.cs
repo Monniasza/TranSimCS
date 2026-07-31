@@ -8,7 +8,7 @@ using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
 
-namespace TranSimCS.Tools {
+namespace TranSimCS.Tools.RoadConstruction {
     public class SegmentTools: Panel {
         public readonly InGameMenu Menu;
         public readonly Property<int> AddRemoveLeft;
@@ -70,13 +70,13 @@ namespace TranSimCS.Tools {
         }
 
         public SegmentTools(InGameMenu menu): base(MLEM.Ui.Anchor.AutoLeft, new(1,1), true) {
-            this.Menu = menu;
-            this.AddRemoveLeft = new(0, "addRemoveLeft");
-            this.AddRemoveRight = new(0, "addRemoveRight");
-            this.IncludeExcludeLeft = new(0, "includeExcludeLeft");
-            this.IncludeExcludeRight = new(0, "includeExcludeRight");
-            this.IsInclusive = new(false, "isInclusive");
-            this.DirectionChoice = new(Tools.DirectionChoice.Auto, "directionChoice");
+            Menu = menu;
+            AddRemoveLeft = new(0, "addRemoveLeft");
+            AddRemoveRight = new(0, "addRemoveRight");
+            IncludeExcludeLeft = new(0, "includeExcludeLeft");
+            IncludeExcludeRight = new(0, "includeExcludeRight");
+            IsInclusive = new(false, "isInclusive");
+            DirectionChoice = new(Tools.DirectionChoice.Auto, "directionChoice");
             IsInclusive.ValueChanged += IsInclusive_ValueChanged;
 
             Paragraph addRemoveParagraph = new Paragraph(MLEM.Ui.Anchor.AutoLeft, 1, "Lanes to merge or expand");
@@ -111,7 +111,7 @@ namespace TranSimCS.Tools {
                 Otherwise the counts below are number of lanes to exclude from either side.
                 Toggle with [X]. If this checkbox is changed, the counts below are reset to 0.
                 """);
-            UI.AddProperty(inclusiveCheck, IsInclusive);
+            inclusiveCheck.AddProperty(IsInclusive);
             AddChild(inclusiveCheck);
             
             GlobalSettingsTab.AddSetting(this, null, uint.Parse, x => x.ToString(), IncludeExcludeLeft);

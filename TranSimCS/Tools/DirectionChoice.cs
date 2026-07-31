@@ -1,4 +1,6 @@
-﻿namespace TranSimCS.Tools {
+﻿using TranSimCS.Tools.RoadConstruction;
+
+namespace TranSimCS.Tools {
     /// <summary>
     /// Determines how lane directions are obtaines by <see cref="SegmentTool"/>
     /// </summary>

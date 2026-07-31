@@ -1,7 +1,7 @@
 ﻿using System;
 using TranSimCS.Roads;
 
-namespace TranSimCS.Tools {
+namespace TranSimCS.Tools.RoadConstruction {
     public struct LaneMapping {
         public int StartIndex;
         public int EndIndex;

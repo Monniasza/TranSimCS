@@ -7,7 +7,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 
-namespace TranSimCS.Tools {
+namespace TranSimCS.Tools.RoadConstruction {
     public class LaneMappings {
         /// <summary>
         /// Presets used to generate this set of <see cref="LaneMappings"/>
@@ -54,7 +54,7 @@ namespace TranSimCS.Tools {
             Debug.Assert(minIndex <= maxIndex, "List has no elements");
             Debug.Assert(minIndex >= 0 && minIndex < startingLanes.Count, "Min index out of bounds");
             Debug.Assert(maxIndex >= 0 && maxIndex < startingLanes.Count, "Max index out of bounds");
-            StartingLanes = startingLanes.Skip(minIndex).Take((maxIndex - minIndex) + 1).ToImmutableArray();
+            StartingLanes = startingLanes.Skip(minIndex).Take(maxIndex - minIndex + 1).ToImmutableArray();
             StartRange = new();
             foreach (var lane in StartingLanes) {
                 Debug.Assert(lane != null, "Invalid starting lane");
@@ -179,8 +179,8 @@ namespace TranSimCS.Tools {
                     int newIndex = i + leftBound;
                     int prevIndex = leftBound;
                     var spec = roadSpecLeft;
-                    var newflags = (i == 0) ? exitLeft : mergePlain;
-                    spec.Flags = (spec.Flags & ~mergeFlagsMask) | newflags;
+                    var newflags = i == 0 ? exitLeft : mergePlain;
+                    spec.Flags = spec.Flags & ~mergeFlagsMask | newflags;
                     var lm = new LaneMapping(prevIndex, newIndex, spec);
                     ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
                     laneMappings[lmIndex++] = lm;
@@ -194,8 +194,8 @@ namespace TranSimCS.Tools {
                     int newIndex = leftBound;
                     int prevIndex = i + leftBound;
                     var spec = roadSpecLeft;
-                    var newflags = (i == 0) ? mergeRight : mergePlain;
-                    spec.Flags = (spec.Flags & ~mergeFlagsMask) | newflags;
+                    var newflags = i == 0 ? mergeRight : mergePlain;
+                    spec.Flags = spec.Flags & ~mergeFlagsMask | newflags;
                     var lm = new LaneMapping(prevIndex, newIndex, spec);
                     ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
                     laneMappings[lmIndex++] = lm;
@@ -207,8 +207,8 @@ namespace TranSimCS.Tools {
                     int newIndex = newCount - countSideRight - i - 1;
                     int prevIndex = rightBound;
                     var spec = roadSpecRight;
-                    var newflags = (i == 0) ? exitRight : mergePlain;
-                    spec.Flags = (spec.Flags & ~mergeFlagsMask) | newflags;
+                    var newflags = i == 0 ? exitRight : mergePlain;
+                    spec.Flags = spec.Flags & ~mergeFlagsMask | newflags;
                     var lm = new LaneMapping(prevIndex, newIndex, spec);
                     ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
                     laneMappings[lmIndex++] = lm;
@@ -222,8 +222,8 @@ namespace TranSimCS.Tools {
                     int newIndex = rightBound + laneChangesRight + laneChangesLeft;
                     int prevIndex = StartingLanes.Length - countSideRight - i - 1;
                     var spec = roadSpecRight;
-                    var newflags = (i == 0) ? mergeLeft : mergePlain;
-                    spec.Flags = (spec.Flags & ~mergeFlagsMask) | newflags;
+                    var newflags = i == 0 ? mergeLeft : mergePlain;
+                    spec.Flags = spec.Flags & ~mergeFlagsMask | newflags;
                     var lm = new LaneMapping(prevIndex, newIndex, spec);
                     ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
                     laneMappings[lmIndex++] = lm;
@@ -278,7 +278,7 @@ namespace TranSimCS.Tools {
             var isForwardPreferred = backwardCount < forwardCount;
             var isLaneLeft = lane.MiddlePosition < 0;
 
-            var isBackwards = isBackPreferred || (!isForwardPreferred && isLaneLeft);
+            var isBackwards = isBackPreferred || !isForwardPreferred && isLaneLeft;
             return isBackwards;
         }
     }

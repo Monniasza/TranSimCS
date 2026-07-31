@@ -12,7 +12,7 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Worlds;
 
-namespace TranSimCS.Tools {
+namespace TranSimCS.Tools.RoadConstruction {
     public class LaneReconcillation {
         public static LaneCreationState? BuildConnections(LaneCreationState startingState, LaneMappings laneMappings, InGameMenu menu) {
             //Get the state
@@ -156,7 +156,7 @@ namespace TranSimCS.Tools {
             }
 
             GenerateLaneConnections(laneMappings.Presets.DirectionChoice, startingState.StartLane.HalfNode, destinationNode.OppositeHalf, laneMappings.StartingLanes, destLanes, laneMappings.Mappings, menu.configuration.RoadFinish, menu.World);
-            return (passthroughEnd == null) ? null : new LaneCreationState(passthroughEnd.Value.ToHalfLane());
+            return passthroughEnd == null ? null : new LaneCreationState(passthroughEnd.Value.ToHalfLane());
         }
 
         public static void GenerateLaneConnections(DirectionChoice dirChoice, HalfNode startNode, HalfNode endNode, IList<HalfLane> startLanes, IList<HalfLane> endLanes, IList<LaneMapping> mappings, RoadFinish roadFinish, TSWorld world) {
