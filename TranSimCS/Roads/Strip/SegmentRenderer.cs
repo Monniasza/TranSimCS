@@ -133,20 +133,14 @@ namespace TranSimCS.Roads.Strip {
 
             float a = leftBounds.Max;
             float b = rightBounds.Min;
-            
-            var width = b - a;
-            var d = width * 0.6666666666666666666666666667f;
-            var spline = new Bezier3(
-                new(b, 0, 0), new(b, 0, d), new(a, 0, d), new(a, 0, 0)
-            );
-            var points = GeometryUtils.GenerateSplinePoints(spline, accuracy);
+            var points = RoadStrip.GenerateSpline(connection, b, a);
             var refframe = connection.StartPos.CalcReferenceFrame();
             var nodeSplineFrame = new OrthodistantBasis();
             nodeSplineFrame.NormalSpline = new(refframe.Y);
             nodeSplineFrame.ReferenceSpline = new(refframe.O, refframe.O+refframe.X);
 
             var pointsFlat = FlattenPath(points);
-            DrawIsland(Surface.Grass, Surface.Concrete, renderHelper, nodeSplineFrame, new PathD(pointsFlat), 0.1f, 1);
+            DrawIsland(Surface.Grass, Surface.Concrete, renderHelper, OrthodistantBasis.Identity, new PathD(pointsFlat), 0.1f, 1);
         }
 
         public static void RenderRoadSegmentPolygons(RoadStripData connection, MultiMesh renderHelper, float length) {
@@ -207,7 +201,7 @@ namespace TranSimCS.Roads.Strip {
             //Reject polygons with a tiny width
             var perimeter = Polygon.Perimeter(path);
             var avgWidth = area / perimeter;
-            if (avgWidth < 0.01) return;
+            if (area < 0.0001 || avgWidth < 0.01) return;
 
             var untransformedPath = path.Select(p => new PointD(p.x, p.y / stretch)).ToArray();
 

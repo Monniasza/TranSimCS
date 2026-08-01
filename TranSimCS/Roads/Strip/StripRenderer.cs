@@ -66,7 +66,7 @@ namespace TranSimCS.Roads.Strip {
                 if(mat == null) continue;
                 var leftLinePoints = arrays[line.MinIndex];
                 var rightLinePoints = arrays[line.MaxIndex];
-                var generatedLineVertStripPair = UniformTexturing.UniformTexturedTwin(leftLinePoints, rightLinePoints, TranSimCS.Model.UniformTexturing.GenerateLaneStripVertexGen(line.Value.Color), line.Value.Bias);             
+                var generatedLineVertStripPair = UniformTexturing.UniformTexturedTwin(leftLinePoints, rightLinePoints, UniformTexturing.GenerateLaneStripVertexGen(line.Value.Color), line.Value.Bias);             
                 var lineBin = renderer.GetOrCreateRenderBinForced(mat.Value);
                 lineBin.DrawStrip(generatedLineVertStripPair);
             }
