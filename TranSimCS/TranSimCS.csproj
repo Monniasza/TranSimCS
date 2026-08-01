@@ -38,6 +38,9 @@
 	  <EmbeddedResource Remove="HalfEdge\**" />
 	  <None Remove="HalfEdge\**" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Compile Remove="Spline\TangentArc.cs" />
+	</ItemGroup>
   <ItemGroup>
     <None Remove="Icon.ico" />
     <None Remove="Icon.bmp" />

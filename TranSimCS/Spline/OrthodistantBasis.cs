@@ -7,6 +7,8 @@ namespace TranSimCS.Spline {
         public Bezier3 NormalSpline;
         public Vector2 StartEndPosition;
 
+        public static OrthodistantBasis Identity => new(new(Vector3.Zero, Vector3.UnitZ), new(Vector3.UnitY), Vector2.Zero);
+
         public OrthodistantBasis(Bezier3 referenceSpline, Bezier3 normalSpline, Vector2 startEndPosition) {
             ReferenceSpline = referenceSpline;
             NormalSpline = normalSpline;
@@ -42,5 +44,7 @@ namespace TranSimCS.Spline {
             var orthonormalSample = new OrthonormalBasis(ReferenceSpline, NormalSpline).Sample(t);
             return orthonormalSample.Transform(smoothstepOffset);
         }
+
+        public bool IsFinite() => ReferenceSpline.IsFinite() && NormalSpline.IsFinite();// && !ReferenceSpline.HasCusps();
     }
 }

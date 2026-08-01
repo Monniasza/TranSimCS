@@ -29,6 +29,7 @@ namespace TranSimCS.Tools.RoadConstruction {
         //TOOL STATE
         public LaneCreationState? State { get; private set; }
         public LaneMappings? LaneMappings { get; private set; }
+        public SegmentToolVisualCache? VisualCache { get; private set; }
 
         //PROPERTIES
         public string Name => "Road Creation Tool 2";
@@ -145,7 +146,7 @@ namespace TranSimCS.Tools.RoadConstruction {
                 
             }else if(State != null && button == MouseButton.Left) {
                 //Validate the position
-                if (LaneMappings == null || !float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt)) return;
+                if (LaneMappings == null || !float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt) || VisualCache == null) return;
 
                 //Advance to the next road node
                 State = LaneReconcillation.BuildConnections(State, LaneMappings, Menu);
@@ -176,12 +177,13 @@ namespace TranSimCS.Tools.RoadConstruction {
             var material = Assets.Asphalt;
             material.BlendMode = ModelOld.MaterialBlendMode.Transparent;
 
+            /*
             var accuracy = Settings.RoadAccuracy;
             var apshaltBin = Menu.renderHelper.GetOrCreateRenderBinForced(material);
             var leftPoints = GeometryUtils.GenerateSplinePoints(State.GeneratedSplines.left, accuracy);
             var rightPoints = GeometryUtils.GenerateSplinePoints(State.GeneratedSplines.right, accuracy);
             var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftPoints, rightPoints, UniformTexturing.GenerateLaneStripVertexGen(previewColor));
-            apshaltBin.DrawStrip(generatedVertStripPair);
+            apshaltBin.DrawStrip(generatedVertStripPair);*/
 
             //Generate a preview of the node position
             var refframe = State.GeneratedNodePosition.CalcReferenceFrame();
@@ -191,10 +193,28 @@ namespace TranSimCS.Tools.RoadConstruction {
             roadRenderBin.DrawLine(refframe.O, front, refframe.Y, Color.Red);
             roadRenderBin.DrawLine(refframe.O, back, refframe.Y, Color.Maroon);
 
+            var destinationHalfNode = State.SnappedLane?.GetNodeEnd()?.HalfNode;
+            var sourceHalfNode = State.StartLane.HalfNode;
+
+            if (State == null || !float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt) || sourceHalfNode == destinationHalfNode?.OppositeHalf) {
+                VisualCache = null;
+            } else {
+                var currentState = new SegmentToolVisualCache.Inputs();
+                currentState.StartPosition = State.StartLane.HalfNode.PositionProp.Value;
+                currentState.EndPosition = State.GeneratedNodePosition;
+                if (State.DestinationNodeEnd == NodeEnd.Forward) currentState.EndPosition.Azimuth += int.MinValue;
+                currentState.LaneMappings = LaneMappings!;
+                currentState.RoadFinish = Menu.configuration.RoadFinish;
+                var existingState = VisualCache?.InputData;
+                if (existingState != currentState) VisualCache = new(currentState);
+                if (VisualCache.GeneratedData == null) VisualCache = null;
+            }
+
             //Generate endpoint previews
-            if (LaneMappings == null) return;
+            if (State == null || LaneMappings == null || VisualCache == null) return;
             var centerSpline = State.GeneratedSplines.Middle;
             var splineEndTangent = Vector3.Normalize(centerSpline.d - centerSpline.c);
+            if (!splineEndTangent.IsFinite()) return;
             var arrowBin = Menu.renderHelper.GetOrCreateRenderBinForced(Assets.Arrow);
             foreach(var laneNode in LaneMappings.EndingLanes) {
                 var laneCenter = laneNode.CenterPos;
@@ -206,13 +226,9 @@ namespace TranSimCS.Tools.RoadConstruction {
                 arrowBin.DrawLine(startingPos, endingPos, refframe.Y, laneNode.LaneSpec.Color, laneWidth);
             }
 
-            //Generate midpoint arrows
-            /*var alignedRefframe = refframe;
-            if (State.DestinationNodeEnd == NodeEnd.Backward) alignedRefframe = alignedRefframe.Around();
-            foreach(var connection in LaneMappings.Mappings) {
-                var startLane = LaneMappings.StartingLanes[connection.StartIndex];
-                var endLane = LaneMappings.E
-            }*/
+            //Generate a preview
+            var sourceData = VisualCache?.GeneratedData;
+            SegmentRenderer.GenerateRoadSegmentFullMesh(sourceData!, Menu.renderHelper);
         }
 
 

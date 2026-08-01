@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -54,6 +55,18 @@ namespace TranSimCS.Model {
                 cumulativeDistances[i] = cumulativeDistance;
                 previousL = left;
                 previousR = right;
+            }
+
+            //Check validity
+            var degenerateLeft = cumulativeDistance.X < 0.001;
+            var degenerateRight = cumulativeDistance.Y < 0.001;
+            if (degenerateLeft) {
+                Debug.Assert(!degenerateRight, "Both strips are dengenerated");
+                cumulativeDistance.X = cumulativeDistance.Y;
+                for (int i = 0; i < cumulativeDistances.Length; i++) cumulativeDistances[i] = new(cumulativeDistances[i].Y);
+            } else if (degenerateRight) {
+                cumulativeDistance.Y = cumulativeDistance.X;
+                for (int i = 0; i < cumulativeDistances.Length; i++) cumulativeDistances[i] = new(cumulativeDistances[i].X);
             }
 
             //Compensate arc-lengths

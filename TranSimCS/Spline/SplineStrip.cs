@@ -29,6 +29,7 @@ namespace TranSimCS.Spline {
             left = this.left;
             right = this.right;
         }
-        
+
+        public bool IsFinite() => left.IsFinite() && right.IsFinite();
     }
 }

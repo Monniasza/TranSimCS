@@ -251,5 +251,10 @@ namespace TranSimCS.Spline{
             maxT = MathHelper.Lerp(lowerLimit, upperLimit, maxT); // Scale maxT to the original range
             return FindT(spline, pos, pointsPerCycle, depth - 1, minT, maxT); // Recursively find the closest t value in the range
         }
+
+        public bool IsFinite() {
+            if (!a.IsFinite() || !b.IsFinite() || !c.IsFinite() || !d.IsFinite()) return false;
+            return true;
+        }
     }
 }
