@@ -94,10 +94,6 @@ namespace TranSimCS.Roads.Strip {
             var removal = lanes.Remove(laneStrip); // Remove a lane strip from the connection
             if(!removal) return false;
             laneStrip.Road = null;
-            laneStrip.StartLane._connectedLaneStrips.Remove(new(laneStrip, SegmentHalf.Start));
-            laneStrip.EndLane._connectedLaneStrips.Remove(new(laneStrip, SegmentHalf.End));
-            laneStrip.StartLane.Lane.connections.Remove(laneStrip);
-            laneStrip.EndLane.Lane.connections.Remove(laneStrip);
             OnLaneRemoved?.Invoke(this, new RoadStripEventArgs(laneStrip)); // Trigger the OnLaneRemoved event
             FirePropertyEvent(this, new(PropertyNames.SegmentLanes));
             Mesh.Invalidate(); // Invalidate the mesh for the lane strip to ensure it is regenerated
@@ -107,10 +103,6 @@ namespace TranSimCS.Roads.Strip {
             if (lanes.Contains(laneStrip)) return false;
             lanes.Add(laneStrip); // Add a new lane strip to the connection
             laneStrip.Road = this;
-            laneStrip.StartLane._connectedLaneStrips.Add(new(laneStrip, SegmentHalf.Start));
-            laneStrip.EndLane._connectedLaneStrips.Add(new(laneStrip, SegmentHalf.End));
-            laneStrip.StartLane.Lane.connections.Add(laneStrip);
-            laneStrip.EndLane.Lane.connections.Add(laneStrip);
             OnLaneAdded?.Invoke(this, new RoadStripEventArgs(laneStrip)); // Trigger the OnLaneAdded event
             FirePropertyEvent(this, new(PropertyNames.SegmentLanes));
             Mesh.Invalidate(); // Invalidate the mesh for the lane strip to ensure it is regenerated

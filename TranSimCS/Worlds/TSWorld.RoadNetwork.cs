@@ -27,6 +27,8 @@ namespace TranSimCS.Worlds {
 
             //Add road segment listeners
             segment.PropertyChanged += HandleChangeRoadSegment;
+            segment.OnLaneAdded += HandleAddLaneStrip;
+            segment.OnLaneRemoved += HandleRemoveLaneStrip;
 
             //Link the road strip to half-nodes
             var startHalf = segment.StartNode;
@@ -45,13 +47,24 @@ namespace TranSimCS.Worlds {
                 sectionA._containedSegments.Add(segment);
             }
 
+            //Link lane strips to lanes
+            foreach (var strip in segment.Lanes)
+                HandleAddLaneStrip(segment, new(strip));
+            
+
             //Fire dependency events
             segment.Section?.FireDependencyEvent(segment.Section, segment, PropertyNames.SegmentOfSection);
             if(segment.Section != null) segment.FireDependencyEvent(segment, segment.Section, PropertyNames.SectionOfSegment);
             segment.FirePropertyEvent(segment, new(PropertyNames.World));
         }
 
+        
+
         private void HandleRemoveRoadSegment(RoadStrip segment) {
+            //Unlink lane strips from lanes
+            foreach (var strip in segment.Lanes)
+                HandleRemoveLaneStrip(segment, new(strip));
+
             //Unlink road strip and section
             var section = segment.Section;
             segment.Section = null;
@@ -71,6 +84,8 @@ namespace TranSimCS.Worlds {
 
             //Remove road segment listeners
             segment.PropertyChanged -= HandleChangeRoadSegment;
+            segment.OnLaneAdded -= HandleAddLaneStrip;
+            segment.OnLaneRemoved -= HandleRemoveLaneStrip;
 
             //Fire dependency events
             section?.FireDependencyEvent(section, segment, PropertyNames.SegmentOfSection);
@@ -88,6 +103,30 @@ namespace TranSimCS.Worlds {
             segment.EndNode.RoadNode.FireDependencyEvent(segment.EndNode.RoadNode, segment, "connections");
             section?.FireDependencyEvent(section, segment, PropertyNames.SegmentOfSection);
         }
+
+        private void HandleAddLaneStrip(object? sender, RoadStripEventArgs e) {
+            if (sender is not RoadStrip segment) {
+                Debug.Fail("Fired for non-segment object");
+                return;
+            }
+            var laneStrip = e.lane;
+            laneStrip.StartLane._connectedLaneStrips.Add(new(laneStrip, SegmentHalf.Start));
+            laneStrip.EndLane._connectedLaneStrips.Add(new(laneStrip, SegmentHalf.End));
+            laneStrip.StartLane.Lane.connections.Add(laneStrip);
+            laneStrip.EndLane.Lane.connections.Add(laneStrip);
+        }
+        private void HandleRemoveLaneStrip(object? sender, RoadStripEventArgs e) {
+            if (sender is not RoadStrip segment) {
+                Debug.Fail("Fired for non-segment object");
+                return;
+            }
+            var laneStrip = e.lane;
+            laneStrip.StartLane._connectedLaneStrips.Remove(new(laneStrip, SegmentHalf.Start));
+            laneStrip.EndLane._connectedLaneStrips.Remove(new(laneStrip, SegmentHalf.End));
+            laneStrip.StartLane.Lane.connections.Remove(laneStrip);
+            laneStrip.EndLane.Lane.connections.Remove(laneStrip);
+        }
+
 
         //Section handlers
         private void HandleAddRoadSection(RoadSection section) {
