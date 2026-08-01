@@ -20,6 +20,7 @@ namespace TranSimCS.Geometry {
             var max = MinMax(a.Max, b.Max).Max;
             return new(min, max);
         }
+        public static Range<T> RangeUnion<T>(this IEnumerable<Range<T>> ranges) where T : IComparable<T> => ranges.Aggregate(Union);
         public static Range<T> Intersection<T>(this Range<T> a, Range<T> b) where T : IComparable<T> {
             var min = MinMax(a.Min, b.Min).Max;
             var max = MinMax(a.Max, b.Max).Min;
@@ -27,6 +28,8 @@ namespace TranSimCS.Geometry {
             if (cmp < 0) return new(min, min);
             return new(min, max);
         }
+        public static Range<T> RangeIntersection<T>(this IEnumerable<Range<T>> ranges) where T : IComparable<T> => ranges.Aggregate(Intersection);
+
         public static T Middle<T>(this Range<T> a) where T: INumber<T> {
             return (a.Min + a.Max)/(T.One + T.One);
         }

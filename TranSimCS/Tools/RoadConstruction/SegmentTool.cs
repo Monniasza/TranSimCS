@@ -18,10 +18,9 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Setting;
 using TranSimCS.Tools.Panels;
-using TranSimCS.Tools.RoadConstruction;
 using TranSimCS.Worlds;
 
-namespace TranSimCS.Tools {
+namespace TranSimCS.Tools.RoadConstruction {
     public class SegmentTool : ITool{ 
         public InGameMenu Menu { get; private set; }
         public StripTools StripTools { get; private set; }
@@ -33,7 +32,7 @@ namespace TranSimCS.Tools {
 
         //PROPERTIES
         public string Name => "Road Creation Tool 2";
-        public string Description => (State == null) ?
+        public string Description => State == null ?
             "Pick a lane to start creating a road segment" :
             State.GenerateDescription();
             
@@ -82,7 +81,7 @@ namespace TranSimCS.Tools {
         }
 
         void ITool.OnKeyDown(Keys key) {
-            var changeLaneCountPolarity = (SegmentTools.IsInclusive.Value ? 1 : -1);
+            var changeLaneCountPolarity = SegmentTools.IsInclusive.Value ? 1 : -1;
             switch (key) {
                 case Keys.Q:
                     SegmentTools.AddRemoveLeft.Value += 1;

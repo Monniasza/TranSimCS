@@ -85,7 +85,7 @@ namespace TranSimCS.Roads.Node {
             return new(spec, CenterPos, ID);
         }
 
-        public static bool operator ==(LaneNode left, LaneNode right) {
+        public static bool operator ==(LaneNode? left, LaneNode? right) {
             if (ReferenceEquals(left, null)) {
                 return ReferenceEquals(right, null);
             }
@@ -93,7 +93,7 @@ namespace TranSimCS.Roads.Node {
             return left.Equals(right);
         }
 
-        public static bool operator !=(LaneNode left, LaneNode right) {
+        public static bool operator !=(LaneNode? left, LaneNode? right) {
             return !(left == right);
         }
     }

@@ -60,6 +60,13 @@ namespace TranSimCS {
             if(newValue) subject2 |= flags2; else subject2 &= ~flags2;
             return (T)Enum.ToObject(typeof(T), subject2);
         }
+        public static T SetFieldTo<T>(this T subject, T fields, T flags) where T : struct, Enum {
+            long subject2 = Convert.ToInt64(subject);
+            long flags2 = Convert.ToInt64(flags);
+            long fields2 = Convert.ToInt64(fields);
+            subject2 = (subject2 & ~fields2) | flags2;
+            return (T)Enum.ToObject(typeof(T), subject2);
+        }
 
         public static T? OrDefault<T>(T? value) {
             return value ?? default;

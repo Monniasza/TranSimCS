@@ -34,6 +34,16 @@ namespace TranSimCS.Tools.RoadConstruction {
             AmountRaw = amountRaw;
         }
 
+        /// <summary>
+        /// Clamps a supplied integer to between -1 and 254 (one merge and 254 exits) as a <see cref="MergeAmount"/>
+        /// </summary>
+        /// <param name="amount">amount to be clamped</param>
+        /// <returns>a clamped <see cref="MergeAmount"/></returns>
+        public static MergeAmount Clamp(int amount) {
+            var clamped = int.Clamp(amount, -1, 254);
+            return new((byte)clamped);
+        }
+
         ///Returns a MergeAmount with one fewer lane. If this is a merge, it returns the same value.
         public MergeAmount Merged => IsMerge ? Merge : new((byte)(AmountRaw - 1));
 

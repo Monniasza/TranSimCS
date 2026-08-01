@@ -13,13 +13,14 @@ namespace TranSimCS.Tools.RoadConstruction {
     /// </summary>
     public struct LaneMappingInput {
         /// The lane that is placed on the beginning of this operation
-        public Lane SourceLane { get; }
+        public HalfLane SourceLane { get; }
         /// How much does the left side shift? <see cref="MergeAmount.Merge"> for a merge.
         public MergeAmount LeftAmount { get; }
         /// How much does the right side shift? <see cref="MergeAmount.Merge"> for a merge.
         public MergeAmount RightAmount { get; }
 
-        public LaneMappingInput(Lane sourceLane, MergeAmount leftAmount, MergeAmount rightAmount) {
+        public LaneMappingInput(HalfLane sourceLane, MergeAmount leftAmount, MergeAmount rightAmount) {
+            ArgumentNullException.ThrowIfNull(sourceLane, nameof(sourceLane));
             if (leftAmount.IsMerge && rightAmount.IsExpand)
                 throw new LaneValidationException("A lane cannot both expand and merge into right");
             if (rightAmount.IsMerge && leftAmount.IsExpand)
@@ -49,6 +50,11 @@ namespace TranSimCS.Tools.RoadConstruction {
             }
             throw new InvalidOperationException("Bug in MergeAmount classification and validation");
         }
+
+        public bool IsMergeIntoRightOrEnd => LeftAmount.IsMerge;
+        public bool IsMergeIntoLeftOrEnd => RightAmount.IsMerge;
+        public bool IsMergeIntoLeft => IsMergeIntoLeftOrEnd & !IsMergeIntoRightOrEnd;
+        public bool IsMergeIntoRight => IsMergeIntoRightOrEnd & !IsMergeIntoLeftOrEnd;
     }
 
     /// <summary>

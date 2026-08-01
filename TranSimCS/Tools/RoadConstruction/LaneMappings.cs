@@ -95,6 +95,10 @@ namespace TranSimCS.Tools.RoadConstruction {
             var laneChangesLeft = presets.AddRemoveLeft;
             var laneChangesRight = presets.AddRemoveRight;
 
+            //Clamp the amounts for a new algorithm
+            var mergeAmountLeft = MergeAmount.Clamp(laneChangesLeft);
+            var mergeAmountRight = MergeAmount.Clamp(laneChangesRight);
+
             //Find lanes to collapse/expand from
             int leftBound, rightBound = StartingLanes.Length - 1;
             for (leftBound = 0; leftBound <= rightBound; leftBound++) {
@@ -118,6 +122,39 @@ namespace TranSimCS.Tools.RoadConstruction {
                 return;
             }
 
+            var isMergeCountValid = trafficLanes + mergeAmountLeft.Amount + mergeAmountRight.Amount > 0;
+            bool hasMerges = mergeAmountLeft.IsMerge || mergeAmountRight.IsMerge;
+            bool hasExpands = mergeAmountLeft.IsExpand || mergeAmountRight.IsExpand;
+            var isMergeAndExpandSameLane = (trafficLanes == 1) && hasMerges && hasExpands;
+            if (!isMergeCountValid || isMergeAndExpandSameLane) {
+                //Invalid relationship
+                OneToOne();
+                return;
+            }
+
+            //Count sidewalks
+            int countSideLeft = leftBound;
+            int countSideRight = StartingLanes.Length - rightBound - 1;
+
+            //Separate into 3 main elements: left sidewalk, core traffic lanes, right sidewalk
+            var leftSidewalk = new HalfLane[countSideLeft];
+            for(int i = 0; i < leftSidewalk.Length; i++) 
+                leftSidewalk[i] = StartingLanes[i];
+            
+            var rightSidewalk = new HalfLane[countSideRight];
+            for (int i = 0; i < rightSidewalk.Length; i++)
+                rightSidewalk[i] = StartingLanes[^(i + 1)];
+
+            var core = new LaneMappingInput[trafficLanes];
+            for(int i = 0; i < core.Length; i++) {
+                var startingLanesIndex = i + countSideLeft;
+                MergeAmount left = MergeAmount.StraightOn;
+                MergeAmount right = MergeAmount.StraightOn;
+                if (i == 0) left = mergeAmountLeft;
+                if(core.Length - i == 1) right = mergeAmountRight;
+                var lmi = new LaneMappingInput(StartingLanes[startingLanesIndex], left, right);
+            }
+
             //Count lane mappings
             var numberOfStrips = StartingLanes.Length;
             if (laneChangesLeft > 0) numberOfStrips += laneChangesLeft;
@@ -125,9 +162,7 @@ namespace TranSimCS.Tools.RoadConstruction {
             var laneMappings = new LaneMapping[numberOfStrips];
             int lmIndex = 0;
 
-            //Count sidewalks
-            int countSideLeft = leftBound;
-            int countSideRight = StartingLanes.Length - rightBound - 1;
+            
 
             //Find synthetic lane specs
             var roadSpecLeft = StartingLanes[countSideLeft].Spec;
