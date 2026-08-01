@@ -29,7 +29,6 @@ namespace TranSimCS.Tools.RoadConstruction {
         //TOOL STATE
         public LaneCreationState? State { get; private set; }
         public LaneMappings? LaneMappings { get; private set; }
-        public SegmentToolVisualCache? VisualCache { get; private set; }
 
         //PROPERTIES
         public string Name => "Road Creation Tool 2";
@@ -146,7 +145,7 @@ namespace TranSimCS.Tools.RoadConstruction {
                 
             }else if(State != null && button == MouseButton.Left) {
                 //Validate the position
-                if (LaneMappings == null || !float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt) || VisualCache == null) return;
+                if (LaneMappings == null || !State.GeneratedNodePosition.IsFinite()) return;
 
                 //Advance to the next road node
                 State = LaneReconcillation.BuildConnections(State, LaneMappings, Menu);
@@ -177,13 +176,13 @@ namespace TranSimCS.Tools.RoadConstruction {
             var material = Assets.Asphalt;
             material.BlendMode = ModelOld.MaterialBlendMode.Transparent;
 
-            /*
+            
             var accuracy = Settings.RoadAccuracy;
             var apshaltBin = Menu.renderHelper.GetOrCreateRenderBinForced(material);
             var leftPoints = GeometryUtils.GenerateSplinePoints(State.GeneratedSplines.left, accuracy);
             var rightPoints = GeometryUtils.GenerateSplinePoints(State.GeneratedSplines.right, accuracy);
             var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftPoints, rightPoints, UniformTexturing.GenerateLaneStripVertexGen(previewColor));
-            apshaltBin.DrawStrip(generatedVertStripPair);*/
+            apshaltBin.DrawStrip(generatedVertStripPair);
 
             //Generate a preview of the node position
             var refframe = State.GeneratedNodePosition.CalcReferenceFrame();
@@ -191,27 +190,10 @@ namespace TranSimCS.Tools.RoadConstruction {
             var front = refframe.O + refframe.Z * 2;
             var back = refframe.O - refframe.Z * 2;
             roadRenderBin.DrawLine(refframe.O, front, refframe.Y, Color.Red);
-            roadRenderBin.DrawLine(refframe.O, back, refframe.Y, Color.Maroon);
-
-            var destinationHalfNode = State.SnappedLane?.GetNodeEnd()?.HalfNode;
-            var sourceHalfNode = State.StartLane.HalfNode;
-
-            if (State == null || !float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt) || sourceHalfNode == destinationHalfNode?.OppositeHalf) {
-                VisualCache = null;
-            } else {
-                var currentState = new SegmentToolVisualCache.Inputs();
-                currentState.StartPosition = State.StartLane.HalfNode.PositionProp.Value;
-                currentState.EndPosition = State.GeneratedNodePosition;
-                if (State.DestinationNodeEnd == NodeEnd.Forward) currentState.EndPosition.Azimuth += int.MinValue;
-                currentState.LaneMappings = LaneMappings!;
-                currentState.RoadFinish = Menu.configuration.RoadFinish;
-                var existingState = VisualCache?.InputData;
-                if (existingState != currentState) VisualCache = new(currentState);
-                if (VisualCache.GeneratedData == null) VisualCache = null;
-            }
+            roadRenderBin.DrawLine(refframe.O, back, refframe.Y, Color.Maroon);            
 
             //Generate endpoint previews
-            if (State == null || LaneMappings == null || VisualCache == null) return;
+            if (State == null || LaneMappings == null) return;
             var centerSpline = State.GeneratedSplines.Middle;
             var splineEndTangent = Vector3.Normalize(centerSpline.d - centerSpline.c);
             if (!splineEndTangent.IsFinite()) return;
@@ -225,10 +207,6 @@ namespace TranSimCS.Tools.RoadConstruction {
                 var endingPos = startingPos + splineEndTangent * laneLength;
                 arrowBin.DrawLine(startingPos, endingPos, refframe.Y, laneNode.LaneSpec.Color, laneWidth);
             }
-
-            //Generate a preview
-            var sourceData = VisualCache?.GeneratedData;
-            SegmentRenderer.GenerateRoadSegmentFullMesh(sourceData!, Menu.renderHelper);
         }
 
 
