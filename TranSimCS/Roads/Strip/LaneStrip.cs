@@ -11,10 +11,8 @@ using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
-using TranSimCS.Roads.StripData;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
-using static TranSimCS.Roads.StripData.RoadDataBuilder;
 
 namespace TranSimCS.Roads.Strip {
     public class LaneStrip : IEquatable<LaneStrip?>, IDraggableObj, IRoadElement, IExtent {
@@ -59,8 +57,6 @@ namespace TranSimCS.Roads.Strip {
                 _spec = value;
             }
         }
-
-        public LaneConnectionData LaneConnectionData => new(Spec, StartLane.LaneNode, EndLane.LaneNode, this);
         public LaneRange Tag() {
             var startRange = StartLane.Bounds;
             var endRange = EndLane.Bounds;
@@ -76,10 +72,9 @@ namespace TranSimCS.Roads.Strip {
         }
 
         //Cache
-        private readonly LaneStripCache _cache;
+        internal readonly LaneStripCache _cache;
         public OrthodistantLUT SplineLUT => _cache.CenterLUT;
         public GridMesh<Vector3, RoadSplineComponent> AllStrips => _cache.AllStrips;
-        public LaneStripData LaneStripData => _cache.LaneStripData;
         public MultiMesh GetMesh() => _cache.Mesh;
         public ExtentIndex ExtentIndex => _cache.ExtentIndex;
 

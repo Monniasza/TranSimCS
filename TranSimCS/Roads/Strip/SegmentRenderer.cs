@@ -10,9 +10,7 @@ using TranSimCS.Debugging;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Polygons;
-using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
-using TranSimCS.Roads.StripData;
 using TranSimCS.Setting;
 using TranSimCS.Spline;
 using static TranSimCS.Geometry.GeometryUtils;
@@ -30,33 +28,33 @@ namespace TranSimCS.Roads.Strip {
         /// </summary>
         /// <param name="connection">road segment</param>
         /// <param name="renderHelper">render helper</param>
-        public static void GenerateRoadSegmentFullMesh(RoadStripData connection, MultiMesh renderHelper) {
-            if(connection == null || connection.LaneConnections.Count == 0) return;
+        public static void GenerateRoadSegmentFullMesh(RoadStrip connection, MultiMesh renderHelper) {
+            if(connection == null || connection.Lanes.Count == 0) return;
 
             //Clearly needs 2 strategies: one for previews and other for real roads.
 
-            foreach (var lane in connection.LaneConnections) {
-                renderHelper.AddAll(lane.Value.Mesh);
+            foreach (var lane in connection.Lanes) {
+                renderHelper.AddAll(lane.GetMesh());
             }
 
             //Draw the road finish, Calculate length of the road
             var length = GenerateRoadSegmentFinish(connection, renderHelper);            
 
             //If this segment is single-ended, draw the inner island
-            if (connection.IsSingleEnded) 
+            if (connection.IsSingleEnded()) 
                 RenderSingleEndedInnerCircle(connection, renderHelper, length);
             
             //If the road is only 1 lane, do not render the islands
-            if (connection.LaneConnections.Count >= 2)
+            if (connection.Lanes.Count >= 2)
                 RenderRoadSegmentPolygons(connection, renderHelper, length);
         }
 
-        public static float GenerateRoadSegmentFinish(RoadStripData connection, MultiMesh renderHelper) {
+        public static float GenerateRoadSegmentFinish(RoadStrip connection, MultiMesh renderHelper) {
             var accuracy = Settings.RoadAccuracy;
 
             //Calculate road length
             var topRange = connection.Bounds;
-            var (leftTop, rightTop) = LaneRangeMethods.GenerateSplines(topRange, connection);
+            var (leftTop, rightTop) = LaneRangeMethods.GenerateSplines(topRange);
             var lengthL = CountLength(leftTop);
             var lengthR = CountLength(rightTop);
             var length = lengthL + lengthR;
@@ -68,11 +66,12 @@ namespace TranSimCS.Roads.Strip {
             var breadth = finish.depth * MathF.Tan(finish.angle);
 
             if (texture == null) return length;
-            var bottomRange = new DualRange(
+            var bottomRange = new LaneRange(
+                connection,
                 new(topRange.startRange.Min - breadth, topRange.startRange.Max + breadth),
                 new(topRange.endRange.Min - breadth, topRange.endRange.Max + breadth)
             );
-            var (leftDown, rightDown) = LaneRangeMethods.GenerateSplines(bottomRange, connection, -height);
+            var (leftDown, rightDown) = LaneRangeMethods.GenerateSplines(bottomRange, -height);
 
             var splineFrame = connection.OrthodistantBasis;
             var bounds = connection.Bounds;
@@ -116,14 +115,13 @@ namespace TranSimCS.Roads.Strip {
             return length;
         }
 
-        public static void RenderSingleEndedInnerCircle(RoadStripData connection, MultiMesh renderHelper, float length) {
+        public static void RenderSingleEndedInnerCircle(RoadStrip connection, MultiMesh renderHelper, float length) {
             var accuracy = Settings.RoadAccuracy;
-            //Conpute the limits of the road segment
+            //Compute the limits of the road segment
             Range<float> leftBounds = default, rightBounds = default;
-            foreach (var row in connection.LaneConnections) {
-                var lane = row.Value;
-                var boundsA = lane.StartNode.Bounds;
-                var boundsB = lane.EndNode.Bounds;
+            foreach (var lane in connection.Lanes) {
+                var boundsA = lane.StartLane.Bounds;
+                var boundsB = lane.EndLane.Bounds;
                 var centerA = boundsA.Middle();
                 var centerB = boundsB.Middle();
                 if (centerA > centerB) DataUtil.Swap(ref boundsA, ref boundsB);
@@ -133,24 +131,21 @@ namespace TranSimCS.Roads.Strip {
 
             float a = leftBounds.Max;
             float b = rightBounds.Min;
-            var points = RoadStrip.GenerateSpline(connection, b, a);
-            var refframe = connection.StartPos.CalcReferenceFrame();
-            var nodeSplineFrame = new OrthodistantBasis();
-            nodeSplineFrame.NormalSpline = new(refframe.Y);
-            nodeSplineFrame.ReferenceSpline = new(refframe.O, refframe.O+refframe.X);
+            var points = connection.GenerateSpline(b, a);
+            var refframe = connection.StartNode.Cache.ReferenceFrame;
 
             var pointsFlat = FlattenPath(points);
             DrawIsland(Surface.Grass, Surface.Concrete, renderHelper, OrthodistantBasis.Identity, new PathD(pointsFlat), 0.1f, 1);
         }
 
-        public static void RenderRoadSegmentPolygons(RoadStripData connection, MultiMesh renderHelper, float length) {
+        public static void RenderRoadSegmentPolygons(RoadStrip connection, MultiMesh renderHelper, float length) {
             var splineFrame = connection.OrthodistantBasis;
 
             //Find fill polygons for lane strips
             var laneRanges = new List<DualRange>();
-            var fstag = connection.Bounds;
+            var fstag = connection.Bounds.ToDualRange();
             laneRanges.Add(fstag);
-            laneRanges.AddRange(connection.LaneStripExtents.Groups.Select(x => x.Bounds));
+            laneRanges.AddRange(connection.Extents.Groups.Select(x => x.Bounds));
 
             List<Polygon> polygons = [];
             foreach (var lane in laneRanges) {

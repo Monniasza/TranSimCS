@@ -1,20 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads.Range;
-using TranSimCS.Roads.StripData;
-using TranSimCS.Setting;
 
 namespace TranSimCS.Roads.Strip {
     public static class StripRenderer {
 
-        public delegate void StripBoundsGenerator(LaneStripData laneStrip, Action<RoadSplineComponent, RoadSplineRange> pushResults);
+        public delegate void StripBoundsGenerator(LaneStrip laneStrip, Action<RoadSplineComponent, RoadSplineRange> pushResults);
         public static event StripBoundsGenerator OnLaneStripGenerated;
-        public static (RoadSplineComponent, RoadSplineRange)[] GenerateStripSplineComponents(LaneStripData laneStrip) {
+        public static (RoadSplineComponent, RoadSplineRange)[] GenerateStripSplineComponents(LaneStrip laneStrip) {
             List<(RoadSplineComponent, RoadSplineRange)> generatedRanges = new();
             void AddComponent(RoadSplineComponent component, RoadSplineRange laneRange) => generatedRanges.Add((component, laneRange));
             OnLaneStripGenerated?.Invoke(laneStrip, AddComponent);
@@ -24,11 +21,11 @@ namespace TranSimCS.Roads.Strip {
             OnLaneStripGenerated += GenerateStripAllComponents;
         }
 
-        public static void GenerateLaneStripMesh(LaneStripData laneStrip, MultiMesh renderer, float voffset = 0) {
+        public static void GenerateLaneStripMesh(LaneStrip laneStrip, MultiMesh renderer, float voffset = 0) {
             //Generate arrows
             var bounds = laneStrip.Bounds;
             var averageStripWidth = (bounds.endRange.Max + bounds.startRange.Max - bounds.startRange.Min - bounds.endRange.Min)/2;
-            var basis = laneStrip.Parent.OrthodistantBasis.Offset(bounds.startRange.Middle(), -bounds.endRange.Middle());
+            var basis = laneStrip.Road.OrthodistantBasis.Offset(bounds.startRange.Middle(), -bounds.endRange.Middle());
 
             float aoffset = 0.15f;
             var centerframe = basis.SampleFrame(0.5f);
@@ -43,11 +40,11 @@ namespace TranSimCS.Roads.Strip {
                 var arrowWidth = averageStripWidth / 2;
                 var displacement = tangent * averageStripWidth / 2;
                 midpoint += nrm * aoffset;
-                if (laneStrip.IsReverse) displacement *= -1;
+                if (laneStrip.IsReverse()) displacement *= -1;
 
                 var arrowColor = Color.White;
                 //Show direction by switchin to light yellow if reverse
-                if (laneStrip.IsReverse) arrowColor = Color.LightYellow;
+                if (laneStrip.IsReverse()) arrowColor = Color.LightYellow;
 
                 var arrowBin = renderer.GetOrCreateRenderBinForced(Assets.Arrow);
                 arrowBin.DrawLine(midpoint - displacement, midpoint + displacement, nrm, arrowColor, arrowWidth);
@@ -71,10 +68,10 @@ namespace TranSimCS.Roads.Strip {
                 lineBin.DrawStrip(generatedLineVertStripPair);
             }
 
-            renderer.AddTagsToAll(laneStrip.Tag);
+            renderer.AddTagsToAll(laneStrip);
         }
 
-        public static void GenerateStripAllComponents(LaneStripData strip, Action<RoadSplineComponent, RoadSplineRange> target) {
+        public static void GenerateStripAllComponents(LaneStrip strip, Action<RoadSplineComponent, RoadSplineRange> target) {
             GenerateStripEdgeLines(strip, target, 0.15f);
 
             //Generate the asphalt
@@ -86,7 +83,7 @@ namespace TranSimCS.Roads.Strip {
             target(drivableSplineComponent, drivableRange);
         }
 
-        private static (RoadSplineComponent splineComponent, RoadSplineRange range) GenerateDrivableCache(LaneStripData strip) {
+        private static (RoadSplineComponent splineComponent, RoadSplineRange range) GenerateDrivableCache(LaneStrip strip) {
             var linewidth = strip.Spec.LineWidth;
             var tag = strip.Bounds;
             var startl = tag.startRange.Min + linewidth;
@@ -105,7 +102,7 @@ namespace TranSimCS.Roads.Strip {
             var splineRange = tag.ToRoadSplineRange();
             return (splineComponent, splineRange);
         }
-        private static (RoadSplineComponent splineComponent, RoadSplineRange range) GenerateAsphaltStrip(LaneStripData strip) {
+        private static (RoadSplineComponent splineComponent, RoadSplineRange range) GenerateAsphaltStrip(LaneStrip strip) {
             var splineComponent = new RoadSplineComponent() {
                 Bias = 0.5f,
                 Color = strip.Spec.Color,
@@ -115,7 +112,7 @@ namespace TranSimCS.Roads.Strip {
             return (splineComponent, range);
         }
 
-        public static void GenerateStripEdgeLines(LaneStripData laneStrip, Action<RoadSplineComponent, RoadSplineRange> target, float voffset = 0) {
+        public static void GenerateStripEdgeLines(LaneStrip laneStrip, Action<RoadSplineComponent, RoadSplineRange> target, float voffset = 0) {
             //Get side-line flags
             var mergeLeft = (laneStrip.Spec.Flags & LaneFlags.MergeLeft) != 0;
             var mergeRight = (laneStrip.Spec.Flags & LaneFlags.MergeRight) != 0;
@@ -124,16 +121,16 @@ namespace TranSimCS.Roads.Strip {
             if (mergeLeft && mergeRight) return;
 
             //Get tags
-            var roadTag = laneStrip.Parent.Bounds;
+            var roadTag = laneStrip.Road.Bounds;
 
             //Generate side-lines
             var lineWidth = laneStrip.Spec.LineWidth;
 
             RoadSplineComponent DrawSide(DualRange laneRange, LaneFlags flag, float bias) {
                 bool isEdge = IsRangeTouchingEdge(laneRange.startRange, roadTag.startRange) && IsRangeTouchingEdge(laneRange.endRange, roadTag.endRange);
-                var leftEdges = laneStrip.Parent.LaneStripExtents.LeftEdgeStrips;
-                var rightEdges = laneStrip.Parent.LaneStripExtents.RightEdgeStrips;
-                if(laneStrip.IsReverse) DataUtil.Swap(ref leftEdges, ref rightEdges);
+                var leftEdges = laneStrip.Road.Extents.LeftEdgeStrips;
+                var rightEdges = laneStrip.Road.Extents.RightEdgeStrips;
+                if(laneStrip.IsReverse()) DataUtil.Swap(ref leftEdges, ref rightEdges);
                 bool isOnLeftExtent = (flag & LaneFlags.NoLeft) != 0 && leftEdges.Contains(laneStrip);
                 bool isOnRightExtent = (flag & LaneFlags.NoRight) != 0 && rightEdges.Contains(laneStrip);
 
@@ -153,8 +150,8 @@ namespace TranSimCS.Roads.Strip {
                 return (d0 < delta) || (d1 < delta);
             }
 
-            var startRange = laneStrip.StartNode.Bounds;
-            var endRange = laneStrip.EndNode.Bounds;
+            var startRange = laneStrip.StartLane.Bounds;
+            var endRange = laneStrip.EndLane.Bounds;
             
             var startLeft = startRange.Min;
             var startRight = startRange.Max;
@@ -186,8 +183,8 @@ namespace TranSimCS.Roads.Strip {
 
         
         public static Vector3 VOffset(float x, float y) => new(x, y, 0);
-        public static DualRange LaneStripToRoadStripRange(LaneStripData strip, Range<float> startRange, Range<float> endRange) {
-            if (strip.IsReverse) DataUtil.Swap(ref startRange, ref endRange);
+        public static DualRange LaneStripToRoadStripRange(LaneStrip strip, Range<float> startRange, Range<float> endRange) {
+            if (strip.IsReverse()) DataUtil.Swap(ref startRange, ref endRange);
             return new(startRange, endRange);
         }
     }

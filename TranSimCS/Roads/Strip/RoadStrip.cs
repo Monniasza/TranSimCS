@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
-using NLog;
-using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Property;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Section;
-using TranSimCS.Roads.StripData;
 using TranSimCS.Roads.StripGenerator;
 using TranSimCS.SceneGraph;
 using TranSimCS.Setting;
@@ -68,7 +64,6 @@ namespace TranSimCS.Roads.Strip {
         public LaneRange Bounds => Cache.Bounds;
         public OrthodistantBasis OrthodistantBasis => Cache.OrthodistantBasis;
         public IndexSpline IndexStrip => Cache.IndexStrip;
-        public RoadStripData RoadStripData => Cache.RoadStripData;
         public Extents<LaneStrip> Extents => Cache.Extents;
 
         public RoadStrip(HalfNode startNode, HalfNode endNode) {
@@ -127,20 +122,17 @@ namespace TranSimCS.Roads.Strip {
                 //Belongs to a road section, abort
                 return;
 
-            SegmentRenderer.GenerateRoadSegmentFullMesh(segment.RoadStripData, mesh); // Otherwise, render the road segment
+            SegmentRenderer.GenerateRoadSegmentFullMesh(segment, mesh); // Otherwise, render the road segment
         }
 
         public Vector3[] GenerateSpline(float startT, float endT, float y = 0) => GenerateSplineHalfNode(new Vector3(startT, y, 0), new Vector3(endT, y, 0));
-        public Vector3[] GenerateSplineHalfNode(Vector3 start, Vector3 end) => GenerateSplineHalfNode(RoadStripData, start, end);
-
-        public static Vector3[] GenerateSpline(RoadStripData rsd, float startT, float endT, float y = 0) => GenerateSplineHalfNode(rsd, new Vector3(startT, y, 0), new Vector3(endT, y, 0));
-        public static Vector3[] GenerateSplineHalfNode(RoadStripData rsd, Vector3 start, Vector3 end) {
+        public Vector3[] GenerateSplineHalfNode(Vector3 start, Vector3 end) {
             var accuracy = Settings.RoadAccuracy;
             float step = 1 / (accuracy - 1.0f);
             var result = new Vector3[accuracy];
-            if (rsd.StartLanes == rsd.EndLanes) {
+            if (StartNode == EndNode) {
                 //Generate a solution bypassing the OrthonormalBasis
-                var refframe = rsd.StartPos.CalcReferenceFrame();
+                var refframe = StartNode.Cache.ReferenceFrame;
                 var centerOfRevolutionT = (start + end) / 2;
                 var xBasis = (end - start) / 2;
                 var yBasis = refframe.Z * xBasis.Length();
@@ -154,7 +146,7 @@ namespace TranSimCS.Roads.Strip {
                 //Sample the OrthonormalBasis
                 for (int i = 0; i < accuracy; i++) {
                     var t = i * step;
-                    var sample = rsd.OrthodistantBasis.SamplePosition(t, start, end * new Vector3(-1, 1, -1));
+                    var sample = OrthodistantBasis.SamplePosition(t, start, end * new Vector3(-1, 1, -1));
                     result[i] = sample;
                 }
             }

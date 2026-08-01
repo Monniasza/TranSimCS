@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using TranSimCS.Roads.Range;
-using TranSimCS.Roads.StripData;
 
 public interface IExtent {
     public DualRange Bounds { get; }

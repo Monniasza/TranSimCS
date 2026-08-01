@@ -5,7 +5,6 @@ using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
-using TranSimCS.Roads.StripData;
 using static TranSimCS.Geometry.GeometryUtils;
 using static TranSimCS.Roads.Strip.StripRenderer;
 
@@ -59,12 +58,6 @@ namespace TranSimCS.Roads.Range {
             return (
                 laneRange.road.GenerateSpline(laneRange.startRange.Min, laneRange.endRange.Max, voffset),
                 laneRange.road.GenerateSpline(laneRange.startRange.Max, laneRange.endRange.Min, voffset)
-            );
-        }
-        public static (Vector3[] Left, Vector3[] Right) GenerateSplines(this DualRange laneRange, RoadStripData basis, float voffset = 0) {
-            return (
-                RoadStrip.GenerateSpline(basis, laneRange.startRange.Min, laneRange.endRange.Max, voffset),
-                RoadStrip.GenerateSpline(basis, laneRange.startRange.Max, laneRange.endRange.Min, voffset)
             );
         }
         public static RoadSplineRange ToRoadSplineRange(this DualRange laneRange, float voffset = 0) => new(

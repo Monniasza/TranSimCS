@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using TranSimCS.Menus.InGame;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Strip;
-using TranSimCS.Roads.StripData;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Tools.RoadConstruction {
     public class SegmentToolVisualCache {
         public Inputs InputData { get; private set; }
-        public RoadStripData? GeneratedData { get; private set; }
+        public RoadStrip? GeneratedData { get; private set; }
 
         public struct Inputs : IEquatable<Inputs> {
             public PositionEulerAngles StartPosition;
