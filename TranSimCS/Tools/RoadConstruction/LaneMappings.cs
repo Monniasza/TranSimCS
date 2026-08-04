@@ -22,10 +22,12 @@ namespace TranSimCS.Tools.RoadConstruction {
         public Range<float> EndRange { get; private set; }
         public Range<float> StartRange { get; private set; }
         public int LaneIndexGoingToSource { get; private set; }
+        public LaneCreationState LaneCreationState { get; private set; }
 
         public LaneMappings(LaneCreationState laneCreationState, SegmentTools.Presets presets) {
             //Set fields up
             Presets = presets;
+            LaneCreationState = laneCreationState;
 
             //Add/remove lanes
             var startingLanes = laneCreationState.StartLane.HalfNode.GetLaneList();

@@ -162,8 +162,18 @@ namespace TranSimCS.Tools.RoadConstruction {
             }
         }
         void ITool.Update(GameTime gameTime) {
+            //Check if to flip the state
+            var mousePosition = GeometryUtils.IntersectRayPlane(Menu.MouseRay, Menu.ReferencePlane);
+            if (State != null && mousePosition.IsFinite()) {
+                var nodeTangent = State.StartLane.HalfNode.Cache.ReferenceFrame.Z;
+                var toMouseVector = mousePosition - State.StartLane.HalfNode.CenterPos;
+                if (Vector3.Dot(nodeTangent, toMouseVector) < -0.0001)
+                    //On the back of the state. Invert
+                    State = new LaneCreationState(State.StartLane.OppositeHalf);
+            }
+
             var presets = SegmentTools.CurrentPresets;
-            if (State != null && LaneMappings?.Presets != presets)
+            if (State != null && (LaneMappings?.Presets != presets || LaneMappings?.LaneCreationState != State))
                 LaneMappings = new LaneMappings(State, presets);
 
             State?.StartRange = LaneMappings!.StartRange;
@@ -175,7 +185,6 @@ namespace TranSimCS.Tools.RoadConstruction {
             Color previewColor = Colors.SemiClearWhite;
             var material = Assets.Asphalt;
             material.BlendMode = ModelOld.MaterialBlendMode.Transparent;
-
             
             var accuracy = Settings.RoadAccuracy;
             var apshaltBin = Menu.renderHelper.GetOrCreateRenderBinForced(material);
