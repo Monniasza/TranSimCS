@@ -113,12 +113,15 @@ namespace TranSimCS.Roads.Strip {
         }
 
         public static void GenerateStripEdgeLines(LaneStrip laneStrip, Action<RoadSplineComponent, RoadSplineRange> target, float voffset = 0) {
+            Color color = Color.White;
+
             //Get side-line flags
             var mergeLeft = (laneStrip.Spec.Flags & LaneFlags.MergeLeft) != 0;
             var mergeRight = (laneStrip.Spec.Flags & LaneFlags.MergeRight) != 0;
             var isMerge = (laneStrip.Spec.Flags & LaneFlags.IsMerge) != 0;
 
             if (mergeLeft && mergeRight) return;
+            if (laneStrip.Spec.Flags.HasFlags(LaneFlags.Platform)) color = Color.Yellow;
 
             //Get tags
             var roadTag = laneStrip.Road.Bounds;
@@ -133,12 +136,13 @@ namespace TranSimCS.Roads.Strip {
                 if(laneStrip.IsReverse()) DataUtil.Swap(ref leftEdges, ref rightEdges);
                 bool isOnLeftExtent = (flag & LaneFlags.NoLeft) != 0 && leftEdges.Contains(laneStrip);
                 bool isOnRightExtent = (flag & LaneFlags.NoRight) != 0 && rightEdges.Contains(laneStrip);
+                bool isPlatform = laneStrip.Spec.Flags.HasFlags(LaneFlags.Platform);
 
-                isEdge |= isOnLeftExtent || isOnRightExtent;
+                isEdge |= isOnLeftExtent || isOnRightExtent || isPlatform;
                 var lineTexture = ((laneStrip.Spec.Flags & flag) != 0 || isEdge) ? RoadSplineComponentType.Solid : RoadSplineComponentType.Dashed;
                 return new RoadSplineComponent() {
                     Bias = bias,
-                    Color = Color.White,
+                    Color = color,
                     Type = lineTexture
                 };
             }
