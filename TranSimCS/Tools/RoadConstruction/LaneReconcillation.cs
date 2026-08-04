@@ -21,12 +21,15 @@ namespace TranSimCS.Tools.RoadConstruction {
             var destinationIndex = destLane?.GetIndexInHalfNode();
             var world = menu.World;
 
-            Debug.Assert(destinationNode != null, "Valid lane index without a road node");
-            var isLaneOrALS = destLane is AddLaneSelection or HalfLane;
-            Debug.WriteLine(destLane?.GetType());
-            Debug.WriteLine(destinationIndex);
-            Debug.WriteLine(destinationNode);
-            if (isLaneOrALS) Debug.Assert(destinationIndex != null, $"A {destLane.GetType()} must have a valid index");
+            if(destinationIndex != null) {
+                Debug.Assert(destinationNode != null, "Valid lane index without a road node");
+                Debug.Assert(destLane != null, "Valid lane index without a node lane");
+                var isLaneOrALS = destLane is AddLaneSelection or HalfLane;
+                Debug.WriteLine(destLane?.GetType());
+                Debug.WriteLine(destinationIndex);
+                Debug.WriteLine(destinationNode);
+                if (isLaneOrALS) Debug.Assert(destinationIndex != null, $"A {destLane.GetType()} must have a valid index");
+            }
 
             if (destinationIndex == null) {
                 //Place the road node 

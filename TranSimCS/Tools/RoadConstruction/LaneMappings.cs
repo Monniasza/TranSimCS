@@ -162,9 +162,7 @@ namespace TranSimCS.Tools.RoadConstruction {
             if (laneChangesLeft > 0) numberOfStrips += laneChangesLeft;
             if (laneChangesRight > 0) numberOfStrips += laneChangesRight;
             var laneMappings = new LaneMapping[numberOfStrips];
-            int lmIndex = 0;
-
-            
+            int lmIndex = 0;            
 
             //Find synthetic lane specs
             var roadSpecLeft = StartingLanes[countSideLeft].Spec;
@@ -175,10 +173,16 @@ namespace TranSimCS.Tools.RoadConstruction {
             //Copy sidewalks
             int newCount = StartingLanes.Length + laneChangesLeft + laneChangesRight;
             var endingLanes = new LaneNode[newCount];
+            void SetEndingLane(int index, LaneNode lane) {
+                var existing = endingLanes[index];
+                Debug.Assert(existing == null, "Existing lane overwritten");
+                endingLanes[index] = lane;
+            }
+
             for (int i = 0; i < countSideLeft; i++) {
                 var existingSidewalk = StartingLanes[i];
                 var newSidewalk = new LaneNode(existingSidewalk.Spec, existingSidewalk.MiddlePosition - sidewalkOffsetLeft);
-                endingLanes[i] = newSidewalk;
+                SetEndingLane(i, newSidewalk);
                 var lm = new LaneMapping(i, i, existingSidewalk.Spec, existingSidewalk.Guid);
                 ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
                 laneMappings[lmIndex++] = lm;
@@ -186,8 +190,9 @@ namespace TranSimCS.Tools.RoadConstruction {
             for (int i = 0; i < countSideRight; i++) {
                 var existingSidewalk = StartingLanes[^(i+1)];
                 var newSidewalk = new LaneNode(existingSidewalk.Spec, existingSidewalk.MiddlePosition + sidewalkOffsetRight);
-                endingLanes[^(i + 1)] = newSidewalk;
-                var lm = new LaneMapping(StartingLanes.Length - i - 1, newCount - i - 1, existingSidewalk.Spec, existingSidewalk.Guid);
+                int endIndex = newCount - i - 1;
+                SetEndingLane(endIndex, newSidewalk);
+                var lm = new LaneMapping(StartingLanes.Length - i - 1, endIndex, existingSidewalk.Spec, existingSidewalk.Guid);
                 ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
                 laneMappings[lmIndex++] = lm;
             }
@@ -203,7 +208,7 @@ namespace TranSimCS.Tools.RoadConstruction {
             //Count core lanes
             int coreOffsetStart = countSideLeft;
             if (laneChangesLeft < 0) coreOffsetStart -= laneChangesLeft;
-            int coreOffsetEnd = countSideRight;
+            int coreOffsetEnd = countSideLeft;
             if (laneChangesLeft > 0) coreOffsetEnd += laneChangesLeft;
             int coreCount = 1 + rightBound - leftBound;
             if (laneChangesLeft < 0) coreCount += laneChangesLeft;
@@ -223,7 +228,7 @@ namespace TranSimCS.Tools.RoadConstruction {
                     laneMappings[lmIndex++] = lm;
                     var lane = StartingLanes[prevIndex];
                     var lanenode = new LaneNode(lane.Spec, lane.MiddlePosition - (i + 1) * lane.Spec.Width);
-                    endingLanes[newIndex] = lanenode;
+                    SetEndingLane(newIndex, lanenode);
                 }
             } else {
                 //Merge on the left
@@ -251,7 +256,7 @@ namespace TranSimCS.Tools.RoadConstruction {
                     laneMappings[lmIndex++] = lm;
                     var lane = StartingLanes[prevIndex];
                     var lanenode = new LaneNode(lane.Spec, lane.MiddlePosition + (i + 1) * lane.Spec.Width);
-                    endingLanes[newIndex] = lanenode;
+                    SetEndingLane(newIndex, lanenode);
                 }
             } else {
                 //Merge on the right
@@ -273,7 +278,7 @@ namespace TranSimCS.Tools.RoadConstruction {
                 int endIndex = coreOffsetEnd + i;
                 var startLane = StartingLanes[startIndex];
                 var endLane = new LaneNode(startLane.Spec, startLane.MiddlePosition);
-                endingLanes[endIndex] = endLane;
+                SetEndingLane(endIndex, endLane);
                 var lm = new LaneMapping(startIndex, endIndex, startLane.Spec, startLane.Guid);
                 ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
                 laneMappings[lmIndex++] = lm;

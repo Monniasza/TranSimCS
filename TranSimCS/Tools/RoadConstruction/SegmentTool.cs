@@ -190,6 +190,9 @@ namespace TranSimCS.Tools.RoadConstruction {
             var apshaltBin = Menu.renderHelper.GetOrCreateRenderBinForced(material);
             var leftPoints = GeometryUtils.GenerateSplinePoints(State.GeneratedSplines.left, accuracy);
             var rightPoints = GeometryUtils.GenerateSplinePoints(State.GeneratedSplines.right, accuracy);
+            var chordLengthL = Vector3.DistanceSquared(leftPoints[0], leftPoints[^1]);
+            var chordLengthR = Vector3.DistanceSquared(rightPoints[0], rightPoints[^1]);
+            if (chordLengthL < 0.01 && chordLengthR < 0.01) return;
             var generatedVertStripPair = UniformTexturing.UniformTexturedTwin(leftPoints, rightPoints, UniformTexturing.GenerateLaneStripVertexGen(previewColor));
             apshaltBin.DrawStrip(generatedVertStripPair);
 
