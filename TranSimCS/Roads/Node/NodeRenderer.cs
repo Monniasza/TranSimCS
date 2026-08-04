@@ -11,17 +11,17 @@ using TranSimCS.ModelOld;
 
 namespace TranSimCS.Roads.Node {
     public static class NodeRenderer {
-        public static void GenerateRoadNodeSelectionMesh(RoadNode node, Mesh mesh, LaneEnd? SelectedLaneEnd, Color? nodeHighlightColor = null, Color? laneHighlightColor = null, bool bothends = false) {
+        public static void GenerateRoadNodeSelectionMesh(RoadNode node, Mesh mesh, HalfLane? SelectedHalfLane, Color? nodeHighlightColor = null, Color? laneHighlightColor = null, bool bothends = false) {
             Mesh roadRenderBin = mesh;
             var refframe = node.ReferenceFrame;
             foreach (var lane in node.Lanes) {
-                foreach (var laneEnd in new LaneEnd[] { lane.Front, lane.Rear }) {
+                foreach (var laneEnd in new HalfLane[] { lane.FrontHalf, lane.RearHalf }) {
                     var altColor = lane.Spec.Color * 0.5f;
                     var color = nodeHighlightColor ?? InGameMenu.roadSegmentHighlightColor;
-                    if (SelectedLaneEnd == laneEnd || (bothends && SelectedLaneEnd == laneEnd.OppositeEnd)) color = laneHighlightColor ?? InGameMenu.laneHighlightColor;
-                    else if (SelectedLaneEnd == null || !node.Lanes.Contains(SelectedLaneEnd.Value.lane)) color = altColor;
+                    if (SelectedHalfLane == laneEnd || (bothends && SelectedHalfLane == laneEnd.OppositeHalf)) color = laneHighlightColor ?? InGameMenu.laneHighlightColor;
+                    else if (SelectedHalfLane == null || !node.Lanes.Contains(SelectedHalfLane.Lane)) color = altColor;
                     var range = lane.Bounds;
-                    var zdiscriminant = laneEnd.end.GetConditional(-1, 0);
+                    var zdiscriminant = laneEnd.End.GetConditional(-1, 0);
                     var quad = GenerateLaneQuad(node, range.Min, range.Max, color, 0.2f, zdiscriminant, zdiscriminant+1);
                     roadRenderBin.DrawQuad(quad);
                     roadRenderBin.AddTagsToLastTriangles(2, laneEnd);

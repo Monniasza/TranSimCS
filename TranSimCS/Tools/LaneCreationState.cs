@@ -70,14 +70,14 @@ namespace TranSimCS.Tools {
                 GeneratedNodePosition = als.GetRoadNode().InversePositionProp.Value;
                 SnappedLane = selectedRoadLane;
                 DestinationNodeEnd = als.nodeEnd.End;
-            }else if (selectedRoadLane is LaneEnd laneEnd && laneEnd.ToHalfLane() != StartLane) {
+            }else if (selectedRoadLane is HalfLane laneEnd && laneEnd != StartLane) {
                 //Picked a lane or an Add Lane Selection. Match it to the target road node
-                var targetCenterPos = -laneEnd.ToHalfLane().MiddlePosition;
+                var targetCenterPos = -laneEnd.MiddlePosition;
                 var sourceCenterPos = StartLane.MiddlePosition;
                 DeltaOffset = targetCenterPos - sourceCenterPos;
                 GeneratedNodePosition = laneEnd.GetRoadNode().InversePositionProp.Value;
                 SnappedLane = selectedRoadLane;
-                DestinationNodeEnd = laneEnd.end;
+                DestinationNodeEnd = laneEnd.End;
             } else {
                 //Create a synthetic end
                 Plane selectionPlane = menu.ReferencePlane;

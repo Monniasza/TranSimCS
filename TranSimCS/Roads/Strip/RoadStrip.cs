@@ -36,7 +36,7 @@ namespace TranSimCS.Roads.Strip {
         public RoadStrip? GetRoadStrip() => this;
         public int XDiscriminant() => 0;
         public int ZDiscriminant() => 0;
-        public LaneEnd? GetLaneEnd() => null;
+        public HalfLane? GetLaneEnd() => null;
         public RoadNodeEnd? GetNodeEnd() => null;
 
         //Managed by TSWorld

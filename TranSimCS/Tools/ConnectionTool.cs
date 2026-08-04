@@ -69,7 +69,7 @@ namespace TranSimCS.Tools {
         }
 
         void ITool.Update(GameTime gameTime) {
-            if(SourceNode != null) DestNode = menu.MouseOver?.As<LaneEnd>().ToHalfLane();
+            if (SourceNode != null) DestNode = menu.MouseOver?.As<HalfLane>();
             if (SourceNode == DestNode) DestNode = null;
 
             if (SourceNode == null || DestNode == null) {
@@ -95,10 +95,10 @@ namespace TranSimCS.Tools {
                 return;
             }
 
-            var pickedLaneEnd = menu.MouseOver?.As<LaneEnd>();
+            var pickedLaneEnd = menu.MouseOver?.As<HalfLane>();
             if (button == MouseButton.Left) switch (nextAction) {
                 case NextAction.Pick:
-                    SourceNode = pickedLaneEnd?.ToHalfLane();
+                    SourceNode = pickedLaneEnd;
                     break;
                 case NextAction.Edit:
                     Debug.Assert(LaneStrip != null, "Invalid lane strip for Edit");

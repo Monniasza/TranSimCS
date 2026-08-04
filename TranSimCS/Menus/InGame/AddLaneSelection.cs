@@ -33,11 +33,11 @@ namespace TranSimCS.Menus.InGame {
         /// </summary>
         /// <param name="spec">lane spec to use</param>
         /// <returns>a new lane</returns>
-        public LaneEnd NewLane(LaneSpec spec) {
+        public HalfLane NewLane(LaneSpec spec) {
             var positions = CalculateOffsets(spec.Width);
             LaneNode laneNode = LaneNode.FromBounds(spec, positions);
             Lane newLane = nodeEnd.Node.AddLane(laneNode);
-            return newLane.GetEnd(nodeEnd.End);
+            return newLane.GetHalfLane(nodeEnd.End);
         }
 
         public int ZDiscriminant() => nodeEnd.ZDiscriminant();
@@ -46,7 +46,7 @@ namespace TranSimCS.Menus.InGame {
         public RoadStrip? GetRoadStrip() => null;
         public RoadNode GetRoadNode() => nodeEnd.Node;
         public Lane? GetLane() => null;
-        public LaneEnd? GetLaneEnd() => null;
+        public HalfLane? GetLaneEnd() => null;
         public RoadNodeEnd GetNodeEnd() => nodeEnd;
         int? IRoadElement.GetIndexInHalfNode() => (side * ZDiscriminant() > 0) ? nodeEnd.Node.Lanes.Count : -1;
     }

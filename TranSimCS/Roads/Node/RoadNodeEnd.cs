@@ -21,7 +21,7 @@ namespace TranSimCS.Roads.Node {
         public RoadStrip? GetRoadStrip() => null;
         public int XDiscriminant() => 0;
         public int ZDiscriminant() => End.Discriminant();
-        public LaneEnd? GetLaneEnd() => null;
+        public HalfLane? GetLaneEnd() => null;
         public RoadNodeEnd? GetNodeEnd() => this;
 
         //Constructor
@@ -41,8 +41,8 @@ namespace TranSimCS.Roads.Node {
         public Property<PositionEulerAngles> PositionProp => Node.PositionProp;
         public Vector3 CenterPosition => Node.CenterPosition;
 
-        public LaneEnd GetLaneEnd(int x) {
-            return new LaneEnd(End, Node.SortedLanes[x]);
+        public HalfLane GetLaneEnd(int x) {
+            return Node.SortedLanes[x].GetHalfLane(End);
         }
 
         public (float Min, float Max, float LocalLeft, float LocalRight) Bounds() {

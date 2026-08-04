@@ -5,14 +5,14 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Save2 {
-    public class LaneEndConverter : JsonConverter<LaneEnd> {
+    public class LaneEndConverter : JsonConverter<HalfLane> {
         private readonly TSWorld _world;
 
         public LaneEndConverter(TSWorld world) {
             _world = world;
         }
 
-        public override LaneEnd Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        public override HalfLane Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
             JsonProcessor.ForceRead(ref reader);
             switch (reader.TokenType) {
                 case JsonTokenType.StartArray:
@@ -35,7 +35,7 @@ namespace TranSimCS.Save2 {
                         JsonProcessor.Fail(reader, $"Invalid lane index {laneIndex} for node {roadNodeEnd.Node.Guid}");
                     }
 
-                    return new LaneEnd(roadNodeEnd.End, roadNodeEnd.Node.SortedLanes[laneIndex]);
+                    return roadNodeEnd.Node.SortedLanes[laneIndex].GetHalfLane(roadNodeEnd.End);
                 case JsonTokenType.String:
                     var str = reader.GetString();
                     NodeEnd nodeEnd = NodeEnd.Forward;
@@ -45,15 +45,15 @@ namespace TranSimCS.Save2 {
                     var restOfString = str.Substring(1);
                     var guid = Guid.Parse(restOfString);
                     var lane = _world.Nodes.LaneXRef[guid];
-                    return new LaneEnd(nodeEnd, lane);
+                    return lane.GetHalfLane(nodeEnd);
                 default:
                     JsonProcessor.FailTokenTypes(ref reader, [JsonTokenType.StartArray, JsonTokenType.String]); //always throws
                     return default;
             }
         }
 
-        public override void Write(Utf8JsonWriter writer, LaneEnd value, JsonSerializerOptions options) {          
-            var result = (value.end == NodeEnd.Backward ? "-" : "+") + value.lane.Guid;
+        public override void Write(Utf8JsonWriter writer, HalfLane value, JsonSerializerOptions options) {          
+            var result = (value.End == NodeEnd.Backward ? "-" : "+") + value.Lane.Guid;
             writer.WriteStringValue(result);
         }
     }

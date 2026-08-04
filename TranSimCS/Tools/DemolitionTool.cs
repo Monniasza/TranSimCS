@@ -51,8 +51,8 @@ namespace TranSimCS.Tools {
                     var stripTag = laneStrip.Tag();
                     LaneRangeMethods.GenerateLaneRangeMesh(stripTag, renderBin, orange, v2);
                     break;
-                case LaneEnd laneEnd:
-                    selLane = laneEnd.lane;
+                case HalfLane laneEnd:
+                    selLane = laneEnd.Lane;
 
                     //Segments
                     var fw = roadNode.FrontHalf;
@@ -65,8 +65,8 @@ namespace TranSimCS.Tools {
                         LaneRangeMethods.GenerateLaneRangeMesh(segmentTag2, renderBin, red, v1);
                     }
                     //Strips
-                    var fwe = selLane.Front;
-                    var bwe = selLane.Rear;
+                    var fwe = selLane.FrontHalf;
+                    var bwe = selLane.RearHalf;
                     var laneDependencies = new List<LaneStrip>();
                     laneDependencies.AddRange(dependencies.SelectMany(x => x.Lanes).Where(x => (x.StartLane.Lane == selLane || x.EndLane.Lane == selLane)));
                     foreach (var laneDependency in laneDependencies) {
@@ -85,7 +85,7 @@ namespace TranSimCS.Tools {
 
             //Nodes/lanes
             foreach (var node in game.World.Nodes.data) {
-                NodeRenderer.GenerateRoadNodeSelectionMesh(node, renderBin, selLane?.Front, red, orange, true);
+                NodeRenderer.GenerateRoadNodeSelectionMesh(node, renderBin, selLane?.FrontHalf, red, orange, true);
             }
 
             if (roadSelection == null) return;

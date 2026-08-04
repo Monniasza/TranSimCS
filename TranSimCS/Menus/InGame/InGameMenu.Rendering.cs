@@ -43,7 +43,7 @@ namespace TranSimCS.Menus.InGame {
 
             //Draw the selected road node
             var selectedObj = MouseOver?.Tag;
-            LaneEnd? laneEnd = null;
+            HalfLane? laneEnd = null;
             if (selectedObj is IRoadElement element && element.GetLaneEnd() != null && element.GetRoadStrip() == null) 
                 laneEnd = element.GetLaneEnd();
             
@@ -116,7 +116,7 @@ namespace TranSimCS.Menus.InGame {
 
                 foreach (RoadNode node in World.Nodes.data)
                     foreach (var lane in node.Lanes)
-                        foreach (var laneEnd in new LaneEnd[] { lane.Front, lane.Rear })
+                        foreach (var laneEnd in new HalfLane[] { lane.FrontHalf, lane.RearHalf })
                             foreach (var alignment in new float[] { 0, 1 }) entries.Add(new() { Anchor = laneEnd, Alignment = alignment });
                 foreach (var entry in entries) MarkingRenderer.RenderMarkingPoint(entry, renderHelper);
             }

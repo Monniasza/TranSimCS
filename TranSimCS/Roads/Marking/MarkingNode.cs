@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using MLEM.Ui;
 using MonoGame.Extended;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads.Node;
 using TranSimCS.Save2;
@@ -30,10 +31,10 @@ namespace TranSimCS.Roads.Marking {
                         data.Anchor = endConverter.Read(ref reader0, typeof(RoadNodeEnd), options);
                         break;
                     case "anchorLane":
-                        if (data.Anchor is LaneEnd) throw new JsonException("anchorLane already set");
+                        if (data.Anchor is HalfLane) throw new JsonException("anchorLane already set");
                         if (data.Anchor == null) {
                             LaneEndConverter lec = new(world);
-                            data.Anchor = lec.Read(ref reader0, typeof(LaneEnd), options);
+                            data.Anchor = lec.Read(ref reader0, typeof(HalfLane), options);
                         } else {
                             var index = reader0.GetInt32();
                             var laneEnd = data.Anchor.GetRoadNode().SortedLanes[index];
@@ -56,9 +57,9 @@ namespace TranSimCS.Roads.Marking {
                 writer.WritePropertyName("anchorNode");
                 endConverter.Write(writer, value.Anchor.GetNodeEnd(), options);
             }
-            if (value.Anchor is LaneEnd le) {
+            if (value.Anchor is HalfLane le) {
                 writer.WritePropertyName("anchorLane");
-                writer.WriteNumberValue(le.lane.Index);
+                writer.WriteNumberValue(le.Lane.Index);
             }
             writer.WritePropertyName("alignment");
             writer.WriteNumberValue(value.Alignment);
@@ -76,11 +77,11 @@ namespace TranSimCS.Roads.Marking {
             var alignment = marking.Alignment;
             var offset = marking.Offset;
             PositionEulerAngles refpos = PositionEulerAngles.Zero;
-            LaneEnd? laneEnd = anchor?.GetLaneEnd();
+            HalfLane? laneEnd = anchor?.GetLaneEnd();
             RoadNodeEnd? nodeEnd = anchor?.GetNodeEnd();
             if(nodeEnd != null) refpos = nodeEnd.PositionProp.Value;
             if (laneEnd != null) {
-                (_, _, leftBound, rightBound) = laneEnd.Value.Boundaries();
+                (leftBound, rightBound) = laneEnd.Bounds;
             } else if (nodeEnd != null) {
                 (_, _, leftBound, rightBound) = nodeEnd.Bounds();
             }

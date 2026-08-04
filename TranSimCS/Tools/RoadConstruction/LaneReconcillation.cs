@@ -22,7 +22,7 @@ namespace TranSimCS.Tools.RoadConstruction {
             var world = menu.World;
 
             Debug.Assert(destinationNode != null, "Valid lane index without a road node");
-            var isLaneOrALS = destLane is AddLaneSelection or HalfLane or LaneEnd;
+            var isLaneOrALS = destLane is AddLaneSelection or HalfLane;
             Debug.WriteLine(destLane?.GetType());
             Debug.WriteLine(destinationIndex);
             Debug.WriteLine(destinationNode);
@@ -58,14 +58,14 @@ namespace TranSimCS.Tools.RoadConstruction {
             
 
             //There's a connection
-            LaneEnd? passthroughEnd = null;
-            var destinationHalfLane = destLane?.GetLaneEnd()?.ToHalfLane();
+            HalfLane? passthroughEnd = null;
+            var destinationHalfLane = destLane?.GetLaneEnd();
             if(destinationHalfLane == null && destLane is AddLaneSelection als) {
                 //Materialize the half-lane
                 LaneSpec laneSpec = startingState.StartLane.Spec;
                 var lanePos = als.CalculateOffset(laneSpec.Width / 2) * als.ZDiscriminant();
                 destinationHalfLane = destinationNode.AddLane(new(laneSpec, lanePos));
-                passthroughEnd = destinationHalfLane.LaneEnd.OppositeEnd;
+                passthroughEnd = destinationHalfLane.OppositeHalf;
             }
             if (destinationHalfLane == null) return null;
             var destIndex = destinationHalfLane.Index;
@@ -163,7 +163,7 @@ namespace TranSimCS.Tools.RoadConstruction {
             }
 
             GenerateLaneConnections(laneMappings.Presets.DirectionChoice, startingState.StartLane.HalfNode, destinationNode.OppositeHalf, laneMappings.StartingLanes, destLanes, laneMappings.Mappings, menu.configuration.RoadFinish, menu.World);
-            return passthroughEnd == null ? null : new LaneCreationState(passthroughEnd.Value.ToHalfLane());
+            return passthroughEnd == null ? null : new LaneCreationState(passthroughEnd);
         }
 
         public static void GenerateLaneConnections(DirectionChoice dirChoice, HalfNode startNode, HalfNode endNode, IList<HalfLane> startLanes, IList<HalfLane> endLanes, IList<LaneMapping> mappings, RoadFinish roadFinish, TSWorld world) {

@@ -74,8 +74,8 @@ namespace TranSimCS.Tools {
                                     item.ConnectedSection.Value = Section;
                                 }
                                 break;
-                            case LaneEnd laneEnd:
-                                var nodeEnd = laneEnd.RoadNodeEnd;
+                            case HalfLane laneEnd:
+                                var nodeEnd = laneEnd.HalfNode;
                                 nodeEnd.ConnectedSection.Value = nodeEnd.ConnectedSection.Value == Section ? null : Section;
                                 break;
                         }

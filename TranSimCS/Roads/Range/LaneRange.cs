@@ -32,7 +32,7 @@ namespace TranSimCS.Roads.Range {
         public RoadStrip? GetRoadStrip() => road;
         public int XDiscriminant() => 0;
         public int ZDiscriminant() => 0;
-        public LaneEnd? GetLaneEnd() => null;
+        public HalfLane? GetLaneEnd() => null;
         public RoadNodeEnd? GetNodeEnd() => null;
     }
     public static class LaneRangeMethods {

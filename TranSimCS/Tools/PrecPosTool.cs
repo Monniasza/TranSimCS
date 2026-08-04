@@ -155,7 +155,7 @@ namespace TranSimCS.Tools {
         public static IPosition? GetPositioningFromSelection(object? selection) {
             if(selection == null) return null;
             if(selection is IPosition positioning) return positioning;
-            if (selection is LaneEnd le) return le.lane.RoadNode;
+            if (selection is HalfLane  le) return le.Lane.RoadNode;
             if (selection is Lane lane) return lane.RoadNode;
             return null;
         }

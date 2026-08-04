@@ -46,8 +46,6 @@ namespace TranSimCS.Roads.Node {
         public int Index => RoadNode.SortedLanes.IndexOf(this); // Index of the lane in the road node's lane list
         public float MiddlePosition => LaneNode.CenterPos; // Middle position of the lane, calculated as the average of left and right positions
         public float Width => LaneNode.LaneSpec.Width;
-        public LaneEnd Rear => new LaneEnd(NodeEnd.Backward, this);
-        public LaneEnd Front => new LaneEnd(NodeEnd.Forward, this);
 
         public Lane(RoadNode node, LaneNode definition) {
             Guid = definition.ID;
@@ -61,8 +59,6 @@ namespace TranSimCS.Roads.Node {
             FrontHalf = new(this, NodeEnd.Forward);
             RearHalf = new(this, NodeEnd.Backward);
         }
-        //Positioning utilities
-        public LaneEnd GetEnd(NodeEnd end) => end.GetConditional(Rear, Front);
 
         //Indexing
         internal ISet<LaneStrip> connections = new HashSet<LaneStrip>(); // Set of lane strips that this lane is connected to
@@ -74,39 +70,14 @@ namespace TranSimCS.Roads.Node {
 
         //Dragging
         IPosition[] IDraggableObj.DraggableComponents() => [RoadNode];
-
-        public int ZDiscriminant() {
-            return 0;
-        }
-
-        public int XDiscriminant() {
-            return 0;
-        }
-
-        public LaneStrip? GetLaneStrip() {
-            return null;
-        }
-
-        public RoadStrip? GetRoadStrip() {
-            return null;
-        }
-
-        public RoadNode? GetRoadNode() {
-            return RoadNode;
-        }
-
-        public Lane? GetLane() {
-            return this;
-        }
-
-        public LaneEnd? GetLaneEnd() {
-            return null;
-        }
-
-        public RoadNodeEnd? GetNodeEnd() {
-            return null;
-        }
-
+        public int ZDiscriminant() => 0;
+        public int XDiscriminant() => 0;
+        public LaneStrip? GetLaneStrip() => null;
+        public RoadStrip? GetRoadStrip() => null;
+        public RoadNode? GetRoadNode() => RoadNode;
+        public Lane? GetLane() => this;
+        public HalfLane? GetLaneEnd() => null;
+        public RoadNodeEnd? GetNodeEnd() => null;
         int? IRoadElement.GetIndexInHalfNode() => Index;
     }
 }

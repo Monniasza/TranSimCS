@@ -12,7 +12,7 @@ using TranSimCS.Worlds;
 namespace TranSimCS.Save2 {
     public class StripRefConverter(TSWorld world) : JsonConverter<LaneStrip> {
         public override LaneStrip? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            LaneEnd startLaneEnd, endLaneEnd;
+            HalfLane startLaneEnd, endLaneEnd;
 
             var laneEndConverter = new LaneEndConverter(world);
 
@@ -20,12 +20,12 @@ namespace TranSimCS.Save2 {
             if (reader.TokenType == JsonTokenType.Null) return null;
             if (reader.TokenType != JsonTokenType.StartArray) JsonProcessor.FailTokenTypes(ref reader, JsonTokenType.Null, JsonTokenType.StartArray);
 
-            startLaneEnd = laneEndConverter.Read(ref reader, typeof(LaneEnd), options);
-            endLaneEnd = laneEndConverter.Read(ref reader, typeof(LaneEnd), options);
+            startLaneEnd = laneEndConverter.Read(ref reader, typeof(HalfLane), options);
+            endLaneEnd = laneEndConverter.Read(ref reader, typeof(HalfLane), options);
 
             JsonProcessor.AssertTokenType(ref reader, JsonTokenType.EndArray);
             
-            return world.GetOrMakeLaneStrip(startLaneEnd.ToHalfLane(), endLaneEnd.ToHalfLane());
+            return world.GetOrMakeLaneStrip(startLaneEnd, endLaneEnd);
         }
 
         public override void Write(Utf8JsonWriter writer, LaneStrip value, JsonSerializerOptions options) {
@@ -36,8 +36,8 @@ namespace TranSimCS.Save2 {
 
             var laneEndConverter = new LaneEndConverter(world);
             writer.WriteStartArray();
-            laneEndConverter.Write(writer, value.StartLane.LaneEnd, options);
-            laneEndConverter.Write(writer, value.EndLane.LaneEnd, options);
+            laneEndConverter.Write(writer, value.StartLane, options);
+            laneEndConverter.Write(writer, value.EndLane, options);
             writer.WriteEndArray();
         }
     }

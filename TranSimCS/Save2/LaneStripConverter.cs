@@ -25,10 +25,10 @@ namespace TranSimCS.Save2 {
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
                 switch (propertyName.ToLower()) {
                     case "start":
-                        start = laneEndConverter.Read(ref reader0, typeof(LaneEnd), options).ToHalfLane();
+                        start = laneEndConverter.Read(ref reader0, typeof(HalfLane), options);
                         break;
                     case "end":
-                        end = laneEndConverter.Read(ref reader0, typeof(LaneEnd), options).ToHalfLane();
+                        end = laneEndConverter.Read(ref reader0, typeof(HalfLane), options);
                         break;
                     case "spec":
                         spec = laneSpecConverter.Read(ref reader0, typeof(LaneSpec), options);
@@ -54,10 +54,10 @@ namespace TranSimCS.Save2 {
 
             writer.WritePropertyName("start");
             var laneEndConverter = new LaneEndConverter(_world);
-            laneEndConverter.Write(writer, value.StartLane.LaneEnd, options);
+            laneEndConverter.Write(writer, value.StartLane, options);
 
             writer.WritePropertyName("end");
-            laneEndConverter.Write(writer, value.EndLane.LaneEnd, options);
+            laneEndConverter.Write(writer, value.EndLane, options);
 
             writer.WritePropertyName("spec");
             var laneSpecConverter = new LaneSpecConverter();

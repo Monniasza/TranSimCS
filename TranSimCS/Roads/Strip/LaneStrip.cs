@@ -24,7 +24,7 @@ namespace TranSimCS.Roads.Strip {
         public RoadStrip? GetRoadStrip() => Road;
         public int XDiscriminant() => 0;
         public int ZDiscriminant() => 0;
-        public LaneEnd? GetLaneEnd() => null;
+        public HalfLane? GetLaneEnd() => null;
         public RoadNodeEnd? GetNodeEnd() => null;
         public DualRange Bounds => Tag().ToDualRange();
 

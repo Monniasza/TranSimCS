@@ -29,6 +29,10 @@ namespace TranSimCS.Geometry {
             return new(min, max);
         }
         public static Range<T> RangeIntersection<T>(this IEnumerable<Range<T>> ranges) where T : IComparable<T> => ranges.Aggregate(Intersection);
+        public static void Deconstruct<T>(this Range<T> range, out T min, out T max) where T : IComparable<T> {
+            min = range.Min;
+            max = range.Max;
+        }
 
         public static T Middle<T>(this Range<T> a) where T: INumber<T> {
             return (a.Min + a.Max)/(T.One + T.One);

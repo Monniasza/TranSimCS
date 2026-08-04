@@ -6,7 +6,7 @@ namespace TranSimCS.Roads.Strip {
     public struct LaneStripEnd(LaneStrip strip, SegmentHalf half) : IDraggableObj, IRoadElement {
         public LaneStrip strip = strip;
         public SegmentHalf half = half;
-        public LaneEnd laneEnd => strip.GetHalf(half).LaneEnd;
+        public HalfLane laneEnd => strip.GetHalf(half);
 
         //DRAGGING
         IPosition[] IDraggableObj.DraggableComponents() => ((IDraggableObj)strip).DraggableComponents();
@@ -19,7 +19,7 @@ namespace TranSimCS.Roads.Strip {
         public RoadStrip? GetRoadStrip() => strip.Road;
         public int XDiscriminant() => 0;
         public int ZDiscriminant() => half.Discriminant();
-        public LaneEnd? GetLaneEnd() => laneEnd;
+        public HalfLane? GetLaneEnd() => laneEnd;
         public RoadNodeEnd? GetNodeEnd() => strip.GetHalf(half).HalfNode.RoadNodeEnd;
 
         public IPosition[] DraggableComponents() => ((IDraggableObj)strip).DraggableComponents();

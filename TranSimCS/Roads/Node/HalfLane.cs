@@ -4,9 +4,10 @@ using Iesi.Collections.Generic;
 using MonoGame.Extended;
 using TranSimCS.Property;
 using TranSimCS.Roads.Strip;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Node {
-    public class HalfLane: IRoadElement {
+    public class HalfLane: IRoadElement, IDraggableObj {
         //Definition
         public Lane Lane { get; private set; }
         public NodeEnd End { get; private set; }
@@ -39,16 +40,16 @@ namespace TranSimCS.Roads.Node {
         public float Width => LaneNode.LaneSpec.Width;
         public Range<float> Bounds => LaneNode.Bounds;
         public Guid Guid => Lane.Guid;
-        public LaneEnd LaneEnd => new(End, Lane);
         
-        public int ZDiscriminant() => LaneEnd.ZDiscriminant();
+        public int ZDiscriminant() => End.Discriminant();
         public int XDiscriminant() => 0;
         public LaneStrip? GetLaneStrip() => null;
         public RoadStrip? GetRoadStrip() => null;
         public RoadNode? GetRoadNode() => RoadNode;
         public Lane? GetLane() => Lane;
-        public LaneEnd? GetLaneEnd() => LaneEnd;
+        public HalfLane? GetLaneEnd() => this;
         public RoadNodeEnd? GetNodeEnd() => HalfNode.RoadNodeEnd;
         int? IRoadElement.GetIndexInHalfNode() => Index;
+        public IPosition[] DraggableComponents() => [HalfNode];
     }
 }

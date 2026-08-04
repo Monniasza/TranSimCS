@@ -84,7 +84,7 @@ namespace TranSimCS.Roads.Node {
         public RoadStrip? GetRoadStrip() => null;
         public int XDiscriminant() => 0;
         public int ZDiscriminant() => 0;
-        public LaneEnd? GetLaneEnd() => null;
+        public HalfLane? GetLaneEnd() => null;
         public RoadNodeEnd? GetNodeEnd() => null;
 
         //Example azimuth values

@@ -27,7 +27,7 @@ namespace TranSimCS.Roads {
         public RoadStrip? GetRoadStrip();
         public RoadNode? GetRoadNode();
         public Lane? GetLane();
-        public LaneEnd? GetLaneEnd();
+        public HalfLane? GetLaneEnd();
         public RoadNodeEnd? GetNodeEnd();
         public int? GetIndexInHalfNode() => null;
     }

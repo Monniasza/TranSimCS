@@ -136,11 +136,11 @@ namespace TranSimCS.Tools.RoadConstruction {
                 if (picked is AddLaneSelection als) {
                     var nodeEnd = als.nodeEnd;
                     var insertPos = als.CalculateOffset(Menu.configuration.LaneSpec.Width / 2);
-                    picked = nodeEnd.Node.AddLane(new(Menu.configuration.LaneSpec, insertPos)).GetEnd(nodeEnd.End);
+                    picked = nodeEnd.Node.AddLane(new(Menu.configuration.LaneSpec, insertPos)).GetHalfLane(nodeEnd.End);
                 }
-                if (picked is LaneEnd pickedLaneEnd && pickedLaneEnd.lane != null) {
+                if (picked is HalfLane pickedLaneEnd && pickedLaneEnd.Lane != null) {
                     //Start from an existing lane
-                    State = new LaneCreationState(pickedLaneEnd.ToHalfLane());
+                    State = new LaneCreationState(pickedLaneEnd);
                 }
                 
             }else if(State != null && button == MouseButton.Left) {
