@@ -17,10 +17,17 @@ namespace TranSimCS.Tools.RoadConstruction {
         public static LaneCreationState? BuildConnections(LaneCreationState startingState, LaneMappings laneMappings, InGameMenu menu) {
             //Get the state
             var destLane = startingState.SnappedLane;
-
             var destinationNode = destLane?.GetNodeEnd()?.HalfNode;
             var destinationIndex = destLane?.GetIndexInHalfNode();
             var world = menu.World;
+
+            Debug.Assert(destinationNode != null, "Valid lane index without a road node");
+            var isLaneOrALS = destLane is AddLaneSelection or HalfLane or LaneEnd;
+            Debug.WriteLine(destLane?.GetType());
+            Debug.WriteLine(destinationIndex);
+            Debug.WriteLine(destinationNode);
+            if (isLaneOrALS) Debug.Assert(destinationIndex != null, $"A {destLane.GetType()} must have a valid index");
+
             if (destinationIndex == null) {
                 //Place the road node 
                 //Build the node
@@ -48,7 +55,7 @@ namespace TranSimCS.Tools.RoadConstruction {
                 return new LaneCreationState(newLaneEnd);
             }
 
-            Debug.Assert(destinationNode != null, "Valid lane index without a road node");
+            
 
             //There's a connection
             LaneEnd? passthroughEnd = null;
