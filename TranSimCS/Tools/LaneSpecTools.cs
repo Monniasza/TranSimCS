@@ -126,6 +126,7 @@ namespace TranSimCS.Tools {
                 new("Stop", "signs/stop", null, LaneFlags.Stop),
                 new("Yield", "signs/yield", null, LaneFlags.Yield),
                 new("Parking", "signs/parking", null, LaneFlags.Parking),
+                new("Sidewalk", "ui/crosswalk", null, LaneFlags.Sidewalk),
                 new("Platform", "ui/bus", null, LaneFlags.Platform),
                 new("Merge or expand right", "signs/mergeright", null, LaneFlags.MergeRight),
                 new("Merge or expand left", "signs/mergeleft", null, LaneFlags.MergeLeft),

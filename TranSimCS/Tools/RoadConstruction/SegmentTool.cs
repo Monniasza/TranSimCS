@@ -228,6 +228,7 @@ namespace TranSimCS.Tools.RoadConstruction {
             action.Add(ToolAttribs.showSnapOptions);
             action.Add(ToolAttribs.showSegmentTools);
             action.Add(ToolAttribs.addLaneSelection);
+            action.Add(ToolAttribs.showLaneSpecs);
         }
         void ITool.AddSelectors(MultiMesh addTo, MultiMesh visibleSelectors) {
             if (Menu.CheckAddLanes.Checked)
