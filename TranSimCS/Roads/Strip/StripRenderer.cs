@@ -33,7 +33,8 @@ namespace TranSimCS.Roads.Strip {
             var midpoint = centerframe.O;
             var tangent = centerframe.Z;
             var nrm = centerframe.Y;
-            if (tangent.LengthSquared() >= 0.0000001){
+            bool removeArrows = laneStrip.Spec.Flags.HasFlags(LaneFlags.Sidewalk | LaneFlags.Platform);
+            if (!removeArrows && tangent.LengthSquared() >= 0.000001){
                 tangent.Normalize();
                 nrm.Normalize();
 
@@ -121,6 +122,7 @@ namespace TranSimCS.Roads.Strip {
             var isMerge = (laneStrip.Spec.Flags & LaneFlags.IsMerge) != 0;
 
             if (mergeLeft && mergeRight) return;
+            if (laneStrip.Spec.Flags.HasFlags(LaneFlags.Sidewalk)) return;
             if (laneStrip.Spec.Flags.HasFlags(LaneFlags.Platform)) color = Color.Yellow;
 
             //Get tags

@@ -24,8 +24,8 @@ namespace TranSimCS.Roads {
         public static LaneSpec Default => new(Color.Gray, VehicleTypes.Vehicles, 3f, 50);
         public static LaneSpec Motorway => new(Color.DarkGray, VehicleTypes.MotorVehicles, 3.5f, 150);
         public static LaneSpec Bicycle => new(Color.Green, VehicleTypes.Bicycle, 2, 30);
-        public static LaneSpec Pedestrian => new(Color.LightGray, VehicleTypes.Pedestrian, 1.5f, 16);
-        public static LaneSpec Path => new(Color.LightGray, VehicleTypes.Path, 3,20);
+        public static LaneSpec Pedestrian => new(Color.LightGray, VehicleTypes.Pedestrian, 1.5f, 16, LaneFlags.Sidewalk);
+        public static LaneSpec Path => new(Color.LightGray, VehicleTypes.Path, 3,20, LaneFlags.Sidewalk);
         public static LaneSpec Bus => new(Color.Red, VehicleTypes.Bus, 3, 80);
         public static LaneSpec None => new(Color.Transparent, VehicleTypes.None, 3, 0);
         public static LaneSpec All => new(Color.White, VehicleTypes.All, 3, 100); // All vehicle types allowed

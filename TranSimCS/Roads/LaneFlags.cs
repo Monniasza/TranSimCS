@@ -4,9 +4,6 @@ using LanguageExt.Common;
 namespace TranSimCS.Roads {
     [Flags]
     public enum LaneFlags {
-        //RESERVED
-        R4 = 16,
-
         //MERGE FLAGS
         /// <summary>
         /// Does this lane strip go left? If <see cref="MergeRight"/> is active too, removes side-lines.
@@ -20,11 +17,6 @@ namespace TranSimCS.Roads {
         /// Is this road strip a merge? Otherwise it is a diverge.
         /// </summary>
         IsMerge = 8,
-
-        /// <summary>
-        /// No flags set
-        /// </summary>
-        None = 0,
         /// <summary>
         /// Prohibit vehicles from switching to the next lane to the left in the strip's direction. Does not apply to rail.
         /// </summary>
@@ -33,6 +25,13 @@ namespace TranSimCS.Roads {
         /// Prohibit vehicles from switching to the next lane to the right in the strip's direction. Does not apply to rail.
         /// </summary>
         NoRight = 64,
+
+        /// <summary>
+        /// No flags set
+        /// </summary>
+        None = 0,
+        
+        // TRAFFIC FLAGS
         /// <summary>
         /// Should vehicles be allowed to back off/drive the wrong way? If yes, the lane will be semi-bidirectional, with the normal direction preferred and opposite the secondary.
         /// </summary>
@@ -49,6 +48,12 @@ namespace TranSimCS.Roads {
         /// Will all vehicles stop on the line? Nodes only.
         /// </summary>
         Stop = 512,
+
+        // PEDESTRIAN FLAGS
+        /// <summary>
+        /// Is this lane a sidewalk? Disables markings.
+        /// </summary>
+        Sidewalk = 16,
         /// <summary>
         /// Does this lane serve public transit and/or hitchhikers? Pedestrian lane strips only.
         /// </summary>
