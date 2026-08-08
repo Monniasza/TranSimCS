@@ -54,7 +54,7 @@ namespace TranSimCS {
             
             Concrete = new("seamlessTextures2/IMGP5514_seamless_2");
             Cobble = new("seamlessTextures2/rock02");
-            Tiles = new("tile");
+            Tiles = new("pavement");
             BuildingBricks = new("brickwall");
             BuildingWindows = new("brickwindow");
             White = new("white");

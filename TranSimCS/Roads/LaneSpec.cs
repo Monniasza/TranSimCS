@@ -9,22 +9,32 @@ namespace TranSimCS.Roads {
         public float Width;//Width. Ignored by nodes, but used to store new lane widths
         public float SpeedLimit;//Speed limit [km/h]
         public float LineWidth; //Line width
+        public Surface Surface;
 
         // Constructor to initialize the LaneSpec with lane index, width, and offset
-        public LaneSpec(Color color, VehicleTypes vehicleTypes, float width = 3.5f, float speedLimit = 50, LaneFlags flags = LaneFlags.None, float lineWidth = 0.2f) {
+        public LaneSpec(
+            Color color,
+            VehicleTypes vehicleTypes,
+            float width = 3.5f,
+            float speedLimit = 50,
+            LaneFlags flags = LaneFlags.None,
+            float lineWidth = 0.2f,
+            Surface surface = Surface.Asphalt
+        ) {
             Color = color;
             VehicleTypes = vehicleTypes;
             Flags = flags;
             Width = width;
             SpeedLimit = speedLimit;
             LineWidth = lineWidth;
+            Surface = surface;
         }
 
         //Common presets for lane specifications
         public static LaneSpec Default => new(Color.Gray, VehicleTypes.Vehicles, 3f, 50);
         public static LaneSpec Motorway => new(Color.DarkGray, VehicleTypes.MotorVehicles, 3.5f, 150);
         public static LaneSpec Bicycle => new(Color.Green, VehicleTypes.Bicycle, 2, 30);
-        public static LaneSpec Pedestrian => new(Color.LightGray, VehicleTypes.Pedestrian, 1.5f, 16, LaneFlags.Sidewalk);
+        public static LaneSpec Pedestrian => new(Color.LightGray, VehicleTypes.Pedestrian, 1.5f, 16, LaneFlags.Sidewalk, surface: Surface.Tiles);
         public static LaneSpec Path => new(Color.LightGray, VehicleTypes.Path, 3,20, LaneFlags.Sidewalk);
         public static LaneSpec Bus => new(Color.Red, VehicleTypes.Bus, 3, 80);
         public static LaneSpec None => new(Color.Transparent, VehicleTypes.None, 3, 0);

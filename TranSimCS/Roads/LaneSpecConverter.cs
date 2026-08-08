@@ -13,6 +13,7 @@ namespace TranSimCS.Roads {
             float width = 3.5f;
             float speedLimit = 50f;
             float lineWidth = 0.2f;
+            Surface surface = Surface.Tiles;
 
             var colorConverter = new ColorConverter();
 
@@ -36,10 +37,13 @@ namespace TranSimCS.Roads {
                     case "lineWidth":
                         lineWidth = reader0.GetSingle();
                         break;
+                    case "surface":
+                        surface = (Surface)(reader0.GetInt32());
+                        break;
                 }
             });
 
-            return new LaneSpec(color, vehicleTypes, width, speedLimit, flags, lineWidth);
+            return new LaneSpec(color, vehicleTypes, width, speedLimit, flags, lineWidth, surface);
         }
 
         public override void Write(Utf8JsonWriter writer, LaneSpec value, JsonSerializerOptions options) {
@@ -53,6 +57,7 @@ namespace TranSimCS.Roads {
             writer.WriteNumber("width", value.Width);
             writer.WriteNumber("speedLimit", value.SpeedLimit);
             writer.WriteNumber("lineWidth", value.LineWidth);
+            writer.WriteNumber("surface", (int)value.Surface);
             
             writer.WriteEndObject();
         }
