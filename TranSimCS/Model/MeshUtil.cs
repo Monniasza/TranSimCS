@@ -128,6 +128,10 @@ namespace TranSimCS.Model {
                 DataUtil.Swap(mesh.Indices, i, i + 1);
             }
         }
+        public static void ReverseWinding(this MultiMesh multiMesh) {
+            foreach (var mesh in multiMesh.RenderBins.Values) mesh.ReverseWinding();
+        }
+
         public static T[] TriangleFan<T>(IList<T> polygon) {
             int tricount = polygon.Count - 2;
             T[] values = new T[tricount * 3];

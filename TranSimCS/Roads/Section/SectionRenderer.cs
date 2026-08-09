@@ -159,7 +159,7 @@ namespace TranSimCS.Roads.Section {
             renderBin.AddTagsToLastTriangles(-1, roadSection);
         }
 
-        public record struct SectionTriangulationRow(Color color, PathD path) {}
+        public record struct SectionTriangulationRow(Color color, PathD path, SimpleMaterial? material) {}
 
         internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh) {
             if (roadSection.Nodes.Count < 1) return; //Guard agains empty sections
@@ -176,15 +176,15 @@ namespace TranSimCS.Roads.Section {
             foreach (var lane in laneStrips) foreach(var stripSplineComponent in lane.AllStrips.CrossSections) {
                 var projection = ProjectStripOntoWorkingPlane(roadSection, stripSplineComponent, lane.AllStrips);
                 var row = roadSplineComponents[(int)stripSplineComponent.Value.Type] ??= new();
-                var str = new SectionTriangulationRow(stripSplineComponent.Value.Color, projection);
+                var str = new SectionTriangulationRow(stripSplineComponent.Value.Color, projection, stripSplineComponent.Value.Texture);
                 row.Add(str);
             }
 
             //Project each type of strip and also the boundary
             //Generate markings
-            var solidLines = roadSplineComponents[(int)RoadSplineComponentType.Solid];
-            var drivingLines = roadSplineComponents[(int)RoadSplineComponentType.DrivingAreaMarker];
-            var asphaltLines = roadSplineComponents[(int)RoadSplineComponentType.Asphalt];
+            var solidLines = roadSplineComponents[(int)RoadSplineComponentType.ClippedMarking];
+            var drivingLines = roadSplineComponents[(int)RoadSplineComponentType.MarkingClip];
+            var asphaltLines = roadSplineComponents[(int)RoadSplineComponentType.RoadSurface];
 
             //Build geometry for solid lines, and apshalt
             var mergedWhites = (solidLines ?? []).Select(x => new Polygon(x.path, FillRule.EvenOdd)).AggregateOrDefault(new Polygon(), (x, y) => x | y);
@@ -205,17 +205,19 @@ namespace TranSimCS.Roads.Section {
                 triangulatedWhite.points.Select(CreateMeshingFunction(projectionPlane, Color.White, roadSection.Normal * 0.05f)),
                 triangulatedWhite.triangles.Select(x => (ushort)x)
             );
-            var meshedAsphalt = new Mesh();
-            var rawDashes = roadSplineComponents[(int)RoadSplineComponentType.Dashed];
-            var meshedDashes = new Mesh();
+            var meshedAsphalt = new MultiMesh();
+            var rawDashes = roadSplineComponents[(int)RoadSplineComponentType.UnclippedMarking];
+            var meshedDashes = new MultiMesh();
 
-            void ConvertProjectionToMesh(List<SectionTriangulationRow>? list, Mesh mesh, float offset = 0) {
+            void ConvertProjectionToMesh(List<SectionTriangulationRow>? list, MultiMesh mesh, float offset = 0) {
                 if (list == null) return;
                 foreach (var meshElement in list) {
+                    if(meshElement.material == null) continue;
                     var polygon = new Polygon(meshElement.path, FillRule.EvenOdd);
                     var triagulation = PathsDTriangulation.Triangulate(polygon);
                     var points = triagulation.points.Select(CreateMeshingFunction(projectionPlane, meshElement.color, roadSection.Normal * offset));
-                    mesh.DrawModel(points.ToArray(), triagulation.triangles.Select(x => (ushort)x).ToArray());
+                    var bin = mesh.GetOrCreateRenderBinForced(meshElement.material.Value);
+                    bin.DrawModel(points.ToArray(), triagulation.triangles.Select(x => (ushort)x).ToArray());
                 }
             }
 
@@ -239,9 +241,9 @@ namespace TranSimCS.Roads.Section {
             var asphaltMesh = multimesh.GetOrCreateRenderBinForced(Assets.Asphalt);
             var whiteMesh = multimesh.GetOrCreateRenderBinForced(Assets.EmissiveWhite);
             var dashedMesh = multimesh.GetOrCreateRenderBinForced(Assets.LineDash);
-            asphaltMesh.DrawModel(projectedAsphalt);
+            multimesh.AddAll(projectedAsphalt);
             whiteMesh.DrawModel(projectedWhite);
-            dashedMesh.DrawModel(projectedDashes);
+            multimesh.AddAll(projectedDashes);
 
             GenerateSectionFinish(roadSection, multimesh, accuracy);
 

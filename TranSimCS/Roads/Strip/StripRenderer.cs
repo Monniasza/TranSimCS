@@ -60,7 +60,7 @@ namespace TranSimCS.Roads.Strip {
                 arrays[i] = array;
             }
             foreach (var line in gridmesh.CrossSections) {
-                var mat = line.Value.Type.GetMaterial();
+                var mat = line.Value.Texture;
                 if(mat == null) continue;
                 var leftLinePoints = arrays[line.MinIndex];
                 var rightLinePoints = arrays[line.MaxIndex];
@@ -98,7 +98,8 @@ namespace TranSimCS.Roads.Strip {
             var splineComponent = new RoadSplineComponent() {
                 Bias = 0.5f,
                 Color = Color.Transparent,
-                Type = RoadSplineComponentType.DrivingAreaMarker
+                Type = RoadSplineComponentType.MarkingClip,
+                Texture = null
             };
             var splineRange = tag.ToRoadSplineRange();
             return (splineComponent, splineRange);
@@ -107,7 +108,8 @@ namespace TranSimCS.Roads.Strip {
             var splineComponent = new RoadSplineComponent() {
                 Bias = 0.5f,
                 Color = strip.Spec.Color,
-                Type = RoadSplineComponentType.Asphalt
+                Type = RoadSplineComponentType.RoadSurface,
+                Texture = strip.Spec.Surface.GetTexture(),
             };
             var range = strip.Bounds.ToRoadSplineRange();
             return (splineComponent, range);
@@ -132,7 +134,7 @@ namespace TranSimCS.Roads.Strip {
             var lineWidth = laneStrip.Spec.LineWidth;
 
             RoadSplineComponent DrawSide(DualRange laneRange, LaneFlags flag, float bias) {
-                bool isEdge = IsRangeTouchingEdge(laneRange.startRange, roadTag.startRange) && IsRangeTouchingEdge(laneRange.endRange, roadTag.endRange);
+                bool isSolid = IsRangeTouchingEdge(laneRange.startRange, roadTag.startRange) && IsRangeTouchingEdge(laneRange.endRange, roadTag.endRange);
                 var leftEdges = laneStrip.Road.Extents.LeftEdgeStrips;
                 var rightEdges = laneStrip.Road.Extents.RightEdgeStrips;
                 if(laneStrip.IsReverse()) DataUtil.Swap(ref leftEdges, ref rightEdges);
@@ -140,12 +142,13 @@ namespace TranSimCS.Roads.Strip {
                 bool isOnRightExtent = (flag & LaneFlags.NoRight) != 0 && rightEdges.Contains(laneStrip);
                 bool isPlatform = laneStrip.Spec.Flags.HasFlags(LaneFlags.Platform);
 
-                isEdge |= isOnLeftExtent || isOnRightExtent || isPlatform;
-                var lineTexture = ((laneStrip.Spec.Flags & flag) != 0 || isEdge) ? RoadSplineComponentType.Solid : RoadSplineComponentType.Dashed;
+                isSolid |= (laneStrip.Spec.Flags & flag) != 0 || isOnLeftExtent || isOnRightExtent || isPlatform;
+                var lineTexture = isSolid ? RoadSplineComponentType.ClippedMarking : RoadSplineComponentType.UnclippedMarking;
                 return new RoadSplineComponent() {
                     Bias = bias,
                     Color = color,
-                    Type = lineTexture
+                    Type = lineTexture,
+                    Texture = isSolid ? Assets.EmissiveWhite : Assets.LineDash,
                 };
             }
 
