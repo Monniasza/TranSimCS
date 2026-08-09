@@ -73,7 +73,7 @@ namespace TranSimCS.Roads.Strip {
         }
 
         public static void GenerateStripAllComponents(LaneStrip strip, Action<RoadSplineComponent, RoadSplineRange> target) {
-            GenerateStripEdgeLines(strip, target, 0.15f);
+            GenerateStripEdgeLines(strip, target, 0.05f);
 
             //Generate the asphalt
             var (asphaltSplineComponent, asphaltRange) = GenerateAsphaltStrip(strip);
