@@ -55,7 +55,7 @@ namespace TranSimCS.Tools {
                     Car car = new Car();
                     car.Randomize();
                     if(strip != null) {
-                        var lanePosition = new LanePosition(strip, 0);
+                        var lanePosition = new CarStripPosition(strip, 0);
                         car.LanePosition = lanePosition;
                     }
                     car.PositionProp.Value = newCarPosition; //selected position is NaN
@@ -72,7 +72,7 @@ namespace TranSimCS.Tools {
             Car car = new Car();
             car.Randomize();
             if (strip != null) {
-                var lanePosition = new LanePosition(strip, 0);
+                var lanePosition = new CarStripPosition(strip, 0);
                 car.LanePosition = lanePosition;
             }
             car.PositionProp.Value = newCarPosition; //selected position is NaN

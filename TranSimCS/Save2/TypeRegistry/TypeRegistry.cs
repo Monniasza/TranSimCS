@@ -33,11 +33,28 @@ namespace TranSimCS.Save2.TypeRegistry {
     /// Must implement <see cref="ITypeRegistered{T}"/>.
     /// </typeparam>
     public sealed class TypeRegistry<T> : JsonConverter<T> where T: ITypeRegistered<T>{
-        /// <summary>
-        /// Maps type identifiers to converters responsible for
-        /// serializing and deserializing that type.
-        /// </summary>
-        public Dictionary<string, JsonConverter<T>> converters = [];
+        public interface IConverter{
+            public T Read(ref Utf8JsonReader reader, JsonSerializerOptions options);
+            public void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options);
+        }
+        private class Converter<U> : IConverter where U : T {
+            private readonly JsonConverter<U> converter;
+            public Converter(JsonConverter<U> converter) {
+                this.converter = converter;
+            }
+            public T Read(ref Utf8JsonReader reader, JsonSerializerOptions options) => converter.Read(ref reader, typeof(U), options);
+            public void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options) => converter.Write(writer, (U)value, options);
+        }
+
+        private Dictionary<string, IConverter> _converters = new();
+        public void Register<U>(string name, JsonConverter<U> converter) where U : T {
+            ArgumentNullException.ThrowIfNull(name, nameof(name));
+            ArgumentNullException.ThrowIfNull(converter, nameof(converter));
+            if (_converters.ContainsKey(name)) throw new TypeConverterAlreadyRegisteredException(name);
+            var wrapper = new Converter<U>(converter);
+            _converters.Add(name, wrapper);
+        }
+        public IConverter? GetConverter(string name) => _converters.GetValueOrDefault(name);
 
         /// <summary>
         /// Deserializes a polymorphic object from JSON.
@@ -78,9 +95,10 @@ namespace TranSimCS.Save2.TypeRegistry {
                         //Read actual data
                         if (type == null) JsonProcessor.Fail(reader0, "Type is not provided or is not the first value");
                         if (valueExists) JsonProcessor.Fail(reader0, "Value already exists");
-                        if (converters.TryGetValue(type, out var converter)) {
+                        var converter = GetConverter(type);
+                        if (converter != null) {
                             //Found a converter
-                            value = converter.Read(ref reader0, converter.Type, options);
+                            value = converter.Read(ref reader0, options);
                             valueExists = true;
                         }else 
                             //Converter not found
@@ -123,11 +141,12 @@ namespace TranSimCS.Save2.TypeRegistry {
             writer.WritePropertyName("type");
             writer.WriteStringValue(typeInfo.TypeId);
             writer.WritePropertyName("data");
-            if (converters.TryGetValue(typeInfo.TypeId, out var converter))
+            var converter = GetConverter(typeInfo.TypeId);
+            if (converter != null)
                 converter.Write(writer, value, options);
             else
                 throw new ConverterNotFoundException($"Converter {typeInfo.TypeId} not found");
-                writer.WriteEndObject();
+            writer.WriteEndObject();
         }
     }
 

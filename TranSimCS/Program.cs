@@ -63,8 +63,8 @@ public class Program {
         log.Info("Running from " + DataRoot);
 
         //Add spline generators
-        StripSplineGenerator.typeRegistry.converters["isotropic"] = IgnoreSavedTokenConverter<StripSplineGenerator>.FromConstant(ClassicStripSplineGenerator.Instance);
-        StripSplineGenerator.typeRegistry.converters["anisotropic"] = IgnoreSavedTokenConverter<StripSplineGenerator>.FromConstant(AnisotropicStripSplineGenerator.Instance);
+        StripSplineGenerator.typeRegistry.Register("isotropic", IgnoreSavedTokenConverter<StripSplineGenerator>.FromConstant(ClassicStripSplineGenerator.Instance));
+        StripSplineGenerator.typeRegistry.Register("anisotropic", IgnoreSavedTokenConverter<StripSplineGenerator>.FromConstant(AnisotropicStripSplineGenerator.Instance));
 
         JsonProcessor.Init();
         InspectMethods.Init();

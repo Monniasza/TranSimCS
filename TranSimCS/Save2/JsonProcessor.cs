@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -61,11 +62,13 @@ namespace TranSimCS.Save2 {
             if (type != reader.TokenType)
                 Fail(reader, $"Unexpected token: {reader.TokenType}, expected {type}");
         }
+        [DoesNotReturn]
         public static void FailTokenTypes(ref Utf8JsonReader reader, params JsonTokenType[] type) {
             var stringsList = type.Select(type => type.ToString());
             var concatString = String.Join(", ", stringsList);
             Fail(reader, $"Unexpected token: {reader.TokenType}, expected {concatString}");
         }
+        [DoesNotReturn]
         public static void Fail(Utf8JsonReader reader, string message, Exception? innerException = null) {
             var ln = reader.GetLineNumber();
             var cn = reader.GetColumnNumber();

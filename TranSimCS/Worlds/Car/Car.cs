@@ -16,6 +16,7 @@ using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
+using TranSimCS.Save2.TypeRegistry;
 using TranSimCS.SceneGraph;
 using TranSimCS.Spline;
 
@@ -27,6 +28,14 @@ namespace TranSimCS.Worlds.Car {
         private static string objRoot;
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         public static ObjLoader newLoader;
+
+        public static readonly TypeRegistry<CarPosition> CarPositionRegistry;
+
+        static Car() {
+            CarPositionRegistry = new();
+            CarPositionRegistry.Register(CarStripPosition.StripTypeName, new LanePositionConverter());
+        }
+
         public static void Init() {
             //Load all meshes
             objRoot = Path.Combine(Program.DataRoot, "Files", "eracoon_cars", "obj");
@@ -118,13 +127,13 @@ namespace TranSimCS.Worlds.Car {
             pr.Inclination *= -1;
             PositionProp.Value = pr;
         }
-        public LanePosition LanePosition;
+        public CarPosition LanePosition;
 
         public event MeshInvalidationCallback GeometryChanged;
 
         internal void Update(GameTime time) {
             if (World == null) return;
-            if(LanePosition.LaneStrip == null) {
+            if(LanePosition == null) {
                 //The car is off-road
                 var vel = Velocity;
                 VectorMethods.CheckVector(vel, "vel");
@@ -137,28 +146,17 @@ namespace TranSimCS.Worlds.Car {
                 pr.Position = xyz;
                 PositionProp.Value = pr;
             } else {
-                //If the car has an undeterminate position, place it on the start of a lane strip
-                if (!float.IsFinite(LanePosition.LaneArcLength)) {
-                    LanePosition.LaneArcLength = 0;
-                    LanePosition.IsReverse = false;
-                }
 
                 //Interpolate
-                LanePosition.LaneArcLength += Speed * time.GetElapsedSeconds();
-                //ASSERT T is valid
-                if (!float.IsFinite(LanePosition.LaneArcLength)) throw new ArithmeticException("Invalid newT");
+                LanePosition = LanePosition.Advance(Speed * time.GetElapsedSeconds());
 
                 //Overflow
-                var splineCache = LanePosition.LaneStrip.SplineLUT;
-                var maxLength = splineCache.Length;
+                var maxLength = LanePosition.MaxPosition();
                 if (maxLength < 0.1) throw new ArithmeticException("Zero or negative length");
-                while (LanePosition.LaneArcLength < 0 || LanePosition.LaneArcLength > maxLength) {
-                    if (LanePosition.LaneStrip == null) return;
-                    
-                    //ASSERT T is valid
-                    if (!float.IsFinite(LanePosition.LaneArcLength)) throw new ArithmeticException("Invalid newT");
+                while (LanePosition.CurrentPosition() < 0 || LanePosition.CurrentPosition() > maxLength) {
+                    if (LanePosition == null) return;
 
-                    var overflowIsRear = LanePosition.LaneArcLength < 0 ^ LanePosition.IsReverse;
+                    var overflowIsRear = LanePosition.CurrentPosition() < 0;
 
                     if (overflowIsRear) {
                         //Passed the beginning
@@ -172,27 +170,19 @@ namespace TranSimCS.Worlds.Car {
                 }
 
                 //Put the car in the world
-                var laneStrip = LanePosition.LaneStrip;
-                var isReverseToRoadDirection = laneStrip.IsReverse() ^ LanePosition.IsReverse;
-                var positionCache = laneStrip.SplineLUT;
-                var positionLUT = isReverseToRoadDirection ?
-                    positionCache.Reverse : positionCache.Forward;
+                var positionLUT = LanePosition.GetPositionLookup();
 
-                var xyzt = positionLUT[LanePosition.LaneArcLength];
+                var xyzt = positionLUT[LanePosition.CurrentPosition()];
                 var xyz = xyzt.ToXYZ();
                 VectorMethods.CheckVector(xyz, "xyz");
                 var t = xyzt.W;
                 if (!float.IsFinite(t)) throw new ArithmeticException("Invalid spline paramater ");
 
-                var referenceFrame = laneStrip.SplineLUT.spline.SampleFrame(t);
+                var referenceFrame = LanePosition.GetPositionFrame(t);
                 var lateral = referenceFrame.X;
                 VectorMethods.CheckVector(lateral, "lateral");
                 var tangential = referenceFrame.Z;
                 VectorMethods.CheckVector(tangential, "tangential");
-                if (isReverseToRoadDirection) {
-                    tangential *= -1;
-                    lateral *= -1;
-                }
 
                 xyz = referenceFrame.O;
 
@@ -205,27 +195,24 @@ namespace TranSimCS.Worlds.Car {
             }
         }
         private void Overflow(SegmentHalf half) {
-            if (LanePosition.LaneStrip == null) return;
-            LanePosition.LaneArcLength -= LanePosition.LaneStrip.SplineLUT.Length;
+            if (LanePosition == null) return;
+            var nextPosition = LanePosition.CurrentPosition() - LanePosition.MaxPosition();
 
-            var nextLane = LanePosition.LaneStrip.GetHalf(half);
-            nextLane = nextLane.OppositeHalf;
-            var candidates = nextLane.ConnectedLaneStrips;
+            var candidates = LanePosition.FindNext(half).ToArray();
 
             //If there are no more candidates, destroy the car
-            if (candidates.Count == 0) {
+            if (candidates.Length == 0) {
                 World.Cars.data.Remove(this);
+                LanePosition = null;
                 return;
             }
 
             //Car gets stuck when hitting a next segment
             var choice = rnd.GetRandomEntry(candidates);
-            if (choice.strip == LanePosition.LaneStrip)
+            if (choice == LanePosition)
                 throw new Exception("Transitioned to same strip");
 
-            var isEntryFromEnd = choice.strip.EndLane == nextLane;
-            LanePosition.LaneStrip = choice.strip;
-            LanePosition.IsReverse = isEntryFromEnd;
+            LanePosition = choice.Advance(nextPosition);
         }
 
         public void GenerateGeometry(RenderTarget target) => target.Draw(meshInstance);

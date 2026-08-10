@@ -104,7 +104,7 @@ namespace TranSimCS.Menus.InGame {
         }
 
         public void LoadWorldFromFile(string filename) {
-            World.LoadFromFileJson(filename);
+            World.ReadFromFile(filename);
         }
 
         public override void LoadContentOverride() {

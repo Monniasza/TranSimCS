@@ -52,10 +52,10 @@ namespace TranSimCS.Worlds.Car {
             PositionEulerAngles? pos = null;
             string? mesh = null;
             float speed = 0;
-            LanePosition strip = default;
+            CarPosition? strip = null;
 
             var objPosConverter = new ObjPosConverter();
-            var stripConverter = new LanePositionConverter(world);
+            var stripConverter = new LanePositionConverter();
 
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
                 switch (propertyName.ToLower()) {
@@ -76,6 +76,9 @@ namespace TranSimCS.Worlds.Car {
                         break;
                     case "strip":
                         strip = stripConverter.Read(ref reader0, typeof(LaneStrip), options);
+                        break;
+                    case "state":
+                        strip = Car.CarPositionRegistry.Read(ref reader0, typeof(CarPosition), options);
                         break;
                 }
             });
@@ -105,9 +108,8 @@ namespace TranSimCS.Worlds.Car {
             writer.WritePropertyName("speed");
             writer.WriteNumberValue(value.Speed);
 
-            writer.WritePropertyName("strip");
-            var stripConverter = new LanePositionConverter(world);
-            stripConverter.Write(writer, value.LanePosition, options);
+            writer.WritePropertyName("state");
+            Car.CarPositionRegistry.Write(writer, value.LanePosition, options);
 
             writer.WriteEndObject();
         }

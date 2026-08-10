@@ -24,17 +24,17 @@ namespace TranSimCS.Worlds {
             };
 
             // Add converters
+            options.Converters.Add(new Save2.LaneEndConverter(this));
+            options.Converters.Add(new Save2.RoadNodeEndConverter(this));
+            options.Converters.Add(new StripRefConverter(this));
+            options.Converters.Add(new LanePositionConverter());
             options.Converters.Add(new Save2.Vector3Converter());
             options.Converters.Add(new Save2.ColorConverter());
             options.Converters.Add(new Save2.ObjPosConverter());
             options.Converters.Add(new Save2.LaneSpecConverter());
             options.Converters.Add(new Save2.LaneConverter());
-            options.Converters.Add(new Save2.LaneEndConverter(this));
-            options.Converters.Add(new Save2.RoadNodeEndConverter(this));
-            options.Converters.Add(new Save2.LaneStripConverter(this));
             options.Converters.Add(new Save2.TSWorldConverter());
             options.Converters.Add(new Save2.Vector3iConverter());
-            options.Converters.Add(new LanePositionConverter(this));
 
             return options;
         }
@@ -56,58 +56,70 @@ namespace TranSimCS.Worlds {
             }
         }
 
-        /// <summary>
-        /// Loads the world from a file using System.Text.Json
-        /// </summary>
-        public void LoadFromFileJson(string filename) {
-            log.Info($"Loading world from {filename} using System.Text.Json");
-            var options = CreateJsonOptions();
-
-            try {
-                string jsonString = File.ReadAllText(filename);
-                var loadedWorld = System.Text.Json.JsonSerializer.Deserialize<TSWorld>(jsonString, options);
-
-                if (loadedWorld != null) {
-                    // Copy data from loaded world to this object
-                    Nodes.data.Clear();
-                    Nodes.data.UnionWith(loadedWorld.Nodes.data);
-
-                    RoadSegments.data.Clear();
-                    RoadSegments.data.UnionWith(loadedWorld.RoadSegments.data);
-
-                    Buildings.data.Clear();
-                    Buildings.data.UnionWith(loadedWorld.Buildings.data);
-
-                    RoadSections.data.Clear();
-                    RoadSections.data.UnionWith(loadedWorld.RoadSections.data);
-
-                    Cars.data.Clear();
-                    Cars.data.UnionWith(loadedWorld.Cars.data);
-
-                    DayTime = loadedWorld.DayTime;
-
-                    log.Info($"World loaded successfully from {filename}");
-                } else {
-                    throw new InvalidOperationException("Deserialization returned null");
+        public void LoadJsonData(ref Utf8JsonReader reader, JsonSerializerOptions options) {
+            JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
+                switch (propertyName.ToLower()) {
+                    case "nodes":
+                        Nodes.data.Clear();
+                        Nodes.ReadFromJson(ref reader0, options);
+                        break;
+                    case "segments":
+                        RoadSegments.data.Clear();
+                        RoadSegments.ReadFromJson(ref reader0, options);
+                        break;
+                    case "buildings":
+                        Buildings.data.Clear();
+                        Buildings.ReadFromJson(ref reader0, options);
+                        break;
+                    case "sections":
+                        RoadSections.data.Clear();
+                        RoadSections.ReadFromJson(ref reader0, options);
+                        break;
+                    case "cars":
+                        Cars.data.Clear();
+                        Cars.ReadFromJson(ref reader0, options);
+                        break;
+                    case "daytime":
+                        reader0.Read();
+                        DayTime = reader0.GetSingle();
+                        break;
                 }
-            } catch (Exception ex) {
-                log.Error(ex, $"Failed to load world from {filename}\n{ex}");
-                throw;
-            }
+            }, true);
         }
 
         /// <summary>
         /// Static method to load a world from a file using System.Text.Json
         /// </summary>
-        public static TSWorld LoadJson(string filename) {
+        public static TSWorld LoadJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
             TSWorld world = new TSWorld();
-            world.LoadFromFileJson(filename);
+            world.LoadJsonData(ref reader, options);
+            return world;
+        }
+        public static TSWorld LoadFromFile(string filename) {
+            TSWorld world = new TSWorld();
+            world.ReadFromFile(filename);
             return world;
         }
 
         // Legacy method aliases for compatibility
         public void SaveToFile(string filename) => SaveToFileJson(filename);
-        public void ReadFromFile(string filename) => LoadFromFileJson(filename);
-        public static TSWorld Load(string filename) => LoadJson(filename);
+        public void ReadFromFile(string filename) {
+            log.Info($"Loading world from {filename} using System.Text.Json");
+            var options = CreateJsonOptions();
+            var readerOptions = new JsonReaderOptions {
+                AllowTrailingCommas = true,
+                CommentHandling = JsonCommentHandling.Skip
+            };
+
+            try {
+                var byteArray = File.ReadAllBytes(filename);
+                Utf8JsonReader reader = new(byteArray, readerOptions);
+                LoadJsonData(ref reader, options);
+            } catch (Exception ex) {
+                log.Error(ex, $"Failed to load world from {filename}\n{ex}");
+                throw;
+            }
+        }
+        
     }
 }
