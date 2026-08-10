@@ -127,7 +127,7 @@ namespace TranSimCS.Worlds.Car {
             pr.Inclination *= -1;
             PositionProp.Value = pr;
         }
-        public CarPosition LanePosition;
+        public CarPosition? LanePosition;
 
         public event MeshInvalidationCallback GeometryChanged;
 
@@ -146,9 +146,12 @@ namespace TranSimCS.Worlds.Car {
                 pr.Position = xyz;
                 PositionProp.Value = pr;
             } else {
-
                 //Interpolate
                 LanePosition = LanePosition.Advance(Speed * time.GetElapsedSeconds());
+                if (LanePosition == null) {
+                    Destroy();
+                    return;
+                }
 
                 //Overflow
                 var maxLength = LanePosition.MaxPosition();
@@ -202,8 +205,7 @@ namespace TranSimCS.Worlds.Car {
 
             //If there are no more candidates, destroy the car
             if (candidates.Length == 0) {
-                World.Cars.data.Remove(this);
-                LanePosition = null;
+                Destroy();
                 return;
             }
 
@@ -213,6 +215,12 @@ namespace TranSimCS.Worlds.Car {
                 throw new Exception("Transitioned to same strip");
 
             LanePosition = choice.Advance(nextPosition);
+        }
+
+        public void Destroy() {
+            World.Cars.data.Remove(this);
+            LanePosition = null;
+            return;
         }
 
         public void GenerateGeometry(RenderTarget target) => target.Draw(meshInstance);

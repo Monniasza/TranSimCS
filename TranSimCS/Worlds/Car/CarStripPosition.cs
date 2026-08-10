@@ -57,7 +57,12 @@ namespace TranSimCS.Worlds.Car {
             return HashCode.Combine(LaneStrip, LaneArcLength, IsReverse);
         }
 
-        public override CarStripPosition Advance(float amount) => new(LaneStrip, LaneArcLength + amount, IsReverse);
+        public override CarStripPosition? Advance(float amount) {
+            //Validate the current state
+            if (LaneStrip.Road == null) return null;
+
+            return new(LaneStrip, LaneArcLength + amount, IsReverse);
+        }
 
         public override IEnumerable<CarPosition> FindNext(SegmentHalf half) {
             if(IsReverse) half = half.Inverse();

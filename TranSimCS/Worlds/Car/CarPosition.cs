@@ -14,7 +14,7 @@ namespace TranSimCS.Worlds.Car {
         /// Returns a new <see cref="CarPosition"/> with its position increased by <paramref name="amount"/>.
         /// </summary>
         /// <exception cref="ArgumentException">if <paramref name="amount"/> is not a finite real number</exception>
-        public abstract CarPosition Advance(float amount);
+        public abstract CarPosition? Advance(float amount);
         /// <summary>
         /// Returns all legal transitions from the given endpoint of the current state, all with initial position of 0
         /// </summary>
