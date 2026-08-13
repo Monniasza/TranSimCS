@@ -13,7 +13,7 @@ using TranSimCS.Setting;
 using TranSimCS.Tools;
 using TranSimCS.Worlds.Stack;
 
-namespace TranSimCS.Worlds.Car {
+namespace TranSimCS.Worlds.Cars {
     public class CarStack : ObjectStack<Car, CarStack> {
         private static readonly Random rnd = new Random();
 

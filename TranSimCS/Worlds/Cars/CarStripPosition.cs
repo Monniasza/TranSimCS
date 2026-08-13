@@ -14,7 +14,7 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Save2;
 using TranSimCS.Spline;
 
-namespace TranSimCS.Worlds.Car {
+namespace TranSimCS.Worlds.Cars {
     public class CarStripPosition : CarPosition, IEquatable<CarStripPosition>{
         /// <summary>
         /// On which lane strip is the car currently driving? Null for off-road

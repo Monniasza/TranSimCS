@@ -19,8 +19,9 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Save2.TypeRegistry;
 using TranSimCS.SceneGraph;
 using TranSimCS.Spline;
+using Path = System.IO.Path;
 
-namespace TranSimCS.Worlds.Car {
+namespace TranSimCS.Worlds.Cars {
     public class Car : Obj, IObjMesh, IPosition {
         public static Dictionary<string, MultiMesh> loadedMeshes = [];
         public static ObservableList<(string, MultiMesh)> meshes = [];

@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Model;
 using TranSimCS.ModelOld;
 
-namespace TranSimCS.Worlds.Car {
+namespace TranSimCS.Worlds.Cars {
     public static class CarModel {
         public static MultiMesh CreateModel() {
             var carMaterial = new SimpleMaterial() {

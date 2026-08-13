@@ -13,13 +13,14 @@ using NLog;
 using TranSimCS.Model;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds.Building;
-using TranSimCS.Worlds.Car;
+using TranSimCS.Worlds.Cars;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Roads.Section;
 using TranSimCS.Property;
 using TranSimCS.Setting;
 using MonoGame.Extended;
+using TranSimCS.Worlds.Paths;
 
 namespace TranSimCS.Worlds
 {
@@ -30,6 +31,7 @@ namespace TranSimCS.Worlds
         
         public BuildingStack Buildings { get; }
         public CarStack Cars { get; }
+        public PathSystem Paths { get; }
 
         private float _daytime;
         public float DayTime {
@@ -79,6 +81,7 @@ namespace TranSimCS.Worlds
             RoadSegments = new SegmentStack(this);
             RoadSections = new SectionStack(this);
             Cars = new CarStack(this);
+            Paths = new(this);
 
             //Spatial indexing
             TempSelectorsMesh = new Property<Model.MultiMesh>(new Model.MultiMesh(), "selectors", null, Equality.ReferenceEqualComparer<MultiMesh>());

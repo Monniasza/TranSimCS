@@ -8,7 +8,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Save2.TypeRegistry;
 
-namespace TranSimCS.Worlds.Car {
+namespace TranSimCS.Worlds.Cars {
     public abstract class CarPosition: ITypeRegistered<CarPosition> {
         /// <summary>
         /// Returns a new <see cref="CarPosition"/> with its position increased by <paramref name="amount"/>.

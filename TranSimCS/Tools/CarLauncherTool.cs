@@ -10,7 +10,7 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Worlds;
-using TranSimCS.Worlds.Car;
+using TranSimCS.Worlds.Cars;
 
 namespace TranSimCS.Tools {
     public class CarLauncherTool(InGameMenu menu) : ITool {

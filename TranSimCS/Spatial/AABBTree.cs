@@ -364,14 +364,15 @@ namespace TranSimCS.Spatial {
             return false;
         }
 
-        public IEnumerable<T> Query(BoundingBox box) {
+        public IEnumerable<T> QueryAll() => QueryFilter(null);
+
+        public IEnumerable<T> QueryFilter(Func<BoundingBox, bool>? filter = null) {
             Queue<AABBNode<T>?> queue = new();
             queue.Enqueue(root);
             Refit(root);
-            while(queue.TryDequeue(out var node)) {
-                if(node == null) continue;
-                var nodeBox = node.Bounds;
-                if (nodeBox.Intersects(box)) {
+            while (queue.TryDequeue(out var node)) {
+                if (node == null) continue;
+                if (filter == null || filter(node.Bounds)) {
                     if (node.Item != null) yield return node.Item;
                     queue.Enqueue(node.Left);
                     queue.Enqueue(node.Right);
@@ -379,21 +380,8 @@ namespace TranSimCS.Spatial {
             }
         }
 
-        public IEnumerable<T> Query(BoundingFrustum frustum) {
-            Queue<AABBNode<T>?> queue = new();
-            queue.Enqueue(root);
-            Refit(root);
-            while (queue.TryDequeue(out var node)) {
-                if (node == null) continue;
-                var nodeBox = node.Bounds;
-                var contains = frustum.Contains(nodeBox);
-                if (contains != ContainmentType.Disjoint) {
-                    if (node.Item != null) yield return node.Item;
-                    queue.Enqueue(node.Left);
-                    queue.Enqueue(node.Right);
-                }
-            }
-        }
+        public IEnumerable<T> Query(BoundingBox box) => QueryFilter(box.Intersects);
+        public IEnumerable<T> Query(BoundingFrustum frustum) => QueryFilter(frustum.Intersects);
 
         private void Refit(AABBNode<T>? node) {
             if (node == null || !node.Stale) return;
