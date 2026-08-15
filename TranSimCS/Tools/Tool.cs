@@ -41,6 +41,7 @@ namespace TranSimCS.Tools {
             ToolsPanel.AddPanel(ToolAttribs.showCarOptions, (x => new CarLauncherTab(x)));
             ToolsPanel.AddPanel(ToolAttribs.showLaneLayout, (x => new AddNodeTools(x)));
             ToolsPanel.AddPanel(ToolAttribs.showSegmentTools, (x => new SegmentTools(x)));
+            ToolsPanel.AddPanel(ToolAttribs.showRoadSplit, (x => new SplitRoadTab(x)));
         }
     }
     public static class ToolAttribs {
@@ -64,5 +65,6 @@ namespace TranSimCS.Tools {
         public const string showCarOptions = "menuCar";
         public const string showLaneLayout = "menuLaneLayout";
         public const string showSegmentTools = "menuSegment";
+        public const string showRoadSplit = "menuRoadSplit";
     }
 }

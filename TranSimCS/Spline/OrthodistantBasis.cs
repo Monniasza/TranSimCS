@@ -1,5 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
+using TranSimCS.Geometry.SplineFrames;
 
 namespace TranSimCS.Spline {
     public struct OrthodistantBasis {
@@ -43,6 +45,40 @@ namespace TranSimCS.Spline {
             var smoothstepOffset = Vector3.SmoothStep(startPosition, endPosition, t);
             var orthonormalSample = new OrthonormalBasis(ReferenceSpline, NormalSpline).Sample(t);
             return orthonormalSample.Transform(smoothstepOffset);
+        }
+
+        public Vector3 UnTransform(Vector3 position, float minT = 0, float maxT = 1, int depth = 24, float tolerance = 1e-3f) {
+            Vector3 pO = Vector3.Zero, vX = Vector3.Zero, vY = Vector3.Zero;
+
+            //Describe the solution as finding a plane that intersects a point, then find X and Y.
+            float midpoint = 0;
+            for (int i = 0; i < depth; i++) {
+                midpoint = (minT + maxT) / 2;
+                var sample = SampleFrame(midpoint);
+                pO = sample.O;
+                vX = sample.X;
+                vY = sample.Y;
+                var tangential = -Vector3.Cross(vY, vX);
+                var dist = SplineFrame.SignedDistance(pO, tangential, position);
+                if (MathF.Abs(dist) < tolerance) {
+                    //Satisfactory tolerance
+                    break;
+                }
+                if (dist > 0) {
+                    //Increase T
+                    minT = midpoint;
+                } else {
+                    //Decrease T
+                    maxT = midpoint;
+                }
+            }
+
+            vX.Normalize();
+            vY.Normalize();
+            var d = position - pO;
+            var x = Vector3.Dot(d, vX);
+            var y = Vector3.Dot(d, vY);
+            return new Vector3(x, y, midpoint);
         }
 
         public bool IsFinite() => ReferenceSpline.IsFinite() && NormalSpline.IsFinite();// && !ReferenceSpline.HasCusps();

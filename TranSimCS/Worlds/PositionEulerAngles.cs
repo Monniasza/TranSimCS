@@ -62,6 +62,8 @@ namespace TranSimCS.Worlds {
 
             return new PositionEulerAngles(pos, GeometryUtils.RadiansToField(ypr.X), ypr.Y, ypr.Z);
         }
+        public static PositionEulerAngles FromPosTangentLateral(Transform3 transform)
+            => FromPosTangentLateral(transform.O, transform.Z, transform.X);
 
         public bool Equals(PositionEulerAngles other) {
             return Position.Equals(other.Position)

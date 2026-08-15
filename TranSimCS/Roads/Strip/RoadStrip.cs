@@ -63,6 +63,8 @@ namespace TranSimCS.Roads.Strip {
         public RoadStripCache Cache => _cache ??= new RoadStripCache(this);
         public LaneRange Bounds => Cache.Bounds;
         public OrthodistantBasis OrthodistantBasis => Cache.OrthodistantBasis;
+        public OrthodistantBasis InterCenterBasis => Cache.InterCenterBasis;
+        public OrthodistantLUT InterCenterLUT => Cache.InterCenterLUT;
         public IndexSpline IndexStrip => Cache.IndexStrip;
         public Extents<LaneStrip> Extents => Cache.Extents;
 

@@ -14,6 +14,7 @@ namespace TranSimCS.Roads.Strip {
         public readonly OrthodistantBasis spline;
         public LUT Forward {  get; private set; }
         public LUT Reverse { get; private set; }
+        public LUT ByT { get; private set; }
         public float Length { get; private set; }
 
         public OrthodistantLUT(OrthodistantBasis spline, int numPoints = 129, float minT = 0, float maxT = 1) {
@@ -22,11 +23,11 @@ namespace TranSimCS.Roads.Strip {
             //Sample the spline
             var samples = new Vector4[numPoints];
             var t = minT;
-            var inc = (maxT - minT) / (numPoints - 1);
+            var step = (maxT - minT) / (numPoints - 1);
             for (int i = 0; i < numPoints; i++) {
                 var sample = spline.SamplePosition(t);
                 samples[i] = new(sample, t);
-                t += inc;
+                t += step;
             }
 
             float cumulativeDistance = 0;
@@ -42,13 +43,26 @@ namespace TranSimCS.Roads.Strip {
             this.Forward = new(keys);
             this.Length = cumulativeDistance;
 
-            var reverseNodes = new LUTKey[numPoints];
+            var ReverseNodes = new LUTKey[numPoints];
             for (int i = 0; i < numPoints; i++) {
                 var node = keys[^(i + 1)];
                 node.X = cumulativeDistance - node.X;
-                reverseNodes[i] = node;
+                ReverseNodes[i] = node;
             }
-            this.Reverse = new(reverseNodes);
+            this.Reverse = new(ReverseNodes);
+
+            LUTKey[] tToArcLength = new LUTKey[numPoints];
+            for (int i = 0; i < numPoints; i++) {
+                int j = (numPoints - i) - 1;
+
+                t = minT + step * j;
+                var ReverseArcLength = Reverse.Data[i].X;
+                var ForwardArcLength = Forward.Data[j].X;
+
+                var tToArcKey = new LUTKey(t, new Vector4(ForwardArcLength, ReverseArcLength, 0, 0));
+                tToArcLength[i] = tToArcKey;
+            }
+            this.ByT = new(tToArcLength);
         }
         /*public float FindClosest(Vector3 vector) {
             int closestIndex = 0;

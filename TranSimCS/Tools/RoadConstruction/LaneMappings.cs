@@ -323,5 +323,13 @@ namespace TranSimCS.Tools.RoadConstruction {
             var isBackwards = isBackPreferred || !isForwardPreferred && isLaneLeft;
             return isBackwards;
         }
+        /// <summary>
+        /// True if a preferred direction is out of the half-lane, false otherwise
+        /// </summary>
+        public static bool IsReverseLaneHeuristic(HalfLane halfLane) {
+            var heuristic = IsReverseLaneHeuristic(halfLane.Lane);
+            heuristic ^= halfLane.End == NodeEnd.Backward;
+            return heuristic;
+        }
     }
 }

@@ -47,6 +47,7 @@ namespace TranSimCS.Roads.Node {
             if (End == NodeEnd.Backward) index = LaneCount - index - 1;
             return RoadNode.SortedLanes[index].GetHalfLane(End);
         }
+        public HalfLane AddLane(LaneDefinition definition) => AddLane(new LaneNode(definition));
         public HalfLane AddLane(LaneNode laneNode) {
             if (End == NodeEnd.Backward) laneNode = laneNode.Mirror;
             var lane = RoadNode.AddLane(laneNode);

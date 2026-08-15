@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Numerics;
 using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Roads.Range;
@@ -21,6 +22,19 @@ namespace TranSimCS.Roads.Strip {
 
         private IndexSpline? _indexStrip;
         public IndexSpline IndexStrip => _indexStrip ??= GenerateIndexStrip();
+
+
+        private OrthodistantBasis? _interCenterBasis;
+        public OrthodistantBasis InterCenterBasis => _interCenterBasis ??= GenerateInterCenterBasis();
+        private OrthodistantLUT? _interCenterLUT;
+        public OrthodistantLUT InterCenterLUT => _interCenterLUT ??= new OrthodistantLUT(InterCenterBasis);
+        private OrthodistantBasis GenerateInterCenterBasis() {
+            var mulVector = new Vector2(1, -1);
+            var indexStripStartEndT = new Vector2(IndexStrip.Start.Offset, IndexStrip.End.Offset);
+            var targetStartEndT = new Vector2(Bounds.startRange.Middle(), Bounds.endRange.Middle());
+            var newOffsets = targetStartEndT - indexStripStartEndT;
+            return new OrthodistantBasis(OrthodistantBasis.ReferenceSpline, OrthodistantBasis.NormalSpline, newOffsets * mulVector);
+        }
 
 
         private Extents<LaneStrip>? _extents;
