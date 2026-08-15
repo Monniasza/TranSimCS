@@ -132,7 +132,6 @@ namespace TranSimCS.Roads.Strip {
             float a = leftBounds.Max;
             float b = rightBounds.Min;
             var points = connection.GenerateSpline(b, a);
-            var refframe = connection.StartNode.Cache.ReferenceFrame;
 
             var pointsFlat = FlattenPath(points);
             DrawIsland(Surface.Grass, Surface.Concrete, renderHelper, OrthodistantBasis.Identity, new PathD(pointsFlat), 0.1f, 1);

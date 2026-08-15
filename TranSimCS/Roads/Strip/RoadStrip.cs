@@ -135,7 +135,7 @@ namespace TranSimCS.Roads.Strip {
                 var refframe = StartNode.Cache.ReferenceFrame;
                 var centerOfRevolutionT = (start + end) / 2;
                 var xBasis = (end - start) / 2;
-                var yBasis = refframe.Z * xBasis.Length();
+                var yBasis = Vector3.UnitZ * xBasis.Length();
                 float radianStep = MathF.PI * step;
                 for (int i = 0; i < accuracy; i++) {
                     var (sin, cos) = MathF.SinCos(i * radianStep);
@@ -154,7 +154,6 @@ namespace TranSimCS.Roads.Strip {
         }
 
         IPosition[] IDraggableObj.DraggableComponents() => [StartNode, EndNode];
-
         public void GenerateGeometry(RenderTarget target) {
             target.Draw(Mesh.GetMesh());
         }
