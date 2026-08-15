@@ -227,7 +227,9 @@ namespace TranSimCS.Tools.RoadConstruction {
                     ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
                     laneMappings[lmIndex++] = lm;
                     var lane = StartingLanes[prevIndex];
-                    var lanenode = new LaneNode(lane.Spec, lane.MiddlePosition - (i + 1) * lane.Spec.Width);
+                    var lanenodeSpec = lane.Spec;
+                    lanenodeSpec.Flags &= ~mergeFlagsMask;
+                    var lanenode = new LaneNode(lanenodeSpec, lane.MiddlePosition - (i + 1) * lane.Spec.Width);
                     SetEndingLane(newIndex, lanenode);
                 }
             } else {
@@ -255,7 +257,9 @@ namespace TranSimCS.Tools.RoadConstruction {
                     ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
                     laneMappings[lmIndex++] = lm;
                     var lane = StartingLanes[prevIndex];
-                    var lanenode = new LaneNode(lane.Spec, lane.MiddlePosition + (i + 1) * lane.Spec.Width);
+                    var lanenodeSpec = lane.Spec;
+                    lanenodeSpec.Flags &= ~mergeFlagsMask;
+                    var lanenode = new LaneNode(lanenodeSpec, lane.MiddlePosition + (i + 1) * lane.Spec.Width);
                     SetEndingLane(newIndex, lanenode);
                 }
             } else {
