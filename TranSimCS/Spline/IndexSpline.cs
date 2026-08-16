@@ -44,9 +44,12 @@ namespace TranSimCS.Spline {
 
             return new OrthodistantBasis(positionSpline, ySpline, new(-Start.Offset, End.Offset));
         }
+
+        public static IndexSpline operator *(IndexSpline spline, Vector2 multiplier) => new IndexSpline(spline.Start * multiplier.X, spline.End * multiplier.Y);
     }
     public struct IndexPoint(float offset, Vector3 tangent) {
         public float Offset = offset;
         public Vector3 Tangent = tangent;
+        public static IndexPoint operator *(IndexPoint point, float multiplier) => new(point.Offset, point.Tangent * multiplier);
     }
 }

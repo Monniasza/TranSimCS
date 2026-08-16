@@ -45,9 +45,9 @@ namespace TranSimCS.Spline {
         }
         public static Bezier3 IsotropicSpline(Vector3 start, Vector3 startTangent, Vector3 end, Vector3 endTangent) => GeometryUtils.GenerateJoinSpline(start, end, startTangent, endTangent);
 
-        public static IndexSpline GenerateSegmentSplinedUsingAlg(Transform3 start, Transform3 end, DualRange roadBounds, SplineAlgorithm algorithm) {
-            var startT = roadBounds.startRange.Middle();
-            var endT = roadBounds.endRange.Middle();
+        public static IndexSpline GenerateSegmentSplinedUsingAlg(Transform3 start, Transform3 end, Vector2 roadBounds, SplineAlgorithm algorithm) {
+            var startT = roadBounds.X;
+            var endT = roadBounds.Y;
 
             var startPoint = start.O + start.X * startT;
             var endPoint = end.O + end.X * endT;

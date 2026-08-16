@@ -50,6 +50,22 @@ namespace TranSimCS.Save2 {
                 }
             }
         }
+        public static float? GetSingleOrNull(this ref Utf8JsonReader reader) {
+            var tokenType = reader.TokenType;
+            switch (tokenType) {
+                case JsonTokenType.Null:
+                    return null;
+                case JsonTokenType.Number:
+                    return reader.GetSingle();
+                default:
+                    FailTokenTypes(ref reader, JsonTokenType.Null, JsonTokenType.Number);
+                    return null;
+            }
+        }
+        public static void WriteNumberOrNull(this Utf8JsonWriter writer, string name, float? value) {
+            if (value == null) writer.WriteNull(name);
+            else writer.WriteNumber(name, value.Value);
+        }
 
         public static void ForceRead(ref Utf8JsonReader reader) {
             var success = reader.Read();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
@@ -13,7 +14,7 @@ namespace TranSimCS.Roads.StripGenerator {
     public sealed class ClassicStripSplineGenerator: StripSplineGenerator {
         private ClassicStripSplineGenerator() : base("isotropic") { }
         public static ClassicStripSplineGenerator Instance = new();
-        public override IndexSpline GenerateSplines(Transform3 startReference, Transform3 endReference, DualRange range)
-            => SplineAlgorithms.GenerateSegmentSplinedUsingAlg(startReference, endReference, range, SplineAlgorithms.IsotropicSpline);
+        public override IndexSpline GenerateSplines(Transform3 startReference, Transform3 endReference, Vector2 startEnd)
+            => SplineAlgorithms.GenerateSegmentSplinedUsingAlg(startReference, endReference, startEnd, SplineAlgorithms.IsotropicSpline);
     }
 }

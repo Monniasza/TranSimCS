@@ -16,6 +16,11 @@ namespace TranSimCS.Spline {
             NormalSpline = normalSpline;
             StartEndPosition = startEndPosition;
         }
+        public OrthodistantBasis(Bezier3 referenceSpline, Bezier3 normalSpline) {
+            ReferenceSpline = referenceSpline;
+            NormalSpline = normalSpline;
+            StartEndPosition = Vector2.Zero;
+        }
 
         public OrthodistantBasis Offset(float startOffset, float endOffset) => Offset(new(startOffset, endOffset));
         public OrthodistantBasis Offset(Vector2 offset) => new OrthodistantBasis(ReferenceSpline, NormalSpline, StartEndPosition + offset);

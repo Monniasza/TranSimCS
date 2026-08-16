@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Property;
 using TranSimCS.Roads.Node;
@@ -48,8 +49,17 @@ namespace TranSimCS.Roads.Strip {
         public event MeshInvalidationCallback GeometryChanged;
 
         //Road strip contents
+
         public readonly Property<StripSplineGenerator> SplineGeneratorProp;
         public StripSplineGenerator SplineGenerator { get => SplineGeneratorProp.Value; set => SplineGeneratorProp.Value = value; }
+        public readonly Property<float?> SplineStartPosProp;
+        public float? OverrideSplineStartPos { get => SplineStartPosProp.Value; set => SplineStartPosProp.Value = value; }
+        public readonly Property<float?> SplineEndPosProp;
+        public float? OverrideSplineEndPos { get => SplineEndPosProp.Value; set => SplineEndPosProp.Value = value; }
+        public readonly Property<float> SplineWeightStartProp;
+        public float SplineWeightStart { get => SplineWeightStartProp.Value; set => SplineWeightStartProp.Value = value; }
+        public readonly Property<float> SplineWeightEndProp;
+        public float SplineWeightEnd { get => SplineWeightEndProp.Value; set => SplineWeightEndProp.Value = value; }
         public readonly HalfNode StartNode;
         public readonly HalfNode EndNode;
         public readonly Property<RoadFinish> FinishProperty;
@@ -63,8 +73,8 @@ namespace TranSimCS.Roads.Strip {
         public RoadStripCache Cache => _cache ??= new RoadStripCache(this);
         public LaneRange Bounds => Cache.Bounds;
         public OrthodistantBasis OrthodistantBasis => Cache.OrthodistantBasis;
-        public OrthodistantBasis InterCenterBasis => Cache.InterCenterBasis;
-        public OrthodistantLUT InterCenterLUT => Cache.InterCenterLUT;
+        public OrthodistantBasis ToolBasis => Cache.ToolBasis;
+        public OrthodistantLUT ToolLUT => Cache.ToolLUT;
         public IndexSpline IndexStrip => Cache.IndexStrip;
         public Extents<LaneStrip> Extents => Cache.Extents;
 
@@ -73,17 +83,23 @@ namespace TranSimCS.Roads.Strip {
             EndNode = endNode;
             FinishProperty = new(RoadFinish.Embankment, "finish", this);
             SplineGeneratorProp = new(AnisotropicStripSplineGenerator.Instance, "splineformat", this);
+            SplineStartPosProp = new(null, "splinePositionStart", this);
+            SplineStartPosProp.ValidateChanges += PropertyValidationAlgorithms.RequireFinitePositiveOrNull;
+            SplineEndPosProp = new(null, "splinePositionEnd", this);
+            SplineEndPosProp.ValidateChanges += PropertyValidationAlgorithms.RequireFinitePositiveOrNull;
+            SplineWeightStartProp = new(1, "splineWeightStart", this);
+            SplineWeightStartProp.ValidateChanges += PropertyValidationAlgorithms.RequireFinitePositive;
+            SplineWeightEndProp = new(1, "splineWeightEnd", this);
+            SplineWeightEndProp.ValidateChanges += PropertyValidationAlgorithms.RequireFinitePositive;
             Mesh = new MeshGenerator<RoadStrip>(this, GenerateMesh);
             Mesh.OnMeshInvalidated += InvalidateMesh0;
         }
 
-        public HalfNode GetHalf(SegmentHalf selectedRoadHalf) => selectedRoadHalf.GetConditional(StartNode, EndNode);
 
+        public HalfNode GetHalf(SegmentHalf selectedRoadHalf) => selectedRoadHalf.GetConditional(StartNode, EndNode);
         public bool CheckEnds(HalfNode first, HalfNode second) {
             return first == StartNode && second == EndNode || first == EndNode && second == StartNode;
         }
-
-        
         public void AddLaneStrip(LaneStrip laneStrip) {
             if(!MaybeAddLaneStrip(laneStrip)) throw new ArgumentException("Lanes must not be duplicated");
         }
@@ -127,6 +143,13 @@ namespace TranSimCS.Roads.Strip {
             SegmentRenderer.GenerateRoadSegmentFullMesh(segment, mesh); // Otherwise, render the road segment
         }
 
+        public Vector2 GetSplinePositions() {
+            var start = Bounds.startRange.Middle();
+            if(OverrideSplineStartPos != null) start = OverrideSplineStartPos.Value;
+            var end = Bounds.endRange.Middle();
+            if(OverrideSplineEndPos != null) end = OverrideSplineEndPos.Value;
+            return new(start, end);
+        }
         public Vector3[] GenerateSpline(float startT, float endT, float y = 0) => GenerateSplineHalfNode(new Vector3(startT, y, 0), new Vector3(endT, y, 0));
         public Vector3[] GenerateSplineHalfNode(Vector3 start, Vector3 end) {
             var accuracy = Settings.RoadAccuracy;

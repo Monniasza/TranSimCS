@@ -21,19 +21,15 @@ namespace TranSimCS.Roads.Strip {
 
 
         private IndexSpline? _indexStrip;
-        public IndexSpline IndexStrip => _indexStrip ??= GenerateIndexStrip();
+        public IndexSpline IndexStrip => _indexStrip ??= GenerateIndexStrip() * new Vector2(RoadStrip.SplineWeightStart, RoadStrip.SplineWeightEnd);
 
 
-        private OrthodistantBasis? _interCenterBasis;
-        public OrthodistantBasis InterCenterBasis => _interCenterBasis ??= GenerateInterCenterBasis();
-        private OrthodistantLUT? _interCenterLUT;
-        public OrthodistantLUT InterCenterLUT => _interCenterLUT ??= new OrthodistantLUT(InterCenterBasis);
+        private OrthodistantBasis? _toolBasis;
+        public OrthodistantBasis ToolBasis => _toolBasis ??= GenerateInterCenterBasis();
+        private OrthodistantLUT? _toolLUT;
+        public OrthodistantLUT ToolLUT => _toolLUT ??= new OrthodistantLUT(ToolBasis);
         private OrthodistantBasis GenerateInterCenterBasis() {
-            var mulVector = new Vector2(1, -1);
-            var indexStripStartEndT = new Vector2(IndexStrip.Start.Offset, IndexStrip.End.Offset);
-            var targetStartEndT = new Vector2(Bounds.startRange.Middle(), Bounds.endRange.Middle());
-            var newOffsets = targetStartEndT - indexStripStartEndT;
-            return new OrthodistantBasis(OrthodistantBasis.ReferenceSpline, OrthodistantBasis.NormalSpline, newOffsets * mulVector);
+            return new OrthodistantBasis(OrthodistantBasis.ReferenceSpline, OrthodistantBasis.NormalSpline);
         }
 
 
@@ -53,7 +49,7 @@ namespace TranSimCS.Roads.Strip {
                 //The RoadStrip joins node-ends
                 var startReference = RoadStrip.StartNode.Cache.ReferenceFrame;
                 var endReference = RoadStrip.EndNode.Cache.ReferenceFrame;
-                var range = RoadStrip.Bounds.ToDualRange();
+                var range = RoadStrip.GetSplinePositions();
                 return RoadStrip.SplineGenerator.GenerateSplines(startReference, endReference, range);
             }
         }

@@ -32,14 +32,14 @@ namespace TranSimCS.Tools {
             public float SplitT => Parameters.Middle;
             
             public RoadT(RoadStrip road, float splitT, float extent) {
-                var middlePos = road.InterCenterLUT.ByT[splitT].X;
-                var length = road.InterCenterLUT.Length;
+                var middlePos = road.ToolLUT.ByT[splitT].X;
+                var length = road.ToolLUT.Length;
                 var beforePos = middlePos - extent;
                 if(beforePos < 0) beforePos = 0;
                 var afterPos = middlePos + extent;
                 if(afterPos > length) afterPos = length;
-                var beforeT = road.InterCenterLUT.Forward[beforePos].W;
-                var afterT = road.InterCenterLUT.Forward[afterPos].W;
+                var beforeT = road.ToolLUT.Forward[beforePos].W;
+                var afterT = road.ToolLUT.Forward[afterPos].W;
 
                 ArcLengths = new(beforePos, middlePos, afterPos);
                 Parameters = new(beforeT, splitT, afterT);
@@ -76,7 +76,7 @@ namespace TranSimCS.Tools {
             }
 
             if(RoadPosition != null) {
-                var spline = RoadPosition.Road.InterCenterBasis;
+                var spline = RoadPosition.Road.ToolBasis;
                 var renderBin = Menu.renderHelper.GetOrCreateRenderBinForced(Assets.WhiteTransparent);
 
                 //Draw the spline
@@ -111,7 +111,7 @@ namespace TranSimCS.Tools {
             if (asRoadStrip == null) return;
             var point = selection.Value.Coordinates;
 
-            var t = asRoadStrip.InterCenterBasis.UnTransform(point);
+            var t = asRoadStrip.ToolBasis.UnTransform(point);
             RoadPosition = new(asRoadStrip, t.Z, SplitOptions.SplitLength);
         }
         void ITool.OnClick(MouseButton button) {

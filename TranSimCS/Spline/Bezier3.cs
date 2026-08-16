@@ -2,6 +2,7 @@
 using System.Runtime.Intrinsics.X86;
 using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
+using TranSimCS.Geometry.SplineFrames;
 
 namespace TranSimCS.Spline{
     public struct LineSegment: ISpline<Vector3> {
@@ -229,27 +230,27 @@ namespace TranSimCS.Spline{
         /// <param name="upperLimit">upper limit of the t value</param>
         /// <param name="pointsPerCycle">number of points to generate per cycle</param>
         /// <returns></returns>
-        public static float FindT(Bezier3 spline, Vector3 pos, int pointsPerCycle = 20, int depth = 5, float lowerLimit = 0, float upperLimit = 1) {
-            if(depth <= 0) {
-                return (lowerLimit + upperLimit) / 2f; // Return the average of the bounds if depth is exhausted
-            }
-            var points = GeometryUtils.GenerateSplinePoints(spline, pointsPerCycle, lowerLimit, upperLimit);
-            int closestIndex = 0;
-            float closestDistance = float.MaxValue;
-            for (int i = 0; i < points.Length; i++) {
-                float distance = Vector3.Distance(points[i], pos);
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    closestIndex = i;
+        public float FindT(Vector3 position, float minT = 0, float maxT = 1, int depth = 24, float tolerance = 1e-3f) {
+            //Describe the solution as finding a plane that intersects a point, then find X and Y.
+            float midpoint = 0;
+            for (int i = 0; i < depth; i++) {
+                midpoint = (minT + maxT) / 2;
+                var sample = this[midpoint];
+                var tangential = Tangential(midpoint);
+                var dist = SplineFrame.SignedDistance(sample, tangential, position);
+                if (MathF.Abs(dist) < tolerance) {
+                    //Satisfactory tolerance
+                    break;
+                }
+                if (dist > 0) {
+                    //Increase T
+                    minT = midpoint;
+                } else {
+                    //Decrease T
+                    maxT = midpoint;
                 }
             }
-            int minIndex = Math.Max(0, closestIndex - 2);
-            int maxIndex = Math.Min(points.Length - 1, closestIndex + 2);
-            float minT = minIndex / (float)(points.Length - 1);
-            float maxT = maxIndex / (float)(points.Length - 1);
-            minT = MathHelper.Lerp(lowerLimit, upperLimit, minT); // Scale minT to the original range
-            maxT = MathHelper.Lerp(lowerLimit, upperLimit, maxT); // Scale maxT to the original range
-            return FindT(spline, pos, pointsPerCycle, depth - 1, minT, maxT); // Recursively find the closest t value in the range
+            return midpoint;
         }
 
         public bool IsFinite() {

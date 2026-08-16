@@ -23,15 +23,19 @@ namespace TranSimCS.Roads.Strip {
             RoadNodeEnd? start = null;
             RoadNodeEnd? end = null;
             List<LaneStrip> lanes = new List<LaneStrip>();
-            Guid? guid = Guid.Empty;
+            Guid? guid = null;
             RoadFinish finish = RoadFinish.Embankment;
             StripSplineGenerator splineGenerator = ClassicStripSplineGenerator.Instance;
+            float? startPosition = null;
+            float? endPosition = null;
+            float startWeight = 1;
+            float endWeight = 1;
 
             var roadNodeEndConverter = new RoadNodeEndConverter(World);
             var laneStripConverter = new LaneStripConverter(World);
 
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
-                switch (propertyName.ToLower()) {
+                switch (propertyName) {
                     case "guid":
                         reader0.Read();
                         guid = Guid.Parse(reader0.GetString()!);
@@ -53,7 +57,23 @@ namespace TranSimCS.Roads.Strip {
                         finish = finishConverter.Read(ref reader0, typeof(RoadFinish), options);
                         break;
                     case "splineformat":
-                        splineGenerator = StripSplineGenerator.typeRegistry.Read(ref reader0, typeof(StripSplineGenerator), options);
+                        splineGenerator = StripSplineGenerator.typeRegistry.Read(ref reader0, typeof(StripSplineGenerator), options)!;
+                        break;
+                    case "splinePositionStart":
+                        reader0.Read();
+                        startPosition = reader0.GetSingleOrNull();
+                        break;
+                    case "splinePositionEnd":
+                        reader0.Read();
+                        endPosition = reader0.GetSingleOrNull();
+                        break;
+                    case "splineWeightStart":
+                        reader0.Read();
+                        startWeight = reader0.GetSingle();
+                        break;
+                    case "splineWeightEnd":
+                        reader0.Read();
+                        endWeight = reader0.GetSingle();
                         break;
                 }
             });
@@ -65,6 +85,10 @@ namespace TranSimCS.Roads.Strip {
             roadStrip.Guid = guid ?? Guid.NewGuid();
             roadStrip.Finish = finish;
             roadStrip.SplineGenerator = splineGenerator;
+            roadStrip.OverrideSplineStartPos = startPosition;
+            roadStrip.OverrideSplineEndPos = endPosition;
+            roadStrip.SplineWeightStart = startWeight;
+            roadStrip.SplineWeightEnd = endWeight;
 
             foreach (var lane in lanes) {
                 roadStrip.AddLaneStrip(lane);
@@ -101,6 +125,11 @@ namespace TranSimCS.Roads.Strip {
             var finishConverter = new RoadFinishConverter();
             writer.WritePropertyName("finish");
             finishConverter.Write(writer, value.Finish, options);
+
+            if(value.OverrideSplineStartPos != null) writer.WriteNumber("splinePositionStart", value.OverrideSplineStartPos.Value);
+            if(value.OverrideSplineEndPos != null) writer.WriteNumber("splinePositionEnd", value.OverrideSplineEndPos.Value);
+            if(value.SplineWeightStart != 1) writer.WriteNumber("splineWeightStart", value.SplineWeightStart);
+            if(value.SplineWeightEnd != 1) writer.WriteNumber("splineWeightEnd", value.SplineWeightEnd);
 
             writer.WriteEndObject();
         }

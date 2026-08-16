@@ -21,7 +21,7 @@ namespace TranSimCS.Tools {
             if(minT == 0 && maxT == 1) return;
 
             var world = road.World ?? throw new InvalidOperationException("The road must be a part of a world");
-            var spline = road.InterCenterBasis;
+            var spline = road.ToolBasis;
 
             var startCenterPosition = road.Bounds.startRange.Middle();
             var endCenterPosition = road.Bounds.endRange.Middle();

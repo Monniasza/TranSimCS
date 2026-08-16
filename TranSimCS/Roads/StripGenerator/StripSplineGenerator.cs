@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Strip;
@@ -15,6 +16,6 @@ namespace TranSimCS.Roads.StripGenerator {
         public static readonly TypeRegistry<StripSplineGenerator> typeRegistry = new();
 
         public (string TypeId, TypeRegistry<StripSplineGenerator> TypeRegistry) TypeInfo() => (typeId, typeRegistry);
-        public abstract IndexSpline GenerateSplines(Transform3 startReference, Transform3 endReference, DualRange range);
+        public abstract IndexSpline GenerateSplines(Transform3 startReference, Transform3 endReference, Vector2 startEnd);
     }
 }
