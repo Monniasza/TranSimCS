@@ -14,6 +14,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Roads;
 using TranSimCS.Roads.StripGenerator;
 using TranSimCS.Save2;
+using TranSimCS.Terrain;
 using TranSimCS.Tools;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.ECS;
@@ -68,6 +69,7 @@ public class Program {
 
         JsonProcessor.Init();
         InspectMethods.Init();
+        TerrainDataBlobs.Init();
 
         Game1.Start(args);
     }

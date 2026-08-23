@@ -835,6 +835,12 @@
 /processorParam:TextureFormat=Color
 /build:sun/simple glowing 128px.png
 
+#begin terrain-shader.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:terrain-shader.fx
+
 #begin test.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -1278,18 +1284,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:ui/toolRoad.png
-
-#begin ui/toolSpline.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:ui/toolSpline.png;sun/toolSpline
 
 #begin ui/toolSpline.png
 /importer:TextureImporter

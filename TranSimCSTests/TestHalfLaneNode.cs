@@ -62,7 +62,7 @@ namespace TranSimCSTests {
         public void TestAddThroughRearMirrors() {
             var node = new RoadNode("node", PositionEulerAngles.Zero);
             var rearNode = node.RearHalf;
-            rearNode.AddLane(new(LaneSpec.Default, 3));
+            rearNode.AddLane(new LaneDefinition(3, LaneSpec.Default));
             var frontNode = node.FrontHalf;
             Assert.Equal(-3, frontNode.GetLaneByIndex(0).MiddlePosition);
         }

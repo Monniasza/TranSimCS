@@ -10,9 +10,13 @@ using TranSimCS.ModelOld;
 
 namespace TranSimCS {
     public static class Assets {
+        public static Texture2D TerrainHeightmap { get; private set; }
         public static Texture2D WhiteTex { get; private set; }
         public static Texture2D Black { get; private set; }
+
         public static Effect ShaderEffect {  get; private set; }
+        public static Effect TerrainShaderEffect { get; private set; }
+
         public static SimpleMaterial Asphalt { get; private set; }
         public static SimpleMaterial Road { get; private set; }
         public static SimpleMaterial Grass { get; private set; }
@@ -46,7 +50,9 @@ namespace TranSimCS {
         public static void ReadAssets() {
             WhiteTex = Content.Load<Texture2D>("white");
             Black = Content.Load<Texture2D>("black");
+            //TerrainHeightmap = Content.Load<Texture2D>("heightmaps/terrain.png");
             ShaderEffect = Content.Load<Effect>("shader");
+            TerrainShaderEffect = Content.Load<Effect>("terrain-shader");
 
             Asphalt = new("seamlessTextures2/IMGP5511_seamless");
             
