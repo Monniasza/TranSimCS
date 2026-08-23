@@ -52,7 +52,6 @@ namespace TranSimCS
         public GenericSpriteFont GsfSmall { get; private set; } = null!;
 
         //Inputs
-        public Point MousePos { get; private set; } = new();
         public MouseState MouseState { get; private set; }
         public MouseState MouseStateOld { get; private set; }
         public KeyboardState KeyboardState { get; private set; }

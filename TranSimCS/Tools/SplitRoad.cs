@@ -21,10 +21,7 @@ namespace TranSimCS.Tools {
             if(minT == 0 && maxT == 1) return;
 
             var world = road.World ?? throw new InvalidOperationException("The road must be a part of a world");
-            var spline = road.ToolBasis;
-
-            var startCenterPosition = road.Bounds.startRange.Middle();
-            var endCenterPosition = road.Bounds.endRange.Middle();
+            var spline = road.OrthodistantBasis;
 
             var newStartNode = road.StartNode;
             var newEndNode = road.EndNode;
@@ -35,11 +32,19 @@ namespace TranSimCS.Tools {
                 laneStrips[i++] = lane;
             }
 
+            //Calculate needed tangent lengths
+            var zeroFrame = spline.SampleFull(0, out var zeroVelocity);
+            var startFrame = spline.SampleFull(minT, out var startVelocity);
+            var endFrame = spline.SampleFull(maxT, out var endVelocity);
+            var oneFrame = spline.SampleFull(1, out var oneVelocity);
+
+            var startSpan = minT / 3;
+            var midSpan = (maxT - minT) / 3;
+            var endSpan = (1 - maxT) / 3;
+
             //Create new nodes if necessary
             Dictionary<HalfLane, HalfLane> remappings = new();
             if(minT > 0) {
-                var startFrame = spline.SampleFrame(minT);
-                startFrame.O -= startFrame.X * startCenterPosition;
                 var newPos = PositionEulerAngles.FromPosTangentLateral(startFrame);
                 var oldStartNode = road.StartNode;
                 newStartNode = new RoadNode("", newPos).FrontHalf;
@@ -54,12 +59,11 @@ namespace TranSimCS.Tools {
                     newSegment.AddLaneStrip(laneStrip);
                     remappings[lane] = newHalfLane.OppositeHalf;
                 }
+                newSegment.SetTangentLengths(zeroVelocity.Length() * startSpan, startVelocity.Length() * startSpan);
                 world.RoadSegments.data.Add(newSegment);
             }
 
             if (maxT < 1) {
-                var endFrame = spline.SampleFrame(maxT);
-                endFrame.O += endFrame.X * endCenterPosition;
                 var newPos = PositionEulerAngles.FromPosTangentLateral(endFrame);
                 var oldEndNode = road.EndNode;
                 newEndNode = new RoadNode("", newPos).RearHalf;
@@ -74,6 +78,7 @@ namespace TranSimCS.Tools {
                     newSegment.AddLaneStrip(laneStrip);
                     remappings[lane] = newHalfLane.OppositeHalf;
                 }
+                newSegment.SetTangentLengths(endVelocity.Length() * endSpan, oneVelocity.Length() * endSpan);
                 world.RoadSegments.data.Add(newSegment);
             }
 
@@ -88,6 +93,7 @@ namespace TranSimCS.Tools {
                 if (remappings.TryGetValue(endLane, out var remappedEnd)) endLane = remappedEnd;
                 newRoad.AddLaneStrip(new LaneStrip(startLane, endLane, spec));
             }
+            newRoad.SetTangentLengths(startVelocity.Length() * midSpan, endVelocity.Length() * midSpan);
             world.RoadSegments.data.Add(newRoad);
         }
     }

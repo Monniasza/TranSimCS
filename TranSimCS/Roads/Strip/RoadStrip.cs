@@ -84,9 +84,9 @@ namespace TranSimCS.Roads.Strip {
             FinishProperty = new(RoadFinish.Embankment, "finish", this);
             SplineGeneratorProp = new(AnisotropicStripSplineGenerator.Instance, "splineformat", this);
             SplineStartPosProp = new(null, "splinePositionStart", this);
-            SplineStartPosProp.ValidateChanges += PropertyValidationAlgorithms.RequireFinitePositiveOrNull;
+            SplineStartPosProp.ValidateChanges += PropertyValidationAlgorithms.RequireFiniteOrNull;
             SplineEndPosProp = new(null, "splinePositionEnd", this);
-            SplineEndPosProp.ValidateChanges += PropertyValidationAlgorithms.RequireFinitePositiveOrNull;
+            SplineEndPosProp.ValidateChanges += PropertyValidationAlgorithms.RequireFiniteOrNull;
             SplineWeightStartProp = new(1, "splineWeightStart", this);
             SplineWeightStartProp.ValidateChanges += PropertyValidationAlgorithms.RequireFinitePositive;
             SplineWeightEndProp = new(1, "splineWeightEnd", this);
@@ -150,6 +150,11 @@ namespace TranSimCS.Roads.Strip {
             if(OverrideSplineEndPos != null) end = OverrideSplineEndPos.Value;
             return new(start, end);
         }
+        public Vector2 GetSplineLengths() => new(
+            IndexStrip.Start.Tangent.Length(),
+            IndexStrip.End.Tangent.Length()
+        );
+
         public Vector3[] GenerateSpline(float startT, float endT, float y = 0) => GenerateSplineHalfNode(new Vector3(startT, y, 0), new Vector3(endT, y, 0));
         public Vector3[] GenerateSplineHalfNode(Vector3 start, Vector3 end) {
             var accuracy = Settings.RoadAccuracy;

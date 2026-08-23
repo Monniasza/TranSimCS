@@ -13,5 +13,9 @@ namespace TranSimCS.Property {
             if (newValue == null) return;
             if (!float.IsFinite(newValue.Value) || newValue <= 0) throw new ArgumentException($"Value is not a positive real number: {newValue}");
         }
+        public static void RequireFiniteOrNull(IProperty<float?> prop, float? oldValue, float? newValue) {
+            if (newValue == null) return;
+            if (!float.IsFinite(newValue.Value)) throw new ArgumentException($"Value is not a positive real number: {newValue}");
+        }
     }
 }

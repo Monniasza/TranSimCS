@@ -42,6 +42,23 @@ namespace TranSimCS.Spline {
             return new(binormal, normal, tangent, prevPos);
         }
 
+        public Transform3 SampleFull(float t, out Vector3 velocity) => SampleFull(t, 0, 0, out velocity);
+        public Transform3 SampleFull(float t, float offsetStart, float offsetEnd, out Vector3 velocity) => SampleFull(t, offsetStart * Vector3.UnitX, offsetEnd * Vector3.UnitX, out velocity);
+        public Transform3 SampleFull(float t, Vector3 offsetStart, Vector3 offsetEnd, out Vector3 velocity) {
+            const float epsilon = 0.001f;
+            var prevPos = SamplePosition(t, offsetStart, offsetEnd);
+            var nextPos = SamplePosition(t + epsilon, offsetStart, offsetEnd);
+
+            velocity = (nextPos - prevPos) / epsilon;
+            var sampledNormal = NormalSpline[t];
+
+            var tangent = velocity.Normalized();
+            var binormal = Vector3.Cross(sampledNormal, velocity).Normalized();
+            var normal = Vector3.Cross(velocity, binormal).Normalized();
+
+            return new(binormal, normal, tangent, prevPos);
+        }
+
         public Vector3 SamplePosition(float t) => SamplePosition(t, 0, 0);
         public Vector3 SamplePosition(float t, float offsetStart, float offsetEnd) => SamplePosition(t, offsetStart * Vector3.UnitX, offsetEnd * Vector3.UnitX);
         public Vector3 SamplePosition(float t, Vector3 offsetStart, Vector3 offsetEnd) {

@@ -80,22 +80,7 @@ namespace TranSimCS.Tools {
                 var renderBin = Menu.renderHelper.GetOrCreateRenderBinForced(Assets.WhiteTransparent);
 
                 //Draw the spline
-                var accuracy = Settings.RoadAccuracy;
-                var step = 1.0f / (accuracy - 1);
-                var points = new Transform3[accuracy];
-                for (int i = 0; i < accuracy; i++) {
-                    points[i] = spline.SampleFrame(i * step);
-                }
-                    
-                for(int i = 1; i < accuracy; i++) {
-                    var prev = points[i - 1];
-                    var next = points[i];
-                    var c0 = prev.O + yoffset * prev.Y;
-                    var c1 = next.O + yoffset * prev.Y;
-                    var normal = Vector3.Normalize(prev.Y + next.Y);
-
-                    renderBin.DrawLine(c0, c1, normal, Color.Cyan, 1);
-                }
+                SplitRoadMethods.DrawRoadSpline(RoadPosition.Road, renderBin, Color.Cyan);
 
                 DrawTickMark(renderBin, spline, RoadPosition.Parameters.Before, 2, 1, Color.DeepSkyBlue);
                 DrawTickMark(renderBin, spline, RoadPosition.Parameters.After, 2, 1, Color.DeepSkyBlue);
