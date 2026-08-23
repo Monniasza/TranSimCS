@@ -8,6 +8,7 @@ using LanguageExt.ClassInstances;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
+using TranSimCS.Geometry;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
@@ -86,9 +87,12 @@ namespace TranSimCS.Tools {
                 var isWeightLocked = Menu.Game.KeyboardState.IsKeyDown(Keys.Q);
                 var isOffsetLocked = Menu.Game.KeyboardState.IsKeyDown(Keys.E);
 
-                var newPosition = Menu.MouseOver!.Value.Coordinates;
-                var dPos = newPosition - oldPos;
                 var splineReferenceFrame = half.GetConditional(road.StartNode.Cache.ReferenceFrame, road.EndNode.Cache.ReferenceFrame);
+                var plane = splineReferenceFrame.XZPlane();
+
+                var newPosition = GeometryUtils.IntersectRayPlane(Menu.MouseRay, plane);
+                var dPos = newPosition - oldPos;
+                
 
                 var dOffset = Vector3.Dot(splineReferenceFrame.X, dPos);
                 var dLength = Vector3.Dot(splineReferenceFrame.Z, dPos);
@@ -105,6 +109,8 @@ namespace TranSimCS.Tools {
                         lengths.X += dLength;
                     else 
                         lengths.Y += dLength;
+                    if (lengths.X < 0.1) lengths.X = 0.1f;
+                    if (lengths.Y < 0.1) lengths.Y = 0.1f;
                     road.SetTangentLengths(lengths);
                 }
 
