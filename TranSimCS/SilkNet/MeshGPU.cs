@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using CommunityToolkit.HighPerformance;
 using Microsoft.Xna.Framework.Graphics;
 using Silk.NET.OpenGL;
@@ -7,7 +8,7 @@ using TranSimCS.Model;
 
 namespace TranSimCS.SilkNet {
     //An internal mesh cache for RenderManager
-    internal class MeshGPU{
+    internal class MeshGPU: IDisposable{
         public RenderManager rm;
         public int UploadedVersion = -1;
         public uint _vertexBuffer;

@@ -12,7 +12,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
 namespace TranSimCS.SilkNet {
-    public class TextureGL : IDisposable {
+    public class TextureGPU : IDisposable {
         public PixelType PixelType { get; private set; }
         public PixelFormat PixelFormat { get; private set; }
         public InternalFormat InternalFormat { get; private set; }
@@ -20,7 +20,7 @@ namespace TranSimCS.SilkNet {
         internal uint _handle;
         internal GL _gl;
 
-        public TextureGL(Image image, GL gl) {
+        public TextureGPU(Image image, GL gl) {
             Image = image;
             var pixelInfo = image.PixelType;
             (PixelType, PixelFormat, InternalFormat) = image.GetGLTypes();
@@ -47,7 +47,7 @@ namespace TranSimCS.SilkNet {
 
             Type pixelType = imageType.GetGenericArguments()[0];
 
-            MethodInfo generalMethod = typeof(TextureGL)
+            MethodInfo? generalMethod = typeof(TextureGPU)
                 .GetMethod(nameof(UploadGeneric), BindingFlags.Public | BindingFlags.Instance);
             Debug.Assert(generalMethod != null, "No UploadGeneric method found");
             MethodInfo method = generalMethod.MakeGenericMethod(pixelType);

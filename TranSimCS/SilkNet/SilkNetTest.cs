@@ -32,8 +32,8 @@ namespace TranSimCS.SilkNet {
         public IInputContext InputContext { get; private set; }
         public RenderManager RenderManager { get; private set; }
 
-        public TextureGL CarTex { get; private set; }
-        public TextureGL CarEmissive { get; private set; }
+        public TextureGPU CarTex { get; private set; }
+        public TextureGPU CarEmissive { get; private set; }
         public MultiMesh CarMesh { get; private set; }
 
         public Camera camera;
@@ -88,7 +88,7 @@ namespace TranSimCS.SilkNet {
             camera = new(Microsoft.Xna.Framework.Vector3.Zero, 20, 1, 0.7f);
         }
 
-        private TextureGL LoadTextureFromResource(string resource) {
+        private TextureGPU LoadTextureFromResource(string resource) {
             var image = Image.Load(TerrainDataBlobs.OpenEmbeddedResource(resource));
             return new(image, OpenGL);
         }

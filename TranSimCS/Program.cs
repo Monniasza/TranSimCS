@@ -5,20 +5,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Arch.Core;
-using Microsoft.Xna.Framework;
 using NLog;
-using NLog.Targets;
 using TranSimCS;
-using TranSimCS.Geometry;
-using TranSimCS.Menus.MainMenu;
-using TranSimCS.Roads;
 using TranSimCS.Roads.StripGenerator;
 using TranSimCS.Save2;
 using TranSimCS.Terrain;
 using TranSimCS.Tools;
-using TranSimCS.Worlds;
-using TranSimCS.Worlds.ECS;
 
 public class Program {
     public static string UserRoot { get; private set; }
