@@ -136,6 +136,8 @@ namespace TranSimCS.SilkNet {
         public RenderStats Stats { get; private set; }
 
         public void Render(MultiMesh source) {
+            SetUpEffects();
+
             //CONSTANTS
             var gl = window.OpenGL;
 

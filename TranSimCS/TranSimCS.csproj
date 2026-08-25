@@ -73,6 +73,7 @@
     <PackageReference Include="NLog" Version="6.0.4" />
     <PackageReference Include="Silk.NET" Version="2.23.0" />
     <PackageReference Include="Silk.NET.Input.Sdl" Version="2.23.0" />
+    <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.23.0" />
     <PackageReference Include="Silk.NET.Windowing.Sdl" Version="2.23.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="4.1.1" />
     <PackageReference Include="SpriteFontPlus.MonoGame" Version="0.7.0.22" />
