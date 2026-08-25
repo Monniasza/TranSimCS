@@ -148,7 +148,6 @@ namespace TranSimCS.Render {
             var keepDepth = DepthStencilState.DepthRead;
             gpu.SamplerStates[0] = SamplerState.PointWrap;
             gpu.SamplerStates[1] = SamplerState.PointWrap;
-            gpu.RasterizerState = Settings.InvertAllNormals ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
             shader.Parameters["AmbientColor"].SetValue(AmbientColor.Value);
             shader.Parameters["WorldViewProjection"].SetValue(WorldViewProjection);
 
@@ -243,6 +242,8 @@ namespace TranSimCS.Render {
                     shader.Parameters["Albedo"].SetValue(material.Texture);
                     shader.Parameters["Emissive"].SetValue(material.Emissive);
                     shader.Parameters["EmissiveIsMask"].SetValue(material.EmissiveIsMask);
+
+                    gpu.RasterizerState = !material.CullBack ? RasterizerState.CullNone : Settings.InvertAllNormals ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
 
                     //Bind buffers
                     using (var instanceBufferRental = InstanceBufferPool.RentAsDisposable(positionValues.Length)) {

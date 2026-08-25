@@ -142,7 +142,12 @@ namespace TranSimCS.SilkNet {
             gl.Enable(EnableCap.DepthTest);
             gl.UseProgram(_meshProgram);
             CheckError("UseProgram");
-            
+
+            gl.Enable(EnableCap.DepthTest);
+            gl.DepthFunc(DepthFunction.Less);
+            gl.DepthMask(true);
+
+            gl.CullFace(Settings.InvertAllNormals ? TriangleFace.Back : TriangleFace.Front);
 
             //CATEGORIZATION & COUNTING
             var stats = new RenderStats();
@@ -204,6 +209,11 @@ namespace TranSimCS.SilkNet {
                     sud.EmissiveIsMask = material.EmissiveIsMask;
                     gl.BindBuffer(BufferTargetARB.UniformBuffer, _uniformBuffer);
                     gl.BufferSubData(BufferTargetARB.UniformBuffer, 0, [sud]);
+                    if (material.CullBack) {
+                        gl.Enable(EnableCap.CullFace);
+                    } else {
+                        gl.Disable(EnableCap.CullFace);
+                    }
 
                     //Bind textures. For now, black and car.
                     gl.ActiveTexture(TextureUnit.Texture0);

@@ -17,6 +17,7 @@ namespace TranSimCS.ModelOld {
         public Texture2D Emissive = Assets.Black;
         public MaterialBlendMode BlendMode = MaterialBlendMode.Opaque;
         public float EmissiveIsMask = 0;
+        public bool CullBack = true;
 
         public string TextureName { set => Texture = Assets.Content.Load<Texture2D>(value); }
         public string EmissiveName { set => Emissive = Assets.Content.Load<Texture2D>(value); }
