@@ -71,6 +71,10 @@
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.5-preview.6" />
     <PackageReference Include="NetOctree" Version="2.1.0" />
     <PackageReference Include="NLog" Version="6.0.4" />
+    <PackageReference Include="Silk.NET" Version="2.23.0" />
+    <PackageReference Include="Silk.NET.Input.Sdl" Version="2.23.0" />
+    <PackageReference Include="Silk.NET.Windowing.Sdl" Version="2.23.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="4.1.1" />
     <PackageReference Include="SpriteFontPlus.MonoGame" Version="0.7.0.22" />
     <PackageReference Include="System.Linq" Version="4.3.0" />
     <PackageReference Include="System.ObjectModel" Version="4.3.0" />

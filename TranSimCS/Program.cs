@@ -11,6 +11,7 @@ using NLog;
 using NLog.Targets;
 using TranSimCS;
 using TranSimCS.Geometry;
+using TranSimCS.Menus.MainMenu;
 using TranSimCS.Roads;
 using TranSimCS.Roads.StripGenerator;
 using TranSimCS.Save2;

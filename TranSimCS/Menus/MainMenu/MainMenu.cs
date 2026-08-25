@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -11,6 +12,7 @@ using MLEM.Ui.Elements;
 using MonoGame.Extended;
 using MonoGame.Extended.Graphics;
 using TranSimCS.Menus.InGame;
+using TranSimCS.SilkNet;
 
 namespace TranSimCS.Menus.MainMenu {
     public class MainMenu : Menu {
@@ -89,6 +91,17 @@ namespace TranSimCS.Menus.MainMenu {
             NewMenuOption("mainmenu/desktop", "Exit to desktop", () => {
                 Game.Exit();
             });
+            NewMenuOption("inspect", "Silk.NET test", StartSilkTest);
+        }
+
+        internal static void StartSilkTest() {
+            void SilkRoutine() {
+                var silkNetTest = new SilkNetTest();
+                silkNetTest.Start();
+            }
+
+            Thread thread = new(SilkRoutine);
+            thread.Start();
         }
 
         public void NewMenuOption(string tex, string title, Action action) {

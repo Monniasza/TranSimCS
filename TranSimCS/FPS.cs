@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace TranSimCS {
-    public sealed class FPS {
+    public sealed class FPS: IDisposable {
         public int FrameRate;
         public int Count;
         private readonly Timer timer;
@@ -16,6 +16,9 @@ namespace TranSimCS {
         private void ResetCount(object? state) {
             FrameRate = Count;
             Count = 0;
+        }
+        public void Dispose() {
+            timer.Dispose();
         }
     }
 }

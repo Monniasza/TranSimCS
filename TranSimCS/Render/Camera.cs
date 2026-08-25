@@ -57,6 +57,15 @@ namespace TranSimCS {
             View = GetViewMatrix();
             return World * View * Projection;
         }
+        public Matrix GetCombinedMatrix(float width, float height, out Matrix World, out Matrix View, out Matrix Projection) {
+            Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, width / height, 0.1f, 100000f);
+            World = Matrix.Identity;
+            // Optimized near/far plane for better depth buffer precision across all distances
+            // Near plane increased from 1f to 0.1f - this dramatically improves depth precision
+            // Far plane set to 10000f to balance view distance with precision
+            View = GetViewMatrix();
+            return World * View * Projection;
+        }
 
         //EQUALITY
         public bool Equals(Camera other) {

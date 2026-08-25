@@ -37,5 +37,11 @@ namespace TranSimCS.Terrain {
                 ?? throw new InvalidOperationException(
                     $"Embedded resource '{name}' was not found.");
         }
+        public static string ReadEmbeddedResource(string name) {
+            using var stream = OpenEmbeddedResource(name);
+            var reader = new StreamReader(stream);
+            var result = reader.ReadToEnd();
+            return result;
+        }
     }
 }

@@ -14,7 +14,7 @@ namespace TranSimCS.Worlds.Cars {
             var carMaterial = new SimpleMaterial() {
                 EmissiveName = "car-emissive",
                 TextureName = "car-albedo",
-                BlendMode = MaterialBlendMode.Opaque,
+                BlendMode = MaterialBlendMode.Cutout,
             };
 
             Vector3 p1l = new(-1, 0,  2);
