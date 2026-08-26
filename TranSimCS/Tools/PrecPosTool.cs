@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using Microsoft.Xna.Framework;
+﻿using System;
+using System.Collections.Generic;
+using System.Numerics;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using TranSimCS.Geometry;
@@ -32,14 +33,6 @@ namespace TranSimCS.Tools {
 
         string ITool.Description => Selection == null ? "Select an object to move." : "Use keys to move the selected object very accurately. RMB to cancel";
 
-        void ITool.Draw(GameTime gameTime) {
-            //unused
-        }
-
-        void ITool.Draw2D(GameTime gameTime) {
-            //unused
-        }
-
         (object[], string)[] ITool.PromptKeys() {
             var sh = Keys.LeftShift;
             var ct = Keys.LeftControl;
@@ -63,10 +56,6 @@ namespace TranSimCS.Tools {
                 ([Keys.OemQuotes], "Paste position"),
                 ([Keys.OemQuestion], "Paste azimuth"),
             ];
-        }
-
-        void ITool.Update(GameTime gameTime) {
-            //unused
         }
 
         void ITool.AddAttributes(ISet<string> action) {
@@ -109,8 +98,8 @@ namespace TranSimCS.Tools {
                 }
             }
 
-            var rollRads = MathHelper.ToRadians(roll);
-            var pitchRads = MathHelper.ToRadians(pitch);
+            var rollRads = GeometryUtils.ToRadians(roll);
+            var pitchRads = GeometryUtils.ToRadians(pitch);
             var yawFields = GeometryUtils.DegsToField(yaw);
             var obj = Selection;
             obj?.RotateOld(yawFields, pitchRads, rollRads);

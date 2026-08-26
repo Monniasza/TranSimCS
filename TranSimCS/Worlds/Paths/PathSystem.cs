@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 using TranSimCS.Spatial;
 
 namespace TranSimCS.Worlds.Paths {
@@ -17,7 +17,7 @@ namespace TranSimCS.Worlds.Paths {
 
         public ReadOnlyDictionary<Guid, SplinePath> Paths;
 
-        public IEnumerable<SplinePath> Query(Func<BoundingBox, bool>? filter = null) => _pathsSpatial.QueryFilter(filter);
+        public IEnumerable<SplinePath> Query(Func<AABB, bool>? filter = null) => _pathsSpatial.QueryFilter(filter);
 
         internal PathSystem(TSWorld owner) {
             Owner = owner;

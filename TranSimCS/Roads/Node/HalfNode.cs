@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Iesi.Collections.Generic;
-using Microsoft.Xna.Framework;
 using MonoGame.Extended;
 using TranSimCS.Property;
 using TranSimCS.Roads.Section;

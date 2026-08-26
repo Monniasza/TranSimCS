@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework;
+using System.Numerics;
 using TranSimCS.Geometry;
 
 namespace TranSimCS.Spatial {
     public interface IBVHElement {
-        public BoundingBox GetBounds();
+        public AABB GetBounds();
         public Vector3 Centroid() {
             var bounds = GetBounds();
             return (bounds.Max + bounds.Min) / 2;
         }
             
-        public bool ComputeIntersection(Ray ray, out float distance, out object? tag);
-        public static bool Reject(Ray ray, out float distance, out object? tag) {
+        public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag);
+        public static bool Reject(Ray3 ray, out float distance, out object? tag) {
             distance = float.PositiveInfinity;
             tag = null;
             return false;
@@ -24,7 +24,7 @@ namespace TranSimCS.Spatial {
         private readonly T[] objects;
 
         private struct Node {
-            public BoundingBox Bounds;
+            public AABB Bounds;
             public int Left;
             public int Right;
             public int Start;
@@ -41,7 +41,7 @@ namespace TranSimCS.Spatial {
             nodes = nodesList.ToArray();
         }
 
-        public BoundingBox Bounds => nodes.Length == 0 ? default : nodes[0].Bounds;
+        public AABB Bounds => nodes.Length == 0 ? default : nodes[0].Bounds;
 
         private int BuildRecursive(List<T> objects, int start, int count, List<Node> nodes) {
             var bounds = ComputeBounds(start, count);
@@ -61,21 +61,21 @@ namespace TranSimCS.Spatial {
             return nodeIndex;
         }
 
-        private BoundingBox ComputeBounds(int start, int count) {
+        private AABB ComputeBounds(int start, int count) {
             var bounds = objects[start].GetBounds();
             for (int i = 1; i < count; i++)
-                bounds = BoundingBox.CreateMerged(bounds, objects[start + i].GetBounds());
+                bounds = AABB.CreateMerged(bounds, objects[start + i].GetBounds());
             return bounds;
         }
 
-        private BoundingBox ComputeCentroidBounds(int start, int count) {
+        private AABB ComputeCentroidBounds(int start, int count) {
             Vector3 min = objects[start].GetBounds().Min, max = min;
             for (int i = 1; i < count; i++) {
                 var c = objects[start + i].GetBounds().Min;
                 min = Vector3.Min(min, c);
                 max = Vector3.Max(max, c);
             }
-            return new BoundingBox(min, max);
+            return new AABB(min, max);
         }
 
         private void Sort(List<T> nodes, int start, int count, int axis) {
@@ -87,7 +87,7 @@ namespace TranSimCS.Spatial {
              }));
         }
 
-        public bool RayIntersect(Ray ray, out float distance, out object? tag) {
+        public bool RayIntersect(Ray3 ray, out float distance, out object? tag) {
             distance = float.MaxValue;
             tag = null;
 
@@ -99,7 +99,7 @@ namespace TranSimCS.Spatial {
             while (stackSize > 0) {
                 var nodeIndex = stack[--stackSize];
                 var node = nodes[nodeIndex];
-                if ((node.Bounds.Intersects(ray) ?? 0) <= 0) continue;
+                if ((ray.Intersects(node.Bounds) ?? 0) <= 0) continue;
                 if (node.IsLeaf) {
                     for (int i = 0; i < node.Count; i++) {
                         int objIndex = node.Start + i;

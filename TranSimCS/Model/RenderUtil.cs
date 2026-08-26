@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using System.Numerics;
 using MLEM.Maths;
+using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
-using TranSimCS.ModelOld;
+using TranSimCS.Model;
+using TranSimCS.SilkNet;
 
 namespace TranSimCS.Model {
     /// <summary>
@@ -21,7 +22,7 @@ namespace TranSimCS.Model {
         /// <param name="c">third vertex</param>
         /// <param name="d">fourth vertex</param>
         private static readonly int[] indexDataQuadLookup = [0, 1, 2, 0, 2, 3];
-        public static void DrawQuad(this Mesh rb, VertexPositionColorTexture a, VertexPositionColorTexture b, VertexPositionColorTexture c, VertexPositionColorTexture d) {
+        public static void DrawQuad(this Mesh rb, Vertex a, Vertex b, Vertex c, Vertex d) {
             ushort indexA = rb.AddVertex(a);
             ushort indexB = rb.AddVertex(b);
             ushort indexC = rb.AddVertex(c);
@@ -31,19 +32,19 @@ namespace TranSimCS.Model {
                 rb.AddIndex(indexDataQuad[index]);
             }
         }
-        public static void DrawQuad(this Mesh rb, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, RectangleF rect) {
+        public static void DrawQuad(this Mesh rb, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Rgba32 color, RectangleF rect) {
             var minU = rect.Left;
             var minV = rect.Top;
             var maxU = rect.Right;
             var maxV = rect.Bottom;
 
             rb.DrawQuad(
-                new VertexPositionColorTexture(a, color, new(minU, minV)),
-                new VertexPositionColorTexture(b, color, new(maxU, minV)),
-                new VertexPositionColorTexture(c, color, new(maxU, maxV)),
-                new VertexPositionColorTexture(d, color, new(minU, maxV)));
+                new Vertex(a, color, new(minU, minV)),
+                new Vertex(b, color, new(maxU, minV)),
+                new Vertex(c, color, new(maxU, maxV)),
+                new Vertex(d, color, new(minU, maxV)));
         }
-        public static void DrawQuad(this Mesh rb, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color) {
+        public static void DrawQuad(this Mesh rb, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Rgba32 color) {
             rb.DrawQuad(a, b, c, d, color, new RectangleF(0, 0, 1, 1));
         }
         public static void DrawQuad(this Mesh rb, QuadOld q) => rb.DrawQuad(q.a, q.b, q.c, q.d);
@@ -52,24 +53,11 @@ namespace TranSimCS.Model {
             foreach (var index in indexDataQuadLookup) rb.AddIndex(indexDataQuad[index]);
         }
 
-        public static void DrawParallelogram(this Mesh rb, Vector3 origin, Vector3 plusX, Vector3 plusY, Color c) {
+        public static void DrawParallelogram(this Mesh rb, Vector3 origin, Vector3 plusX, Vector3 plusY, Rgba32 c) {
             rb.DrawQuad(origin + plusY, origin + plusX + plusY, origin + plusX, origin, c);
         }
-        public static void DrawParallelogram(this Mesh rb, Vector3 origin, Vector3 plusX, Vector3 plusY, Color c, RectangleF rect) {
+        public static void DrawParallelogram(this Mesh rb, Vector3 origin, Vector3 plusX, Vector3 plusY, Rgba32 c, RectangleF rect) {
             rb.DrawQuad(origin + plusY, origin + plusX + plusY, origin + plusX, origin, c, rect);
-        }
-
-        /// <summary>
-        /// Draws a triangle using the specified vertices. They must be in the clockwise order to form a triangle.
-        /// </summary>
-        /// <param name="a">first vertex</param>
-        /// <param name="b">second vertex</param>
-        /// <param name="c">third vertex</param>
-        public static void DrawTriangle(this Mesh rb, VertexPositionColorTexture a, VertexPositionColorTexture b, VertexPositionColorTexture c) {
-            ushort indexA = rb.AddVertex(a);
-            ushort indexB = rb.AddVertex(b);
-            ushort indexC = rb.AddVertex(c);
-            rb.DrawTriangle(indexA, indexB, indexC);
         }
 
         /// <summary>
@@ -78,7 +66,7 @@ namespace TranSimCS.Model {
         /// </summary>
         /// <param name="vertices"></param>
         /// <exception cref="ArgumentException"></exception>
-        public static void DrawStrip(this Mesh rb, VertexPositionColorTexture[] vertices) {
+        public static void DrawStrip(this Mesh rb, Vertex[] vertices) {
             ArgumentNullException.ThrowIfNull(vertices);
             if (vertices.Length < 3) throw new ArgumentException("At least three vertices are required to draw a strip.");
             ushort[] newVertexIds = new ushort[vertices.Length];
@@ -96,14 +84,13 @@ namespace TranSimCS.Model {
 
             }
         }
-        public static void DrawStrip(this Mesh rb, (VertexPositionColorTexture[], VertexPositionColorTexture[]) vertices) {
+        public static void DrawStrip(this Mesh rb, (Vertex[], Vertex[]) vertices) {
             rb.DrawStrip(vertices.Item1, vertices.Item2);
         }
 
-        public static void DrawLine(this Mesh rb, Vector3 start, Vector3 end, Vector3 normal, Color c, float width = 0.2f, float length = 1) {
+        public static void DrawLine(this Mesh rb, Vector3 start, Vector3 end, Vector3 normal, Rgba32 c, float width = 0.2f, float length = 1) {
             var len = end - start;
-            var cross = Vector3.Cross(normal, len);
-            cross.Normalize();
+            var cross = Vector3.Cross(normal, len).Normalized();
             cross *= width / 2;
 
             var p1 = end - cross;
@@ -111,30 +98,30 @@ namespace TranSimCS.Model {
             var p3 = start + cross;
             var p4 = start - cross;
             rb.DrawQuad(
-                new VertexPositionColorTexture(p1, c, new(0, 0)),
-                new VertexPositionColorTexture(p2, c, new(1, 0)),
-                new VertexPositionColorTexture(p3, c, new(1, length)),
-                new VertexPositionColorTexture(p4, c, new(0, length))
+                new Vertex(p1, c, new(0, 0)),
+                new Vertex(p2, c, new(1, 0)),
+                new Vertex(p3, c, new(1, length)),
+                new Vertex(p4, c, new(0, length))
            );
         }
 
-        public static void DrawClosedStrip(this Mesh rb, VertexPositionColorTexture[] l, VertexPositionColorTexture[] r) {
+        public static void DrawClosedStrip(this Mesh rb, Vertex[] l, Vertex[] r) {
             var woven = GeometryUtils.WeaveStrip(l, r).ToList();
             woven.Add(l[0]);
             woven.Add(r[0]);
             DrawStrip(rb, woven.ToArray());
         }
-        public static void DrawClosedStrip(this Mesh rb, VertexPositionColorTexture[] lr) {
+        public static void DrawClosedStrip(this Mesh rb, Vertex[] lr) {
             var woven = lr.ToList();
             woven.Add(lr[0]);
             woven.Add(lr[1]);
             DrawStrip(rb, woven.ToArray());
         }
 
-        public static void DrawStrip(this Mesh rb, VertexPositionColorTexture[] l, VertexPositionColorTexture[] r)
+        public static void DrawStrip(this Mesh rb, Vertex[] l, Vertex[] r)
             => DrawStrip(rb, GeometryUtils.WeaveStrip(l, r));
 
-        public static void DrawCenteredPoly(this Mesh rb, VertexPositionColorTexture center, params VertexPositionColorTexture[] perimeter) {
+        public static void DrawCenteredPoly(this Mesh rb, Vertex center, params Vertex[] perimeter) {
             var centerIdx = rb.AddVertex(center);
             var perimeterIndexes = new ushort[perimeter.Length];
             for (int i = 0; i < perimeter.Length; i++)
@@ -154,7 +141,7 @@ namespace TranSimCS.Model {
         /// The elements should start at top left
         /// </summary>
         /// <param name="vertices"></param>
-        public static void DrawGrid(this Mesh rb, VertexPositionColorTexture[,] vertices) {
+        public static void DrawGrid(this Mesh rb, Vertex[,] vertices) {
             ArgumentNullException.ThrowIfNull(vertices);
             int height = vertices.GetLength(1);
             int width = vertices.GetLength(0);

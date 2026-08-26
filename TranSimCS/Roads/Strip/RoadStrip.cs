@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework;
+using System.Numerics;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Property;
@@ -187,8 +187,8 @@ namespace TranSimCS.Roads.Strip {
         public void GenerateGeometry(RenderTarget target) {
             target.Draw(Mesh.GetMesh());
         }
-        public BoundingBox GetBounds() => Mesh.GetMesh().GetBounds();
-        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) {
+        public AABB GetBounds() => Mesh.GetMesh().GetBounds();
+        public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) {
             if (Section != null) return IBVHElement.Reject(ray, out distance, out tag);
             return Mesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
         }

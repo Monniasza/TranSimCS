@@ -87,8 +87,8 @@ namespace TranSimCS.Tools {
             //Generate front and back markers
             var front = frame.O + frame.Z * 2;
             var back = frame.O - frame.Z * 2;
-            bin.DrawLine(frame.O, front, frame.Y, Color.Red);
-            bin.DrawLine(frame.O, back, frame.Y, Color.Maroon);
+            bin.DrawLine(frame.O, front, frame.Y, Colors.Red);
+            bin.DrawLine(frame.O, back, frame.Y, Colors.Maroon);
         }
 
         void ITool.Draw2D(GameTime gameTime) {

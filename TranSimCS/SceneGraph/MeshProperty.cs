@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Property;
 using TranSimCS.Worlds;
@@ -20,7 +20,7 @@ namespace TranSimCS.SceneGraph {
 
         private void Prop_ValueChanged(object? sender, MultiMesh old, MultiMesh value) => GeometryChanged(this);
         public void GenerateGeometry(RenderTarget target) => target.Draw(prop.Value);
-        public BoundingBox GetBounds() => prop.Value.GetBounds();
-        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => prop.Value.ComputeIntersection(ray, out distance, out tag);
+        public AABB GetBounds() => prop.Value.GetBounds();
+        public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) => prop.Value.ComputeIntersection(ray, out distance, out tag);
     }
 }

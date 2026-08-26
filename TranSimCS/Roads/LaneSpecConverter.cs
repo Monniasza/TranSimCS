@@ -2,12 +2,13 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Xna.Framework;
+using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Save2;
 
 namespace TranSimCS.Roads {
     public class LaneSpecConverter : JsonConverter<LaneSpec> {
         public override LaneSpec Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            Color color = Color.Gray;
+            Rgba32 color = Colors.Gray;
             VehicleTypes vehicleTypes = VehicleTypes.None;
             LaneFlags flags = LaneFlags.None;
             float width = 3.5f;

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Clipper2Lib;
-using Microsoft.Xna.Framework;
 
 namespace TranSimCS.Geometry {
     public static class PointDMethods {

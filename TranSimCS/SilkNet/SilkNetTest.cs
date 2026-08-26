@@ -16,6 +16,7 @@ using TranSimCS.Worlds.Cars;
 using SixLabors.ImageSharp;
 using Silk.NET.OpenGL.Extensions.ImGui;
 using ImGuiNET;
+using System.Numerics;
 
 namespace TranSimCS.SilkNet {
     public sealed class SilkNetTest {
@@ -85,7 +86,7 @@ namespace TranSimCS.SilkNet {
 
             ImGuiController = new(OpenGL, SilkWindow, InputContext);
 
-            camera = new(Microsoft.Xna.Framework.Vector3.Zero, 20, 1, 0.7f);
+            camera = new(Vector3.Zero, 20, 1, 0.7f);
         }
 
         private TextureGPU LoadTextureFromResource(string resource) {

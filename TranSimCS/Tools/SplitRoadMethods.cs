@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
 using TranSimCS.Menus;
 using TranSimCS.Model;
@@ -12,7 +13,7 @@ using TranSimCS.Setting;
 
 namespace TranSimCS.Tools {
     public static class SplitRoadMethods {
-        public static void DrawRoadSpline(RoadStrip road, Mesh mesh, Color c, float width = 0.2f, float yoffset = 0.4f) {
+        public static void DrawRoadSpline(RoadStrip road, Mesh mesh, Rgba32 c, float width = 0.2f, float yoffset = 0.4f) {
             var spline = road.ToolBasis;
             var renderBin = mesh;
 

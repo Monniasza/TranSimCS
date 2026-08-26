@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Numerics;
 using TranSimCS.Geometry;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using LanguageExt.Pipes;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 
 namespace TranSimCS {
@@ -37,7 +37,7 @@ namespace TranSimCS {
             position.X = -position.X;
         }
 
-        public Matrix GetViewMatrix() {
+        public Matrix4x4 GetViewMatrix() {
             // Calculate the camera's target position based on its azimuth and elevation
             Vector3 targetPosition = Position;
             Vector3 eyePosition = targetPosition - GetOffsetVector();
@@ -45,21 +45,11 @@ namespace TranSimCS {
             FlipX(ref eyePosition);
             FlipX(ref targetPosition);
             // Create the view matrix using the camera's position and target position
-            return Matrix.CreateScale(-1, 1, 1) * Matrix.CreateLookAt(eyePosition, targetPosition, Vector3.Up);
+            return Matrix4x4.CreateScale(-1, 1, 1) * Matrix4x4.CreateLookAt(eyePosition, targetPosition, Vector3.UnitY);
         }
-
-        public Matrix GetCombinedMatrix(GraphicsDevice gpu, out Matrix World, out Matrix View, out Matrix Projection) {
-            Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, gpu.Viewport.AspectRatio, 0.1f, 100000f);
-            World = Matrix.Identity;
-            // Optimized near/far plane for better depth buffer precision across all distances
-            // Near plane increased from 1f to 0.1f - this dramatically improves depth precision
-            // Far plane set to 10000f to balance view distance with precision
-            View = GetViewMatrix();
-            return World * View * Projection;
-        }
-        public Matrix GetCombinedMatrix(float width, float height, out Matrix World, out Matrix View, out Matrix Projection) {
-            Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, width / height, 0.1f, 100000f);
-            World = Matrix.Identity;
+        public Matrix4x4 GetCombinedMatrix(float width, float height, out Matrix4x4 World, out Matrix4x4 View, out Matrix4x4 Projection) {
+            Projection = Matrix4x4.CreatePerspectiveFieldOfView(MathConstants.PiOver4, width / height, 0.1f, 100000f);
+            World = Matrix4x4.Identity;
             // Optimized near/far plane for better depth buffer precision across all distances
             // Near plane increased from 1f to 0.1f - this dramatically improves depth precision
             // Far plane set to 10000f to balance view distance with precision

@@ -219,7 +219,7 @@ namespace TranSimCS.Tools {
         private void UpdateValues(LaneSpec laneSpec) {
             var style = indicator.Style.Value;
             var color = laneSpec.Color;
-            style.PanelColor = color;
+            style.PanelColor = color.ToMonoGame();
             indicator.Style = new StyleProp<UiStyle>(style);
             OnValuesChanged?.Invoke(laneSpec);
         }

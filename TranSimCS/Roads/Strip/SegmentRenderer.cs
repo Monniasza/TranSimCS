@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using Clipper2Lib;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using TranSimCS.Debugging;
@@ -12,6 +12,7 @@ using TranSimCS.Model;
 using TranSimCS.Polygons;
 using TranSimCS.Roads.Range;
 using TranSimCS.Setting;
+using TranSimCS.SilkNet;
 using TranSimCS.Spline;
 using static TranSimCS.Geometry.GeometryUtils;
 
@@ -161,12 +162,12 @@ namespace TranSimCS.Roads.Strip {
                 var path = new PathD();
                 for(int i = 0; i < numberOfPoints; i++) {
                     var t = (float)i / (numberOfPoints-1);
-                    path.Add(new(MathHelper.SmoothStep(pos1R, pos2R, t), t * length));
+                    path.Add(new(GeometryUtils.SmoothStep(t, pos1R, pos2R), t * length));
                 }
                 for (int i = 0; i < numberOfPoints; i++) {
                     var t = (float)i / (numberOfPoints - 1);
                     t = 1 - t;
-                    path.Add(new(MathHelper.SmoothStep(pos1L, pos2L, t), t * length));
+                    path.Add(new(GeometryUtils.SmoothStep(t, pos1L, pos2L), t * length));
                 }
                 var polygon = new Polygon(path, FillRule.EvenOdd);
                 polygons.Add(polygon);
@@ -205,7 +206,7 @@ namespace TranSimCS.Roads.Strip {
                 for (int i = 0; i < retransformedPointsHighUp.Length; i++) {
                     var prev = retransformedPointsHighUp[i];
                     var next = retransformedPointsHighUp[(i + 1) % retransformedPointsHighUp.Length];
-                    roadBin.DrawLine(prev, next, Vector3.UnitY, Color.Red);
+                    roadBin.DrawLine(prev, next, Vector3.UnitY, Colors.Red);
                 }
             }
 
@@ -214,7 +215,7 @@ namespace TranSimCS.Roads.Strip {
                 var retransformedPoints = Retransform(frm, untransformedPath, 0);
                 var retransformedPointsCyclic = retransformedPoints.Append(retransformedPoints.First()).ToArray();
                 var retransformedPointsUpCyclic = retransformedPointsUp.Append(retransformedPointsUp.First()).ToArray();
-                var texturedStrip = UniformTexturing.UniformTexturedTwin(retransformedPointsCyclic, retransformedPointsUpCyclic, UniformTexturing.GenerateLaneStripVertexGen(Color.White));
+                var texturedStrip = UniformTexturing.UniformTexturedTwin(retransformedPointsCyclic, retransformedPointsUpCyclic, UniformTexturing.GenerateLaneStripVertexGen(Colors.White));
                 sideRenderBin.DrawStrip(texturedStrip.Item2, texturedStrip.Item1);
             }
             if(mesh.TryGetOrCreateRenderBin(surface.GetTexture(), out var topRenderBin)) {
@@ -239,10 +240,10 @@ namespace TranSimCS.Roads.Strip {
         }
 
         public static void GenerateEndCap(Vector3 ul, Vector3 ur, Vector3 dr, Vector3 dl, float width, float height, float expand, Mesh mesh) {
-            var p1 = new VertexPositionColorTexture(ul, Color.White, new(0, 0));
-            var p2 = new VertexPositionColorTexture(ur, Color.White, new(width, 0));
-            var p3 = new VertexPositionColorTexture(dr, Color.White, new(width + expand, -height));
-            var p4 = new VertexPositionColorTexture(dl, Color.White, new(-expand, -height));
+            var p1 = new Vertex(ul, Colors.White, new(0, 0));
+            var p2 = new Vertex(ur, Colors.White, new(width, 0));
+            var p3 = new Vertex(dr, Colors.White, new(width + expand, -height));
+            var p4 = new Vertex(dl, Colors.White, new(-expand, -height));
             mesh.DrawQuad(p1, p2, p3, p4);
         }
     }

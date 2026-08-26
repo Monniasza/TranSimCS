@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Collections;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
@@ -14,6 +15,7 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Setting;
+using TranSimCS.SilkNet;
 using TranSimCS.Spline;
 using TranSimCS.Tools;
 using TranSimCS.Worlds;
@@ -22,7 +24,7 @@ namespace TranSimCS.Menus.InGame {
     public partial class InGameMenu {
         public Stats Stats { get; private set; }
 
-        private void DrawHighlights(GameTime time) {
+        private void DrawHighlights(Microsoft.Xna.Framework.GameTime time) {
             Mesh renderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
 
             var nodecolor = roadSegmentHighlightColor;
@@ -54,7 +56,7 @@ namespace TranSimCS.Menus.InGame {
         }
 
 
-        public override void Draw(GameTime time) {
+        public override void Draw(Microsoft.Xna.Framework.GameTime time) {
             //Clear stats
             Stats stats = default;
 
@@ -141,7 +143,7 @@ namespace TranSimCS.Menus.InGame {
             var sine = trig.Sin;
             var cosine = trig.Cos;
 
-            var coefficient = MathHelper.Clamp(sine * 2, -1, 1);
+            var coefficient = GeometryUtils.Clamp(sine * 2, -1, 1);
             coefficient = (sine / 2) + 0.5f;
             var interpolatedDayNightVector = lut[seconds];
             renderManager.AmbientColor.Value = interpolatedDayNightVector;
@@ -155,7 +157,7 @@ namespace TranSimCS.Menus.InGame {
             var lateral = new Vector3(0, 0, sunDiameter);
             var startingPoint = pos - (tangent + lateral) / 2;
             var sunRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Sun);
-            sunRenderBin.DrawParallelogram(startingPoint + renderManager.Camera.Position.ToX0Z(), tangent, lateral, Color.White);
+            sunRenderBin.DrawParallelogram(startingPoint + renderManager.Camera.Position.ToX0Z(), tangent, lateral, Colors.White);
 
             //Render the render helper
             renderManager.Render(renderHelper);
@@ -196,7 +198,7 @@ namespace TranSimCS.Menus.InGame {
         private void GroundParallelogram(Mesh renderBin, Vector3 initialpos, Vector3 basepos, Vector3 xplus, Vector3 yplus, float scale) {
             var a = (initialpos + basepos * scale);
             var s = scale / 100;
-            var C = Color.White;
+            var C = Colors.White;
             var xmul = xplus * scale;
             var ymul = yplus * scale;
             var b = a + ymul;
@@ -209,9 +211,9 @@ namespace TranSimCS.Menus.InGame {
                 GenerateGroundVertex(d, s, C)
             );
         }
-        private VertexPositionColorTexture GenerateGroundVertex(Vector3 pos, float texscale, Color? color = null) {
-            var c = color ?? Color.White;
-            return new VertexPositionColorTexture(pos, c, new(pos.X / texscale, pos.Z / texscale));
+        private Vertex GenerateGroundVertex(Vector3 pos, float texscale, Rgba32? color = null) {
+            var c = color ?? Colors.White;
+            return new Vertex(pos, c, new(pos.X / texscale, pos.Z / texscale));
         }
     }
 }

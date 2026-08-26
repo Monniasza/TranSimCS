@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using TranSimCS.Roads;
 using TranSimCS.Save2;
 using TranSimCS.Worlds.Cars;
 
@@ -29,7 +30,7 @@ namespace TranSimCS.Worlds {
             options.Converters.Add(new StripRefConverter(this));
             options.Converters.Add(new LanePositionConverter());
             options.Converters.Add(new Save2.Vector3Converter());
-            options.Converters.Add(new Save2.ColorConverter());
+            options.Converters.Add(new ColorConverter());
             options.Converters.Add(new Save2.ObjPosConverter());
             options.Converters.Add(new Save2.LaneSpecConverter());
             options.Converters.Add(new Save2.LaneConverter());

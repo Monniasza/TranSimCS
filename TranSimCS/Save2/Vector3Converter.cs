@@ -1,7 +1,7 @@
 using System;
+using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Xna.Framework;
 
 namespace TranSimCS.Save2 {
     public class Vector3Converter : JsonConverter<Vector3> {

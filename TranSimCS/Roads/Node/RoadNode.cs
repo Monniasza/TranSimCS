@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using Iesi.Collections.Generic;
-using Microsoft.Xna.Framework;
 using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
@@ -201,9 +201,9 @@ namespace TranSimCS.Roads.Node {
 
         public void GenerateGeometry(RenderTarget target) => target.Draw(Mesh.GetMesh());
 
-        public BoundingBox GetBounds() => SelectionMesh.GetMesh().GetBounds();
+        public AABB GetBounds() => SelectionMesh.GetMesh().GetBounds();
 
-        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => SelectionMesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
+        public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) => SelectionMesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
 
         //Connections (maintained by the node ends)
         public IEnumerable<RoadStrip> Connections => RearHalf.ConnectedSegments.Union(FrontHalf.ConnectedSegments);

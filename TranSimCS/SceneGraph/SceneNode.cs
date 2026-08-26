@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Property;
 using TranSimCS.Spatial;
@@ -26,6 +26,6 @@ namespace TranSimCS.SceneGraph {
         protected void RaiseRemoved(SceneNode node)
             => ChildRemoved?.Invoke(node);
 
-        public abstract BoundingBox GetBounds();
+        public abstract AABB GetBounds();
     }
 }

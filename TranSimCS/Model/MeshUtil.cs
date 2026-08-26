@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Xna.Framework;
+using System.Numerics;
 using Microsoft.Xna.Framework.Graphics;
 using NLog;
 using TranSimCS.Geometry;
+using TranSimCS.SilkNet;
 
 namespace TranSimCS.Model {
     public static class MeshUtil {
@@ -15,19 +16,10 @@ namespace TranSimCS.Model {
             log.Info($"Mesh stats: verts {mesh.Vertices.Count}, indices {mesh.Indices.Count}");
         }
 
-        public static BoundingBox BoundingBox(this Mesh mesh) {
-            if(allowBVH && mesh is Mesh concrete) {
-                return concrete.GetAccelerationStructure().Bounds;
-            } else {
-                var positions = mesh.Vertices.Select(x => x.Position);
-                var min = positions.Aggregate(Vector3.Min);
-                var max = positions.Aggregate(Vector3.Max);
-                return new BoundingBox(min, max);
-            }
-        }
+        public static AABB BoundingBox(this Mesh mesh) => mesh.GetAccelerationStructure().Bounds;
 
         
-        public static object? RayIntersectMesh(Mesh mesh, Ray ray, out float intersectionDistance) {
+        public static object? RayIntersectMesh(Mesh mesh, Ray3 ray, out float intersectionDistance) {
             if (allowBVH && mesh is Mesh concrete) {
                 var bvh = concrete.GetAccelerationStructure();
                 if (bvh.RayIntersect(ray, out var triId, out var hitDist)) {
@@ -41,7 +33,7 @@ namespace TranSimCS.Model {
             }
         }
 
-        private static object? RayIntersectMeshLinear(Mesh mesh, Ray ray, out float intersectionDistance0) {
+        private static object? RayIntersectMeshLinear(Mesh mesh, Ray3 ray, out float intersectionDistance0) {
             object? tag = null;
             var minDist = float.MaxValue;
             for (int i = 0; i < mesh.Indices.Count; i += 3) {
@@ -62,7 +54,7 @@ namespace TranSimCS.Model {
             return tag;
         }
 
-        public static object? RayIntersectMeshes(IEnumerable<Mesh> meshes, Ray ray, out float intersectionDistance) {
+        public static object? RayIntersectMeshes(IEnumerable<Mesh> meshes, Ray3 ray, out float intersectionDistance) {
             object? tag = null;
             float intersectionDistance0 = float.MaxValue;
             foreach (Mesh mesh in meshes) {
@@ -81,9 +73,9 @@ namespace TranSimCS.Model {
             return target.GetAccelerationStructure().TryProjectPoint(point, normal, out projectedPoint, out triangleId, out distance, maxDistance, minDistance);
         }
 
-        public static bool TryProjectVertex(this Mesh target, VertexPositionColorTexture vertex, Vector3 normal, out VertexPositionColorTexture projectedVertex, out int triangleId, out float distance, float maxDistance = float.PositiveInfinity, float minDistance = 0) {
+        public static bool TryProjectVertex(this Mesh target, Vertex vertex, Vector3 normal, out Vertex projectedVertex, out int triangleId, out float distance, float maxDistance = float.PositiveInfinity, float minDistance = 0) {
             if (TryProjectPoint(target, vertex.Position, normal, out var projectedPoint, out triangleId, out distance, maxDistance, minDistance)) {
-                projectedVertex = new VertexPositionColorTexture(projectedPoint, vertex.Color, vertex.TextureCoordinate);
+                projectedVertex = new Vertex(projectedPoint, vertex.Color, vertex.TexCoord, vertex.Material, vertex.Emissive);
                 return true;
             }
 
@@ -101,16 +93,18 @@ namespace TranSimCS.Model {
 
             var direction = normal / MathF.Sqrt(lengthSquared);
             var targetBvh = target.GetAccelerationStructure();
-            var projectedVertices = new List<VertexPositionColorTexture>(projection.Vertices.Count);
+            var projectedVertices = new List<Vertex>(projection.Vertices.Count);
             var missedVertices = 0;
 
             foreach (var vertex in projection.Vertices) {
-                var ray = new Ray(vertex.Position + minDistance * direction, direction);
+                var ray = new Ray3(vertex.Position + minDistance * direction, direction);
                 if (targetBvh.RayIntersect(ray, 0, maxDistance, out _, out var distance)) {
-                    projectedVertices.Add(new VertexPositionColorTexture(
-                        ray.Position + ray.Direction * distance,
+                    projectedVertices.Add(new Vertex(
+                        ray.Origin + ray.Direction * distance,
                         vertex.Color,
-                        vertex.TextureCoordinate));
+                        vertex.TexCoord,
+                        vertex.Material,
+                        vertex.Emissive));
                 } else {
                     missedVertices++;
                     projectedVertices.Add(vertex);

@@ -1,27 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Roads.Node;
+using TranSimCS.SilkNet;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
-namespace TranSimCS.Geometry
-{    public static partial class GeometryUtils
-    {
-        public static Vector3 FindNearest(Ray ray, Vector3 point, out float tt) {
+namespace TranSimCS.Geometry{    
+    public static partial class GeometryUtils {
+        public static float ToRadians(float degs) => degs * MathF.PI / 180;
+
+        public static float Clamp(this float sub, float min, float max) => float.Min(max, float.Max(min, sub));
+
+        public static Plane PointAndNormal(Vector3 point, Vector3 normal) {
+            var d = Vector3.Dot(point, normal);
+            return new Plane(normal, d);
+        }
+        public static float SmoothStep(float x) => x * x * (3 - 2 * x);
+
+        public static float SmoothStep(float x, float a, float b) => float.Lerp(SmoothStep(x), a, b);
+
+        public static Vector3 SmoothStep(this float x, Vector3 a, Vector3 b) => Vector3.Lerp(a, b, SmoothStep(x));
+
+        public static Vector3 FindNearest(Ray3 ray, Vector3 point, out float tt) {
             var direction = ray.Direction;
             var dirLen = direction.Length();
-            direction.Normalize();
-            var point2vec = point - ray.Position;
+            direction = Vector3.Normalize(direction);
+            var point2vec = point - ray.Origin;
             var dist = Vector3.Dot(direction, point2vec);
             var t = dist / dirLen;
             tt = t;
-            return ray.Position + t * ray.Direction;
+            return ray.Origin + t * ray.Direction;
         }
 
         /// <summary>
@@ -34,7 +48,7 @@ namespace TranSimCS.Geometry
         /// <returns>The distance between the two points.</returns>
         public static float Distance(float x1, float y1, float x2, float y2) => MathF.Sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));     
 
-        public static Bezier3 GenerateJoinSpline(Ray start, Ray end) => GenerateJoinSpline(start.Position, end.Position, start.Direction, end.Direction);
+        public static Bezier3 GenerateJoinSpline(Ray3 start, Ray3 end) => GenerateJoinSpline(start.Origin, end.Origin, start.Direction, end.Direction);
 
         //Coefficients
         const float bezierAtCollinear = 0.333f;
@@ -75,7 +89,7 @@ namespace TranSimCS.Geometry
             // Use the provided Bezier curve
             for (int i = 0; i < numPoints; i++) {
                 float t = i * step;
-                points[i] = spline[MathHelper.Lerp(minT, maxT, t)]; // Use the Bezier curve to calculate the point at t
+                points[i] = spline[float.Lerp(minT, maxT, t)]; // Use the Bezier curve to calculate the point at t
             }
             return points;
         }
@@ -93,13 +107,13 @@ namespace TranSimCS.Geometry
             return length;
         }
 
-        public static VertexPositionColorTexture[] GeneratePositionsFromVectors(float xPos, Color color, params Vector3[] vectors)
+        public static Vertex[] GeneratePositionsFromVectors(float xPos, Rgba32 color, params Vector3[] vectors)
         {
-            var positions = new VertexPositionColorTexture[vectors.Length];
+            var positions = new Vertex[vectors.Length];
             var step = 1f / (vectors.Length - 1);
             for (int i = 0; i < vectors.Length; i++)
             {
-                positions[i] = new VertexPositionColorTexture(vectors[i], color, new Vector2(xPos, step*i));
+                positions[i] = new Vertex(vectors[i], color, new Vector2(xPos, step*i));
             }
             return positions;
         }
@@ -117,7 +131,7 @@ namespace TranSimCS.Geometry
             return results.ToArray();
         }
 
-        public static bool RayIntersectsTriangle(Ray ray, Vector3 v0, Vector3 v1, Vector3 v2, out float intersectionDistance, float minT = 1e-6f, float maxT = float.PositiveInfinity) {
+        public static bool RayIntersectsTriangle(Ray3 ray, Vector3 v0, Vector3 v1, Vector3 v2, out float intersectionDistance, float minT = 1e-6f, float maxT = float.PositiveInfinity) {
             Vector3 edge1 = v1 - v0;
             Vector3 edge2 = v2 - v0;
             Vector3 h = Vector3.Cross(ray.Direction, edge2);
@@ -126,7 +140,7 @@ namespace TranSimCS.Geometry
             if (MathF.Abs(a) < 1e-6f) // Check if the ray is parallel to the triangle
                 return false; // No intersection
             float f = 1.0f / a;
-            Vector3 s = ray.Position - v0;
+            Vector3 s = ray.Origin - v0;
             float u = f * Vector3.Dot(s, h);
             if (u < 0.0f || u > 1.0f) // Check if the intersection is outside the triangle
                 return false; // No intersection
@@ -147,26 +161,26 @@ namespace TranSimCS.Geometry
 
         }
 
-        public static float IntersectRayPlaneT(Ray ray, Plane plane) =>
-            -(Vector3.Dot(ray.Position, plane.Normal) + plane.D) / (Vector3.Dot(ray.Direction, plane.Normal));
+        public static float IntersectRayPlaneT(Ray3 ray, Plane plane) =>
+            -(Vector3.Dot(ray.Origin, plane.Normal) + plane.D) / (Vector3.Dot(ray.Direction, plane.Normal));
         
-        public static Vector3 IntersectRayPlane(Ray ray, Plane plane) {
+        public static Vector3 IntersectRayPlane(Ray3 ray, Plane plane) {
             var t = IntersectRayPlaneT(ray, plane);
-            return ray.Position + (t * ray.Direction);
+            return ray.Origin + (t * ray.Direction);
         }
         public static Vector3 ReflectVectorByNormal(Vector3 src, Vector3 normal) => src - 2 * Vector3.Dot(src, normal) * normal;
 
-        public static VertexPositionColorTexture OffsetVert(VertexPositionColorTexture vert, Vector3 offset) {
-            return new VertexPositionColorTexture(vert.Position + offset, vert.Color, vert.TextureCoordinate);
+        public static Vertex OffsetVert(Vertex vert, Vector3 offset) {
+            return new Vertex(vert.Position + offset, vert.Color, vert.TexCoord);
         }
-        public static VertexPositionColorTexture SubVert(VertexPositionColorTexture vert, Vector3 offset) {
-            return new VertexPositionColorTexture(vert.Position - offset, vert.Color, vert.TextureCoordinate);
+        public static Vertex SubVert(Vertex vert, Vector3 offset) {
+            return new Vertex(vert.Position - offset, vert.Color, vert.TexCoord);
         }
-        public static VertexPositionColorTexture CreateVertex(Vector3 pos) {
-            return new(pos, Color.White, new(pos.X, pos.Z));
+        public static Vertex CreateVertex(Vector3 pos) {
+            return new(pos, Colors.White, new(pos.X, pos.Z));
         }
 
-        public static VertexPositionColorTexture CreateVertex(Vector3 pos, Color c) {
+        public static Vertex CreateVertex(Vector3 pos, Rgba32 c) {
             return new(pos, c, new(pos.X, pos.Z));
         }
 
@@ -205,7 +219,7 @@ namespace TranSimCS.Geometry
                 var v2 = vertices[(i + 1) % vertices.Length];
                 crossSum += Vector3.Cross(v1, v2);
             }
-            crossSum.Normalize();
+            crossSum = crossSum.Normalized();
             return crossSum;
         }
 
@@ -238,9 +252,7 @@ namespace TranSimCS.Geometry
         }
 
         public static Vector3 Normalized(this Vector3 v) {
-            var result = v;
-            result.Normalize();
-            return result;
+            return Vector3.Normalize(v);
         }
         public static Vector3 Orthogonalize(this Vector3 v, Vector3 n) {
             float nn = Vector3.Dot(n, n);

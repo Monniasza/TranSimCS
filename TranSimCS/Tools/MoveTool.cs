@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using LanguageExt;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using MonoGame.Extended;
@@ -53,7 +53,7 @@ namespace TranSimCS.Tools {
             }
         }
 
-        void ITool.Update(GameTime gameTime) {
+        void ITool.Update(Microsoft.Xna.Framework.GameTime gameTime) {
             var lmb = game.Game.MouseState.LeftButton == ButtonState.Pressed;
             var rmb = game.Game.MouseState.RightButton == ButtonState.Pressed;
             var lmbOld = game.Game.MouseStateOld.LeftButton == ButtonState.Released;
@@ -73,7 +73,7 @@ namespace TranSimCS.Tools {
                     var anglePerPx = MathF.PI / 360;
                     var angles = new Vector2(mousedelta.X, mousedelta.Y) * anglePerPx;
 
-                    if (mousedelta == Point.Zero) return;
+                    if (mousedelta.X == 0 && mousedelta.Y == 0) return;
 
                     Quaternion q = Quaternion.Identity;
                     Vector3 offset = Vector3.Zero;
@@ -89,9 +89,9 @@ namespace TranSimCS.Tools {
                     }
                     if(lmb & rmb) {
                         //Tilt/inclination
-                        var viewInv = Matrix.Invert(game.renderManager.Camera.GetViewMatrix());
-                        var cameraRight = Vector3.Normalize(viewInv.Right);
-                        var cameraUp = Vector3.Normalize(viewInv.Up);
+                        Matrix4x4.Invert(game.renderManager.Camera.GetViewMatrix(), out var viewInv);
+                        var cameraRight = Vector3.Normalize(new(viewInv.M11, viewInv.M12, viewInv.M13));
+                        var cameraUp = Vector3.Normalize(new(viewInv.M31, viewInv.M32, viewInv.M33));
                         var qHorizontal = Quaternion.CreateFromAxisAngle(cameraUp, angles.X);
                         var qVertical = Quaternion.CreateFromAxisAngle(cameraRight, angles.Y);
                         q = Quaternion.Normalize(qHorizontal * qVertical);

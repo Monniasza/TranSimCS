@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
-using TranSimCS.Model;
+﻿using TranSimCS.Geometry;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.SceneGraph {
@@ -17,6 +11,6 @@ namespace TranSimCS.SceneGraph {
             Proxy = new SceneProxy(this);
         }
 
-        public override BoundingBox GetBounds() => Obj.GetBounds();
+        public override AABB GetBounds() => Obj.GetBounds();
     }
 }

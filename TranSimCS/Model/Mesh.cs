@@ -4,14 +4,14 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Geometry;
+using TranSimCS.SilkNet;
 using TranSimCS.Spatial;
 
 namespace TranSimCS.Model {
 
     public class Mesh: IBVHElement{
-        public List<VertexPositionColorTexture> Vertices { get; } = [];
+        public List<Vertex> Vertices { get; } = [];
         public List<ushort> Indices { get; } = [];
         public IDictionary<int, object> Tags { get; } = new Dictionary<int, object>();
         public readonly MultiMesh? Parent;
@@ -25,39 +25,39 @@ namespace TranSimCS.Model {
             GeometryVersion++;
             Parent?.InvalidateAccelerationStructure();
         }
-        public BoundingBox GetBounds() => GetAccelerationStructure().Bounds;
+        public AABB GetBounds() => GetAccelerationStructure().Bounds;
 
-        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) {
+        public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) {
             tag = MeshUtil.RayIntersectMesh(this, ray, out distance);
             return distance < float.MaxValue;
         }
 
-        public Mesh(MultiMesh? parent = null, IEnumerable<VertexPositionColorTexture>? vertices = null, IEnumerable<ushort>? indices = null, IDictionary<int, object>? tags = null) {
+        public Mesh(MultiMesh? parent = null, IEnumerable<Vertex>? vertices = null, IEnumerable<ushort>? indices = null, IDictionary<int, object>? tags = null) {
             this.Parent = parent;
             if(vertices != null) Vertices.AddRange(vertices);
             if(indices != null) Indices.AddRange(indices);
             if(tags != null) foreach(var row in tags) Tags.Add(row.Key, row.Value);
         }
         [Conditional("DEBUG")]
-        private static void AssertVertexValidity(VertexPositionColorTexture vertex) {
+        private static void AssertVertexValidity(Vertex vertex) {
             Debug.Assert(float.IsFinite(vertex.Position.X), "vertex.X");
             Debug.Assert(float.IsFinite(vertex.Position.Y), "vertex.Y");
             Debug.Assert(float.IsFinite(vertex.Position.Z), "vertex.Z");
-            Debug.Assert(float.IsFinite(vertex.TextureCoordinate.X), "vertex.U");
-            Debug.Assert(float.IsFinite(vertex.TextureCoordinate.Y), "vertex.V");
+            Debug.Assert(float.IsFinite(vertex.TexCoord.X), "vertex.U");
+            Debug.Assert(float.IsFinite(vertex.TexCoord.Y), "vertex.V");
         }
         [Conditional("DEBUG")]
-        private static void AssertVerticesValidity(VertexPositionColorTexture[] verts) {
+        private static void AssertVerticesValidity(Vertex[] verts) {
             for (int i = 0; i < verts.Length; i++) {
                 var vertex = verts[i];
                 Debug.Assert(float.IsFinite(vertex.Position.X), $"verts[{i}].vertex.X");
                 Debug.Assert(float.IsFinite(vertex.Position.Y), $"verts[{i}].vertex.Y");
                 Debug.Assert(float.IsFinite(vertex.Position.Z), $"verts[{i}].vertex.Z");
-                Debug.Assert(float.IsFinite(vertex.TextureCoordinate.X), $"verts[{i}].vertex.U");
-                Debug.Assert(float.IsFinite(vertex.TextureCoordinate.Y), $"verts[{i}].vertex.V");
+                Debug.Assert(float.IsFinite(vertex.TexCoord.X), $"verts[{i}].vertex.U");
+                Debug.Assert(float.IsFinite(vertex.TexCoord.Y), $"verts[{i}].vertex.V");
             }
         }
-        public ushort AddVertex(VertexPositionColorTexture vertex) {
+        public ushort AddVertex(Vertex vertex) {
             AssertVertexValidity(vertex);
             Vertices.Add(vertex);
             InvalidateAccelerationStructure();
@@ -72,7 +72,7 @@ namespace TranSimCS.Model {
             InvalidateAccelerationStructure();
         }
 
-        public int AddVerts(VertexPositionColorTexture[] verts) {
+        public int AddVerts(Vertex[] verts) {
             AssertVerticesValidity(verts);
             int index = Vertices.Count;
             Vertices.AddRange(verts);
@@ -97,7 +97,7 @@ namespace TranSimCS.Model {
         /// </summary>
         /// <param name="vertices">List of vertices</param>
         /// <param name="indices">List of indices</param>
-        public void DrawModel(IList<VertexPositionColorTexture> vertices, IList<ushort> indices, IEnumerable<KeyValuePair<int, object>>? tags = null) {
+        public void DrawModel(IList<Vertex> vertices, IList<ushort> indices, IEnumerable<KeyValuePair<int, object>>? tags = null) {
             ArgumentNullException.ThrowIfNull(vertices, nameof(vertices));
             ArgumentNullException.ThrowIfNull(indices, nameof(indices));
             int startVertexId = AddVerts(vertices.ToArray());

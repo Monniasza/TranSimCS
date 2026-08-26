@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Spatial;
 using TranSimCS.Worlds;
@@ -51,7 +52,7 @@ namespace TranSimCS.SceneGraph {
             node.ChildRemoved -= OnRemoved;
         }
 
-        public Selection Find(Ray ray, float min = 0, float max = float.PositiveInfinity) {
+        public Selection Find(Ray3 ray, float min = 0, float max = float.PositiveInfinity) {
             tree.Find(ray, out var proxy, out var dist, out var tag);
 
             if (proxy == null)
@@ -64,11 +65,11 @@ namespace TranSimCS.SceneGraph {
                 SelectedObj = (Obj)leaf.Obj,
                 Distance = dist,
                 Tag = tag,
-                Coordinates = ray.Position + ray.Direction * dist
+                Coordinates = ray.Origin + ray.Direction * dist
             };
         }
-        public IEnumerable<SceneProxy> Find(BoundingBox boundingBox) => tree.Query(boundingBox);
-        public IEnumerable<SceneProxy> Find(BoundingFrustum boundingFrustum) => tree.Query(boundingFrustum);
+        public IEnumerable<SceneProxy> Find(AABB boundingBox) => tree.Query(boundingBox);
+        public IEnumerable<SceneProxy> Find(Frustum boundingFrustum) => tree.Query(boundingFrustum);
 
         private SceneLeaf GetLeaf(SceneProxy proxy) {
             // safe because proxy wraps exactly one leaf

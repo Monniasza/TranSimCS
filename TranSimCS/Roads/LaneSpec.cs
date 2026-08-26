@@ -1,9 +1,10 @@
 using System;
 using Microsoft.Xna.Framework;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace TranSimCS.Roads {
     public struct LaneSpec : IEquatable<LaneSpec> {
-        public Color Color; // Color of the lane
+        public Rgba32 Color; // Color of the lane
         public VehicleTypes VehicleTypes; // Types of vehicles allowed in the lane
         public LaneFlags Flags;// Flags for additional lane properties
         public float Width;//Width. Ignored by nodes, but used to store new lane widths
@@ -13,7 +14,7 @@ namespace TranSimCS.Roads {
 
         // Constructor to initialize the LaneSpec with lane index, width, and offset
         public LaneSpec(
-            Color color,
+            Rgba32 color,
             VehicleTypes vehicleTypes,
             float width = 3.5f,
             float speedLimit = 50,
@@ -31,15 +32,15 @@ namespace TranSimCS.Roads {
         }
 
         //Common presets for lane specifications
-        public static LaneSpec Default => new(Color.Gray, VehicleTypes.Vehicles, 3f, 50);
-        public static LaneSpec Motorway => new(Color.DarkGray, VehicleTypes.MotorVehicles, 3.5f, 150);
-        public static LaneSpec Bicycle => new(Color.Green, VehicleTypes.Bicycle, 2, 30);
-        public static LaneSpec Pedestrian => new(Color.LightGray, VehicleTypes.Pedestrian, 1.5f, 16, LaneFlags.Sidewalk, surface: Surface.Tiles);
-        public static LaneSpec Path => new(Color.LightGray, VehicleTypes.Path, 3,20, LaneFlags.Sidewalk);
-        public static LaneSpec Bus => new(Color.Red, VehicleTypes.Bus, 3, 80);
-        public static LaneSpec None => new(Color.Transparent, VehicleTypes.None, 3, 0);
-        public static LaneSpec All => new(Color.White, VehicleTypes.All, 3, 100); // All vehicle types allowed
-        public static LaneSpec Platform => new(Color.LightGoldenrodYellow, VehicleTypes.Pedestrian, 3, 10, LaneFlags.Platform);
+        public static LaneSpec Default => new(Colors.Gray, VehicleTypes.Vehicles, 3f, 50);
+        public static LaneSpec Motorway => new(Colors.DarkGray, VehicleTypes.MotorVehicles, 3.5f, 150);
+        public static LaneSpec Bicycle => new(Colors.Green, VehicleTypes.Bicycle, 2, 30);
+        public static LaneSpec Pedestrian => new(Colors.LightGray, VehicleTypes.Pedestrian, 1.5f, 16, LaneFlags.Sidewalk, surface: Surface.Tiles);
+        public static LaneSpec Path => new(Colors.LightGray, VehicleTypes.Path, 3,20, LaneFlags.Sidewalk);
+        public static LaneSpec Bus => new(Colors.Red, VehicleTypes.Bus, 3, 80);
+        public static LaneSpec None => new(Colors.Transparent, VehicleTypes.None, 3, 0);
+        public static LaneSpec All => new(Colors.White, VehicleTypes.All, 3, 100); // All vehicle types allowed
+        public static LaneSpec Platform => new(Colors.LightGoldenrodYellow, VehicleTypes.Pedestrian, 3, 10, LaneFlags.Platform);
 
         public override bool Equals(object? obj) {
             return obj is LaneSpec spec && Equals(spec);

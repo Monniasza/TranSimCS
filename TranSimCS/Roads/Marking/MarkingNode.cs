@@ -111,7 +111,7 @@ namespace TranSimCS.Roads.Marking {
             arrowRenderBin.DrawQuad(
                 centerPos - sidevector + fwdVector, centerPos + sidevector + fwdVector,
                 centerPos + sidevector, centerPos - sidevector,
-                Color.Magenta
+                Colors.Magenta
             );
             arrowRenderBin.AddTagsToLastTriangles(2, marking);
         }

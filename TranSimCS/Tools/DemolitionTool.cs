@@ -9,6 +9,7 @@ using MLEM.Input;
 using MonoGame.Extended;
 using NLog;
 using NLog.Time;
+using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
@@ -17,6 +18,7 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Section;
 using TranSimCS.Roads.Strip;
+using TranSimCS.SilkNet;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Tools {
@@ -32,8 +34,8 @@ namespace TranSimCS.Tools {
 
             float v1 = 0.2f;
             float v2 = 0.3f;
-            var orange = Color.Orange * 0.5f;
-            var red = Color.Red * 0.5f;
+            var orange = new Rgba32(255, 128, 0, 128);
+            var red = new Rgba32(255, 0, 0, 128);
             Mesh renderBin = game.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
             var roadSelection = game.MouseOver?.Tag as IRoadElement;
 
@@ -78,7 +80,7 @@ namespace TranSimCS.Tools {
                     var selmesh = roadSection.SelectionMesh.GetMesh().GetOrCreateRenderBinForced(Assets.Asphalt);
                     var whiteBin = game.renderHelper.GetOrCreateRenderBinForced(Assets.WhiteTransparent);
                     var voffset = roadSection.Normal * 0.2f;
-                    var txVerts = selmesh.Vertices.Select(x => new VertexPositionColorTexture(x.Position + voffset, red, x.TextureCoordinate)).ToArray();
+                    var txVerts = selmesh.Vertices.Select(x => new Vertex(x.Position + voffset, red, x.TexCoord)).ToArray();
                     whiteBin.DrawModel(txVerts, selmesh.Indices);
                     break;
             }

@@ -86,5 +86,15 @@ namespace TranSimCS.Geometry {
             if (state == 2 || state == 6) return Intersection.Disjoint;
             return Intersection.Intersecting;
         }
+
+        public bool Intersects(Plane plane) => Intersect(plane) != Intersection.Disjoint;
+        public bool Intersects(AABB aabb){
+            bool intersectsX = Max.X >= aabb.Min.X || Min.X <= aabb.Max.X;
+            bool intersectsY = Max.Y >= aabb.Min.Y || Min.Y <= aabb.Max.Y;
+            bool intersectsZ = Max.Z >= aabb.Min.Z || Min.Z <= aabb.Max.Z;
+            return intersectsX && intersectsY && intersectsZ;
+        }
+
+        public static AABB CreateMerged(AABB a, AABB b) => new(Vector3.Min(a.Min, b.Min), Vector3.Max(a.Max, b.Max));
     }
 }

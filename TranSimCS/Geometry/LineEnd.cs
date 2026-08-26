@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Numerics;
 using TranSimCS.Roads.Node;
 using TranSimCS.Worlds;
 
@@ -9,7 +9,7 @@ namespace TranSimCS.Geometry
         public Vector3 Tangential { get; }
         public Vector3 Normal { get; }
         public Vector3 Lateral { get; }
-        public Ray Ray => new Ray(Position, Tangential);
+        public Ray3 Ray => new Ray3(Position, Tangential);
 
         public LineEnd(Vector3 position, Vector3 tangential, Vector3 normal, Vector3 lateral) {
             Position = position;

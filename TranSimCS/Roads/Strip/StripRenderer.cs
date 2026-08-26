@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework;
+using System.Numerics;
 using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
@@ -34,17 +34,17 @@ namespace TranSimCS.Roads.Strip {
             var nrm = centerframe.Y;
             bool removeArrows = laneStrip.Spec.Flags.HasFlags(LaneFlags.Sidewalk | LaneFlags.Platform);
             if (!removeArrows && tangent.LengthSquared() >= 0.000001){
-                tangent.Normalize();
-                nrm.Normalize();
+                tangent = tangent.Normalized();
+                nrm = nrm.Normalized();
 
                 var arrowWidth = averageStripWidth / 2;
                 var displacement = tangent * averageStripWidth / 2;
                 midpoint += nrm * aoffset;
                 if (laneStrip.IsReverse()) displacement *= -1;
 
-                var arrowColor = Color.White;
+                var arrowColor = Colors.White;
                 //Show direction by switchin to light yellow if reverse
-                if (laneStrip.IsReverse()) arrowColor = Color.LightYellow;
+                if (laneStrip.IsReverse()) arrowColor = Colors.LightYellow;
 
                 var arrowBin = renderer.GetOrCreateRenderBinForced(Assets.Arrow);
                 arrowBin.DrawLine(midpoint - displacement, midpoint + displacement, nrm, arrowColor, arrowWidth);
@@ -96,7 +96,7 @@ namespace TranSimCS.Roads.Strip {
             tag.endRange = new(endl, endr);
             var splineComponent = new RoadSplineComponent() {
                 Bias = 0.5f,
-                Color = Color.Transparent,
+                Color = Colors.Transparent,
                 Type = RoadSplineComponentType.MarkingClip,
                 Texture = null
             };
@@ -115,7 +115,7 @@ namespace TranSimCS.Roads.Strip {
         }
 
         public static void GenerateStripEdgeLines(LaneStrip laneStrip, Action<RoadSplineComponent, RoadSplineRange> target, float voffset = 0) {
-            Color color = Color.White;
+            var color = Colors.White;
 
             //Get side-line flags
             var mergeLeft = (laneStrip.Spec.Flags & LaneFlags.MergeLeft) != 0;
@@ -124,7 +124,7 @@ namespace TranSimCS.Roads.Strip {
 
             if (mergeLeft && mergeRight) return;
             if (laneStrip.Spec.Flags.HasFlags(LaneFlags.Sidewalk)) return;
-            if (laneStrip.Spec.Flags.HasFlags(LaneFlags.Platform)) color = Color.Yellow;
+            if (laneStrip.Spec.Flags.HasFlags(LaneFlags.Platform)) color = Colors.Yellow;
 
             //Get tags
             var roadTag = laneStrip.Road.Bounds;

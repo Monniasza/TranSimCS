@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
@@ -61,7 +62,7 @@ namespace TranSimCS.Snapping {
             Mesh gridRenderBin = mesh.GetOrCreateRenderBinForced(Assets.Grid);
             refFrame.O -= 0.001f * refFrame.Y; //Sink the grid a little bit so it doesn't Z-fight with 0-height road elements
             Vector3 origin = refFrame.O - totalSize * refFrame.X - totalSize * refFrame.Z;
-            gridRenderBin.DrawParallelogram(origin, refFrame.X * totalSize * 2, refFrame.Z * totalSize * 2, Color.White, new(-scale, -scale, 2 * scale, 2 * scale));
+            gridRenderBin.DrawParallelogram(origin, refFrame.X * totalSize * 2, refFrame.Z * totalSize * 2, Colors.White, new(-scale, -scale, 2 * scale, 2 * scale));
         }
 
         public Vector3 Snap(Vector3 input) {
@@ -106,12 +107,12 @@ namespace TranSimCS.Snapping {
 
         public Plane CreateSnappingPlane(float y = 0) {
             var refFrame = Position.CalcReferenceFrame();
-            var refPlane = new Plane(refFrame.O + refFrame.Y * y, refFrame.Y);
+            var refPlane = GeometryUtils.PointAndNormal(refFrame.O + refFrame.Y * y, refFrame.Y);
             return refPlane;
         }
 
         public void GenerateGeometry(RenderTarget target) => target.Draw(Mesh.GetMesh());
-        public BoundingBox GetBounds() => Mesh.GetMesh().GetBounds();
-        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => Mesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
+        public AABB GetBounds() => Mesh.GetMesh().GetBounds();
+        public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) => Mesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
     }
 }

@@ -3,11 +3,12 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Xna.Framework;
+using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Save2;
 
 namespace TranSimCS.Roads {
-    public class ColorConverter : JsonConverter<Color> {
-        private static Color ParseHexColor(string hex) {
+    public class ColorConverter : JsonConverter<Rgba32> {
+        private static Rgba32 ParseHexColor(string hex) {
             int r, g, b, a = 255;
 
             hex = hex.TrimStart('#');
@@ -33,11 +34,11 @@ namespace TranSimCS.Roads {
                 default:
                     throw new FormatException($"Invalid hex color format: {hex}");
             }
-            return new Color(r, g, b, a);
+            return new Rgba32(r, g, b, a);
             
         }
 
-        public override Color Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        public override Rgba32 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
             var oldReader = reader;
             reader.Read();
             if (reader.TokenType == JsonTokenType.String) {
@@ -71,13 +72,13 @@ namespace TranSimCS.Roads {
                     }
                 });
 
-                return new Color(r, g, b, a);
+                return new Rgba32(r, g, b, a);
             }
             JsonProcessor.Fail(reader, $"Unexpected token type for Color: {reader.TokenType}");
-            return Color.White;
+            return Colors.White;
         }
 
-        public override void Write(Utf8JsonWriter writer, Color value, JsonSerializerOptions options) {
+        public override void Write(Utf8JsonWriter writer, Rgba32 value, JsonSerializerOptions options) {
             // Write as hex string for compactness
             string hexString = $"#{value.R:X2}{value.G:X2}{value.B:X2}{value.A:X2}";
             writer.WriteStringValue(hexString);

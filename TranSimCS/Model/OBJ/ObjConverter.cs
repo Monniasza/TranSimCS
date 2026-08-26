@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SixLabors.ImageSharp.PixelFormats;
+using TranSimCS.SilkNet;
 
 namespace TranSimCS.Model.OBJ {
     public class ObjConverter {
@@ -15,8 +17,8 @@ namespace TranSimCS.Model.OBJ {
                 var mat = group.Material;
                 mat.d = 1; //Force opaque
                 var colorvector = new Vector4(mat.Kd, 1) * mat.d;
-                var color = new Color(colorvector);
-                Dictionary<FaceVertex, VertexPositionColorTexture> dedupedVerts = [];
+                var color = new Rgba32(colorvector);
+                Dictionary<FaceVertex, Vertex> dedupedVerts = [];
                 Dictionary<FaceVertex, ushort> lov = [];
                 foreach (var Face in group.Faces) {
                     var face = Face.Vertices;
@@ -28,7 +30,7 @@ namespace TranSimCS.Model.OBJ {
                         var texcoords = (fv.UVID == 0 || obj.UV.Count == 0) ? new() : obj.UV[fv.UVID - 1];
                         var normal = (fv.NormalID == 0 || obj.Normals.Count == 0) ? new() :obj.Normals[fv.NormalID - 1];
                         var position = (fv.VertexID == 0 || obj.Positions.Count == 0) ? new() : obj.Positions[fv.VertexID - 1];
-                        var vert = new VertexPositionColorTexture(position, color, texcoords);
+                        var vert = new Vertex(position, color, texcoords);
                         dedupedVerts[fv] = vert;
 
                         ushort index = mesh.AddVertex(vert);

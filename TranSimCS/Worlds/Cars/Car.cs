@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 using MLEM.Maths;
 using MonoGame.Extended;
 using NLog;
@@ -132,7 +132,7 @@ namespace TranSimCS.Worlds.Cars {
 
         public event MeshInvalidationCallback GeometryChanged;
 
-        internal void Update(GameTime time) {
+        internal void Update(float time) {
             if (World == null) return;
             if(LanePosition == null) {
                 //The car is off-road
@@ -142,13 +142,13 @@ namespace TranSimCS.Worlds.Cars {
                 VectorMethods.CheckVector(pr.Position, "pr.Position");
                 if (!float.IsFinite(pr.Inclination)) throw new ArithmeticException("Invalid pitch");
                 if (!float.IsFinite(pr.Tilt)) throw new ArithmeticException("Invalid roll");
-                var xyz = pr.Position + vel * (float)(time.ElapsedGameTime.TotalSeconds);
+                var xyz = pr.Position + vel * time;
                 VectorMethods.CheckVector(xyz, "xyz");
                 pr.Position = xyz;
                 PositionProp.Value = pr;
             } else {
                 //Interpolate
-                LanePosition = LanePosition.Advance(Speed * time.GetElapsedSeconds());
+                LanePosition = LanePosition.Advance(Speed * time);
                 if (LanePosition == null) {
                     Destroy();
                     return;
@@ -225,7 +225,7 @@ namespace TranSimCS.Worlds.Cars {
         }
 
         public void GenerateGeometry(RenderTarget target) => target.Draw(meshInstance);
-        public BoundingBox GetBounds() => meshInstance.GetBounds();
-        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => meshInstance.ComputeIntersection(ray, out distance, out tag);
+        public AABB GetBounds() => meshInstance.GetBounds();
+        public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) => meshInstance.ComputeIntersection(ray, out distance, out tag);
     }
 }

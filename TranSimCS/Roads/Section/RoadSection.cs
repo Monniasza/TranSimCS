@@ -4,8 +4,8 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using Iesi.Collections.Generic;
-using Microsoft.Xna.Framework;
 using TranSimCS.Collections;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
@@ -82,7 +82,7 @@ namespace TranSimCS.Roads.Section {
         IPosition[] IDraggableObj.DraggableComponents() => Nodes.ToArray();
 
         public void GenerateGeometry(RenderTarget target) => target.Draw(Mesh.GetMesh());
-        public BoundingBox GetBounds() => SelectionMesh.GetMesh().GetBounds();
-        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => SelectionMesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
+        public AABB GetBounds() => SelectionMesh.GetMesh().GetBounds();
+        public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) => SelectionMesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
     }
 }

@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Roads.Node;
 using TranSimCS.Spline;
 
@@ -54,12 +53,9 @@ namespace TranSimCS.Geometry.SplineFrames {
                     maxT = midpoint;
                 }
             }
-
-            vX.Normalize();
-            vY.Normalize();
             var d = position - pO;
-            var x = Vector3.Dot(d, vX);
-            var y = Vector3.Dot(d, vY);
+            var x = Vector3.Dot(d, vX.Normalized());
+            var y = Vector3.Dot(d, vY.Normalized());
             return new Vector3(x, y, midpoint);
         }
 

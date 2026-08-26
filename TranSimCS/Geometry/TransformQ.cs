@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace TranSimCS.Geometry {
@@ -39,9 +39,9 @@ namespace TranSimCS.Geometry {
                 inverseRotation);
         }
 
-        public Matrix ToMatrix() =>
-            Matrix.CreateFromQuaternion(Rotation)
-            * Matrix.CreateTranslation(Position);
+        public Matrix4x4 ToMatrix() =>
+            Matrix4x4.CreateFromQuaternion(Rotation)
+            * Matrix4x4.CreateTranslation(Position);
 
         public TransformQ Append(TransformQ transform, Vector3 pivot) {
             TransformQ result = default;
@@ -61,8 +61,8 @@ namespace TranSimCS.Geometry {
         public Vector3 Transform(Vector3 vector) {
             return Position + Vector3.Transform(vector, Rotation);
         }
-        public Ray Transform(Ray ray) {
-            return new(Transform(ray.Position), Vector3.Transform(ray.Direction, Rotation));
+        public Ray3 Transform(Ray3 ray) {
+            return new(Transform(ray.Origin), Vector3.Transform(ray.Direction, Rotation));
         }
 
         public override bool Equals(object? obj) {

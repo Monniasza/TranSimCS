@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Clipper2Lib;
 using LanguageExt.ClassInstances.Pred;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NLog;
+using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Debugging;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
@@ -16,6 +17,7 @@ using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Setting;
+using TranSimCS.SilkNet;
 using TranSimCS.Spline;
 using static TranSimCS.Geometry.GeometryUtils;
 using static TranSimCS.Geometry.LineEnd;
@@ -66,7 +68,7 @@ namespace TranSimCS.Roads.Section {
                 var startNode = nodes[lbound];
                 var endNode = nodes[ubound];
                 var nextNode = nodes[ubound + 1];
-                var color = Color.White;
+                var color = Colors.White;
 
                 var preToStartSpline = GenerateRoadEdge(preNode, startNode, -1);
                 var nextToEndSpline = GenerateRoadEdge(nextNode, endNode, 1);
@@ -159,7 +161,7 @@ namespace TranSimCS.Roads.Section {
             renderBin.AddTagsToLastTriangles(-1, roadSection);
         }
 
-        public record struct SectionTriangulationRow(Color color, PathD path, SimpleMaterial? material) {}
+        public record struct SectionTriangulationRow(Rgba32 color, PathD path, SimpleMaterial? material) {}
 
         internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh) {
             if (roadSection.Nodes.Count < 1) return; //Guard agains empty sections
@@ -202,7 +204,7 @@ namespace TranSimCS.Roads.Section {
             //Generate meshes for projection
             var projectionPlane = roadSection.WorkingPlane;
             var meshedWhite = new Mesh(null,
-                triangulatedWhite.points.Select(CreateMeshingFunction(projectionPlane, Color.White, roadSection.Normal * 0.05f)),
+                triangulatedWhite.points.Select(CreateMeshingFunction(projectionPlane, Colors.White, roadSection.Normal * 0.05f)),
                 triangulatedWhite.triangles.Select(x => (ushort)x)
             );
             var meshedAsphalt = new MultiMesh();
@@ -251,11 +253,11 @@ namespace TranSimCS.Roads.Section {
             multimesh.AddTagsToAll(roadSection);
         }
 
-        private static Func<PointD, VertexPositionColorTexture> CreateMeshingFunction(WorkingPlane projectionPlane, Color color, Vector3? offset = null) =>
+        private static Func<PointD, Vertex> CreateMeshingFunction(WorkingPlane projectionPlane, Rgba32 color, Vector3? offset = null, ushort material = 0, ushort emissive = 0) =>
             x => {
                 var projected = x.ToVector2();
                 var pos = projectionPlane.Unproject(projected) + (offset ?? Vector3.Zero);
-                return new VertexPositionColorTexture(pos, color, projected);
+                return new Vertex(pos, color, projected, material, emissive);
             };
         private static PathD ProjectStripOntoWorkingPlane(RoadSection roadSection, GridCrossSectionalRecord<RoadSplineComponent> component, GridMesh<Vector3, RoadSplineComponent> gridMesh) {
             var h = gridMesh.Vertices.Height();
@@ -278,8 +280,8 @@ namespace TranSimCS.Roads.Section {
             if (texture == null || finish.depth <= 0) return;
 
             var normal = roadSection.Normal;
-            if (normal.LengthSquared() < 1e-6f) normal = Vector3.Up;
-            else normal.Normalize();
+            if (normal.LengthSquared() < 1e-6f) normal = Vector3.UnitY;
+            normal = normal.Normalized();
 
             var height = finish.depth;
             var breadth = finish.depth * MathF.Tan(finish.angle);
@@ -313,7 +315,7 @@ namespace TranSimCS.Roads.Section {
                 }
                 
 
-                var generatedSplines = UniformTexturing.UniformTexturedTwin(topPoints, bottomPoints, UniformTexturing.GenerateLaneStripVertexGen(Color.White));
+                var generatedSplines = UniformTexturing.UniformTexturedTwin(topPoints, bottomPoints, UniformTexturing.GenerateLaneStripVertexGen(Colors.White));
                 finishMesh.DrawStrip(generatedSplines);
             }
 
@@ -332,10 +334,10 @@ namespace TranSimCS.Roads.Section {
                 var u1 = new Vector2(bounds.Max, 0);
                 var u2 = new Vector2(bounds.Max + breadth, height);
                 var u3 = new Vector2(bounds.Min - breadth, height);
-                VertexPositionColorTexture v0 = new(p0, Color.White, u0);
-                VertexPositionColorTexture v1 = new(p1, Color.White, u1);
-                VertexPositionColorTexture v2 = new(p2, Color.White, u2);
-                VertexPositionColorTexture v3 = new(p3, Color.White, u3);
+                Vertex v0 = new(p0, Colors.White, u0);
+                Vertex v1 = new(p1, Colors.White, u1);
+                Vertex v2 = new(p2, Colors.White, u2);
+                Vertex v3 = new(p3, Colors.White, u3);
                 finishMesh.DrawQuad(v0, v1, v2, v3);
             }
         }

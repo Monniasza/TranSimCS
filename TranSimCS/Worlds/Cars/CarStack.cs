@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
@@ -23,7 +24,7 @@ namespace TranSimCS.Worlds.Cars {
         public CarStack(TSWorld world) : base(world) {
             this.world = world;
             trackerSpatial = new TrackerSpatial<Car, CarStack>(world);
-            trackerUpdate = new((x, t) => x.Update(t));
+            trackerUpdate = new((x, t) => x.Update(t.GetElapsedSeconds()));
             stackTrackers.Add(trackerSpatial);
             stackTrackers.Add(trackerUpdate);
 

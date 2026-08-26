@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 using TranSimCS.Spatial;
 
@@ -27,7 +26,7 @@ namespace TranSimCS.Model {
             return result;
         }
 
-        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) {
+        public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) {
             var inverse = PositionRotation.Inverse();
             var inverseRay = inverse.Transform(ray);
             var isIntersecting = Mesh.ComputeIntersection(inverseRay, out distance, out tag);
@@ -35,7 +34,7 @@ namespace TranSimCS.Model {
             if (OverrideChildTags || tag == null) tag = CoverTag;
             return true;
         }
-        public BoundingBox GetBounds() => OBB.TransformBoundingBox(Mesh.GetBounds(), PositionRotation);
+        public AABB GetBounds() => OBB.TransformBoundingBox(Mesh.GetBounds(), PositionRotation);
 
         public override bool Equals(object? obj) {
             return obj is MeshInstance instance && Equals(instance);

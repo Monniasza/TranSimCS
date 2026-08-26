@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
 
@@ -23,7 +24,7 @@ namespace TranSimCS.Menus.InGame {
         public Vector3 Coordinates;
         public float Distance;
 
-        public static Selection CalculateSelection(SceneRoot graph, Ray ray) {
+        public static Selection CalculateSelection(SceneRoot graph, Ray3 ray) {
             Selection result = graph.Find(ray);
             if (result.SceneNode == null) return Selection.Invalid;
 

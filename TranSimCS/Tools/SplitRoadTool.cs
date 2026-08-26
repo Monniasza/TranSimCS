@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using MLEM.Input;
+using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
@@ -68,7 +69,7 @@ namespace TranSimCS.Tools {
             float yoffset = 0.4f;
             float yoffset2 = 0.5f;
 
-            void DrawTickMark(Mesh renderBin, OrthodistantBasis basis, float t, float hlength, float width, Color c) {
+            void DrawTickMark(Mesh renderBin, OrthodistantBasis basis, float t, float hlength, float width, Rgba32 c) {
                 var sample = basis.SampleFrame(t);
                 var p0 = sample.O - sample.X * hlength + yoffset2 * sample.Y;
                 var p1 = sample.O + sample.X * hlength + yoffset2 * sample.Y;
@@ -80,11 +81,11 @@ namespace TranSimCS.Tools {
                 var renderBin = Menu.renderHelper.GetOrCreateRenderBinForced(Assets.WhiteTransparent);
 
                 //Draw the spline
-                SplitRoadMethods.DrawRoadSpline(RoadPosition.Road, renderBin, Color.Cyan);
+                SplitRoadMethods.DrawRoadSpline(RoadPosition.Road, renderBin, Colors.Cyan);
 
-                DrawTickMark(renderBin, spline, RoadPosition.Parameters.Before, 2, 1, Color.DeepSkyBlue);
-                DrawTickMark(renderBin, spline, RoadPosition.Parameters.After, 2, 1, Color.DeepSkyBlue);
-                DrawTickMark(renderBin, spline, RoadPosition.Parameters.Middle, 1, 1, Color.SkyBlue);
+                DrawTickMark(renderBin, spline, RoadPosition.Parameters.Before, 2, 1, Colors.DeepSkyBlue);
+                DrawTickMark(renderBin, spline, RoadPosition.Parameters.After, 2, 1, Colors.DeepSkyBlue);
+                DrawTickMark(renderBin, spline, RoadPosition.Parameters.Middle, 1, 1, Colors.SkyBlue);
             }
         }
         void ITool.Update(GameTime gameTime) {

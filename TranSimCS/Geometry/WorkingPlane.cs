@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 
 namespace TranSimCS.Geometry {
     public struct WorkingPlane {
@@ -26,11 +26,10 @@ namespace TranSimCS.Geometry {
         public Vector3 Unproject(Vector2 p) {
             return O + X*p.X + Y*p.Y;
         }
-        public Ray UnprojectRay(Vector2 p) {
+        public Ray3 UnprojectRay(Vector2 p) {
             var normal = Vector3.Cross(Y, X);
-            normal.Normalize();
             var pos = Unproject(p);
-            return new Ray(pos, normal);
+            return new Ray3(pos, normal.Normalized());
         }
     }
 }

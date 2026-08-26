@@ -10,6 +10,7 @@ using MLEM.Input;
 using MLEM.Ui;
 using MonoGame.Extended;
 using NLog;
+using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
@@ -49,18 +50,18 @@ namespace TranSimCS.Tools {
 
         //Cached state
         private NextAction nextAction;
-        private Color actionColor;
+        private Rgba32 actionColor;
         private string _description;
         private enum NextAction{
             Pick, Hover, Add, Reverse, Edit, Delete
         }
-        private static (string description, Color color) GetForAction(NextAction nextAction) => nextAction switch {
-            NextAction.Pick => ("Pick a lane end to start editing connections", Color.Transparent),
-            NextAction.Hover => ("Editing connections. Hove over lane ends to add, remove and modify connections", Color.White),
-            NextAction.Add => ("Editing connections. About to add a connection. [LAlt] for reverse", Color.Lime),
-            NextAction.Reverse => ("Editing connections. About to reverse a connection.", Color.Cyan),
-            NextAction.Edit => ("Editing connections. About to modify a connection. [LAlt] to reverse instead", Color.Yellow),
-            NextAction.Delete => ("Editing connections. About to delete a connection. [LAlt] to reverse instead", Color.Red),
+        private static (string description, Rgba32 color) GetForAction(NextAction nextAction) => nextAction switch {
+            NextAction.Pick => ("Pick a lane end to start editing connections", Colors.Transparent),
+            NextAction.Hover => ("Editing connections. Hove over lane ends to add, remove and modify connections", Colors.White),
+            NextAction.Add => ("Editing connections. About to add a connection. [LAlt] for reverse", Colors.Green),
+            NextAction.Reverse => ("Editing connections. About to reverse a connection.", Colors.Cyan),
+            NextAction.Edit => ("Editing connections. About to modify a connection. [LAlt] to reverse instead", Colors.Yellow),
+            NextAction.Delete => ("Editing connections. About to delete a connection. [LAlt] to reverse instead", Colors.Red),
             _ => throw new ArgumentException("Invalid NextAction: " + nextAction)
         };
 
@@ -138,7 +139,7 @@ namespace TranSimCS.Tools {
             var startPos = sourceFrame.O + sourceFrame.X * centerStartIndex + sourceFrame.Y * yoffset;
 
             var renderBin = menu.renderHelper.GetOrCreateRenderBinForced(Assets.WhiteTransparent);
-            var color = actionColor * 0.5f;
+            var color = actionColor;
             float width = 0.5f;
             
             if(DestNode == null) {

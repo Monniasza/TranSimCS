@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 
 namespace TranSimCS.Geometry {
     public static class OBB {
-        public static BoundingBox TransformBoundingBox(BoundingBox box, TransformQ transform) {
+        public static AABB TransformBoundingBox(AABB box, TransformQ transform) {
             Vector3 center = (box.Min + box.Max) * 0.5f;
             Vector3 extent = (box.Max - box.Min) * 0.5f;
 
@@ -44,7 +44,7 @@ namespace TranSimCS.Geometry {
                 MathF.Abs(m12) * extent.X + MathF.Abs(m22) * extent.Y + MathF.Abs(m32) * extent.Z,
                 MathF.Abs(m13) * extent.X + MathF.Abs(m23) * extent.Y + MathF.Abs(m33) * extent.Z);
 
-            return new BoundingBox(
+            return new AABB(
                 newCenter - newExtent,
                 newCenter + newExtent);
         }

@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Runtime.Intrinsics.X86;
-using Microsoft.Xna.Framework;
+using System.Numerics;
 using TranSimCS.Geometry;
 using TranSimCS.Geometry.SplineFrames;
 

@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.Xna.Framework;
+using System.Numerics;
 using TranSimCS.Geometry;
 using TranSimCS.Geometry.SplineFrames;
 
@@ -64,7 +64,7 @@ namespace TranSimCS.Spline {
         public Vector3 SamplePosition(float t, Vector3 offsetStart, Vector3 offsetEnd) {
             var startPosition = offsetStart + Vector3.UnitX * StartEndPosition.X;
             var endPosition = offsetEnd + Vector3.UnitX * StartEndPosition.Y;
-            var smoothstepOffset = Vector3.SmoothStep(startPosition, endPosition, t);
+            var smoothstepOffset = t.SmoothStep(startPosition, endPosition);
             var orthonormalSample = new OrthonormalBasis(ReferenceSpline, NormalSpline).Sample(t);
             return orthonormalSample.Transform(smoothstepOffset);
         }
@@ -95,11 +95,9 @@ namespace TranSimCS.Spline {
                 }
             }
 
-            vX.Normalize();
-            vY.Normalize();
             var d = position - pO;
-            var x = Vector3.Dot(d, vX);
-            var y = Vector3.Dot(d, vY);
+            var x = Vector3.Dot(d, vX.Normalized());
+            var y = Vector3.Dot(d, vY.Normalized());
             return new Vector3(x, y, midpoint);
         }
 

@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.HighPerformance;
 using Iesi.Collections.Generic;
-using Microsoft.Xna.Framework;
 using TranSimCS.Collections;
+using TranSimCS.Geometry;
 using TranSimCS.Spatial;
 using TranSimCS.Worlds;
 
@@ -38,13 +38,13 @@ namespace TranSimCS.SceneGraph {
             Parent?.RaiseRemoved(node);
         }
 
-        public override BoundingBox GetBounds() {
+        public override AABB GetBounds() {
             if (children.Count == 0)
                 return default;
 
             var box = children[0].GetBounds();
             for (int i = 1; i < children.Count; i++)
-                box = BoundingBox.CreateMerged(box, children[i].GetBounds());
+                box = AABB.CreateMerged(box, children[i].GetBounds());
 
             return box;
         }

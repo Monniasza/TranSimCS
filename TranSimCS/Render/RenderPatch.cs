@@ -1,26 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
+using TranSimCS.SilkNet;
 using TranSimCS.Spline;
 
 namespace TranSimCS.Render {
-    public delegate VertexPositionColorTexture PointGenerator(Vector3 pointPos, Vector2 interpPos);
+    public delegate Vertex PointGenerator(Vector3 pointPos, Vector2 interpPos);
 
     public static class RenderPatch {
-        public static void DrawDebugFence(Mesh mesh, ISpline<Vector3> spline, Vector3 height, Color color, int accuracy = 17) {
+        public static void DrawDebugFence(Mesh mesh, ISpline<Vector3> spline, Vector3 height, Rgba32 color, int accuracy = 17) {
             var points = GeometryUtils.GenerateSplinePoints(spline, accuracy);
-            var strip = new VertexPositionColorTexture[accuracy * 2];
+            var strip = new Vertex[accuracy * 2];
             for(int i = 0; i < accuracy; i++) {
                 var pos = points[i];
-                var pt1 = new VertexPositionColorTexture(pos, color, new(0, i));
+                var pt1 = new Vertex(pos, color, new(0, i));
                 strip[2 * i] = pt1;
-                var pt2 = new VertexPositionColorTexture(pos + height, color, new(1, i));
+                var pt2 = new Vertex(pos + height, color, new(1, i));
                 strip[(2 * i) + 1] = pt2;
             }
             mesh.DrawStrip(strip);
@@ -56,7 +57,7 @@ namespace TranSimCS.Render {
             var lutD0 = GeometryUtils.GenerateSplinePoints(d0, resD);
             var lutD1 = GeometryUtils.GenerateSplinePoints(d1, resD);
 
-            var results = new VertexPositionColorTexture[resC, resD];
+            var results = new Vertex[resC, resD];
 
             var cornerC0D0 = lutC0[0];
             var cornerC0D1 = lutC0[resC - 1];

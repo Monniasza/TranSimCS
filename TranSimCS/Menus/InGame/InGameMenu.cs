@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Clipper2Lib;
 using Iesi.Collections.Generic;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
@@ -17,6 +17,7 @@ using MLEM.Ui;
 using MLEM.Ui.Elements;
 using MonoGame.Extended.Collections;
 using NLog;
+using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Polygons;
@@ -44,8 +45,8 @@ namespace TranSimCS.Menus.InGame {
         public RenderManager renderManager { get; private set; }
         public MultiMesh renderHelper { get; private set; }
 
-        public Ray MouseRay { get; private set; } // Ray from the mouse position in the world
-        public Ray MouseRayOld { get; private set; } // Ray from the mouse position in the world
+        public Ray3 MouseRay { get; private set; } // Ray from the mouse position in the world
+        public Ray3 MouseRayOld { get; private set; } // Ray from the mouse position in the world
 
 
         public float MotionSpeed = 1f; // Speed of camera movement
@@ -79,9 +80,9 @@ namespace TranSimCS.Menus.InGame {
         public EscapeMenu escapeMenu { get; private set; }
 
         //Colors
-        public static readonly Color laneHighlightColor = Color.Yellow; // Color for highlighting selected lanes
-        public static readonly Color laneHighlightColor2 = new Color(0, 192, 255, 100); //Color for highlighting the selected road half
-        public static readonly Color roadSegmentHighlightColor = new Color(0, 128, 255, 100); //Color for highlighting selected road segments
+        public static readonly Rgba32 laneHighlightColor = new Rgba32(0, 255, 255, 255); // Color for highlighting selected lanes
+        public static readonly Rgba32 laneHighlightColor2 = new Rgba32(0, 192, 255, 100); //Color for highlighting the selected road half
+        public static readonly Rgba32 roadSegmentHighlightColor = new Rgba32(0, 128, 255, 100); //Color for highlighting selected road segments
         
         //Tools
         public ConnectionTool ConnectionTool { get; private set; }
@@ -192,7 +193,7 @@ namespace TranSimCS.Menus.InGame {
             return (SetUpPictureButton(texture, () => configuration.Tool = tool), tool);
         }
 
-        public override void Update(GameTime time) {
+        public override void Update(Microsoft.Xna.Framework.GameTime time) {
             //Run the world
             World.Update(time);
 
@@ -217,15 +218,12 @@ namespace TranSimCS.Menus.InGame {
             var worldMatrix = renderManager.World;
             var viewMatrix = renderManager.View;
             var projectionMatrix = renderManager.Projection;
-            nearPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 0), projectionMatrix, viewMatrix, worldMatrix);
-            farPoint = viewport.Unproject(new Vector3(mouseX, mouseY, 1), projectionMatrix, viewMatrix, worldMatrix);
-            VectorMethods.CheckVector(nearPoint, nameof(nearPoint));
-            VectorMethods.CheckVector(farPoint, nameof(farPoint));
 
-            var tangential = Vector3.Normalize(farPoint - nearPoint); //this generates NaN values
-            VectorMethods.CheckVector(tangential, nameof(tangential));
+            
 
-            Ray ray = new(nearPoint, tangential);
+            var ray = Unprojection.CreatePickRay(new(mouseX, mouseY), new(viewport.Width, viewport.Height), viewMatrix, projectionMatrix);
+            VectorMethods.CheckVector(ray.Origin, nameof(ray.Origin));
+            VectorMethods.CheckVector(ray.Direction, nameof(ray.Direction));
             MouseRayOld = MouseRay;
             MouseRay = ray; // Store the ray for later use
 
@@ -255,7 +253,7 @@ namespace TranSimCS.Menus.InGame {
             UiSystem.Update(time);
         }
 
-        private void HandleInputs(GameTime time, KeyboardState keyboardState, float secondsElapsed, Ray ray) {
+        private void HandleInputs(Microsoft.Xna.Framework.GameTime time, KeyboardState keyboardState, float secondsElapsed, Ray3 ray) {
             //Selection logic
             float distance = float.MaxValue;
             MouseOver = null;
@@ -307,7 +305,7 @@ namespace TranSimCS.Menus.InGame {
             float newAzimuth = camera.Azimuth + (azimuthMovement * RotationSpeed * secondsElapsed); // New azimuth for camera rotation
             float newElevation = camera.Elevation + (elevationMovement * RotationSpeed * secondsElapsed); // New elevation for camera rotation
             // Clamp the elevation to prevent flipping the camera upside down
-            newElevation = MathHelper.Clamp(newElevation, -MathF.PI / 2 + 0.01f, MathF.PI / 2 - 0.01f);
+            newElevation = GeometryUtils.Clamp(newElevation, -MathF.PI / 2 + 0.01f, MathF.PI / 2 - 0.01f);
             camera.Azimuth = newAzimuth; // Update camera azimuth
             camera.Elevation = newElevation; // Update camera elevation
             renderManager.Camera = camera;
@@ -400,7 +398,7 @@ namespace TranSimCS.Menus.InGame {
         ];
 
         private (object[], string)[] lastDescription;
-        public override void Draw2D(GameTime time) {
+        public override void Draw2D(Microsoft.Xna.Framework.GameTime time) {
             var Tool = configuration.Tool;
             ToolDescPanel.Update();
             KeyBindPanel.Update();

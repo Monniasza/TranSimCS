@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MLEM.Maths;
 using MonoGame.Extended.Collections;
@@ -11,6 +11,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Property;
 using TranSimCS.SceneGraph;
+using TranSimCS.SilkNet;
 
 namespace TranSimCS.Worlds.Building {
     public class BuildingUnit : Obj, IPosition, IObjMesh {
@@ -41,8 +42,8 @@ namespace TranSimCS.Worlds.Building {
             var roofMesh = mesh.GetOrCreateRenderBinForced(Assets.Concrete);
             var dx = Vector3.UnitX * 4 * width;
             var dy = Vector3.UnitZ * 4 * depth;
-            roofMesh.DrawParallelogram(Vector3.UnitY * 4 * height, dx, dy, Color.White, new RectangleF(0, 0, width, depth));
-            roofMesh.DrawParallelogram(Vector3.Zero,               dx, dy, Color.White, new RectangleF(0, 0, width, depth));
+            roofMesh.DrawParallelogram(Vector3.UnitY * 4 * height, dx, dy, Colors.White, new RectangleF(0, 0, width, depth));
+            roofMesh.DrawParallelogram(Vector3.Zero,               dx, dy, Colors.White, new RectangleF(0, 0, width, depth));
             roofMesh.AddTagsToLastTriangles(4, unit);
 
             //Transform the object
@@ -62,7 +63,7 @@ namespace TranSimCS.Worlds.Building {
             float[] X = [0, width4, width4, 0, 0];
             float[] Z = [0, 0, depth4, depth4, 0];
             float[] Y = [height4, 0];
-            var verts = new VertexPositionColorTexture[10];
+            var verts = new Vertex[10];
 
             int i = 0;
             for(int u = 0; u < 5; u++) {
@@ -72,7 +73,7 @@ namespace TranSimCS.Worlds.Building {
                     var posX = X[u];
                     var posZ = Z[u];
                     var posY = Y[v];
-                    var vertex = new VertexPositionColorTexture(new(posX, posY, posZ), Color.White, new(texX, texY));
+                    var vertex = new Vertex(new(posX, posY, posZ), Colors.White, new(texX, texY));
                     verts[i] = vertex;
                     i++;
                 }
@@ -82,7 +83,7 @@ namespace TranSimCS.Worlds.Building {
         }
 
         public void GenerateGeometry(RenderTarget target) => target.Draw(Mesh.GetMesh());
-        public BoundingBox GetBounds() => Mesh.GetMesh().GetBounds();
-        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => Mesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
+        public AABB GetBounds() => Mesh.GetMesh().GetBounds();
+        public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) => Mesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
     }
 }

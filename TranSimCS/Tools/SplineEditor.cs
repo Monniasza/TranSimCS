@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using LanguageExt.ClassInstances;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
+using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
@@ -38,7 +39,6 @@ namespace TranSimCS.Tools {
             ([MouseButton.Right], "to reset geometry of a segment")
         ];
 
-        void ITool.Draw(GameTime gameTime) {}
         void ITool.OnClick(MouseButton button) {
             var selectedRoadStrip = Menu.MouseOver?.As<RoadStrip>();
             switch (button) {
@@ -61,7 +61,7 @@ namespace TranSimCS.Tools {
             }
         }
 
-        void ITool.Update(GameTime gameTime) {
+        void ITool.Update(Microsoft.Xna.Framework.GameTime gameTime) {
             bool lmb = Menu.Game.MouseState.LeftButton == ButtonState.Pressed;
             var hoveringHandle = Menu.MouseOver?.As<RoadStripHalf>();
 
@@ -124,7 +124,7 @@ namespace TranSimCS.Tools {
         void ITool.AddSelectors(MultiMesh invisibleSelectors, MultiMesh visibleSelectors) {
             //Draw selectors
             var renderBin = visibleSelectors.GetOrCreateRenderBinForced(Assets.White);
-            void TickMark(Mesh renderBin, Vector3 pos, Vector3 normal, Vector3 tangent, Color c, float yoffset = 0.5f) {
+            void TickMark(Mesh renderBin, Vector3 pos, Vector3 normal, Vector3 tangent, Rgba32 c, float yoffset = 0.5f) {
                 pos += normal * yoffset;
                 var pos1 = pos - tangent * 0.5f;
                 var pos2 = pos + tangent * 0.5f;
@@ -132,7 +132,7 @@ namespace TranSimCS.Tools {
             }
 
             if (CurrentStrip != null) {
-                SplitRoadMethods.DrawRoadSpline(CurrentStrip, renderBin, Color.Magenta);
+                SplitRoadMethods.DrawRoadSpline(CurrentStrip, renderBin, Colors.Magenta);
                 var centerspline = CurrentStrip.ToolBasis.ReferenceSpline;
                 var normalspline = CurrentStrip.ToolBasis.NormalSpline;
 
@@ -142,18 +142,18 @@ namespace TranSimCS.Tools {
                 var endNormal = Vector3.Normalize(normalspline.d);
 
                 //Draw endpoints
-                TickMark(renderBin, centerspline.a, startNormal, startTangent, Color.Cyan);
-                TickMark(renderBin, centerspline.d, endNormal, endTangent, Color.Cyan);
+                TickMark(renderBin, centerspline.a, startNormal, startTangent, Colors.Cyan);
+                TickMark(renderBin, centerspline.d, endNormal, endTangent, Colors.Cyan);
 
-                TickMark(renderBin, centerspline.b, startNormal, startTangent, Color.Yellow);
+                TickMark(renderBin, centerspline.b, startNormal, startTangent, Colors.Yellow);
                 renderBin.AddTagsToLastTriangles(2, new RoadStripHalf(CurrentStrip, SegmentHalf.Start));
-                TickMark(renderBin, centerspline.c, endNormal, endTangent, Color.Yellow);
+                TickMark(renderBin, centerspline.c, endNormal, endTangent, Colors.Yellow);
                 renderBin.AddTagsToLastTriangles(2, new RoadStripHalf(CurrentStrip, SegmentHalf.End));
                 
                 var offset1 = startNormal * 0.45f;
                 var offset2 = endNormal * 0.45f;
-                renderBin.DrawLine(centerspline.a + offset1, centerspline.b + offset1, startNormal, Color.White);
-                renderBin.DrawLine(centerspline.d + offset2, centerspline.c + offset2, endNormal, Color.White);
+                renderBin.DrawLine(centerspline.a + offset1, centerspline.b + offset1, startNormal, Colors.White);
+                renderBin.DrawLine(centerspline.d + offset2, centerspline.c + offset2, endNormal, Colors.White);
             }
         }
     }

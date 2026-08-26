@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 
 namespace TranSimCS.Model.OBJ {
     public struct ObjData(IList<Vector3> positions, IList<Vector3> normals, IList<Vector2> uv, IList<Submodel> submodels): IEquatable<ObjData>, ICloneable<ObjData> {

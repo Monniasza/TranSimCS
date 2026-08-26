@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using LanguageExt.ClassInstances;
-using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 

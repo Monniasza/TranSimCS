@@ -2,20 +2,21 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
+using TranSimCS.SilkNet;
 
 namespace TranSimCS.Model {
     public delegate T VertexGen<T>(Vector3 vector, float distance, int index);
     public delegate (T, T) VertexGen2<T>(Vector3 l, Vector3 r, float distanceL, float distanceR, int index);
 
     public static class UniformTexturing {
-        public static VertexGen<VertexPositionColorTexture> WithFixedU(float u, Color? color = null) {
-            var color0 = color ?? Color.White;
-            return (p, d, i) => new VertexPositionColorTexture(p, color0, new(u, d));
+        public static VertexGen<Vertex> WithFixedU(float u, Rgba32? color = null, ushort material = 0, ushort emissive = 0) {
+            var color0 = color ?? Colors.White;
+            return (p, d, i) => new Vertex(p, color0, new(u, d));
         }
 
         public static T[] UniformTextured<T>(Vector3[] vectors, VertexGen<T> vertexer) {
@@ -86,12 +87,12 @@ namespace TranSimCS.Model {
             return (lverts, rverts);
         }
 
-        public static VertexGen2<VertexPositionColorTexture> GenerateLaneStripVertexGen(Color c) {
-            (VertexPositionColorTexture, VertexPositionColorTexture) GenerateVertices(Vector3 l, Vector3 r, float distanceL, float distanceR, int index) {
+        public static VertexGen2<Vertex> GenerateLaneStripVertexGen(Rgba32 c, ushort material = 0, ushort emissive = 0) {
+            (Vertex, Vertex) GenerateVertices(Vector3 l, Vector3 r, float distanceL, float distanceR, int index) {
                 float mutualDistance = Vector3.Distance(l, r) / 2;
                 return (
-                    new VertexPositionColorTexture(l, c, new(-mutualDistance, distanceL)),
-                    new VertexPositionColorTexture(r, c, new(mutualDistance, distanceR))
+                    new Vertex(l, c, new(-mutualDistance, distanceL), material, emissive),
+                    new Vertex(r, c, new(mutualDistance, distanceR), material, emissive)
                 );
             }
             return GenerateVertices;

@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using LanguageExt;
 using LanguageExt.ClassInstances.Pred;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
+using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
@@ -161,7 +162,7 @@ namespace TranSimCS.Tools.RoadConstruction {
                 LaneMappings = null;
             }
         }
-        void ITool.Update(GameTime gameTime) {
+        void ITool.Update(Microsoft.Xna.Framework.GameTime gameTime) {
             //Check if to flip the state
             var mousePosition = GeometryUtils.IntersectRayPlane(Menu.MouseRay, Menu.ReferencePlane);
             if (State != null && mousePosition.IsFinite()) {
@@ -180,9 +181,9 @@ namespace TranSimCS.Tools.RoadConstruction {
             State?.EndRange = LaneMappings!.EndRange;
             State?.Generate(Menu);
         }
-        void ITool.Draw(GameTime gameTime) {
+        void ITool.Draw(Microsoft.Xna.Framework.GameTime gameTime) {
             if (State == null || !float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt)) return;
-            Color previewColor = Colors.SemiClearWhite;
+            Rgba32 previewColor = new Rgba32(128, 128, 128, 128);
             var material = Assets.Asphalt;
             material.BlendMode = ModelOld.MaterialBlendMode.Transparent;
             
@@ -201,8 +202,8 @@ namespace TranSimCS.Tools.RoadConstruction {
             var roadRenderBin = Menu.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
             var front = refframe.O + refframe.Z * 2;
             var back = refframe.O - refframe.Z * 2;
-            roadRenderBin.DrawLine(refframe.O, front, refframe.Y, Color.Red);
-            roadRenderBin.DrawLine(refframe.O, back, refframe.Y, Color.Maroon);            
+            roadRenderBin.DrawLine(refframe.O, front, refframe.Y, Colors.Red);
+            roadRenderBin.DrawLine(refframe.O, back, refframe.Y, Colors.Maroon);            
 
             //Generate endpoint previews
             if (State == null || LaneMappings == null) return;

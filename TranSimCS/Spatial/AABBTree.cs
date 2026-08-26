@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.HighPerformance;
-using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.SceneGraph;
@@ -96,10 +95,10 @@ namespace TranSimCS.Spatial {
                 if (parent.Item != null) return parent;
                 var area = leaf.SurfaceArea;
                 var left = parent.Left;
-                var leftMerged = BoundingBox.CreateMerged(leaf.Bounds, left.Bounds);
+                var leftMerged = AABB.CreateMerged(leaf.Bounds, left.Bounds);
                 var leftCost = leftMerged.SurfaceArea() - left.Bounds.SurfaceArea();
                 var right = parent.Right;
-                var rightMerged = BoundingBox.CreateMerged(leaf.Bounds, right.Bounds);
+                var rightMerged = AABB.CreateMerged(leaf.Bounds, right.Bounds);
                 var rightCost = rightMerged.SurfaceArea() - right.Bounds.SurfaceArea();
                 if (leftCost < rightCost) {
                     parent = left;
@@ -119,7 +118,7 @@ namespace TranSimCS.Spatial {
             var newParent = new AABBNode<T>() {
                 Left = leaf,
                 Right = sibling,
-                Bounds = BoundingBox.CreateMerged(leaf.Bounds, sibling.Bounds),
+                Bounds = AABB.CreateMerged(leaf.Bounds, sibling.Bounds),
                 Stale = false,
                 Parent = parent,
                 Height = 2
@@ -325,7 +324,7 @@ namespace TranSimCS.Spatial {
             root = null;
         }
 
-        public bool Find(Ray ray, out T element, out float distance, out object? tag) {
+        public bool Find(Ray3 ray, out T element, out float distance, out object? tag) {
             Reject(out element, out distance, out tag);
             if (root == null) return false;
 
@@ -334,7 +333,7 @@ namespace TranSimCS.Spatial {
             void ComputeIntersectionAndAddElementToQueue(AABBNode<T>? node, float upperBound = float.PositiveInfinity) {
                 if (node == null) return;
                 Refit(node);
-                var rayIntersect = node.Bounds.Intersects(ray);
+                var rayIntersect = ray.Intersects(node.Bounds, 0, upperBound);
                 if (rayIntersect == null || rayIntersect < 0 || rayIntersect > upperBound) return;
                 queue.Enqueue(node, rayIntersect.Value);
             }
@@ -366,7 +365,7 @@ namespace TranSimCS.Spatial {
 
         public IEnumerable<T> QueryAll() => QueryFilter(null);
 
-        public IEnumerable<T> QueryFilter(Func<BoundingBox, bool>? filter = null) {
+        public IEnumerable<T> QueryFilter(Func<AABB, bool>? filter = null) {
             Queue<AABBNode<T>?> queue = new();
             queue.Enqueue(root);
             Refit(root);
@@ -380,8 +379,8 @@ namespace TranSimCS.Spatial {
             }
         }
 
-        public IEnumerable<T> Query(BoundingBox box) => QueryFilter(box.Intersects);
-        public IEnumerable<T> Query(BoundingFrustum frustum) => QueryFilter(frustum.Intersects);
+        public IEnumerable<T> Query(AABB box) => QueryFilter(box.Intersects);
+        public IEnumerable<T> Query(Frustum frustum) => QueryFilter(frustum.Intersects);
 
         private void Refit(AABBNode<T>? node) {
             if (node == null || !node.Stale) return;
@@ -394,7 +393,7 @@ namespace TranSimCS.Spatial {
                 if (node.Item == null) {
                     Debug.Assert(node.Left != null);
                     Debug.Assert(node.Right != null);
-                    node.Bounds = BoundingBox.CreateMerged(
+                    node.Bounds = AABB.CreateMerged(
                         node.Left.Bounds, node.Right.Bounds
                     );
                     node.Reheight();
@@ -415,7 +414,7 @@ namespace TranSimCS.Spatial {
             } else {
                 RefitDown(node.Left);
                 RefitDown(node.Right);
-                node.Bounds = BoundingBox.CreateMerged(node.Left.Bounds, node.Right.Bounds);
+                node.Bounds = AABB.CreateMerged(node.Left.Bounds, node.Right.Bounds);
                 var isLeftStale = node.Left != null && node.Left.Stale;
                 var isRightStale = node.Right != null && node.Right.Stale;
                 if (!isLeftStale && !isRightStale) node.Stale = false; 
@@ -464,7 +463,7 @@ namespace TranSimCS.Spatial {
         public AABBNode<T>? Parent;
         public AABBNode<T>? Left;
         public AABBNode<T>? Right;
-        public BoundingBox Bounds;
+        public AABB Bounds;
         public bool Stale;
         public int Height = 1;
 

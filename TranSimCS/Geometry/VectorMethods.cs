@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Clipper2Lib;
-using Microsoft.Xna.Framework;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
@@ -43,6 +43,6 @@ namespace TranSimCS.Geometry {
             new Vector3(vector.X, vector.Y, vector.Z);
 
         public static float Average(this Vector2 vector) => (vector.X + vector.Y) / 2;
-        public static float Lerp(this Vector2 vector, float t) => MathHelper.Lerp(vector.X, vector.Y, t);
+        public static float Lerp(this Vector2 vector, float t) => float.Lerp(vector.X, vector.Y, t);
     }
 }

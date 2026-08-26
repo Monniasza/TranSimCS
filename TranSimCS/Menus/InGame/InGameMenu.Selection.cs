@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 
@@ -12,7 +12,7 @@ namespace TranSimCS.Menus.InGame {
     public partial class InGameMenu {
         public Selection? MouseOver { get; internal set; } = null;
 
-        public Vector3 IntersectWithGround(Ray ray) {
+        public Vector3 IntersectWithGround(Ray3 ray) {
             return GeometryUtils.IntersectRayPlane(ray, groundPlane);
         }
         public Vector3 GroundSelection => IntersectWithGround(MouseRay);

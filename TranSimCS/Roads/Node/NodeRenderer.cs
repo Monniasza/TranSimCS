@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
-using TranSimCS.ModelOld;
 
 namespace TranSimCS.Roads.Node {
     public static class NodeRenderer {
-        public static void GenerateRoadNodeSelectionMesh(RoadNode node, Mesh mesh, HalfLane? SelectedHalfLane, Color? nodeHighlightColor = null, Color? laneHighlightColor = null, bool bothends = false) {
+        public static void GenerateRoadNodeSelectionMesh(RoadNode node, Mesh mesh, HalfLane? SelectedHalfLane, Rgba32? nodeHighlightColor = null, Rgba32? laneHighlightColor = null, bool bothends = false) {
             Mesh roadRenderBin = mesh;
             var refframe = node.ReferenceFrame;
             foreach (var lane in node.Lanes) {
                 foreach (var laneEnd in new HalfLane[] { lane.FrontHalf, lane.RearHalf }) {
-                    var altColor = lane.Spec.Color * 0.5f;
+                    var altColor = lane.Spec.Color.AlphaMul(0.5f);
                     var color = nodeHighlightColor ?? InGameMenu.roadSegmentHighlightColor;
                     if (SelectedHalfLane == laneEnd || (bothends && SelectedHalfLane == laneEnd.OppositeHalf)) color = laneHighlightColor ?? InGameMenu.laneHighlightColor;
                     else if (SelectedHalfLane == null || !node.Lanes.Contains(SelectedHalfLane.Lane)) color = altColor;
@@ -31,13 +31,13 @@ namespace TranSimCS.Roads.Node {
             //Generate front and back markers
             var front = refframe.O + refframe.Z * 2;
             var back = refframe.O - refframe.Z * 2;
-            roadRenderBin.DrawLine(refframe.O, front, refframe.Y, Color.Red);
+            roadRenderBin.DrawLine(refframe.O, front, refframe.Y, Colors.Red);
             roadRenderBin.AddTagsToLastTriangles(2, node.FrontEnd);
-            roadRenderBin.DrawLine(refframe.O, back, refframe.Y, Color.Maroon);
+            roadRenderBin.DrawLine(refframe.O, back, refframe.Y, Colors.Maroon);
             roadRenderBin.AddTagsToLastTriangles(2, node.RearEnd);
         }
 
-        public static void CreateAddLanes(RoadNode nodeEnd, Mesh mesh, float size = 1, Color? color = null, float voffset = 0.2f) {
+        public static void CreateAddLanes(RoadNode nodeEnd, Mesh mesh, float size = 1, Rgba32? color = null, float voffset = 0.2f) {
             if (nodeEnd.Lanes.Count < 1) return;
             var bounds = nodeEnd.Bounds;
             var leftLimit = bounds.Min;
@@ -47,26 +47,25 @@ namespace TranSimCS.Roads.Node {
             CreateAddLane(new AddLaneSelection(-1, leftLimit, nodeEnd.RearEnd), mesh, size, color, voffset);
             CreateAddLane(new AddLaneSelection(1, rightLimit, nodeEnd.RearEnd), mesh, size, color, voffset);
         }
-        public static QuadOld CreateAddLane(AddLaneSelection als, Mesh mesh, float size = 1, Color? color = null, float voffset = 0.2f) {
+        public static QuadOld CreateAddLane(AddLaneSelection als, Mesh mesh, float size = 1, Rgba32? color = null, float voffset = 0.2f) {
             var zrange = GeometryUtils.RoadEndToRange(als.nodeEnd.End) * size;
             var xrange = als.CalculateOffsets(size);
-            QuadOld quad = GenerateLaneQuad(als.nodeEnd.Node, xrange.Min, xrange.Max, color ?? Colors.SemiClearGray, voffset, zrange.X, zrange.Y);
+            QuadOld quad = GenerateLaneQuad(als.nodeEnd.Node, xrange.Min, xrange.Max, color ?? new Rgba32(128, 128, 128, 128), voffset, zrange.X, zrange.Y);
             mesh.DrawQuad(quad);
             mesh.AddTagsToLastTriangles(2, als);
             return quad;
         }
 
-        public static QuadOld GenerateNodeQuad(RoadNode node, Color color, float voffset = 0.2f, float minZ = -1, float maxZ = 1) {
+        public static QuadOld GenerateNodeQuad(RoadNode node, Rgba32 color, float voffset = 0.2f, float minZ = -1, float maxZ = 1) {
             var range = node.Bounds;
             return GenerateLaneQuad(node, range.Min, range.Max, color, voffset, minZ, maxZ);
         }
-        public static QuadOld GenerateLaneQuad(Lane lane, Color? color, float voffset = 0.2f, float minZ = -1, float maxZ = 1) {
+        public static QuadOld GenerateLaneQuad(Lane lane, Rgba32? color, float voffset = 0.2f, float minZ = -1, float maxZ = 1) {
             var range = lane.Bounds;
-            var altColor = lane.Spec.Color;
-            altColor.A /= 2;
+            var altColor = lane.Spec.Color.AlphaMul(0.5f);
             return GenerateLaneQuad(lane.RoadNode, range.Min, range.Max, color ?? altColor, voffset, minZ, maxZ);
         }
-        public static QuadOld GenerateLaneQuad(RoadNode node, float lb, float rb, Color color, float voffset = 0.2f, float minZ = -1, float maxZ = 1) {
+        public static QuadOld GenerateLaneQuad(RoadNode node, float lb, float rb, Rgba32 color, float voffset = 0.2f, float minZ = -1, float maxZ = 1) {
             Vector3 offset = new(0, voffset, 0);
             Transform3 transform = node.PositionProp.Value.CalcReferenceFrame();
             var vl = transform.O + lb * transform.X;
@@ -97,7 +96,7 @@ namespace TranSimCS.Roads.Node {
                 var voffset = refframe.Y * 0.1f;
                 var p0 = refframe.O + refframe.X * range.Min + voffset;
                 var p1 = refframe.O + refframe.X * range.Max + voffset;
-                lineBin.DrawLine(p0, p1, refframe.Y, Color.White, width: 0.5f, length: width/2);
+                lineBin.DrawLine(p0, p1, refframe.Y, Colors.White, width: 0.5f, length: width/2);
             }
 
             //Generate the impassable barrier
@@ -108,8 +107,8 @@ namespace TranSimCS.Roads.Node {
                 var barrierNormal = -refframe.Z;
                 var p1 = refframe.O + refframe.X * range.Min + refframe.Y * barrierHeight;
                 var p2 = p1 + refframe.X * width;
-                barrierBin.DrawLine(p1, p2, barrierNormal, Color.White, length: width);
-                barrierBin.DrawLine(p1, p2, -barrierNormal, Color.White, length: width);
+                barrierBin.DrawLine(p1, p2, barrierNormal, Colors.White, length: width);
+                barrierBin.DrawLine(p1, p2, -barrierNormal, Colors.White, length: width);
             }
         }
     }

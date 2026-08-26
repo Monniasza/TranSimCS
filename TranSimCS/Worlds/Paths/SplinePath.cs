@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Iesi.Collections.Generic;
-using Microsoft.Xna.Framework;
+using TranSimCS.Geometry;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Spatial;
@@ -93,10 +93,10 @@ namespace TranSimCS.Worlds.Paths {
         public void GenerateGeometry(RenderTarget target) {
             //unused
         }
-        public BoundingBox GetBounds() {
+        public AABB GetBounds() {
             throw new NotImplementedException();
         }
-        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) => IBVHElement.Reject(ray, out distance, out tag);
+        public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) => IBVHElement.Reject(ray, out distance, out tag);
     }
 
     public enum PathState {

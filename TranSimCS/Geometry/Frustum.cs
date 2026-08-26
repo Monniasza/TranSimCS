@@ -122,5 +122,6 @@ namespace TranSimCS.Geometry {
             }
             return intersecting ? Intersection.Intersecting : Intersection.Contained;
         }
+        public bool Intersects(AABB boundingBox) => Intersect(boundingBox) != Intersection.Disjoint;
     }
 }

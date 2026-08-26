@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using TranSimCS.Geometry;
@@ -43,21 +43,17 @@ namespace TranSimCS.Tools {
         }
 
 
-        public void Draw(GameTime gameTime) {
+        public void Draw(Microsoft.Xna.Framework.GameTime gameTime) {
             //draw guide arrows over every lane
             foreach(var node in menu.World.Nodes.data) {
                 var refframe = node.ReferenceFrame;
                 foreach (var lane in node.Lanes) {
                     var bounds = lane.Bounds;
                     var arrowBin = menu.renderHelper.GetOrCreateRenderBinForced(Assets.Arrow);
-                    var quad = NodeRenderer.GenerateLaneQuad(lane, Colors.SemiClearGray, 0.5f);
+                    var quad = NodeRenderer.GenerateLaneQuad(lane, Colors.SemiClearGray.ToRgba32(), 0.5f);
                     arrowBin.DrawQuad(quad);
                 }
             }
-        }
-
-        public void Draw2D(GameTime gameTime) {
-            //unused
         }
 
         public (object[], string)[] PromptKeys() {
@@ -68,7 +64,7 @@ namespace TranSimCS.Tools {
             ];
         }
 
-        public void Update(GameTime gameTime) {
+        public void Update(Microsoft.Xna.Framework.GameTime gameTime) {
             var lmbOld = menu.Game.MouseStateOld.LeftButton == ButtonState.Pressed;
             var rmbOld = menu.Game.MouseStateOld.RightButton == ButtonState.Pressed;
             var lmbNew = menu.Game.MouseState.LeftButton == ButtonState.Pressed;

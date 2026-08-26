@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Model;
 using TranSimCS.ModelOld;
+using TranSimCS.SilkNet;
 
 namespace TranSimCS.Worlds.Cars {
     public static class CarModel {
@@ -30,36 +31,36 @@ namespace TranSimCS.Worlds.Cars {
             Vector3 p5r = new( 1, 1, -2);
             Vector3 p6r = new( 1, 0, -2);
 
-            VertexPositionColorTexture[] verts = [
+            Vertex[] verts = [
                 //0-11: Top
-                new(p1l, Color.White, new(0, 0.5f)),
-                new(p1r, Color.White, new(0, 0)),
-                new(p2l, Color.White, new(0.125f, 0.5f)),
-                new(p2r, Color.White, new(0.125f, 0)),
-                new(p3l, Color.White, new(0.375f, 0.5f)),
-                new(p3r, Color.White, new(0.375f, 0)),
-                new(p4l, Color.White, new(0.5f, 0.5f)),
-                new(p4r, Color.White, new(0.5f, 0)),
-                new(p5l, Color.White, new(0.625f, 0.5f)),
-                new(p5r, Color.White, new(0.625f, 0)),
-                new(p6l, Color.White, new(0.75f, 0.5f)),
-                new(p6r, Color.White, new(0.75f, 0)),
+                new(p1l, new(0, 0.5f)),
+                new(p1r, new(0, 0)),
+                new(p2l, new(0.125f, 0.5f)),
+                new(p2r, new(0.125f, 0)),
+                new(p3l, new(0.375f, 0.5f)),
+                new(p3r, new(0.375f, 0)),
+                new(p4l, new(0.5f, 0.5f)),
+                new(p4r, new(0.5f, 0)),
+                new(p5l, new(0.625f, 0.5f)),
+                new(p5r, new(0.625f, 0)),
+                new(p6l, new(0.75f, 0.5f)),
+                new(p6r, new(0.75f, 0)),
 
                 //12 - 17: Left
-                new(p1l, Color.White, new(0, 1)),
-                new(p2l, Color.White, new(0, 0.75f)),
-                new(p3l, Color.White, new(0.25f, 0.5f)),
-                new(p4l, Color.White, new(0.375f, 0.5f)),
-                new(p5l, Color.White, new(0.5f, 0.75f)),
-                new(p6l, Color.White, new(0.5f, 1)),
+                new(p1l, new(0, 1)),
+                new(p2l, new(0, 0.75f)),
+                new(p3l, new(0.25f, 0.5f)),
+                new(p4l, new(0.375f, 0.5f)),
+                new(p5l, new(0.5f, 0.75f)),
+                new(p6l, new(0.5f, 1)),
 
                 //18 - 23: Right
-                new(p1r, Color.White, new(0, 1)),
-                new(p2r, Color.White, new(0, 0.75f)),
-                new(p3r, Color.White, new(0.25f, 0.5f)),
-                new(p4r, Color.White, new(0.375f, 0.5f)),
-                new(p5r, Color.White, new(0.5f, 0.75f)),
-                new(p6r, Color.White, new(0.5f, 1)),
+                new(p1r, new(0, 1)),
+                new(p2r, new(0, 0.75f)),
+                new(p3r, new(0.25f, 0.5f)),
+                new(p4r, new(0.375f, 0.5f)),
+                new(p5r, new(0.5f, 0.75f)),
+                new(p6r, new(0.5f, 1)),
             ];
             ushort[] indices = [
                 //Top strip

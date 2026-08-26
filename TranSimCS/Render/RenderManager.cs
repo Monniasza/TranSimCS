@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using DotNet.Collections.Generic;
 using LanguageExt;
 using LanguageExt.Pipes;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.Collections;
 using TranSimCS.Geometry;
@@ -35,10 +35,10 @@ namespace TranSimCS.Render {
         public readonly CollectionPool<VertexBuffer> VertexBufferPool;
         public readonly CollectionPool<IndexBuffer> IndexBufferPool;
         public readonly CollectionPool<VertexBuffer> InstanceBufferPool;
-        public Matrix WorldViewProjection { get; private set; }
-        public Matrix World { get; private set; }
-        public Matrix View { get; private set; }
-        public Matrix Projection { get; private set; }
+        public Matrix4x4 WorldViewProjection { get; private set; }
+        public Matrix4x4 World { get; private set; }
+        public Matrix4x4 View { get; private set; }
+        public Matrix4x4 Projection { get; private set; }
 
         //CACHE, managed by RenderManager
         internal class MeshGPU{
@@ -123,7 +123,7 @@ namespace TranSimCS.Render {
             128);
         }
         private void SetUpEffects() {
-            WorldViewProjection = Camera.GetCombinedMatrix(gpu, out var world, out var view, out var projection);
+            WorldViewProjection = Camera.GetCombinedMatrix(gpu.Viewport.Width, gpu.Viewport.Height, out var world, out var view, out var projection);
             World = world;
             View = view;
             Projection = projection;

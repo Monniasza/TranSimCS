@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework;
+using System.Numerics;
 using TranSimCS.Geometry;
 
 namespace TranSimCS.Tools {
@@ -11,7 +11,7 @@ namespace TranSimCS.Tools {
         public void CreateValues(RoadPlan plan) {
             plan.endLateral = plan.startLateral;
             plan.endTangent = plan.startTangent;
-            Ray ray = new Ray(plan.startPos, plan.startTangent);
+            Ray3 ray = new Ray3(plan.startPos, plan.startTangent);
             var endPos = GeometryUtils.FindNearest(ray, plan.endPos, out var _);
             plan.endPos = endPos;
         }
@@ -28,8 +28,7 @@ namespace TranSimCS.Tools {
         public string Name => "Circular arc";
 
         public void CreateValues(RoadPlan plan) {
-            var reflectionVector = plan.endPos - plan.startPos;
-            reflectionVector.Normalize();
+            var reflectionVector = (plan.endPos - plan.startPos).Normalized();
 
             if (!reflectionVector.IsFinite()) return;
 
@@ -45,9 +44,7 @@ namespace TranSimCS.Tools {
                 -GeometryUtils.ReflectVectorByNormal(
                     plan.startTangent,
                     reflectionVector
-                );
-
-            plan.endTangent.Normalize();
+                ).Normalized();
 
             plan.endLateral =
                 Vector3.Normalize(

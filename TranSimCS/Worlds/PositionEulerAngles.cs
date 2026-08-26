@@ -1,5 +1,5 @@
 using System;
-using Microsoft.Xna.Framework;
+using System.Numerics;
 using TranSimCS.Geometry;
 
 namespace TranSimCS.Worlds {
@@ -56,8 +56,7 @@ namespace TranSimCS.Worlds {
             return new PositionEulerAngles(pos, azimuth, inclination, tilt);
         }
         public static PositionEulerAngles FromPosTangentLateral(Vector3 pos, Vector3 tangent, Vector3 lateral) {
-            var nrm = Vector3.Cross(lateral, tangent);
-            nrm.Normalize();
+            var nrm = Vector3.Cross(lateral, tangent).Normalized();
             var ypr = Transform3.ToYawPitchRoll(lateral, nrm, tangent);
 
             return new PositionEulerAngles(pos, GeometryUtils.RadiansToField(ypr.X), ypr.Y, ypr.Z);
@@ -77,7 +76,7 @@ namespace TranSimCS.Worlds {
             var rotation = Quaternion.CreateFromYawPitchRoll(GeometryUtils.FieldToRadians(Azimuth), -Inclination, Tilt);
             return new(Position, rotation);
         }
-        public Matrix CalcReferenceMatrix() => Matrix.CreateFromYawPitchRoll(GeometryUtils.FieldToRadians(Azimuth), -Inclination, Tilt) * Matrix.CreateTranslation(Position);
+        public Matrix4x4 CalcReferenceMatrix() => Matrix4x4.CreateFromYawPitchRoll(GeometryUtils.FieldToRadians(Azimuth), -Inclination, Tilt) * Matrix4x4.CreateTranslation(Position);
 
         public Vector3 GetTangential() {
             var az = GeometryUtils.FieldToRadians(Azimuth);

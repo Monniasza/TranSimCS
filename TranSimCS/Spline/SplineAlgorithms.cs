@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 using TranSimCS.Geometry;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
@@ -19,10 +19,8 @@ namespace TranSimCS.Spline {
             var flattenedEnd = end.ToX0Z();
             var flattenedEndTangent = endTangent.ToX0Z();
 
-            flattenedStartTangent.Normalize();
-            flattenedEndTangent.Normalize();
-            flattenedStartTangent *= startTangent.Length();
-            flattenedEndTangent *= endTangent.Length();
+            flattenedStartTangent *= startTangent.Length() / flattenedStartTangent.Length();
+            flattenedEndTangent *= endTangent.Length() / flattenedEndTangent.Length();
 
             var flattenedSpline = GeometryUtils.GenerateJoinSpline(flattenedStart, flattenedEnd, flattenedStartTangent, flattenedEndTangent);
             var anisotropicStartTangent = flattenedSpline.b - flattenedSpline.a;

@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Numerics;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Spline;
 

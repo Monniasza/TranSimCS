@@ -1,7 +1,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework;
+using System.Numerics;
 using TranSimCS.Geometry;
 
 namespace TranSimCS.Model {
@@ -12,7 +12,7 @@ namespace TranSimCS.Model {
         private readonly Triangle[] triangles;
 
         private struct Node {
-            public BoundingBox Bounds;
+            public AABB Bounds;
             public int Left;
             public int Right;
             public int Start;
@@ -21,7 +21,7 @@ namespace TranSimCS.Model {
         }
 
         private struct Triangle {
-            public BoundingBox Bounds;
+            public AABB Bounds;
             public Vector3 Centroid;
             public int BaseIndex;
             public int Id;
@@ -33,7 +33,7 @@ namespace TranSimCS.Model {
             this.triangles = triangles;
         }
 
-        public BoundingBox Bounds => nodes.Length == 0 ? default : nodes[0].Bounds;
+        public AABB Bounds => nodes.Length == 0 ? default : nodes[0].Bounds;
 
         public static MeshBvh Build(Mesh mesh) {
             var indices = mesh.Indices;
@@ -46,7 +46,7 @@ namespace TranSimCS.Model {
                 var min = Vector3.Min(Vector3.Min(p0, p1), p2);
                 var max = Vector3.Max(Vector3.Max(p0, p1), p2);
                 tris.Add(new Triangle {
-                    Bounds = new BoundingBox(min, max),
+                    Bounds = new AABB(min, max),
                     Centroid = (p0 + p1 + p2) / 3f,
                     BaseIndex = i,
                     Id = id
@@ -80,30 +80,30 @@ namespace TranSimCS.Model {
             return nodeIndex;
         }
 
-        private static BoundingBox ComputeBounds(List<Triangle> tris, int start, int count) {
+        private static AABB ComputeBounds(List<Triangle> tris, int start, int count) {
             var bounds = tris[start].Bounds;
             for (int i = 1; i < count; i++)
-                bounds = BoundingBox.CreateMerged(bounds, tris[start + i].Bounds);
+                bounds = AABB.CreateMerged(bounds, tris[start + i].Bounds);
             return bounds;
         }
 
-        private static BoundingBox ComputeCentroidBounds(List<Triangle> tris, int start, int count) {
+        private static AABB ComputeCentroidBounds(List<Triangle> tris, int start, int count) {
             Vector3 min = tris[start].Centroid, max = min;
             for (int i = 1; i < count; i++) {
                 var c = tris[start + i].Centroid;
                 min = Vector3.Min(min, c);
                 max = Vector3.Max(max, c);
             }
-            return new BoundingBox(min, max);
+            return new AABB(min, max);
         }
 
-        public bool RayIntersect(Ray ray, out int triangleId, out float distance) =>
+        public bool RayIntersect(Ray3 ray, out int triangleId, out float distance) =>
             RayIntersect(ray, 0, float.PositiveInfinity, out triangleId, out distance);
 
-        public bool RayIntersect(Ray ray, float maxDistance, out int triangleId, out float distance) =>
+        public bool RayIntersect(Ray3 ray, float maxDistance, out int triangleId, out float distance) =>
             RayIntersect(ray, 0, maxDistance, out triangleId, out distance);
 
-        public bool RayIntersect(Ray ray, float minDistance, float maxDistance, out int triangleId, out float distance) {
+        public bool RayIntersect(Ray3 ray, float minDistance, float maxDistance, out int triangleId, out float distance) {
             if (minDistance < 0)
                 throw new ArgumentOutOfRangeException(nameof(minDistance), "Minimum distance must be non-negative.");
             if (maxDistance < minDistance)
@@ -154,7 +154,7 @@ namespace TranSimCS.Model {
                 throw new ArgumentException("Projection direction must be non-zero.", nameof(direction));
 
             direction /= MathF.Sqrt(lengthSquared);
-            if (RayIntersect(new Ray(point, direction), minDistance, maxDistance, out triangleId, out distance)) {
+            if (RayIntersect(new Ray3(point, direction), minDistance, maxDistance, out triangleId, out distance)) {
                 projectedPoint = point + direction * distance;
                 return true;
             }
