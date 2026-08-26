@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using CommunityToolkit.HighPerformance;
 using Microsoft.Xna.Framework.Graphics;
 using Silk.NET.OpenGL;
@@ -21,6 +23,14 @@ namespace TranSimCS.SilkNet {
             _vertexArray = gl.GenVertexArray();
             _indexBuffer = gl.GenBuffer();
             _vertexBuffer = gl.GenBuffer();
+
+            var testStride = Unsafe.SizeOf<Vertex>();
+            Debug.Assert(testStride == 28, $"Mismatched vertex size: {testStride} != 28");
+            Debug.Assert(Marshal.OffsetOf<Vertex>(nameof(Vertex.Position)) == 0);
+            Debug.Assert(Marshal.OffsetOf<Vertex>(nameof(Vertex.Color)) == 12);
+            Debug.Assert(Marshal.OffsetOf<Vertex>(nameof(Vertex.TexCoord)) == 16);
+            Debug.Assert(Marshal.OffsetOf<Vertex>(nameof(Vertex.Material)) == 24);
+            Debug.Assert(Marshal.OffsetOf<Vertex>(nameof(Vertex.Emissive)) == 26);
 
             gl.BindVertexArray(_vertexArray);
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, _vertexBuffer);

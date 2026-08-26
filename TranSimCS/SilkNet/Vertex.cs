@@ -8,46 +8,53 @@ using System.Text;
 using System.Threading.Tasks;
 using LanguageExt.SomeHelp;
 using Microsoft.Xna.Framework.Graphics;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace TranSimCS.SilkNet {
     [StructLayout(LayoutKind.Sequential)]
     public struct Vertex : IEquatable<Vertex>, IVertexType {
         public Vector3 Position;
-        public Color Color;
+        public Rgba32 Color;
         public Vector2 TexCoord;
         public ushort Material;
         public ushort Emissive;
 
-        private VertexDeclaration _vertexDeclaration = new(
+        private static VertexDeclaration _vertexDeclaration = new(
             new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
             new VertexElement(12, VertexElementFormat.Color, VertexElementUsage.Color, 0),
             new VertexElement(16, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0),
-            new VertexElement(24, VertexElementFormat.Short2, VertexElementUsage.BlendIndices, 0),
+            new VertexElement(24, VertexElementFormat.Short2, VertexElementUsage.BlendIndices, 0)
         );
-        public VertexDeclaration VertexDeclaration => throw new NotImplementedException();
+        public VertexDeclaration VertexDeclaration => _vertexDeclaration;
 
-        public Vertex(Vector3 position, Color color, Vector2 texCoord, ushort material = 0, ushort emissive = 0) {
+        public Vertex(Vector3 position, Rgba32 color, Vector2 texCoord, ushort material = 0, ushort emissive = 0) {
             Position = position;
             Color = color;
             TexCoord = texCoord;
             Material = material;
         }
-        public Vertex(Vector3 position, Color color, Vector2 texCoord) {
+        public Vertex(Vector3 position, Rgba32 color, Vector2 texCoord) {
             Position = position;
             Color = color;
             TexCoord = texCoord;
             Material = 0;
         }
+        public Vertex(Vector3 position, Color color, Vector2 texCoord) {
+            Position = position;
+            Color = color.ToRgba32();
+            TexCoord = texCoord;
+            Material = 0;
+        }
         public Vertex(Vector3 position, Vector2 texCoord) {
             Position = position;
-            Color = Color.White;
+            Color = Colors.White;
             TexCoord = texCoord;
             Material = 0;
         }
 
         public Vertex(VertexPositionColorTexture vpct) {
             Position = vpct.Position.ToNumerics();
-            Color = Color.FromArgb((int)vpct.Color.PackedValue);
+            Color = new Rgba32(vpct.Color.PackedValue);
         }
 
         public override bool Equals(object? obj) {
