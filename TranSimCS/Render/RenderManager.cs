@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +17,7 @@ using TranSimCS.Model;
 using TranSimCS.ModelOld;
 using TranSimCS.Property;
 using TranSimCS.Setting;
+using TranSimCS.SilkNet;
 using static TranSimCS.Model.MeshUnroll;
 
 namespace TranSimCS.Render {
@@ -101,13 +104,19 @@ namespace TranSimCS.Render {
         }
 
         public RenderManager(GraphicsDevice gpu) {
+            Vertex dummy = default;
+            var actualStride = dummy.VertexDeclaration.VertexStride;
+            Debug.Assert(actualStride == 28, $"Vertex stride mismatch: {actualStride} != 28");
+            var actualSize = Unsafe.SizeOf<Vertex>();
+            Debug.Assert(actualSize == 28, $"Vertex size mismatch: {actualSize} != 28");
+
             this.gpu = gpu;
             CameraProp = new(Camera.Default, "camera", null);
             AmbientColor = new(Vector4.One, "ambientColor", null);
             CameraProp.ValueChanged += (s, old, value) => SetUpEffects();
             SetUpEffects();
             VertexBufferPool = new(
-                x => new VertexBuffer(gpu, typeof(VertexPositionColorTexture), x, BufferUsage.WriteOnly),
+                x => new VertexBuffer(gpu, typeof(Vertex), x, BufferUsage.WriteOnly),
                 x => x.Dispose(),
                 x => x.VertexCount,
             128);

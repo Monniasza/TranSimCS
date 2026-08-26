@@ -32,29 +32,21 @@ namespace TranSimCS.SilkNet {
             Color = color;
             TexCoord = texCoord;
             Material = material;
+            Emissive = emissive;
         }
         public Vertex(Vector3 position, Rgba32 color, Vector2 texCoord) {
             Position = position;
             Color = color;
             TexCoord = texCoord;
             Material = 0;
-        }
-        public Vertex(Vector3 position, Color color, Vector2 texCoord) {
-            Position = position;
-            Color = color.ToRgba32();
-            TexCoord = texCoord;
-            Material = 0;
+            Emissive = 0;
         }
         public Vertex(Vector3 position, Vector2 texCoord) {
             Position = position;
             Color = Colors.White;
             TexCoord = texCoord;
             Material = 0;
-        }
-
-        public Vertex(VertexPositionColorTexture vpct) {
-            Position = vpct.Position.ToNumerics();
-            Color = new Rgba32(vpct.Color.PackedValue);
+            Emissive = 0;
         }
 
         public override bool Equals(object? obj) {
