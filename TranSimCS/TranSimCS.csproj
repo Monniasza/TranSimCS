@@ -39,6 +39,7 @@
 	  <None Remove="HalfEdge\**" />
 	</ItemGroup>
 	<ItemGroup>
+	  <Compile Remove="SilkNet\TextureGL.cs" />
 	  <Compile Remove="Spline\TangentArc.cs" />
 	  <Compile Remove="Worlds\Paths\PAth_ADMIN_Aug-10-134040-2026_Conflict.cs" />
 	</ItemGroup>
