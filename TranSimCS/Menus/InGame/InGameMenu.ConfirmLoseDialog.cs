@@ -44,7 +44,7 @@ namespace TranSimCS.Menus.InGame {
 
                 CreateButton(Anchor.BottomLeft, "Save", SaveClicked);
                 var dontSave = CreateButton(Anchor.BottomCenter, "Don't Save", DiscardClicked);
-                dontSave.NormalColor = Color.Red;
+                dontSave.NormalColor = Colors.Red.ToMonoGame();
                 CreateButton(Anchor.BottomRight, "Cancel", CancelClicked);
             }
 

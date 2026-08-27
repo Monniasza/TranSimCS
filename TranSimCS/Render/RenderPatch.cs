@@ -4,7 +4,6 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.SilkNet;
@@ -14,7 +13,7 @@ namespace TranSimCS.Render {
     public delegate Vertex PointGenerator(Vector3 pointPos, Vector2 interpPos);
 
     public static class RenderPatch {
-        public static void DrawDebugFence(Mesh mesh, ISpline<Vector3> spline, Vector3 height, Rgba32 color, int accuracy = 17) {
+        public static void DrawDebugFence(Mesh mesh, ISpline<Vector3> spline, Vector3 height, Color color, int accuracy = 17) {
             var points = GeometryUtils.GenerateSplinePoints(spline, accuracy);
             var strip = new Vertex[accuracy * 2];
             for(int i = 0; i < accuracy; i++) {

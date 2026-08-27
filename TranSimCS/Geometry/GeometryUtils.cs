@@ -5,7 +5,6 @@ using System.Numerics;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
-using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Roads.Node;
 using TranSimCS.SilkNet;
 using TranSimCS.Spline;
@@ -107,7 +106,7 @@ namespace TranSimCS.Geometry{
             return length;
         }
 
-        public static Vertex[] GeneratePositionsFromVectors(float xPos, Rgba32 color, params Vector3[] vectors)
+        public static Vertex[] GeneratePositionsFromVectors(float xPos, Color color, params Vector3[] vectors)
         {
             var positions = new Vertex[vectors.Length];
             var step = 1f / (vectors.Length - 1);
@@ -180,7 +179,7 @@ namespace TranSimCS.Geometry{
             return new(pos, Colors.White, new(pos.X, pos.Z));
         }
 
-        public static Vertex CreateVertex(Vector3 pos, Rgba32 c) {
+        public static Vertex CreateVertex(Vector3 pos, Color c) {
             return new(pos, c, new(pos.X, pos.Z));
         }
 

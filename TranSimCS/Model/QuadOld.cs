@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
 using TranSimCS.SilkNet;
 
@@ -24,7 +23,7 @@ namespace TranSimCS.Model {
             this.d = new Vertex(d, Colors.White, new(0, 1));
         }
 
-        public QuadOld(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Rgba32 color) : this(a, b, c, d) {
+        public QuadOld(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color) : this(a, b, c, d) {
             this.a = new Vertex(a, color, new(0, 0));
             this.b = new Vertex(b, color, new(1, 0));
             this.c = new Vertex(c, color, new(1, 1));

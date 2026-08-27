@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
-using SixLabors.ImageSharp.PixelFormats;
-using TranSimCS.ModelOld;
-using TranSimCS.Spline;
+﻿using TranSimCS.ModelOld;
 
 namespace TranSimCS.Roads.Strip {
     public enum RoadSplineComponentType {
@@ -32,7 +24,7 @@ namespace TranSimCS.Roads.Strip {
         Count = 4,
     }
     public struct RoadSplineComponent {
-        public Rgba32 Color;
+        public Color Color;
         public RoadSplineComponentType Type;
         public SimpleMaterial? Texture;
         public float Bias;

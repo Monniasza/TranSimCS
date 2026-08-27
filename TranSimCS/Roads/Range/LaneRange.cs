@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Numerics;
 using MonoGame.Extended;
-using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads.Node;
@@ -38,7 +37,7 @@ namespace TranSimCS.Roads.Range {
     }
     public static class LaneRangeMethods {
         public static DualRange ToDualRange(this LaneRange laneRange) => new(laneRange.startRange, laneRange.endRange);
-        public static void GenerateLaneRangeMesh(this LaneRange range, Mesh renderer, Rgba32 color, float voffset = 0.3f, object? tag = null) {
+        public static void GenerateLaneRangeMesh(this LaneRange range, Mesh renderer, Color color, float voffset = 0.3f, object? tag = null) {
             //Generate border curves
             var (leftBorder, rightBorder) = GenerateSplines(range, voffset); // Generate the splines for the left and right lanes
 

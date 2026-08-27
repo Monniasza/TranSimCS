@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using LanguageExt;
-using LanguageExt.ClassInstances.Pred;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
-using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
@@ -183,7 +175,7 @@ namespace TranSimCS.Tools.RoadConstruction {
         }
         void ITool.Draw(Microsoft.Xna.Framework.GameTime gameTime) {
             if (State == null || !float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt)) return;
-            Rgba32 previewColor = new Rgba32(128, 128, 128, 128);
+            Color previewColor = new Color(64, 64, 64, 128);
             var material = Assets.Asphalt;
             material.BlendMode = ModelOld.MaterialBlendMode.Transparent;
             

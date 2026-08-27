@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using MLEM.Maths;
-using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.SilkNet;
@@ -32,7 +31,7 @@ namespace TranSimCS.Model {
                 rb.AddIndex(indexDataQuad[index]);
             }
         }
-        public static void DrawQuad(this Mesh rb, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Rgba32 color, RectangleF rect) {
+        public static void DrawQuad(this Mesh rb, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, RectangleF rect) {
             var minU = rect.Left;
             var minV = rect.Top;
             var maxU = rect.Right;
@@ -44,7 +43,7 @@ namespace TranSimCS.Model {
                 new Vertex(c, color, new(maxU, maxV)),
                 new Vertex(d, color, new(minU, maxV)));
         }
-        public static void DrawQuad(this Mesh rb, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Rgba32 color) {
+        public static void DrawQuad(this Mesh rb, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color) {
             rb.DrawQuad(a, b, c, d, color, new RectangleF(0, 0, 1, 1));
         }
         public static void DrawQuad(this Mesh rb, QuadOld q) => rb.DrawQuad(q.a, q.b, q.c, q.d);
@@ -53,10 +52,10 @@ namespace TranSimCS.Model {
             foreach (var index in indexDataQuadLookup) rb.AddIndex(indexDataQuad[index]);
         }
 
-        public static void DrawParallelogram(this Mesh rb, Vector3 origin, Vector3 plusX, Vector3 plusY, Rgba32 c) {
+        public static void DrawParallelogram(this Mesh rb, Vector3 origin, Vector3 plusX, Vector3 plusY, Color c) {
             rb.DrawQuad(origin + plusY, origin + plusX + plusY, origin + plusX, origin, c);
         }
-        public static void DrawParallelogram(this Mesh rb, Vector3 origin, Vector3 plusX, Vector3 plusY, Rgba32 c, RectangleF rect) {
+        public static void DrawParallelogram(this Mesh rb, Vector3 origin, Vector3 plusX, Vector3 plusY, Color c, RectangleF rect) {
             rb.DrawQuad(origin + plusY, origin + plusX + plusY, origin + plusX, origin, c, rect);
         }
 
@@ -88,7 +87,7 @@ namespace TranSimCS.Model {
             rb.DrawStrip(vertices.Item1, vertices.Item2);
         }
 
-        public static void DrawLine(this Mesh rb, Vector3 start, Vector3 end, Vector3 normal, Rgba32 c, float width = 0.2f, float length = 1) {
+        public static void DrawLine(this Mesh rb, Vector3 start, Vector3 end, Vector3 normal, Color c, float width = 0.2f, float length = 1) {
             var len = end - start;
             var cross = Vector3.Cross(normal, len).Normalized();
             cross *= width / 2;

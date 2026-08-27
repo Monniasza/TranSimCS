@@ -1,25 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Formats.Asn1;
-using System.Security.AccessControl;
-using LanguageExt.Common;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
-using MLEM.Ui;
 using MonoGame.Extended;
-using NLog;
-using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
-using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Setting;
-using TranSimCS.Spline;
-using TranSimCS.Worlds;
 
 namespace TranSimCS.Tools {
     /// <summary>
@@ -50,12 +41,12 @@ namespace TranSimCS.Tools {
 
         //Cached state
         private NextAction nextAction;
-        private Rgba32 actionColor;
+        private Color actionColor;
         private string _description;
         private enum NextAction{
             Pick, Hover, Add, Reverse, Edit, Delete
         }
-        private static (string description, Rgba32 color) GetForAction(NextAction nextAction) => nextAction switch {
+        private static (string description, Color color) GetForAction(NextAction nextAction) => nextAction switch {
             NextAction.Pick => ("Pick a lane end to start editing connections", Colors.Transparent),
             NextAction.Hover => ("Editing connections. Hove over lane ends to add, remove and modify connections", Colors.White),
             NextAction.Add => ("Editing connections. About to add a connection. [LAlt] for reverse", Colors.Green),

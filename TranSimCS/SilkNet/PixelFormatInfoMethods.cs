@@ -1,43 +1,59 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.InteropServices;
+using ImageMagick;
+using Microsoft.Xna.Framework.Graphics.PackedVector;
 using Silk.NET.OpenGL;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+using StbImageSharp;
 
 namespace TranSimCS.SilkNet {
     public static class PixelFormatInfoMethods {
-        public static (PixelType Type, PixelFormat Format, InternalFormat Internal) GetGLTypes(this Image image) => ToOpenGL(image.GetType().GetGenericArguments()[0]);
+        public static byte[] DumpPixelData(this MagickImage image, TextureFormat tf) {
+            using var pixels = image.GetPixelsUnsafe();
 
-        public static (PixelType Type, PixelFormat Format, InternalFormat Internal) ToOpenGL(Type pixelType) {
-            return pixelType switch {
-                _ when pixelType == typeof(Rgba32)
-                    => (PixelType.UnsignedByte, PixelFormat.Rgba, InternalFormat.Rgba),
+            byte[] bytedata = tf switch {
+                TextureFormat.R16 => 
+                    MemoryMarshal.AsBytes(pixels.ToShortArray("R").AsSpan()).ToArray(),
+                TextureFormat.RG16 => 
+                    MemoryMarshal.AsBytes(pixels.ToShortArray("RG").AsSpan()).ToArray(),
+                TextureFormat.RGB16 => 
+                    MemoryMarshal.AsBytes(pixels.ToShortArray("RGB").AsSpan()).ToArray(),
+                TextureFormat.RGBA16 =>
+                    MemoryMarshal.AsBytes(pixels.ToShortArray("RGBA").AsSpan()).ToArray(),
+                TextureFormat.RGB8 => 
+                    pixels.ToByteArray("RGB"),
+                TextureFormat.RGBA8 =>
+                    pixels.ToByteArray("RGBA"),
+                _ => throw new ArgumentException("Invalid TextureFormat", nameof(tf))
+            } ?? throw new BadImageFormatException("Conversion failed");
 
-                _ when pixelType == typeof(Bgra32)
-                    => (PixelType.UnsignedByte, PixelFormat.Bgra, InternalFormat.Rgba),
-
-                _ when pixelType == typeof(Rgb24)
-                    => (PixelType.UnsignedByte, PixelFormat.Rgb, InternalFormat.Rgb),
-
-                _ when pixelType == typeof(Bgr24)
-                    => (PixelType.UnsignedByte, PixelFormat.Bgr, InternalFormat.Rgb),
-
-                _ when pixelType == typeof(L8)
-                    => (PixelType.UnsignedByte, PixelFormat.Red, InternalFormat.Red),
-
-                _ when pixelType == typeof(L16)
-                    => (PixelType.UnsignedShort, PixelFormat.Red, InternalFormat.Red),
-
-                // ...
-
-                _ => throw new NotSupportedException(
-                    $"No OpenGL representation for {pixelType}.")
-            };
+            return bytedata;
         }
-        public static (PixelType Type, PixelFormat Format, InternalFormat Internal) ToOpenGL<TPixel>()
-        where TPixel : unmanaged, IPixel<TPixel> => ToOpenGL(typeof(TPixel));
+        public static TextureFormat GetPreferredFormat(this MagickImage image) {
+            //Find the optimal pixel format
+            var colorType = image.ColorType;
+
+            //Surely simulation formats
+            if (colorType == ColorType.Grayscale) return TextureFormat.R16;
+            if (colorType == ColorType.GrayscaleAlpha) return TextureFormat.RG16;
+
+            //Can be either simulation or visual
+            if(colorType == ColorType.TrueColor) {
+                //Either RGB16 or RGB8
+                if (image.Depth > 8) return TextureFormat.RGB16;
+                return TextureFormat.RGB8;
+            }
+            if(colorType == ColorType.TrueColorAlpha) {
+                //Either RGBA16 or RGBA8
+                if (image.Depth > 8) return TextureFormat.RGBA16;
+                return TextureFormat.RGBA8;
+            }
+
+            //These formats are surely visual
+            if (colorType is ColorType.ColorSeparation or ColorType.Palette or ColorType.Bilevel) return TextureFormat.RGB8;
+            if (colorType is ColorType.PaletteAlpha or ColorType.PaletteBilevelAlpha or ColorType.ColorSeparationAlpha or ColorType.Optimize or ColorType.Undefined) return TextureFormat.RGBA8;
+
+            //Guard against faulty code
+            throw new InvalidOperationException($"Unhandled Magick.NET ColorType: {colorType}");
+        }
     }
 }

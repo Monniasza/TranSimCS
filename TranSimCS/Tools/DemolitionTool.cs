@@ -1,16 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Linq;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
-using MonoGame.Extended;
 using NLog;
-using NLog.Time;
-using SixLabors.ImageSharp.PixelFormats;
-using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads;
@@ -34,8 +26,8 @@ namespace TranSimCS.Tools {
 
             float v1 = 0.2f;
             float v2 = 0.3f;
-            var orange = new Rgba32(255, 128, 0, 128);
-            var red = new Rgba32(255, 0, 0, 128);
+            var orange = new Color(255, 128, 0, 128);
+            var red = new Color(255, 0, 0, 128);
             Mesh renderBin = game.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
             var roadSelection = game.MouseOver?.Tag as IRoadElement;
 

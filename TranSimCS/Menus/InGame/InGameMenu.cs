@@ -17,7 +17,6 @@ using MLEM.Ui;
 using MLEM.Ui.Elements;
 using MonoGame.Extended.Collections;
 using NLog;
-using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Polygons;
@@ -80,9 +79,9 @@ namespace TranSimCS.Menus.InGame {
         public EscapeMenu escapeMenu { get; private set; }
 
         //Colors
-        public static readonly Rgba32 laneHighlightColor = new Rgba32(0, 255, 255, 255); // Color for highlighting selected lanes
-        public static readonly Rgba32 laneHighlightColor2 = new Rgba32(0, 192, 255, 100); //Color for highlighting the selected road half
-        public static readonly Rgba32 roadSegmentHighlightColor = new Rgba32(0, 128, 255, 100); //Color for highlighting selected road segments
+        public static readonly Color laneHighlightColor = new Color(0, 255, 255, 255); // Color for highlighting selected lanes
+        public static readonly Color laneHighlightColor2 = new Color(0, 192, 255).AlphaMul(0.5f); //Color for highlighting the selected road half
+        public static readonly Color roadSegmentHighlightColor = new Color(0, 128, 255).AlphaMul(0.5f); //Color for highlighting selected road segments
         
         //Tools
         public ConnectionTool ConnectionTool { get; private set; }

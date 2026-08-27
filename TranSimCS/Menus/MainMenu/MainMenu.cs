@@ -67,7 +67,7 @@ namespace TranSimCS.Menus.MainMenu {
             };
 
             Game.SpriteBatch.Begin(sbc);
-            Game.SpriteBatch.Draw(bannerTexture, Vector2.Zero, Color.White);
+            Game.SpriteBatch.Draw(bannerTexture, Vector2.Zero, Colors.White.ToMonoGame());
             Game.SpriteBatch.End();
 
             UiSystem.Draw(time, Game.SpriteBatch);

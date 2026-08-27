@@ -36,22 +36,26 @@ namespace TranSimCS.SilkNet {
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, _vertexBuffer);
             gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _indexBuffer);
             
-            var stride = (uint)Unsafe.SizeOf<VertexPositionColorTexture>();
+            var stride = (uint)Unsafe.SizeOf<Vertex>();
             gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, stride, 0);
             gl.EnableVertexArrayAttrib(_vertexArray, 0);
             gl.VertexAttribPointer(1, 4, VertexAttribPointerType.UnsignedByte, true, stride, 12);
             gl.EnableVertexArrayAttrib(_vertexArray, 1);
             gl.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, stride, 16);
             gl.EnableVertexArrayAttrib(_vertexArray, 2);
+            gl.VertexAttribPointer(3, 2, VertexAttribPointerType.Short, true, stride, 24);
+            gl.EnableVertexArrayAttrib(_vertexArray, 1);
+            gl.VertexAttribPointer(4, 2, VertexAttribPointerType.Short, false, stride, 26);
+            gl.EnableVertexArrayAttrib(_vertexArray, 2);
 
             var instanceStride = (uint)Unsafe.SizeOf<TransformQ>();
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, rm._instanceBuffer);
-            gl.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false, instanceStride, 0);
+            gl.VertexAttribPointer(5, 3, VertexAttribPointerType.Float, false, instanceStride, 0);
             gl.EnableVertexArrayAttrib(_vertexArray, 3);
-            gl.VertexAttribDivisor(3, 1);
-            gl.VertexAttribPointer(4, 4, VertexAttribPointerType.Float, false, instanceStride, 12);
+            gl.VertexAttribDivisor(5, 1);
+            gl.VertexAttribPointer(6, 4, VertexAttribPointerType.Float, false, instanceStride, 12);
             gl.EnableVertexArrayAttrib(_vertexArray, 4);
-            gl.VertexAttribDivisor(4, 1);
+            gl.VertexAttribDivisor(6, 1);
 
             gl.BindVertexArray(0);
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);

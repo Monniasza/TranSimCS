@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using LanguageExt.ClassInstances;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
-using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Geometry;
-using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads.Strip;
@@ -124,7 +116,7 @@ namespace TranSimCS.Tools {
         void ITool.AddSelectors(MultiMesh invisibleSelectors, MultiMesh visibleSelectors) {
             //Draw selectors
             var renderBin = visibleSelectors.GetOrCreateRenderBinForced(Assets.White);
-            void TickMark(Mesh renderBin, Vector3 pos, Vector3 normal, Vector3 tangent, Rgba32 c, float yoffset = 0.5f) {
+            void TickMark(Mesh renderBin, Vector3 pos, Vector3 normal, Vector3 tangent, Color c, float yoffset = 0.5f) {
                 pos += normal * yoffset;
                 var pos1 = pos - tangent * 0.5f;
                 var pos2 = pos + tangent * 0.5f;

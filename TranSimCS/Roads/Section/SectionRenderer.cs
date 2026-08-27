@@ -3,17 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Clipper2Lib;
-using LanguageExt.ClassInstances.Pred;
-using Microsoft.Xna.Framework.Graphics;
 using NLog;
-using SixLabors.ImageSharp.PixelFormats;
-using TranSimCS.Debugging;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.ModelOld;
 using TranSimCS.Polygons;
 using TranSimCS.Render;
-using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Setting;
@@ -161,7 +156,7 @@ namespace TranSimCS.Roads.Section {
             renderBin.AddTagsToLastTriangles(-1, roadSection);
         }
 
-        public record struct SectionTriangulationRow(Rgba32 color, PathD path, SimpleMaterial? material) {}
+        public record struct SectionTriangulationRow(Color color, PathD path, SimpleMaterial? material) {}
 
         internal static void GenerateSectionMesh(RoadSection roadSection, MultiMesh multimesh) {
             if (roadSection.Nodes.Count < 1) return; //Guard agains empty sections
@@ -253,7 +248,7 @@ namespace TranSimCS.Roads.Section {
             multimesh.AddTagsToAll(roadSection);
         }
 
-        private static Func<PointD, Vertex> CreateMeshingFunction(WorkingPlane projectionPlane, Rgba32 color, Vector3? offset = null, ushort material = 0, ushort emissive = 0) =>
+        private static Func<PointD, Vertex> CreateMeshingFunction(WorkingPlane projectionPlane, Color color, Vector3? offset = null, ushort material = 0, ushort emissive = 0) =>
             x => {
                 var projected = x.ToVector2();
                 var pos = projectionPlane.Unproject(projected) + (offset ?? Vector3.Zero);

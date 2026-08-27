@@ -206,7 +206,7 @@ namespace TranSimCS
             fps.Count++;
             // Clear both color and depth buffer in one call to ensure proper rendering
             // and prevent Z-fighting/flickering
-            GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1.0f, 0);
+            GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Microsoft.Xna.Framework.Color.CornflowerBlue, 1.0f, 0);
             // Ensure depth stencil state is properly set before rendering
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             Menu?.Draw(gameTime);
@@ -217,7 +217,7 @@ namespace TranSimCS
         private UntexturedStyle CreateUiStyle() {
             var s = new UntexturedStyle(SpriteBatch);
             s.Font = GsfSmall;
-            s.PanelColor = Color.DarkGray;
+            s.PanelColor = Colors.DarkGray.ToMonoGame();
             var panelTex = Content.Load<Texture2D>("ui/panel");
             var panel9patch = new NinePatch(panelTex, 4);
             var panelTex2 = Content.Load<Texture2D>("ui/panelsmokeblack");
@@ -229,33 +229,33 @@ namespace TranSimCS
             s.ButtonTexture = panel9patch2;
 
             s.ButtonHoveredTexture = panel9patch;
-            s.ButtonHoveredColor = Colors.SemiClearAzure;
-            s.ButtonDisabledColor = Colors.SemiClearGray;
+            s.ButtonHoveredColor = Colors.SemiClearAzure.ToMonoGame();
+            s.ButtonDisabledColor = Colors.SemiClearGray.ToMonoGame();
             s.ButtonDisabledTexture = panel9patch;
 
-            s.PanelColor = Colors.SmokedGlass;
+            s.PanelColor = Colors.SmokedGlass.ToMonoGame();
             s.PanelTexture = panel9patch;
 
             s.TextFieldTexture = panel9patch2;
             s.TextFieldHoveredTexture = panel9patch;
-            s.TextFieldHoveredColor = Colors.SemiClearAzure;
+            s.TextFieldHoveredColor = Colors.SemiClearAzure.ToMonoGame();
             s.TextFieldCaretWidth = 2;
 
             s.CheckboxTexture = panel9patch2;
-            s.CheckboxHoveredColor = Colors.SemiClearAzure;
-            s.CheckboxDisabledColor = Colors.SemiClearGray;
+            s.CheckboxHoveredColor = Colors.SemiClearAzure.ToMonoGame();
+            s.CheckboxDisabledColor = Colors.SemiClearGray.ToMonoGame();
             s.CheckboxCheckmark = new TextureRegion(Content.Load<Texture2D>("ui/check"));
 
-            s.RadioColor = Colors.SmokedGlass;
+            s.RadioColor = Colors.SmokedGlass.ToMonoGame();
             s.RadioTexture = panel9patch;
-            s.RadioHoveredColor = Colors.SemiClearAzure;
+            s.RadioHoveredColor = Colors.SemiClearAzure.ToMonoGame();
             s.RadioHoveredTexture = panel9patch;
-            s.RadioUncheckedColor = Color.Gray;
-            s.RadioCheckColor = Color.White;
+            s.RadioUncheckedColor = Colors.Gray.ToMonoGame();
+            s.RadioCheckColor = Colors.White.ToMonoGame();
 
-            s.ScrollBarBackColor = Colors.SmokedGlass;
+            s.ScrollBarBackColor = Colors.SmokedGlass.ToMonoGame();
             s.ScrollBarBackground = panel9patch;
-            s.ScrollBarScrollerColor = Colors.SemiClearAzure;
+            s.ScrollBarScrollerColor = Colors.SemiClearAzure.ToMonoGame();
             s.ScrollBarScrollerTexture = panel9patch;
             s.PanelScrollerSize = new(12, 1);
 

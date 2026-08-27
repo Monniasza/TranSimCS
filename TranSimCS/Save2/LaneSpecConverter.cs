@@ -1,13 +1,12 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Roads;
 
 namespace TranSimCS.Save2 {
     public class LaneSpecConverter : JsonConverter<LaneSpec> {
         public override LaneSpec Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            Rgba32? color = null;
+            Color? color = null;
             VehicleTypes vehicleTypes = VehicleTypes.None;
             LaneFlags flags = LaneFlags.None;
             float width = 3.5f;
@@ -18,7 +17,7 @@ namespace TranSimCS.Save2 {
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
                 switch (propertyName.ToLower()) {
                     case "color":
-                        color = colorConverter.Read(ref reader0, typeof(Rgba32), options);
+                        color = colorConverter.Read(ref reader0, typeof(Color), options);
                         break;
                     case "vehicletypes":
                         reader0.Read();

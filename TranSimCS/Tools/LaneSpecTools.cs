@@ -175,13 +175,13 @@ namespace TranSimCS.Tools {
             var checkedTexture = row.CheckTexture;
             var uncheckedTexture = row.UncheckTexture;
             var flag = row.Flag;
-            var secondaryColor = (uncheckedTexture == null) ? Color.Gray : Color.White;
+            var secondaryColor = (uncheckedTexture == null) ? Colors.Gray : Colors.White;
             uncheckedTexture ??= checkedTexture;
 
             var checkedBitmap = new TextureRegion(menu.Game.Content.Load<Texture2D>(checkedTexture));
             var uncheckedBitmap = new TextureRegion(menu.Game.Content.Load<Texture2D>(uncheckedTexture));
             var check = new Checkbox(Anchor.AutoInline, new(20, 20), "");
-            check.UncheckColor = secondaryColor;
+            check.UncheckColor = secondaryColor.ToMonoGame();
             T UpdateValueFromCheck() {
                 bool checced = check.Checked;
                 var newSpec = laneSpecProp.Value;

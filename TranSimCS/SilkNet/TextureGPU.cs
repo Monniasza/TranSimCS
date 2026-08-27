@@ -6,24 +6,20 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using ImageMagick;
 using Silk.NET.OpenGL;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
+using StbImageSharp;
 
 namespace TranSimCS.SilkNet {
     public class TextureGPU : IDisposable {
-        public PixelType PixelType { get; private set; }
-        public PixelFormat PixelFormat { get; private set; }
-        public InternalFormat InternalFormat { get; private set; }
-        public Image Image { get; private set; }
+        public TextureFormat TextureFormat { get; private set; }
+        public MagickImage Image { get; private set; }
         internal uint _handle;
         internal GL _gl;
 
-        public TextureGPU(Image image, GL gl) {
+        public TextureGPU(MagickImage image, GL gl) {
             Image = image;
-            var pixelInfo = image.PixelType;
-            (PixelType, PixelFormat, InternalFormat) = image.GetGLTypes();
+            TextureFormat = image.GetPreferredFormat();
             _gl = gl ?? throw new ArgumentNullException(nameof(gl));
             _handle = gl.GenTexture();
             gl.ActiveTexture(TextureUnit.Texture0);
@@ -36,39 +32,22 @@ namespace TranSimCS.SilkNet {
         }
 
 
-        public void Upload(Image image) {
-            Type imageType = image.GetType();
-
-            if (!imageType.IsGenericType ||
-                imageType.GetGenericTypeDefinition() != typeof(Image<>)) {
-                throw new NotSupportedException(
-                    $"Unsupported ImageSharp image type: {imageType}");
-            }
-
-            Type pixelType = imageType.GetGenericArguments()[0];
-
-            MethodInfo? generalMethod = typeof(TextureGPU)
-                .GetMethod(nameof(UploadGeneric), BindingFlags.Public | BindingFlags.Instance);
-            Debug.Assert(generalMethod != null, "No UploadGeneric method found");
-            MethodInfo method = generalMethod.MakeGenericMethod(pixelType);
-
-            method.Invoke(this, [image]);
-        }
-        public unsafe void UploadGeneric<TPixel>(Image<TPixel> image) where TPixel: unmanaged, IPixel<TPixel> {
+        public unsafe void Upload(MagickImage image) {
             GetContext();
-            int byteCount = image.Width * image.Height * Unsafe.SizeOf<TPixel>();
-            var data = new byte[byteCount];
-            image.CopyPixelDataTo(data);
+
+            //Convert image data
+            var data = image.DumpPixelData(TextureFormat);
+            var (pixelType, pixelFormat, internalFormat) = TextureFormat.GetGLFormats();
             fixed (byte* ptr = data) {
                 _gl.TexImage2D(
                     TextureTarget.Texture2D,
                     0,
-                    InternalFormat,
+                    internalFormat,
                     (uint)image.Width,
                     (uint)image.Height,
                     0,
-                    PixelFormat,
-                    PixelType,
+                    pixelFormat,
+                    pixelType,
                     ptr);
             }
         }

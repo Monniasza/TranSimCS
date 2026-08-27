@@ -48,12 +48,12 @@ namespace TranSimCS.Menus.InGame {
 
                 var okButton = new Button(Anchor.AutoInline, new(0.1f, 20), "OK");
                 okButton.OnPressed += OkPressed;
-                okButton.NormalColor = Color.Green;
+                okButton.NormalColor = Colors.Green.ToMonoGame();
                 AddChild(okButton);
 
                 var cancelButton = new Button(Anchor.AutoInline, new(0.1f, 20), "Cancel");
                 cancelButton.OnPressed += (x) => Handle(null);
-                cancelButton.NormalColor = Color.Red;
+                cancelButton.NormalColor = Colors.Red.ToMonoGame();
                 AddChild(cancelButton);
 
                 ChangePath(okButton);
@@ -105,7 +105,7 @@ namespace TranSimCS.Menus.InGame {
                     contentsPanel.RemoveChildren();
                     string message = e.ToString() + "\n Refresh or go to a different directory";
                     Paragraph errorParagraph = new Paragraph(Anchor.AutoLeft, 1, message);
-                    errorParagraph.TextColor = Color.Red;
+                    errorParagraph.TextColor = Colors.Red.ToMonoGame();
                     contentsPanel.AddChild(errorParagraph);
                 }
             }

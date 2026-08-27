@@ -1,10 +1,8 @@
 using System;
-using Microsoft.Xna.Framework;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace TranSimCS.Roads {
     public struct LaneSpec : IEquatable<LaneSpec> {
-        public Rgba32 Color; // Color of the lane
+        public Color Color; // Color of the lane
         public VehicleTypes VehicleTypes; // Types of vehicles allowed in the lane
         public LaneFlags Flags;// Flags for additional lane properties
         public float Width;//Width. Ignored by nodes, but used to store new lane widths
@@ -14,7 +12,7 @@ namespace TranSimCS.Roads {
 
         // Constructor to initialize the LaneSpec with lane index, width, and offset
         public LaneSpec(
-            Rgba32 color,
+            Color color,
             VehicleTypes vehicleTypes,
             float width = 3.5f,
             float speedLimit = 50,

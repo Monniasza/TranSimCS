@@ -6,7 +6,6 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
-using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.SilkNet;
 
 namespace TranSimCS.Model.OBJ {
@@ -17,7 +16,7 @@ namespace TranSimCS.Model.OBJ {
                 var mat = group.Material;
                 mat.d = 1; //Force opaque
                 var colorvector = new Vector4(mat.Kd, 1) * mat.d;
-                var color = new Rgba32(colorvector);
+                var color = new Color(colorvector);
                 Dictionary<FaceVertex, Vertex> dedupedVerts = [];
                 Dictionary<FaceVertex, ushort> lov = [];
                 foreach (var Face in group.Faces) {

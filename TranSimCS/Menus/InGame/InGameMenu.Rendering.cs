@@ -5,7 +5,6 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
-using SixLabors.ImageSharp.PixelFormats;
 using TranSimCS.Collections;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
@@ -211,7 +210,7 @@ namespace TranSimCS.Menus.InGame {
                 GenerateGroundVertex(d, s, C)
             );
         }
-        private Vertex GenerateGroundVertex(Vector3 pos, float texscale, Rgba32? color = null) {
+        private Vertex GenerateGroundVertex(Vector3 pos, float texscale, Color? color = null) {
             var c = color ?? Colors.White;
             return new Vertex(pos, c, new(pos.X / texscale, pos.Z / texscale));
         }

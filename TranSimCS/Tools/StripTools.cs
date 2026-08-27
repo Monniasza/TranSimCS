@@ -1,6 +1,4 @@
-﻿using System;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using MLEM.Textures;
 using MLEM.Ui;
 using MLEM.Ui.Elements;
@@ -8,7 +6,6 @@ using MLEM.Ui.Style;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
-using TranSimCS.Setting;
 
 namespace TranSimCS.Tools {
     public class StripTools : Panel {
@@ -36,7 +33,7 @@ namespace TranSimCS.Tools {
 
             var settingsLabel = new Paragraph(Anchor.AutoInline, 0.5f, "Settings");
             AddChild(settingsLabel);
-            anarchyCheck = CreateCheck("Anarchy", "ui/anarchy2", Color.Orange);
+            anarchyCheck = CreateCheck("Anarchy", "ui/anarchy2", Colors.Orange);
             flattenTilt = CreateCheck("Flatten tilt", "ui/flatTilt");
             flattenTilt.Checked = true;
             flattenIncline = CreateCheck("Flatten inclination", "ui/flatIncline");
@@ -78,8 +75,8 @@ namespace TranSimCS.Tools {
         public RadioButton CreateModeButton(RoadMode mode, string icon) {
             RadioButton radio = new RadioButton(Anchor.AutoInline, new(21, 21), "", false, "mode");
             radio.Checkmark = LoadStyleProp(icon);
-            radio.UncheckColor = Color.Gray;
-            radio.CheckColor = Color.White;
+            radio.UncheckColor = Colors.Gray.ToMonoGame();
+            radio.CheckColor = Colors.White.ToMonoGame();
             radio.AddTooltip((p) => mode.Name);
             radio.OnSelected += (a) => RoadMode.Value = mode;
             AddChild(radio);

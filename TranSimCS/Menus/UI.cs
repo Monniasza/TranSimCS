@@ -21,8 +21,8 @@ namespace TranSimCS.Menus {
             var check = new Checkbox(Anchor.AutoInline, new(21, 21), "", false);
             check.AddTooltip(name);
             check.Checkmark = LoadStyleProp(menu, icon ?? Assets.CrossIcon);
-            check.UncheckColor = uncheckColor ?? Color.Gray;
-            check.CheckColor = checkColor ?? Color.White;
+            check.UncheckColor = (uncheckColor ?? Colors.Gray).ToMonoGame();
+            check.CheckColor = (checkColor ?? Colors.White).ToMonoGame();
             container.AddChild(check);
             return check;
         }

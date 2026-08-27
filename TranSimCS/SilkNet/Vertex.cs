@@ -8,13 +8,12 @@ using System.Text;
 using System.Threading.Tasks;
 using LanguageExt.SomeHelp;
 using Microsoft.Xna.Framework.Graphics;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace TranSimCS.SilkNet {
     [StructLayout(LayoutKind.Sequential)]
     public struct Vertex : IEquatable<Vertex>, IVertexType {
         public Vector3 Position;
-        public Rgba32 Color;
+        public Color Color;
         public Vector2 TexCoord;
         public ushort Material;
         public ushort Emissive;
@@ -27,14 +26,14 @@ namespace TranSimCS.SilkNet {
         );
         public VertexDeclaration VertexDeclaration => _vertexDeclaration;
 
-        public Vertex(Vector3 position, Rgba32 color, Vector2 texCoord, ushort material = 0, ushort emissive = 0) {
+        public Vertex(Vector3 position, Color color, Vector2 texCoord, ushort material = 0, ushort emissive = 0) {
             Position = position;
             Color = color;
             TexCoord = texCoord;
             Material = material;
             Emissive = emissive;
         }
-        public Vertex(Vector3 position, Rgba32 color, Vector2 texCoord) {
+        public Vertex(Vector3 position, Color color, Vector2 texCoord) {
             Position = position;
             Color = color;
             TexCoord = texCoord;

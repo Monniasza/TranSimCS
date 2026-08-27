@@ -1,17 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using MLEM.Input;
-using SixLabors.ImageSharp.PixelFormats;
-using TranSimCS.Geometry;
-using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads.Strip;
-using TranSimCS.Setting;
 using TranSimCS.Spline;
 
 namespace TranSimCS.Tools {
@@ -69,7 +61,7 @@ namespace TranSimCS.Tools {
             float yoffset = 0.4f;
             float yoffset2 = 0.5f;
 
-            void DrawTickMark(Mesh renderBin, OrthodistantBasis basis, float t, float hlength, float width, Rgba32 c) {
+            void DrawTickMark(Mesh renderBin, OrthodistantBasis basis, float t, float hlength, float width, Color c) {
                 var sample = basis.SampleFrame(t);
                 var p0 = sample.O - sample.X * hlength + yoffset2 * sample.Y;
                 var p1 = sample.O + sample.X * hlength + yoffset2 * sample.Y;

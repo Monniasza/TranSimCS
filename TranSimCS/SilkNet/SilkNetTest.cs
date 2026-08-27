@@ -1,22 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using System.Numerics;
+using ImageMagick;
+using ImGuiNET;
 using Silk.NET.Input;
 using Silk.NET.Maths;
-using Silk.NET.Windowing;
 using Silk.NET.OpenGL;
-using System.Drawing;
-using TranSimCS.Terrain;
-using DotNet.Collections.Generic;
-using TranSimCS.Model;
-using TranSimCS.Worlds.Cars;
-using SixLabors.ImageSharp;
 using Silk.NET.OpenGL.Extensions.ImGui;
-using ImGuiNET;
-using System.Numerics;
+using Silk.NET.Windowing;
+using StbImageSharp;
+using TranSimCS.Model;
+using TranSimCS.Terrain;
+using TranSimCS.Worlds.Cars;
 
 namespace TranSimCS.SilkNet {
     public sealed class SilkNetTest {
@@ -90,7 +83,10 @@ namespace TranSimCS.SilkNet {
         }
 
         private TextureGPU LoadTextureFromResource(string resource) {
-            var image = Image.Load(TerrainDataBlobs.OpenEmbeddedResource(resource));
+            using var stream = TerrainDataBlobs.OpenEmbeddedResource(resource);
+            var image = new MagickImage(stream);
+            image.DetermineBitDepth();
+            image.DetermineColorType();
             return new(image, OpenGL);
         }
 
