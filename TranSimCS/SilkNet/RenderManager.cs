@@ -181,6 +181,7 @@ namespace TranSimCS.SilkNet {
             RenderPass(groups[(int)MaterialBlendMode.Cutout], 0.5f, ref stats);
 
             gl.Enable(EnableCap.Blend);
+            gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             RenderPass(groups[(int)MaterialBlendMode.Transparent], 0, ref stats);
 
             Stats = stats;
