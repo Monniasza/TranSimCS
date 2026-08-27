@@ -57,6 +57,11 @@ namespace TranSimCS.Render {
             }
         }
         private readonly Dictionary<Mesh, MeshGPU> MeshCache = [];
+        private readonly Dictionary<TextureData, Texture2D> TextureCache = [];
+        internal Texture2D GetCachedTexture(TextureData td) {
+            if(TextureCache.TryGetValue(td, out var texture)) return texture;
+            return TextureCache[td] = CreateTexture(td);
+        }
         internal MeshGPU GetCachedMesh(Mesh mesh) {
             void CheckAndRebuild(MeshGPU meshGPU) {
                 if (meshGPU.VB != null && meshGPU.IB != null && meshGPU.UploadedVersion == mesh.GeometryVersion) return;
@@ -279,6 +284,60 @@ namespace TranSimCS.Render {
             }
         }
 
+        public static SurfaceFormat GetSurfaceFormat(TextureFormat format) => format switch {
+            TextureFormat.RGB8 => SurfaceFormat.Color,
+            TextureFormat.RGBA8 => SurfaceFormat.Color,
+            _ => throw new BadImageFormatException(format.ToString()),
+        };
+        
+        public Texture2D CreateTexture(TextureData data) {
+            var texture = new Texture2D(
+                gpu,
+                (int)data.Width,
+                (int)data.Height,
+                false,
+                GetSurfaceFormat(data.Format));
+
+            switch (data.Format) {
+                //case TextureFormat.R8:
+                //    texture.SetData(data.Data.Span.ToArray());
+                //    break;
+                case TextureFormat.RGB8:
+                    var pixels = new Color[data.Width * data.Height];
+                    var bytes = data.Data.Span;
+
+                    for (int i = 0; i < pixels.Length; i++) {
+                        pixels[i] = new Color(
+                            bytes[i * 3 + 0],
+                            bytes[i * 3 + 1],
+                            bytes[i * 3 + 2]
+                        );
+                    }
+
+                    texture.SetData(pixels);
+                    break;
+                case TextureFormat.RGBA8: 
+                    var pixels2 = new Color[data.Width * data.Height];
+                    var bytes2 = data.Data.Span;
+
+                    for (int i = 0; i < pixels2.Length; i++) {
+                        pixels2[i] = new Color(
+                            bytes2[i * 4 + 0],
+                            bytes2[i * 4 + 1],
+                            bytes2[i * 4 + 2],
+                            bytes2[i * 4 + 3]);
+                    }
+
+                    texture.SetData(pixels2);
+                    break;
+                default:
+                    throw new NotSupportedException(
+                        $"Cannot create MonoGame texture from {data.Format}.");
+            }
+
+            return texture;
+        }
+
         /// <summary>
         /// Releases system resources held by this RenderManager
         /// </summary>
@@ -290,6 +349,9 @@ namespace TranSimCS.Render {
             foreach(var row in MeshCache) 
                 row.Value.Dispose(this);
             MeshCache.Clear();
+            foreach(var row in TextureCache)
+                row.Value.Dispose();
+            TextureCache.Clear();
 
             //Destroy pools
             VertexBufferPool.Dispose();
