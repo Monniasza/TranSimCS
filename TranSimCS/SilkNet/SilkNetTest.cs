@@ -87,7 +87,7 @@ namespace TranSimCS.SilkNet {
             var image = new MagickImage(stream);
             image.DetermineBitDepth();
             image.DetermineColorType();
-            return new(image, OpenGL);
+            return new(new(image), OpenGL);
         }
 
         private void OnClose() {

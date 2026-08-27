@@ -12,14 +12,12 @@ using StbImageSharp;
 
 namespace TranSimCS.SilkNet {
     public class TextureGPU : IDisposable {
-        public TextureFormat TextureFormat { get; private set; }
-        public MagickImage Image { get; private set; }
+        public TextureData Image { get; private set; }
         internal uint _handle;
         internal GL _gl;
 
-        public TextureGPU(MagickImage image, GL gl) {
+        public TextureGPU(TextureData image, GL gl) {
             Image = image;
-            TextureFormat = image.GetPreferredFormat();
             _gl = gl ?? throw new ArgumentNullException(nameof(gl));
             _handle = gl.GenTexture();
             gl.ActiveTexture(TextureUnit.Texture0);
@@ -32,13 +30,13 @@ namespace TranSimCS.SilkNet {
         }
 
 
-        public unsafe void Upload(MagickImage image) {
+        public unsafe void Upload(TextureData image) {
             GetContext();
 
             //Convert image data
-            var data = image.DumpPixelData(TextureFormat);
-            var (pixelType, pixelFormat, internalFormat) = TextureFormat.GetGLFormats();
-            fixed (byte* ptr = data) {
+            var data = image.Data;
+            var (pixelType, pixelFormat, internalFormat) = image.Format.GetGLFormats();
+            fixed (byte* ptr = data.Span) {
                 _gl.TexImage2D(
                     TextureTarget.Texture2D,
                     0,
