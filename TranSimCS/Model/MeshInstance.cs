@@ -34,7 +34,7 @@ namespace TranSimCS.Model {
             if (OverrideChildTags || tag == null) tag = CoverTag;
             return true;
         }
-        public AABB GetBounds() => OBB.TransformBoundingBox(Mesh.GetBounds(), PositionRotation);
+        public AABB GetBounds() => OBB.TransformBoundingBox(Mesh?.GetBounds() ?? default, PositionRotation);
 
         public override bool Equals(object? obj) {
             return obj is MeshInstance instance && Equals(instance);

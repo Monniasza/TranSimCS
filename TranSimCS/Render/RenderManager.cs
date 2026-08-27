@@ -253,8 +253,8 @@ namespace TranSimCS.Render {
                     if (materialInstances.Count == 0) continue;
                     var positionValues = materialInstances.Select(x => x.Transform).ToArray();
 
-                    shader.Parameters["Albedo"].SetValue(material.Texture);
-                    shader.Parameters["Emissive"].SetValue(material.Emissive);
+                    shader.Parameters["Albedo"].SetValue(GetCachedTexture(material.Texture));
+                    shader.Parameters["Emissive"].SetValue(GetCachedTexture(material.Emissive));
                     shader.Parameters["EmissiveIsMask"].SetValue(material.EmissiveIsMask);
 
                     gpu.RasterizerState = !material.CullBack ? RasterizerState.CullNone : Settings.InvertAllNormals ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;

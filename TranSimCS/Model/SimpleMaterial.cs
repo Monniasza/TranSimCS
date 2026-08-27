@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.SilkNet;
 
 namespace TranSimCS.ModelOld {
     /// <summary>
@@ -13,14 +14,14 @@ namespace TranSimCS.ModelOld {
         /// <summary>
         /// The texture used by the renderer. null for no texturing
         /// </summary>
-        public Texture2D Texture = Assets.WhiteTex;
-        public Texture2D Emissive = Assets.Black;
+        public TextureData Texture = Assets.WhiteTex.Convert();
+        public TextureData Emissive = Assets.Black.Convert();
         public MaterialBlendMode BlendMode = MaterialBlendMode.Opaque;
         public float EmissiveIsMask = 0;
         public bool CullBack = true;
 
-        public string TextureName { set => Texture = Assets.Content.Load<Texture2D>(value); }
-        public string EmissiveName { set => Emissive = Assets.Content.Load<Texture2D>(value); }
+        public string TextureName { set => Texture = Assets.Content.Load<Texture2D>(value).Convert(); }
+        public string EmissiveName { set => Emissive = Assets.Content.Load<Texture2D>(value).Convert(); }
 
         public SimpleMaterial() { }
         public SimpleMaterial(string texture = "white", MaterialBlendMode blendMode = MaterialBlendMode.Opaque) {
@@ -35,7 +36,7 @@ namespace TranSimCS.ModelOld {
                 EmissiveIsMask = 1,
                 EmissiveName = texture,
                 BlendMode = blendMode,
-                Texture = Assets.Black
+                Texture = Assets.Black.Convert()
             };
         }
 
