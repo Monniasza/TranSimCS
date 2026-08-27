@@ -7,9 +7,11 @@ using ImageMagick;
 
 namespace TranSimCS.SilkNet {
     /// <summary>
-    /// Just raw texture date. No renderer specific information.
+    /// Just raw texture data. No renderer specific information.
     /// </summary>
-    public sealed class TextureData {
+    public sealed class TextureData : IEquatable<TextureData?> {
+        private static uint idCounter = 1;
+        private readonly uint ID;
         public uint Width { get; }
         public uint Height { get; }
         public TextureFormat Format { get; }
@@ -24,6 +26,7 @@ namespace TranSimCS.SilkNet {
             Height = height;
             Format = format;
             Data = data;
+            ID = idCounter++;
         }
 
         public TextureData(MagickImage image) {
@@ -32,6 +35,28 @@ namespace TranSimCS.SilkNet {
             Height = image.Height;
             var rawData = image.DumpPixelData(Format);
             Data = new ReadOnlyMemory<byte>(rawData);
+            ID = idCounter++;
+        }
+
+        public override bool Equals(object? obj) {
+            return Equals(obj as TextureData);
+        }
+
+        public bool Equals(TextureData? other) {
+            return other is not null &&
+                   ID == other.ID;
+        }
+
+        public override int GetHashCode() {
+            return HashCode.Combine(ID);
+        }
+
+        public static bool operator ==(TextureData? left, TextureData? right) {
+            return (left is null) ? right is null : right is not null && left.ID == right.ID;
+        }
+
+        public static bool operator !=(TextureData? left, TextureData? right) {
+            return !(left == right);
         }
     }
 }

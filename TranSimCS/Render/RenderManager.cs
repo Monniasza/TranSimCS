@@ -60,7 +60,9 @@ namespace TranSimCS.Render {
         private readonly Dictionary<TextureData, Texture2D> TextureCache = [];
         internal Texture2D GetCachedTexture(TextureData td) {
             if(TextureCache.TryGetValue(td, out var texture)) return texture;
-            return TextureCache[td] = CreateTexture(td);
+            var generatedTexture = CreateTexture(td);
+            TextureCache[td] = generatedTexture;
+            return generatedTexture;
         }
         internal MeshGPU GetCachedMesh(Mesh mesh) {
             void CheckAndRebuild(MeshGPU meshGPU) {
@@ -105,6 +107,7 @@ namespace TranSimCS.Render {
             foreach (var mesh in deleteCachesFor) {
                 var meshGPU = MeshCache[mesh];
                 meshGPU.Dispose(this);
+                MeshCache.Remove(mesh);
             }
         }
 
@@ -195,11 +198,11 @@ namespace TranSimCS.Render {
             RenderPass(
                 categorizedMeshes[(int)MaterialBlendMode.Opaque],
                 writeDepth,
-                BlendState.Opaque, ref stats);
+                BlendState.Opaque, ref stats, "opaque");
             RenderPass(
                 categorizedMeshes[(int)MaterialBlendMode.Cutout],
                 writeDepth,
-                BlendState.Opaque, ref stats);
+                BlendState.Opaque, ref stats, "cut-out");
 
             // PASS 2: ADDITIVE
             // - Reads depth so it is hidden by opaque/cutout geometry.
@@ -207,7 +210,7 @@ namespace TranSimCS.Render {
             RenderPass(
                 categorizedMeshes[(int)MaterialBlendMode.Additive],
                 keepDepth,
-                BlendState.Additive, ref stats);
+                BlendState.Additive, ref stats, "additive");
 
             // PASS 3: TRANSPARENT
             // - Reads depth.
@@ -216,12 +219,14 @@ namespace TranSimCS.Render {
             RenderPass(
                 categorizedMeshes[(int)MaterialBlendMode.Transparent],
                 keepDepth,
-                BlendState.AlphaBlend, ref stats, 0.00001f);
+                BlendState.AlphaBlend, ref stats, "transparent", 0.00001f);
 
             Stats = stats;
         }
 
-        private void RenderPass(List<MeshDrawInstance>? bucket, DepthStencilState depthState, BlendState blendState, ref RenderStats stats, float alphaCutoff = 0.5f) {
+        private void RenderPass(List<MeshDrawInstance>? bucket, DepthStencilState depthState, BlendState blendState, ref RenderStats stats, string name, float alphaCutoff = 0.5f) {
+            //Debug.WriteLine($"Pass: {name} Count: {bucket?.Count ?? 0}");
+            
             if (bucket == null || bucket.Count == 0) return;
 
             var shader = Assets.ShaderEffect;
@@ -237,6 +242,7 @@ namespace TranSimCS.Render {
             foreach (var meshGroup in groupedMeshes) {
                 var mesh = meshGroup.Key;
                 var instances = meshGroup.Value;
+                //Debug.WriteLine($"Model: {RuntimeHelpers.GetHashCode(mesh)}");
                 if(instances.Count == 0 || mesh.Vertices.Count == 0 || mesh.Indices.Count == 0) continue;
 
                 //Bind per-mesh
@@ -253,20 +259,38 @@ namespace TranSimCS.Render {
                     if (materialInstances.Count == 0) continue;
                     var positionValues = materialInstances.Select(x => x.Transform).ToArray();
 
-                    shader.Parameters["Albedo"].SetValue(GetCachedTexture(material.Texture));
-                    shader.Parameters["Emissive"].SetValue(GetCachedTexture(material.Emissive));
-                    shader.Parameters["EmissiveIsMask"].SetValue(material.EmissiveIsMask);
+                    //var albedo = GetCachedTexture(material.Texture);
+                    //var emissive = GetCachedTexture(material.Emissive);
+
+                    //Debug.Assert(
+                    //    material.Texture != material.Emissive ||
+                    //    ReferenceEquals(albedo, emissive),
+                    //    "Unexpected texture conversion/cache mismatch");
+
+                    //Debug.WriteLine(
+                    //$"Albedo: {RuntimeHelpers.GetHashCode(albedo)} " +
+                    //$"Emissive: {RuntimeHelpers.GetHashCode(emissive)}");
+
+                    //shader.Parameters["Albedo"].SetValue(albedo);
+                    //shader.Parameters["Emissive"].SetValue(emissive);
+                    //shader.Parameters["EmissiveIsMask"].SetValue(material.EmissiveIsMask);
+                    shader.Parameters["Albedo"].SetValue(Assets.GrassTex);
+                    //shader.Parameters["Emissive"].SetValue(GetCachedTexture(Assets.Grass.Emissive));
+                    shader.Parameters["Emissive"].SetValue(Assets.Black);
+                    shader.Parameters["EmissiveIsMask"].SetValue(0);
 
                     gpu.RasterizerState = !material.CullBack ? RasterizerState.CullNone : Settings.InvertAllNormals ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
 
                     //Bind buffers
                     using (var instanceBufferRental = InstanceBufferPool.RentAsDisposable(positionValues.Length)) {
+                    //using (var instanceBuffer = new VertexBuffer(gpu, typeof(TransformQ), instances.Count, BufferUsage.WriteOnly)) {
                         var instanceBuffer = instanceBufferRental.Value;
                         instanceBuffer.SetData(positionValues);
                         gpu.SetVertexBuffers(
                             new VertexBufferBinding(meshGPU.VB, 0, 0),
                             new VertexBufferBinding(instanceBuffer, 0, 1)
                         );
+                        gpu.Indices = meshGPU.IB;
 
                         foreach (var pass in shader.CurrentTechnique.Passes) {
                             pass.Apply();
@@ -296,16 +320,15 @@ namespace TranSimCS.Render {
                 (int)data.Width,
                 (int)data.Height,
                 false,
-                GetSurfaceFormat(data.Format));
+                SurfaceFormat.Color);
+            var pixels = new Color[data.Width * data.Height];
+            var bytes = data.Data.Span;
 
             switch (data.Format) {
                 //case TextureFormat.R8:
                 //    texture.SetData(data.Data.Span.ToArray());
                 //    break;
                 case TextureFormat.RGB8:
-                    var pixels = new Color[data.Width * data.Height];
-                    var bytes = data.Data.Span;
-
                     for (int i = 0; i < pixels.Length; i++) {
                         pixels[i] = new Color(
                             bytes[i * 3 + 0],
@@ -313,27 +336,22 @@ namespace TranSimCS.Render {
                             bytes[i * 3 + 2]
                         );
                     }
-
-                    texture.SetData(pixels);
                     break;
-                case TextureFormat.RGBA8: 
-                    var pixels2 = new Color[data.Width * data.Height];
-                    var bytes2 = data.Data.Span;
-
-                    for (int i = 0; i < pixels2.Length; i++) {
-                        pixels2[i] = new Color(
-                            bytes2[i * 4 + 0],
-                            bytes2[i * 4 + 1],
-                            bytes2[i * 4 + 2],
-                            bytes2[i * 4 + 3]);
+                case TextureFormat.RGBA8:
+                    for (int i = 0; i < pixels.Length; i++) {
+                        pixels[i] = new Color(
+                            bytes[i * 4 + 0],
+                            bytes[i * 4 + 1],
+                            bytes[i * 4 + 2],
+                            bytes[i * 4 + 3]);
                     }
-
-                    texture.SetData(pixels2);
                     break;
                 default:
                     throw new NotSupportedException(
                         $"Cannot create MonoGame texture from {data.Format}.");
             }
+
+            texture.SetData(pixels);
 
             return texture;
         }

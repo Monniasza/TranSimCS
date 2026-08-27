@@ -155,6 +155,7 @@ namespace TranSimCS.Menus.InGame {
             var tangent = new Vector3(-sine, -cosine, 0) * sunDiameter;
             var lateral = new Vector3(0, 0, sunDiameter);
             var startingPoint = pos - (tangent + lateral) / 2;
+            //var sunRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.White);
             var sunRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Sun);
             sunRenderBin.DrawParallelogram(startingPoint + renderManager.Camera.Position.ToX0Z(), tangent, lateral, Colors.White);
 
@@ -173,7 +174,7 @@ namespace TranSimCS.Menus.InGame {
             Stats = stats;
         }
 
-        private void RenderGround(Vector3 posoffset, Mesh renderBin) {
+        public static void RenderGround(Vector3 posoffset, Mesh renderBin) {
             posoffset.Y = 0;
 
             //Render the center
@@ -194,7 +195,7 @@ namespace TranSimCS.Menus.InGame {
                 scale *= 2;
             }
         }
-        private void GroundParallelogram(Mesh renderBin, Vector3 initialpos, Vector3 basepos, Vector3 xplus, Vector3 yplus, float scale) {
+        private static void GroundParallelogram(Mesh renderBin, Vector3 initialpos, Vector3 basepos, Vector3 xplus, Vector3 yplus, float scale) {
             var a = (initialpos + basepos * scale);
             var s = scale / 100;
             var C = Colors.White;
@@ -210,7 +211,7 @@ namespace TranSimCS.Menus.InGame {
                 GenerateGroundVertex(d, s, C)
             );
         }
-        private Vertex GenerateGroundVertex(Vector3 pos, float texscale, Color? color = null) {
+        private static Vertex GenerateGroundVertex(Vector3 pos, float texscale, Color? color = null) {
             var c = color ?? Colors.White;
             return new Vertex(pos, c, new(pos.X / texscale, pos.Z / texscale));
         }

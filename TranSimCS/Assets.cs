@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,12 +8,14 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TranSimCS.ModelOld;
+using TranSimCS.SilkNet;
 
 namespace TranSimCS {
     public static class Assets {
         public static Texture2D TerrainHeightmap { get; private set; }
         public static Texture2D WhiteTex { get; private set; }
         public static Texture2D Black { get; private set; }
+        public static Texture2D GrassTex { get; private set; }
 
         public static Effect ShaderEffect {  get; private set; }
         public static Effect TerrainShaderEffect { get; private set; }
@@ -50,6 +53,7 @@ namespace TranSimCS {
         public static void ReadAssets() {
             WhiteTex = Content.Load<Texture2D>("white");
             Black = Content.Load<Texture2D>("black");
+            GrassTex = Content.Load<Texture2D>("seamlessTextures2/grass1");
             //TerrainHeightmap = Content.Load<Texture2D>("heightmaps/terrain.png");
             ShaderEffect = Content.Load<Effect>("shader");
             TerrainShaderEffect = Content.Load<Effect>("terrain-shader");
@@ -78,6 +82,9 @@ namespace TranSimCS {
             Impassable = SimpleMaterial.NewEmissive("signs/trafficbarrier");
 
             Sun = new("sun/simple glowing 128px", MaterialBlendMode.Transparent);
+
+            //Assert that the grass has not leaked emissives
+            Debug.Assert(Grass.Emissive == Black.Convert(), "Grass has a non-black emissive texture");
         }
     }
 }

@@ -33,7 +33,6 @@ namespace TranSimCS.SilkNet {
         public Matrix World { get; private set; }
         public Matrix View { get; private set; }
         public Matrix Projection { get; private set; }
-        private readonly Dictionary<Mesh, MeshGPU> MeshCache = [];
         
         internal uint _instanceBuffer;
         internal uint _vertexShader;
@@ -49,6 +48,7 @@ namespace TranSimCS.SilkNet {
         }
 
 
+        private readonly Dictionary<Mesh, MeshGPU> MeshCache = [];
         internal MeshGPU GetCachedMesh(Mesh mesh) {
             if(MeshCache.TryGetValue(mesh, out var cache)){
                 //Check if the cache needs a rebuild
@@ -60,6 +60,17 @@ namespace TranSimCS.SilkNet {
             MeshCache[mesh] = cache2;
             return cache2;
         }
+
+
+        private readonly Dictionary<TextureData, TextureGPU> TextureCache = [];
+        internal TextureGPU GetCachedTexture(TextureData tex) {
+            if (TextureCache.TryGetValue(tex, out var cache)) 
+                return cache;
+            var texGL = new TextureGPU(tex, window.OpenGL);
+            TextureCache[tex] = texGL;
+            return texGL;
+        }
+
         internal void MeshCleanup(MultiMapList<Mesh, MeshDrawInstance> meshDrawInstances) {
             //Runs periodically to clean up the mesh cache to stop accumulating unnecessary meshes
             var uniqueMeshes = meshDrawInstances.Keys;
@@ -219,9 +230,9 @@ namespace TranSimCS.SilkNet {
 
                     //Bind textures. For now, black and car.
                     gl.ActiveTexture(TextureUnit.Texture0);
-                    gl.BindTexture(TextureTarget.Texture2D, window.CarTex.GetHandle());
+                    gl.BindTexture(TextureTarget.Texture2D, GetCachedTexture(material.Texture).GetHandle());
                     gl.ActiveTexture(TextureUnit.Texture1);
-                    gl.BindTexture(TextureTarget.Texture2D, window.CarEmissive.GetHandle());
+                    gl.BindTexture(TextureTarget.Texture2D, GetCachedTexture(material.Emissive).GetHandle());
 
                     //Upload instance data
                     gl.BindBuffer(BufferTargetARB.ArrayBuffer, _instanceBuffer);

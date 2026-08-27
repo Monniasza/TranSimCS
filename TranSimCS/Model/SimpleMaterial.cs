@@ -47,11 +47,12 @@ namespace TranSimCS.ModelOld {
             material.Texture == Texture
             && material.Emissive == Emissive
             && material.BlendMode == BlendMode
-            && material.EmissiveIsMask == EmissiveIsMask;
+            && material.EmissiveIsMask == EmissiveIsMask
+            && material.CullBack == CullBack;
         
 
         public override int GetHashCode() {
-            return HashCode.Combine(Texture, Emissive, BlendMode, EmissiveIsMask);
+            return HashCode.Combine(Texture, Emissive, BlendMode, EmissiveIsMask, CullBack);
         }
 
         public static bool operator ==(SimpleMaterial left, SimpleMaterial right) {

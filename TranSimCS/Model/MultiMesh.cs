@@ -52,11 +52,6 @@ namespace TranSimCS.Model {
         }
 
         public void Clear() {
-            foreach (var renderBin in _renderBins.Values)
-                renderBin.Clear();
-            meshInstances.Clear();
-        }
-        public void ClearAll() {
             _renderBins.Clear();
             meshInstances.Clear();
         }

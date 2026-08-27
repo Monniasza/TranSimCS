@@ -64,7 +64,7 @@ namespace TranSimCS.Model {
 
                     // Emit renderable geometry
                     foreach (var bin in node.RenderBins) {
-                        int tagcount = (frame.CoverTag == null) ? bin.Value.Tags.Count : bin.Value.Tags.Count;
+                        int tagcount = (frame.CoverTag == null) ? bin.Value.Tags.Count : bin.Value.Indices.Count / 3;
                         yield return new MeshDrawInstance(
                             bin.Value,
                             frame.PositionRotation,
