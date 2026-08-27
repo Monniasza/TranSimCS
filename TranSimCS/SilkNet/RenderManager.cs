@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -11,7 +12,6 @@ using DotNet.Collections.Generic;
 using LanguageExt;
 using LanguageExt.Pipes;
 using LanguageExt.UnitsOfMeasure;
-using Microsoft.Xna.Framework;
 using Silk.NET.OpenGL;
 using TranSimCS.Collections;
 using TranSimCS.Geometry;
@@ -29,10 +29,10 @@ namespace TranSimCS.SilkNet {
         public readonly Property<Camera> CameraProp;
         public readonly Property<Vector4> AmbientColor;
         public readonly SilkNetTest window;
-        public Matrix WorldViewProjection { get; private set; }
-        public Matrix World { get; private set; }
-        public Matrix View { get; private set; }
-        public Matrix Projection { get; private set; }
+        public Matrix4x4 WorldViewProjection { get; private set; }
+        public Matrix4x4 World { get; private set; }
+        public Matrix4x4 View { get; private set; }
+        public Matrix4x4 Projection { get; private set; }
         
         internal uint _instanceBuffer;
         internal uint _vertexShader;
@@ -217,8 +217,8 @@ namespace TranSimCS.SilkNet {
                     //Bind uniforms
                     ShaderUniformData sud = default;
                     sud.AlphaCutoff = alphaCutoff;
-                    sud.AmbientColor = AmbientColor.Value.ToNumerics();
-                    sud.WorldViewProjection = WorldViewProjection.ToNumerics();
+                    sud.AmbientColor = AmbientColor.Value;
+                    sud.WorldViewProjection = WorldViewProjection;
                     sud.EmissiveIsMask = material.EmissiveIsMask;
                     gl.BindBuffer(BufferTargetARB.UniformBuffer, _uniformBuffer);
                     gl.BufferSubData(BufferTargetARB.UniformBuffer, 0, [sud]);

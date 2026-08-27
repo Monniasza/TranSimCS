@@ -5,22 +5,28 @@ using System.Linq;
 using System.Numerics;
 using ImageMagick;
 using ImGuiNET;
+using Microsoft.Xna.Framework.Input;
 using NLog;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
-using StbImageSharp;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
+using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Range;
+using TranSimCS.Roads.Strip;
 using TranSimCS.Terrain;
 using TranSimCS.Worlds;
-using TranSimCS.Worlds.Cars;
 
 namespace TranSimCS.SilkNet {
-    public sealed class SilkNetTest {
+    /// <summary>
+    /// The Silk.NET-based TranSim window.
+    /// </summary>
+    public sealed partial class SilkNetTest {
         //Static contents
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
 
@@ -46,6 +52,7 @@ namespace TranSimCS.SilkNet {
         public TSWorld World { get; private set; }
 
         //UI contents
+        public bool IsMouseOverUI { get; private set; }
         public readonly List<string> Worlds = [];
         public bool IsLoadOpen;
         public void Reload() {
@@ -57,6 +64,11 @@ namespace TranSimCS.SilkNet {
 
         //Input attributes
         public Vector2 ScrollOffset;
+        public Vector2 MousePosition;
+        public Vector2 MousePositionPrev;
+        public Ray3 MouseRay;
+        public Ray3 MouseRayOld;
+        public Selection? MouseOver;
 
         public void Start() {
             WindowOptions options = WindowOptions.Default with {
@@ -100,6 +112,7 @@ namespace TranSimCS.SilkNet {
             }
             foreach (var mouse in InputContext.Mice) {
                 mouse.Scroll += MouseScroll;
+                mouse.MouseMove += MouseMove;
             }
 
             //Create contexts
@@ -109,6 +122,10 @@ namespace TranSimCS.SilkNet {
 
             //Create world data
             camera = new(Vector3.Zero, 32, 1, 0.7f);
+        }
+
+        private void MouseMove(IMouse mouse, Vector2 vector) {
+            MousePosition = vector;
         }
 
         private TextureGPU LoadTextureFromResource(string resource) {
@@ -134,36 +151,18 @@ namespace TranSimCS.SilkNet {
             ImGuiController.Update((float)dt);
             ImGuiController.MakeCurrent();
 
-            var rotationSpeed = 1f;
-            var motionSpeed = camera.Distance;
+            //Create the pick ray
+            MouseRayOld = MouseRay;
+            MouseRay = Unprojection.CreatePickRay(MousePosition, new(SilkWindow.Size.X, SilkWindow.Size.Y), RenderManager.View, RenderManager.Projection);
+            VectorMethods.CheckVector(MouseRay.Origin, nameof(MouseRay.Origin));
+            VectorMethods.CheckVector(MouseRay.Direction, nameof(MouseRay.Direction));
 
-            //Handle movement
-            Vector2 xz = Vector2.Zero;
-            Vector2 yawPitch = Vector2.Zero;
-            if (ImGui.IsKeyDown(ImGuiKey.W)) xz.Y += 1;
-            if (ImGui.IsKeyDown(ImGuiKey.S)) xz.Y -= 1;
-            if (ImGui.IsKeyDown(ImGuiKey.A)) xz.X -= 1;
-            if (ImGui.IsKeyDown(ImGuiKey.D)) xz.X += 1;
-            if (ImGui.IsKeyDown(ImGuiKey.LeftArrow)) yawPitch.X -= 1;
-            if (ImGui.IsKeyDown(ImGuiKey.RightArrow)) yawPitch.X += 1;
-            if (ImGui.IsKeyDown(ImGuiKey.UpArrow)) yawPitch.Y += 1;
-            if (ImGui.IsKeyDown(ImGuiKey.DownArrow)) yawPitch.Y -= 1;
+            //Handle picking
+            IsMouseOverUI = ImGui.IsWindowHovered(ImGuiHoveredFlags.AnyWindow);
+            if (!IsMouseOverUI) HandleInputs(dT);
 
-            var sinCos = MathF.SinCos(camera.Azimuth);
-            var xVel = motionSpeed * (sinCos.Cos*xz.X + sinCos.Sin*xz.Y);
-            var yVel = motionSpeed * (sinCos.Cos*xz.Y - sinCos.Sin*xz.X);
-
-            float newElevation = camera.Elevation + yawPitch.Y * rotationSpeed * dT;
-            float newAzimuth = camera.Azimuth + yawPitch.X * rotationSpeed * dT;
-            newElevation = GeometryUtils.Clamp(newElevation, -MathF.PI / 2 + 0.01f, MathF.PI / 2 - 0.01f);
-            var newX = camera.Position.X + xVel * dT;
-            var newY = camera.Position.Y;
-            var newZ = camera.Position.Z + yVel * dT;
-
-            camera.Position = new(newX, newY, newZ);
-            camera.Elevation = newElevation;
-            camera.Azimuth = newAzimuth;
-
+            //Push previous values
+            MousePositionPrev = MousePosition;
         }
         private void OnRender(double dt) {
             OpenGL.ClearColor(System.Drawing.Color.CornflowerBlue);
@@ -174,32 +173,13 @@ namespace TranSimCS.SilkNet {
 
             RenderManager.Camera = camera;
 
-
-
             //Render GUI
-            ImGui.BeginMainMenuBar();
-            if (ImGui.BeginMenu("File")) {
-                if (ImGui.MenuItem("Load", "", IsLoadOpen, true)) IsLoadOpen ^= true;
-                ImGui.EndMenu();
-            }
-            ImGui.EndMainMenuBar();
-
-            if (IsLoadOpen) {
-                ImGui.Begin("Load a world");
-                if (ImGui.Button("Reload"))
-                    Reload();
-                foreach (var world in Worlds) {
-                    if (ImGui.Button(world)) {
-                        var worldPath = Path.Combine(Program.SaveRoot, world);
-                        World = TSWorld.LoadFromFile(worldPath);
-                    }
-                }
-                ImGui.End();
-            }
+            DrawUI();
 
             //Add world contents
             if (World != null) {
-                foreach (var node in World.Nodes.data) 
+                var showNodes = true;
+                if (showNodes) foreach (var node in World.Nodes.data) 
                     mesh.AddAll(node.Mesh.GetMesh());
                 foreach (var node in World.RoadSegments.data)
                     mesh.AddAll(node.Mesh.GetMesh());
@@ -210,7 +190,30 @@ namespace TranSimCS.SilkNet {
                 foreach (var node in World.Cars.data)
                     mesh.meshInstances.Add(node.meshInstance);
             }
-            
+
+            //Draw highlights
+            Mesh roadRenderBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
+
+            var nodecolor = InGameMenu.roadSegmentHighlightColor;
+            var lanecolor = InGameMenu.laneHighlightColor;
+
+            if ((MouseOver?.SelectedObj is RoadStrip strip)) {
+                var fstag = strip.Bounds;
+                LaneRangeMethods.GenerateLaneRangeMesh(fstag, roadRenderBin, nodecolor, 0.45f);
+            }
+
+            //If a road segment is selected, draw the selection
+            if ((MouseOver?.Tag) is LaneStrip laneStrip) {
+                // Draw the selected lane tag with a different color
+                var laneTag = laneStrip.Tag();
+                LaneRangeMethods.GenerateLaneRangeMesh(laneTag, roadRenderBin, lanecolor, 0.5f);
+            }
+
+            //Draw the selected road node
+            var selectedObj = MouseOver?.Tag;
+            HalfLane? laneEnd = null;
+            if (selectedObj is IRoadElement element && element.GetLaneEnd() != null && element.GetRoadStrip() == null)
+                laneEnd = element.GetLaneEnd();
 
             //Add the grass
             Mesh grassMesh = mesh.GetOrCreateRenderBinForced(Assets.Grass);
@@ -218,9 +221,7 @@ namespace TranSimCS.SilkNet {
 
             //Render all
             RenderManager.Render(mesh);
-
             ImGuiController.Render();
-
             FramesPerSecond.Count++;
         }
         private void KeyDown(IKeyboard keyboard, Key key, int keyCode) {
