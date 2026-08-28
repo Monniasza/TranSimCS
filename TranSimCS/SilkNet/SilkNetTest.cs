@@ -171,6 +171,11 @@ namespace TranSimCS.SilkNet {
             //Push previous values
             MousePositionPrev = MousePosition;
 
+            //Track object positions
+            if(TrackPosition != null) {
+                camera.Position = TrackPosition.PositionData.Position;
+            }
+
             //Update the world
             World.Update(dT);
         }

@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Menus.InGame;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.SilkNet {
     public partial class SilkNetTest {
         //Selection attributes
         public Selection? MouseOver;
         public Selection? Sticky;
+        public IPosition? TrackPosition;
         public bool SelectNodes = true;
         public bool SelectSegments = true;
         public bool SelectSections = true;

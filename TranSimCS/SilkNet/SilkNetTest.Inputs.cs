@@ -39,6 +39,8 @@ namespace TranSimCS.SilkNet {
             if (ImGui.IsKeyDown(ImGuiKey.UpArrow)) yawPitch.Y += 1;
             if (ImGui.IsKeyDown(ImGuiKey.DownArrow)) yawPitch.Y -= 1;
 
+            if (xz != Vector2.Zero) TrackPosition = null;
+
             var sinCos = MathF.SinCos(camera.Azimuth);
             var xVel = motionSpeed * (sinCos.Cos * xz.X + sinCos.Sin * xz.Y);
             var yVel = motionSpeed * (sinCos.Cos * xz.Y - sinCos.Sin * xz.X);

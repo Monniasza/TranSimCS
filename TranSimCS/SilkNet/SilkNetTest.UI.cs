@@ -32,6 +32,9 @@ namespace TranSimCS.SilkNet {
             if (ImGui.BeginMenu("Tools")) {
                 DearUI.MenuToggle("Stats", ref IsStatsOpen);
                 DearUI.MenuToggle("Enable examples", ref AreExamplesOpen);
+                if(ImGui.MenuItem("Stop tracking")) {
+                    TrackPosition = null;
+                }
                 ImGui.EndMenu();
             }
 
@@ -86,7 +89,12 @@ namespace TranSimCS.SilkNet {
             if(ImGui.Begin($"Selected object: {obj.GetType()} {obj.Guid}###selection")) {
                 ImGui.Text($"Picked coordinates: {selection.Coordinates.X}  {selection.Coordinates.Y}  {selection.Coordinates.Z}");
                 ImGui.Text($"Picked tag: {tag}");
-                if(obj is IPosition positionable) DearUI.InputObjPos("Position/Rotation", positionable.PositionProp);
+                if(obj is IPosition positionable) {
+                    DearUI.InputObjPos("Position/Rotation", positionable.PositionProp);
+                    if(ImGui.Button("Track this object")) {
+                        TrackPosition = positionable;
+                    }
+                }
                 if (tag is ILaneSpec lanespeccable) {
                     DearUI.InputLaneSpec("Lane spec", lanespeccable);
                     if (ImGui.Button("Copy lane spec")) LaneSpec = lanespeccable.LaneSpec;
@@ -100,13 +108,13 @@ namespace TranSimCS.SilkNet {
                     if (ImGui.Button("Paste road finish")) roadFinishable.FinishProperty.Value = RoadFinish;
                 }
                 if(tag is LaneStrip strip) {
-                    ImGui.DragFloat("Spawn car speed [m/s]", ref SpawnCarVelocity, 0.01f, 0, 100, "%.2f");
+                    ImGui.DragFloat("Spawn car speed [m/s]", ref SpawnCarVelocity, 0.05f, 0, 100, "%.2f");
                     if(ImGui.Button("Spawn a car")) {
                         CarLauncherTool.LaunchCar(World, strip, SpawnCarVelocity);
                     }
                 }
                 if(obj is Car car) {
-                    ImGui.DragFloat("Speed [m/s]", ref car.Speed, 0.02f, 0, 100, "%.2f");
+                    ImGui.DragFloat("Speed [m/s]", ref car.Speed, 0.05f, 0, 100, "%.2f");
                 }
 
                 ImGui.End();
