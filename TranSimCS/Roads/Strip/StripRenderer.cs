@@ -131,6 +131,7 @@ namespace TranSimCS.Roads.Strip {
 
             //Generate side-lines
             var lineWidth = laneStrip.LaneSpec.LineWidth;
+            if (lineWidth <= 0) return;
 
             RoadSplineComponent DrawSide(DualRange laneRange, LaneFlags flag, float bias) {
                 bool isSolid = IsRangeTouchingEdge(laneRange.startRange, roadTag.startRange) && IsRangeTouchingEdge(laneRange.endRange, roadTag.endRange);
