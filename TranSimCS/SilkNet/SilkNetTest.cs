@@ -60,6 +60,7 @@ namespace TranSimCS.SilkNet {
         public readonly List<string> Worlds = [];
         public bool IsLoadOpen;
         public bool IsStatsOpen;
+        public bool AreExamplesOpen;
         public void Reload() {
             //Find world files
             var dirInfo = new DirectoryInfo(Program.SaveRoot);
@@ -73,7 +74,6 @@ namespace TranSimCS.SilkNet {
         public Vector2 MousePositionPrev;
         public Ray3 MouseRay;
         public Ray3 MouseRayOld;
-        public Selection? MouseOver;
 
         public void Start() {
             WindowOptions options = WindowOptions.Default with {
@@ -118,6 +118,7 @@ namespace TranSimCS.SilkNet {
             foreach (var mouse in InputContext.Mice) {
                 mouse.Scroll += MouseScroll;
                 mouse.MouseMove += MouseMove;
+                mouse.MouseDown += MouseDown;
             }
 
             //Create contexts
@@ -127,6 +128,19 @@ namespace TranSimCS.SilkNet {
 
             //Create world data
             camera = new(Vector3.Zero, 32, 1, 0.7f);
+        }
+
+        private void MouseDown(IMouse mouse, MouseButton button) {
+            if (IsMouseOverUI) return;
+            switch (button) {
+                case MouseButton.Left:
+                    //Select the object
+                    Sticky = MouseOver;
+                    break;
+                case MouseButton.Right:
+                    Sticky = null;
+                    break;
+            }
         }
 
         private void MouseMove(IMouse mouse, Vector2 vector) {
@@ -161,6 +175,13 @@ namespace TranSimCS.SilkNet {
             MouseRay = Unprojection.CreatePickRay(MousePosition, new(SilkWindow.Size.X, SilkWindow.Size.Y), RenderManager.View, RenderManager.Projection);
             VectorMethods.CheckVector(MouseRay.Origin, nameof(MouseRay.Origin));
             VectorMethods.CheckVector(MouseRay.Direction, nameof(MouseRay.Direction));
+
+            //Enable/disable selection
+            World.RoadSections.trackerSpatial.sceneTree.Active.Value = SelectSections;
+            World.RoadSegments.trackerSpatial.sceneTree.Active.Value = SelectSegments;
+            World.Nodes.trackerSpatial.sceneTree.Active.Value = SelectNodes;
+            World.Cars.trackerSpatial.sceneTree.Active.Value = SelectCars;
+            World.TempSelectors.Active.Value = true;
 
             //Handle picking
             IsMouseOverUI = ImGui.IsWindowHovered(ImGuiHoveredFlags.AnyWindow);
@@ -201,6 +222,8 @@ namespace TranSimCS.SilkNet {
                 mesh.AddAll(node.Mesh.GetMesh());
             foreach (var node in World.Cars.data)
                 mesh.meshInstances.Add(node.meshInstance);
+
+            
             stats.Segments = World.RoadSegments.data.Count;
             stats.Nodes = World.Nodes.data.Count;
             stats.Sections = World.RoadSections.data.Count;
@@ -208,7 +231,7 @@ namespace TranSimCS.SilkNet {
             stats.Buildings = World.Buildings.data.Count;
 
             //Draw highlights
-            Mesh roadRenderBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
+            Mesh roadRenderBin = mesh.GetOrCreateRenderBinForced(Assets.Road);            
 
             var nodecolor = InGameMenu.roadSegmentHighlightColor;
             var lanecolor = InGameMenu.laneHighlightColor;
@@ -230,6 +253,9 @@ namespace TranSimCS.SilkNet {
             HalfLane? laneEnd = null;
             if (selectedObj is IRoadElement element && element.GetLaneEnd() != null && element.GetRoadStrip() == null)
                 laneEnd = element.GetLaneEnd();
+            if (SelectNodes) foreach (var node in World.Nodes.data) {
+                NodeRenderer.GenerateRoadNodeSelectionMesh(node, roadRenderBin, laneEnd);
+            }
 
             //Add the grass
             Mesh grassMesh = mesh.GetOrCreateRenderBinForced(Assets.Grass);

@@ -12,7 +12,14 @@ namespace TranSimCS.Worlds {
         public float Inclination; // Inclination angle in radians
         public float Tilt; // Tilt angle in radians
 
-
+        public Vector3 YawPitchRoll {
+            get => new(GeometryUtils.FieldToRadians(Azimuth), Inclination, Tilt);
+            set {
+                Azimuth = GeometryUtils.RadiansToField(value.X);
+                Inclination = value.Y;
+                Tilt = value.Z;
+            }
+        }
         public static PositionEulerAngles Zero => new PositionEulerAngles(Vector3.Zero, 0);
 
         public PositionEulerAngles(Vector3 position, int azimuth, float inclination = 0f, float tilt = 0f) {

@@ -5,7 +5,9 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using ImGuiNET;
+using TranSimCS.Geometry;
 using TranSimCS.Property;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.SilkNet {
     /// <summary>
@@ -50,6 +52,22 @@ namespace TranSimCS.SilkNet {
             bool changed = ImGui.InputFloat4(title, ref tmp);
             if (changed) vector.Value = tmp;
             return changed;
+        }
+
+        public static bool InputObjPos(string title, ref PositionEulerAngles pea) {
+            ImGui.BeginChild(title);
+            bool posChanged = ImGui.InputFloat3("Position [m]", ref pea.Position);
+            var yawPitchRoll = pea.YawPitchRoll.ToDegrees();
+            bool rotChanged = ImGui.InputFloat3("Yaw/pitch/roll [degs]", ref yawPitchRoll);
+            if(rotChanged) pea.YawPitchRoll = yawPitchRoll.ToRadians();
+            ImGui.EndChild();
+            return posChanged | rotChanged;
+        }
+        public static bool InputObjPos(string title, Property<PositionEulerAngles> pea) {
+            var tmp = pea.Value;
+            var result = InputObjPos(title, ref tmp);
+            if(result) pea.Value = tmp;
+            return result;
         }
     }
 }

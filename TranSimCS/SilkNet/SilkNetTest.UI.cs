@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ImGuiNET;
+using TranSimCS.Menus.InGame;
 using TranSimCS.Setting;
 using TranSimCS.Worlds;
 
@@ -24,7 +25,8 @@ namespace TranSimCS.SilkNet {
             }
 
             if (ImGui.BeginMenu("Tools")) {
-                DearUI.MenuToggle("Stats", ref IsStatsOpen, "", true);
+                DearUI.MenuToggle("Stats", ref IsStatsOpen);
+                DearUI.MenuToggle("Enable examples", ref AreExamplesOpen);
                 ImGui.EndMenu();
             }
 
@@ -34,6 +36,10 @@ namespace TranSimCS.SilkNet {
                 DearUI.MenuToggle("Day/night cycle", Settings.DayNightCycleProp);
                 DearUI.InputFloat("Duration of a day", Settings.DayTimeLengthProp);
                 DearUI.MenuToggle("Invert all normals", Settings.InvertAllNormalsProp);
+                DearUI.MenuToggle("Select road nodes", ref SelectNodes);
+                DearUI.MenuToggle("Select road segments", ref SelectSegments);
+                DearUI.MenuToggle("Select road sections", ref SelectSections);
+                DearUI.MenuToggle("Select cars", ref SelectCars);
                 ImGui.EndMenu();
             }
 
@@ -54,6 +60,23 @@ namespace TranSimCS.SilkNet {
             if (IsStatsOpen) {
                 ImGui.Begin("Stats");
                 ImGui.Text(Stats.Format());
+                ImGui.End();
+            }
+
+            if (AreExamplesOpen) {
+                ImGui.ShowDemoWindow();
+            }
+            if (Sticky != null) ShowObjectWindow(Sticky.Value);
+        }
+
+        private void ShowObjectWindow(Selection selection) {
+            var obj = selection.SelectedObj;
+            var tag = selection.Tag;
+            if (obj == null) return;
+            
+            if(ImGui.Begin($"Selected object: {obj.GetType()} {obj.Guid}###selection")) {
+                ImGui.Text($"Picked coordinates: {selection.Coordinates.X}  {selection.Coordinates.Y}  {selection.Coordinates.Z}");
+                if(obj is IPosition positionable) DearUI.InputObjPos("Position/Rotation", positionable.PositionProp);
                 ImGui.End();
             }
         }
