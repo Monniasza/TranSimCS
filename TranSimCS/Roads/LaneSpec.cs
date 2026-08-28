@@ -1,6 +1,10 @@
 using System;
+using TranSimCS.Property;
 
 namespace TranSimCS.Roads {
+    public interface ILaneSpec {
+        public Property<LaneSpec> LaneSpecProp { get; set; }
+    }
     public struct LaneSpec : IEquatable<LaneSpec> {
         public Color Color; // Color of the lane
         public VehicleTypes VehicleTypes; // Types of vehicles allowed in the lane
