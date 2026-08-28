@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Arch.LowLevel.Jagged;
 using DotNet.Collections.Generic;
-using LanguageExt;
 using LanguageExt.Pipes;
 using LanguageExt.UnitsOfMeasure;
 using Silk.NET.OpenGL;
@@ -71,14 +70,13 @@ namespace TranSimCS.SilkNet {
             return texGL;
         }
 
-        internal void MeshCleanup(MultiMapList<Mesh, MeshDrawInstance> meshDrawInstances) {
+        private int CleanupCounter = 0;
+        internal void MeshCleanup(ISet<Mesh> meshDrawInstances) {
             //Runs periodically to clean up the mesh cache to stop accumulating unnecessary meshes
-            var uniqueMeshes = meshDrawInstances.Keys;
-
             List<Mesh> deleteCachesFor = [];
             foreach (var row in MeshCache) {
                 var mesh = row.Key;
-                if (meshDrawInstances.ContainsKey(mesh)) continue; //Don't delete caches for used meshes
+                if (meshDrawInstances.Contains(mesh)) continue; //Don't delete caches for used meshes
                 deleteCachesFor.Add(mesh);
             }
             foreach (var mesh in deleteCachesFor) {
@@ -167,10 +165,18 @@ namespace TranSimCS.SilkNet {
             var allMeshes = MeshTraversal.Traverse(source).ToArray();
 
             var groups = new List<MeshDrawInstance>?[(int)MaterialBlendMode.Count];
+            var uniqueMeshes = new HashSet<Mesh>();
             for(int i = 0; i < allMeshes.Length; i++) {
                 var instance = allMeshes[i];
                 var list = groups[(int)instance.Material.BlendMode] ??= [];
                 list.Add(instance);
+                uniqueMeshes.Add(instance.Mesh);
+            }
+
+            CleanupCounter++;
+            if(CleanupCounter >= 1200) {
+                CleanupCounter = 0;
+                MeshCleanup(uniqueMeshes);
             }
 
             var groupByRenderType = allMeshes.QuickGroup(x => x.Material.BlendMode);
