@@ -97,15 +97,7 @@ namespace TranSimCS.SilkNet {
             SilkWindow.Run();
         }
 
-        private void MouseScroll(IMouse mouse, ScrollWheel wheel) {
-            ScrollOffset.X += wheel.X;
-            ScrollOffset.Y += wheel.Y;
-
-            log.Trace($"Mouse scroll delta: {wheel.Y}");
-            var zoomDelta = MathF.Pow(2f, -wheel.Y); // Adjust zoom factor based on scroll wheel delta
-            camera.Distance *= zoomDelta; // Update camera distance based on zoom factor
-            camera.Distance = float.Clamp(camera.Distance, 1, 65536);
-        }
+        
 
         private void OnResize(Vector2D<int> d) {
             OpenGL.Viewport(d);
@@ -134,22 +126,7 @@ namespace TranSimCS.SilkNet {
             camera = new(Vector3.Zero, 32, 1, 0.7f);
         }
 
-        private void MouseDown(IMouse mouse, MouseButton button) {
-            if (IsMouseOverUI) return;
-            switch (button) {
-                case MouseButton.Left:
-                    //Select the object
-                    Sticky = MouseOver;
-                    break;
-                case MouseButton.Right:
-                    Sticky = null;
-                    break;
-            }
-        }
-
-        private void MouseMove(IMouse mouse, Vector2 vector) {
-            MousePosition = vector;
-        }
+        
 
         private TextureGPU LoadTextureFromResource(string resource) {
             using var stream = TerrainDataBlobs.OpenEmbeddedResource(resource);
@@ -318,14 +295,6 @@ namespace TranSimCS.SilkNet {
             stats.MeshModels = renderStats.ModelCount;
             Stats = stats;
         }
-        private void KeyDown(IKeyboard keyboard, Key key, int keyCode) {
-            
-        }
-        private void KeyUp(IKeyboard keyboard, Key key, int keyCode) {
-
-        }
-        private void KeyChar(IKeyboard keyboard, char character) {
-
-        }
+        
     }
 }

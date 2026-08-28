@@ -5,11 +5,23 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using ImGuiNET;
+using Silk.NET.Input;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 
 namespace TranSimCS.SilkNet {
     public partial class SilkNetTest {
+
+        private void MouseScroll(IMouse mouse, ScrollWheel wheel) {
+            ScrollOffset.X += wheel.X;
+            ScrollOffset.Y += wheel.Y;
+
+            if (IsMouseOverUI) return;
+            log.Trace($"Mouse scroll delta: {wheel.Y}");
+            var zoomDelta = MathF.Pow(2f, -wheel.Y); // Adjust zoom factor based on scroll wheel delta
+            camera.Distance *= zoomDelta; // Update camera distance based on zoom factor
+            camera.Distance = float.Clamp(camera.Distance, 1, 65536);
+        }
         private void HandleInputs(float dT) {
             var rotationSpeed = 1f;
             var motionSpeed = camera.Distance;
@@ -41,6 +53,32 @@ namespace TranSimCS.SilkNet {
             camera.Position = new(newX, newY, newZ);
             camera.Elevation = newElevation;
             camera.Azimuth = newAzimuth;
+        }
+
+        private void KeyDown(IKeyboard keyboard, Key key, int keyCode) {
+
+        }
+        private void KeyUp(IKeyboard keyboard, Key key, int keyCode) {
+
+        }
+        private void KeyChar(IKeyboard keyboard, char character) {
+
+        }
+        private void MouseDown(IMouse mouse, MouseButton button) {
+            if (IsMouseOverUI) return;
+            switch (button) {
+                case MouseButton.Left:
+                    //Select the object
+                    Sticky = MouseOver;
+                    break;
+                case MouseButton.Right:
+                    Sticky = null;
+                    break;
+            }
+        }
+
+        private void MouseMove(IMouse mouse, Vector2 vector) {
+            MousePosition = vector;
         }
     }
 }
