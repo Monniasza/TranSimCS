@@ -83,11 +83,13 @@ namespace TranSimCS.SilkNet {
                 if (tag is ILaneSpec lanespeccable) {
                     DearUI.InputLaneSpec("Lane spec", lanespeccable);
                     if (ImGui.Button("Copy lane spec")) LaneSpec = lanespeccable.LaneSpec;
+                    ImGui.SameLine();
                     if (ImGui.Button("Paste lane spec")) lanespeccable.LaneSpec = LaneSpec;
                 }
                 if(obj is IRoadFinish roadFinishable) {
                     DearUI.InputRoadFinish("Road finish", roadFinishable.FinishProperty);
                     if (ImGui.Button("Copy road finish")) RoadFinish = roadFinishable.FinishProperty.Value;
+                    ImGui.SameLine();
                     if (ImGui.Button("Paste road finish")) roadFinishable.FinishProperty.Value = RoadFinish;
                 }
 
