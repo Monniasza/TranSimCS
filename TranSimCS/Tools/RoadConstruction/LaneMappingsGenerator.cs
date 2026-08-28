@@ -102,7 +102,7 @@ namespace TranSimCS.Tools.RoadConstruction {
                         for (int i = 0; i < laneCount; i++) {
                             var x = initialX + i * mappedLane.SourceLane.Width;
                             var offsetFromCenter = i - mappedLane.LeftAmount.Amount;
-                            var spec = mappedLane.SourceLane.Spec;
+                            var spec = mappedLane.SourceLane.LaneSpec;
 
                             //Classify into 5 regions
                             

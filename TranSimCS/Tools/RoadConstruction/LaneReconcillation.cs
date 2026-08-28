@@ -65,7 +65,7 @@ namespace TranSimCS.Tools.RoadConstruction {
             var destinationHalfLane = destLane?.GetLaneEnd();
             if(destinationHalfLane == null && destLane is AddLaneSelection als) {
                 //Materialize the half-lane
-                LaneSpec laneSpec = startingState.StartLane.Spec;
+                LaneSpec laneSpec = startingState.StartLane.LaneSpec;
                 var lanePos = als.CalculateOffset(laneSpec.Width / 2) * als.ZDiscriminant();
                 destinationHalfLane = destinationNode.AddLane(new LaneDefinition(lanePos, laneSpec));
                 passthroughEnd = destinationHalfLane.OppositeHalf;

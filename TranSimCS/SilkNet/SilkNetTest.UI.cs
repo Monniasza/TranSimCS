@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using ImGuiNET;
 using TranSimCS.Menus.InGame;
+using TranSimCS.Roads;
 using TranSimCS.Setting;
 using TranSimCS.Worlds;
 
@@ -76,7 +78,19 @@ namespace TranSimCS.SilkNet {
             
             if(ImGui.Begin($"Selected object: {obj.GetType()} {obj.Guid}###selection")) {
                 ImGui.Text($"Picked coordinates: {selection.Coordinates.X}  {selection.Coordinates.Y}  {selection.Coordinates.Z}");
+                ImGui.Text($"Picked tag: {tag}");
                 if(obj is IPosition positionable) DearUI.InputObjPos("Position/Rotation", positionable.PositionProp);
+                if (tag is ILaneSpec lanespeccable) {
+                    DearUI.InputLaneSpec("Lane spec", lanespeccable);
+                    if (ImGui.Button("Copy lane spec")) LaneSpec = lanespeccable.LaneSpec;
+                    if (ImGui.Button("Paste lane spec")) lanespeccable.LaneSpec = LaneSpec;
+                }
+                if(obj is IRoadFinish roadFinishable) {
+                    DearUI.InputRoadFinish("Road finish", roadFinishable.FinishProperty);
+                    if (ImGui.Button("Copy road finish")) RoadFinish = roadFinishable.FinishProperty.Value;
+                    if (ImGui.Button("Paste road finish")) roadFinishable.FinishProperty.Value = RoadFinish;
+                }
+
                 ImGui.End();
             }
         }

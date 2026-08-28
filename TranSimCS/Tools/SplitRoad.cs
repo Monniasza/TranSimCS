@@ -55,7 +55,7 @@ namespace TranSimCS.Tools {
                     var startLane = lane;
                     var endLane = newHalfLane;
                     if (isOutFromTheLane) DataUtil.Swap(ref startLane, ref endLane);
-                    var laneStrip = new LaneStrip(startLane, endLane, lane.Spec);
+                    var laneStrip = new LaneStrip(startLane, endLane, lane.LaneSpec);
                     newSegment.AddLaneStrip(laneStrip);
                     remappings[lane] = newHalfLane.OppositeHalf;
                 }
@@ -74,7 +74,7 @@ namespace TranSimCS.Tools {
                     var startLane = lane;
                     var endLane = newHalfLane;
                     if (isOutFromTheLane) DataUtil.Swap(ref startLane, ref endLane);
-                    var laneStrip = new LaneStrip(startLane, endLane, lane.Spec);
+                    var laneStrip = new LaneStrip(startLane, endLane, lane.LaneSpec);
                     newSegment.AddLaneStrip(laneStrip);
                     remappings[lane] = newHalfLane.OppositeHalf;
                 }

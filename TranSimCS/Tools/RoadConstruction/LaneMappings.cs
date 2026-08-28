@@ -105,11 +105,11 @@ namespace TranSimCS.Tools.RoadConstruction {
             int leftBound, rightBound = StartingLanes.Length - 1;
             for (leftBound = 0; leftBound <= rightBound; leftBound++) {
                 var lane = StartingLanes[leftBound];
-                if (lane.Spec.VehicleTypes.HasFlags(VehicleTypes.MotorVehicles)) break;
+                if (lane.LaneSpec.VehicleTypes.HasFlags(VehicleTypes.MotorVehicles)) break;
             }
             for (rightBound = StartingLanes.Length - 1; rightBound >= 0; rightBound--) {
                 var lane = StartingLanes[rightBound];
-                if (lane.Spec.VehicleTypes.HasFlags(VehicleTypes.MotorVehicles)) break;
+                if (lane.LaneSpec.VehicleTypes.HasFlags(VehicleTypes.MotorVehicles)) break;
             }
             if (leftBound > rightBound) {
                 //No car lanes. Map one to one and return
@@ -165,8 +165,8 @@ namespace TranSimCS.Tools.RoadConstruction {
             int lmIndex = 0;            
 
             //Find synthetic lane specs
-            var roadSpecLeft = StartingLanes[countSideLeft].Spec;
-            var roadSpecRight = StartingLanes[^(countSideRight + 1)].Spec;
+            var roadSpecLeft = StartingLanes[countSideLeft].LaneSpec;
+            var roadSpecRight = StartingLanes[^(countSideRight + 1)].LaneSpec;
             var sidewalkOffsetLeft = laneChangesLeft * roadSpecLeft.Width;
             var sidewalkOffsetRight = laneChangesRight * roadSpecRight.Width;
 
@@ -181,18 +181,18 @@ namespace TranSimCS.Tools.RoadConstruction {
 
             for (int i = 0; i < countSideLeft; i++) {
                 var existingSidewalk = StartingLanes[i];
-                var newSidewalk = new LaneNode(existingSidewalk.Spec, existingSidewalk.MiddlePosition - sidewalkOffsetLeft);
+                var newSidewalk = new LaneNode(existingSidewalk.LaneSpec, existingSidewalk.MiddlePosition - sidewalkOffsetLeft);
                 SetEndingLane(i, newSidewalk);
-                var lm = new LaneMapping(i, i, existingSidewalk.Spec, existingSidewalk.Guid);
+                var lm = new LaneMapping(i, i, existingSidewalk.LaneSpec, existingSidewalk.Guid);
                 ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
                 laneMappings[lmIndex++] = lm;
             }
             for (int i = 0; i < countSideRight; i++) {
                 var existingSidewalk = StartingLanes[^(i+1)];
-                var newSidewalk = new LaneNode(existingSidewalk.Spec, existingSidewalk.MiddlePosition + sidewalkOffsetRight);
+                var newSidewalk = new LaneNode(existingSidewalk.LaneSpec, existingSidewalk.MiddlePosition + sidewalkOffsetRight);
                 int endIndex = newCount - i - 1;
                 SetEndingLane(endIndex, newSidewalk);
-                var lm = new LaneMapping(StartingLanes.Length - i - 1, endIndex, existingSidewalk.Spec, existingSidewalk.Guid);
+                var lm = new LaneMapping(StartingLanes.Length - i - 1, endIndex, existingSidewalk.LaneSpec, existingSidewalk.Guid);
                 ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
                 laneMappings[lmIndex++] = lm;
             }
@@ -227,9 +227,9 @@ namespace TranSimCS.Tools.RoadConstruction {
                     ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
                     laneMappings[lmIndex++] = lm;
                     var lane = StartingLanes[prevIndex];
-                    var lanenodeSpec = lane.Spec;
+                    var lanenodeSpec = lane.LaneSpec;
                     lanenodeSpec.Flags &= ~mergeFlagsMask;
-                    var lanenode = new LaneNode(lanenodeSpec, lane.MiddlePosition - (i + 1) * lane.Spec.Width);
+                    var lanenode = new LaneNode(lanenodeSpec, lane.MiddlePosition - (i + 1) * lane.LaneSpec.Width);
                     SetEndingLane(newIndex, lanenode);
                 }
             } else {
@@ -257,9 +257,9 @@ namespace TranSimCS.Tools.RoadConstruction {
                     ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
                     laneMappings[lmIndex++] = lm;
                     var lane = StartingLanes[prevIndex];
-                    var lanenodeSpec = lane.Spec;
+                    var lanenodeSpec = lane.LaneSpec;
                     lanenodeSpec.Flags &= ~mergeFlagsMask;
-                    var lanenode = new LaneNode(lanenodeSpec, lane.MiddlePosition + (i + 1) * lane.Spec.Width);
+                    var lanenode = new LaneNode(lanenodeSpec, lane.MiddlePosition + (i + 1) * lane.LaneSpec.Width);
                     SetEndingLane(newIndex, lanenode);
                 }
             } else {
@@ -281,9 +281,9 @@ namespace TranSimCS.Tools.RoadConstruction {
                 int startIndex = coreOffsetStart + i;
                 int endIndex = coreOffsetEnd + i;
                 var startLane = StartingLanes[startIndex];
-                var endLane = new LaneNode(startLane.Spec, startLane.MiddlePosition);
+                var endLane = new LaneNode(startLane.LaneSpec, startLane.MiddlePosition);
                 SetEndingLane(endIndex, endLane);
-                var lm = new LaneMapping(startIndex, endIndex, startLane.Spec, startLane.Guid);
+                var lm = new LaneMapping(startIndex, endIndex, startLane.LaneSpec, startLane.Guid);
                 ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
                 laneMappings[lmIndex++] = lm;
             }
@@ -307,9 +307,9 @@ namespace TranSimCS.Tools.RoadConstruction {
             var mappings = new LaneMapping[count];
             for (int i = 0; i < count; i++) {
                 var laneDef = StartingLanes[i];
-                var newLaneDef = new LaneNode(laneDef.Spec, laneDef.MiddlePosition, Guid.NewGuid());
+                var newLaneDef = new LaneNode(laneDef.LaneSpec, laneDef.MiddlePosition, Guid.NewGuid());
                 endingLanes[i] = newLaneDef;
-                var lm = new LaneMapping(i, i, laneDef.Spec);
+                var lm = new LaneMapping(i, i, laneDef.LaneSpec);
                 ValidateMappings(StartingLanes.Length, endingLanes.Length, lm);
                 mappings[i] = lm;
             }

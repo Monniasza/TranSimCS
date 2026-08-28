@@ -7,7 +7,7 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Node {
-    public class HalfLane: IRoadElement, IDraggableObj {
+    public class HalfLane: IRoadElement, IDraggableObj, ILaneSpec {
         //Definition
         public Lane Lane { get; private set; }
         public NodeEnd End { get; private set; }
@@ -20,8 +20,10 @@ namespace TranSimCS.Roads.Node {
         public Property<LaneDefinition> DefinitionProp { get; private set; }
         public LaneDefinition Definition { get => DefinitionProp.Value; set => DefinitionProp.Value = value; }
         public LaneNode LaneNode => new(Definition, Lane.Guid);
-        public LaneSpec Spec => Definition.LaneSpec;
-
+        public LaneSpec LaneSpec {
+            get => Definition.LaneSpec;
+            set => Definition = new(MiddlePosition, value);
+        }
         //The constructor
         internal HalfLane(Lane lane, NodeEnd end) {
             Lane = lane;
