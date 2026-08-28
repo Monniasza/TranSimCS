@@ -15,6 +15,7 @@ using MLEM.Input;
 using MLEM.Textures;
 using MLEM.Ui;
 using MLEM.Ui.Elements;
+using MonoGame.Extended;
 using MonoGame.Extended.Collections;
 using NLog;
 using TranSimCS.Geometry;
@@ -194,7 +195,7 @@ namespace TranSimCS.Menus.InGame {
 
         public override void Update(Microsoft.Xna.Framework.GameTime time) {
             //Run the world
-            World.Update(time);
+            World.Update(time.GetElapsedSeconds());
 
             //Pre-get the necessary values for the mouse ray and camera
             int mouseX = Game.MouseState.X;

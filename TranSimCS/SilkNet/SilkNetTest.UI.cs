@@ -16,6 +16,16 @@ namespace TranSimCS.SilkNet {
                 if (ImGui.MenuItem("Load", "", IsLoadOpen, true)) IsLoadOpen ^= true;
                 ImGui.EndMenu();
             }
+
+            if (ImGui.BeginMenu("Edit")) {
+                
+                ImGui.EndMenu();
+            }
+
+            if (ImGui.BeginMenu("Tools")) {
+                ImGui.EndMenu();
+            }
+
             ImGui.EndMainMenuBar();
 
             if (IsLoadOpen) {

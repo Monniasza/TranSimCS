@@ -9,12 +9,12 @@ using Microsoft.Xna.Framework;
 namespace TranSimCS.Worlds.Stack {
     public class UpdateLoopTracker<TObj, TStack> : IStackTracker<TObj, TStack> where TObj : Obj where TStack : ObjectStack<TObj, TStack> {
         private TStack? stack;
-        private Action<TObj, GameTime> action;
-        public UpdateLoopTracker(Action<TObj, GameTime> action) {
+        private Action<TObj, float> action;
+        public UpdateLoopTracker(Action<TObj, float> action) {
             this.action = action;
         }
         
-        private void OnUpdate(GameTime time) {
+        private void OnUpdate(float time) {
             if (stack == null) return;
             foreach (var obj in stack.data) {
                 action(obj, time);

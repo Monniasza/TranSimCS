@@ -24,7 +24,7 @@ namespace TranSimCS.Worlds.Cars {
         public CarStack(TSWorld world) : base(world) {
             this.world = world;
             trackerSpatial = new TrackerSpatial<Car, CarStack>(world);
-            trackerUpdate = new((x, t) => x.Update(t.GetElapsedSeconds()));
+            trackerUpdate = new((x, t) => x.Update(t));
             stackTrackers.Add(trackerSpatial);
             stackTrackers.Add(trackerUpdate);
 
@@ -32,10 +32,9 @@ namespace TranSimCS.Worlds.Cars {
             world.OnUpdate += World_OnUpdate;
         }
 
-        private void World_OnUpdate(Microsoft.Xna.Framework.GameTime obj) {
+        private void World_OnUpdate(float seconds) {
             if (!Settings.SpawnCars) return;
 
-            var seconds = obj.ElapsedGameTime.TotalSeconds;
             var chance = Settings.CarSpawnRate * seconds;
 
             foreach(var node in World.Nodes.data) foreach(var lane in node.Lanes) foreach(var strip in lane.Connections) {

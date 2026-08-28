@@ -13,7 +13,7 @@ namespace TranSimCS.SilkNet {
         private void HandleInputs(float dT) {
             var rotationSpeed = 1f;
             var motionSpeed = camera.Distance;
-            if(World != null) MouseOver = Selection.CalculateSelection(World.RootIndex, MouseRay);
+            MouseOver = Selection.CalculateSelection(World.RootIndex, MouseRay);
 
             //Handle movement
             Vector2 xz = Vector2.Zero;

@@ -103,12 +103,12 @@ namespace TranSimCS.Worlds
         //Every 60 frames, log tree parameters
         private int diagCounter = 0;
 
-        public event Action<GameTime>? OnUpdate;
-        public void Update(GameTime deltaTime){
+        public event Action<float>? OnUpdate;
+        public void Update(float deltaTime){
             OnUpdate?.Invoke(deltaTime);
 
             // Update logic for the world can be added here
-            DayTime += (60 / Settings.DayTimeLength) * deltaTime.GetElapsedSeconds();
+            DayTime += (60 / Settings.DayTimeLength) * deltaTime;
             diagCounter++;
             if(diagCounter >= 60) {
                 diagCounter = 0;

@@ -15,10 +15,12 @@ using Silk.NET.Windowing;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
+using TranSimCS.Render;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Strip;
+using TranSimCS.Setting;
 using TranSimCS.Terrain;
 using TranSimCS.Worlds;
 
@@ -49,7 +51,7 @@ namespace TranSimCS.SilkNet {
         
         //World contents
         public Camera camera;
-        public TSWorld World { get; private set; }
+        public TSWorld World { get; private set; } = new TSWorld();
 
         //UI contents
         public bool IsMouseOverUI { get; private set; }
@@ -163,6 +165,9 @@ namespace TranSimCS.SilkNet {
 
             //Push previous values
             MousePositionPrev = MousePosition;
+
+            //Update the world
+            World.Update(dT);
         }
         private void OnRender(double dt) {
             OpenGL.ClearColor(System.Drawing.Color.CornflowerBlue);
@@ -177,19 +182,18 @@ namespace TranSimCS.SilkNet {
             DrawUI();
 
             //Add world contents
-            if (World != null) {
-                var showNodes = true;
-                if (showNodes) foreach (var node in World.Nodes.data) 
-                    mesh.AddAll(node.Mesh.GetMesh());
-                foreach (var node in World.RoadSegments.data)
-                    mesh.AddAll(node.Mesh.GetMesh());
-                foreach (var node in World.RoadSections.data)
-                    mesh.AddAll(node.Mesh.GetMesh());
-                foreach (var node in World.Buildings.data)
-                    mesh.AddAll(node.Mesh.GetMesh());
-                foreach (var node in World.Cars.data)
-                    mesh.meshInstances.Add(node.meshInstance);
-            }
+            var showNodes = true;
+            if (showNodes) foreach (var node in World.Nodes.data) 
+                mesh.AddAll(node.Mesh.GetMesh());
+            foreach (var node in World.RoadSegments.data)
+                mesh.AddAll(node.Mesh.GetMesh());
+            foreach (var node in World.RoadSections.data)
+                mesh.AddAll(node.Mesh.GetMesh());
+            foreach (var node in World.Buildings.data)
+                mesh.AddAll(node.Mesh.GetMesh());
+            foreach (var node in World.Cars.data)
+                mesh.meshInstances.Add(node.meshInstance);
+            
 
             //Draw highlights
             Mesh roadRenderBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
@@ -218,6 +222,43 @@ namespace TranSimCS.SilkNet {
             //Add the grass
             Mesh grassMesh = mesh.GetOrCreateRenderBinForced(Assets.Grass);
             InGameMenu.RenderGround(Vector3.Zero, grassMesh);
+
+            //Apply the day/night cycle
+            var isDayNight = Settings.DayNightCycle;
+            Vector4 dayVector = new(1, 1, 1, 1);
+            Vector4 nightVector = new(0.2f, 0.2f, 0.5f, 1);
+            Vector4 sunsetVector = new(1, 1, 0.5f, 1);
+
+            LUT lut = new([
+                new(-1, sunsetVector), new(0, sunsetVector), new(5, dayVector),
+                new(25, dayVector), new(30, sunsetVector), new(33, nightVector),
+                new(57, nightVector), new(60, sunsetVector), new(61, sunsetVector)
+            ]);
+
+            var seconds = World.DayTime;
+            if (!isDayNight) seconds = 15;
+            var radsPerSecond = MathF.PI / 30;
+
+            var trig = MathF.SinCos(seconds * radsPerSecond);
+            var sine = trig.Sin;
+            var cosine = trig.Cos;
+
+            var coefficient = GeometryUtils.Clamp(sine * 2, -1, 1);
+            coefficient = (sine / 2) + 0.5f;
+            var interpolatedDayNightVector = lut[seconds];
+            RenderManager.AmbientColor.Value = interpolatedDayNightVector;
+
+            //Render the sun
+            var sunDistance = 10000f;
+            var sunDiameter = 1000f;
+            var pos = new Vector3(-cosine, sine, 0) * sunDistance;
+            var normal = new Vector3(cosine, -sine, 0);
+            var tangent = new Vector3(-sine, -cosine, 0) * sunDiameter;
+            var lateral = new Vector3(0, 0, sunDiameter);
+            var startingPoint = pos - (tangent + lateral) / 2;
+            //var sunRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.White);
+            var sunRenderBin = mesh.GetOrCreateRenderBinForced(Assets.Sun);
+            sunRenderBin.DrawParallelogram(startingPoint + RenderManager.Camera.Position.ToX0Z(), tangent, lateral, Colors.White);
 
             //Render all
             RenderManager.Render(mesh);

@@ -68,8 +68,8 @@ namespace TranSimCS.Menus.InGame {
                 if (roadSegment.BelongsToRoadSection() != null) continue;
                 stats.Strips += roadSegment.Lanes.Count;
                 renderHelper.AddAll(roadSegment.Mesh.GetMesh());
-            }
 
+            }
             //Draw road sections
             stats.Sections = World.RoadSections.data.Count;
             foreach (var section in World.RoadSections.data) renderHelper.AddAll(section.Mesh.GetMesh());
