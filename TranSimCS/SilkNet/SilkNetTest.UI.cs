@@ -8,8 +8,11 @@ using System.Threading.Tasks;
 using ImGuiNET;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Strip;
 using TranSimCS.Setting;
+using TranSimCS.Tools;
 using TranSimCS.Worlds;
+using TranSimCS.Worlds.Cars;
 
 namespace TranSimCS.SilkNet {
     //UI methods for SilkNetTest
@@ -71,6 +74,10 @@ namespace TranSimCS.SilkNet {
             if (Sticky != null) ShowObjectWindow(Sticky.Value);
         }
 
+
+        //Object window-specific properties
+        public float SpawnCarVelocity = 20;
+
         private void ShowObjectWindow(Selection selection) {
             var obj = selection.SelectedObj;
             var tag = selection.Tag;
@@ -91,6 +98,15 @@ namespace TranSimCS.SilkNet {
                     if (ImGui.Button("Copy road finish")) RoadFinish = roadFinishable.FinishProperty.Value;
                     ImGui.SameLine();
                     if (ImGui.Button("Paste road finish")) roadFinishable.FinishProperty.Value = RoadFinish;
+                }
+                if(tag is LaneStrip strip) {
+                    ImGui.DragFloat("Spawn car speed [m/s]", ref SpawnCarVelocity, 0.01f, 0, 100, "%.2f");
+                    if(ImGui.Button("Spawn a car")) {
+                        CarLauncherTool.LaunchCar(World, strip, SpawnCarVelocity);
+                    }
+                }
+                if(obj is Car car) {
+                    ImGui.DragFloat("Speed [m/s]", ref car.Speed, 0.02f, 0, 100, "%.2f");
                 }
 
                 ImGui.End();

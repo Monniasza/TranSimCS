@@ -35,27 +35,27 @@ namespace TranSimCS.SilkNet {
             if (changed) text.Value = tmp;
             return changed;
         }
-        public static bool InputFloat(string title, Property<float> vector) {
+        public static bool InputFloat(string title, Property<float> vector, float velocity = 1, float min = float.NegativeInfinity, float max = float.PositiveInfinity, string format = "%.6f") {
             var tmp = vector.Value;
-            bool changed = ImGui.InputFloat(title, ref tmp);
+            bool changed = ImGui.DragFloat(title, ref tmp, velocity, min, max, format);
             if (changed) vector.Value = tmp;
             return changed;
         }
-        public static bool InputFloat2(string title, Property<Vector2> vector) {
+        public static bool InputFloat2(string title, Property<Vector2> vector, float velocity = 1, float min = float.NegativeInfinity, float max = float.PositiveInfinity, string format = "%.6f") {
             var tmp = vector.Value;
-            bool changed = ImGui.InputFloat2(title, ref tmp);
+            bool changed = ImGui.DragFloat2(title, ref tmp, velocity, min, max, format);
             if (changed) vector.Value = tmp;
             return changed;
         }
-        public static bool InputFloat3(string title, Property<Vector3> vector) {
+        public static bool InputFloat3(string title, Property<Vector3> vector, float velocity = 1, float min = float.NegativeInfinity, float max = float.PositiveInfinity, string format = "%.6f") {
             var tmp = vector.Value;
-            bool changed = ImGui.InputFloat3(title, ref tmp);
+            bool changed = ImGui.DragFloat3(title, ref tmp, velocity, min, max, format);
             if (changed) vector.Value = tmp;
             return changed;
         }
-        public static bool InputFloat4(string title, Property<Vector4> vector) {
+        public static bool InputFloat4(string title, Property<Vector4> vector, float velocity = 1, float min = float.NegativeInfinity, float max = float.PositiveInfinity, string format = "%.6f") {
             var tmp = vector.Value;
-            bool changed = ImGui.InputFloat4(title, ref tmp);
+            bool changed = ImGui.DragFloat4(title, ref tmp, velocity, min, max, format);
             if (changed) vector.Value = tmp;
             return changed;
         }
