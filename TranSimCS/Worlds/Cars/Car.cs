@@ -94,6 +94,7 @@ namespace TranSimCS.Worlds.Cars {
         private void PositionProp_ValueChanged(object? sender, PositionEulerAngles old, PositionEulerAngles val) {
             transformQ = val.ToTransformQ();
             meshInstance = new(BodyMesh, transformQ, this, true);
+            GeometryChanged?.Invoke(this);
         }
 
         private void MeshIdProp_ValueChanged(object? sender, string old, string key) {
