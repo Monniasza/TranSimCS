@@ -81,6 +81,7 @@ namespace TranSimCS.SilkNet {
             foreach (var mesh in deleteCachesFor) {
                 var meshGPU = MeshCache[mesh];
                 meshGPU.Dispose();
+                MeshCache.Remove(mesh);
             }
         }
 
