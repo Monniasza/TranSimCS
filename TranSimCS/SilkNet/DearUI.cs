@@ -13,7 +13,7 @@ namespace TranSimCS.SilkNet {
     /// </summary>
     public static class DearUI {
         public static void MenuToggle(string name, ref bool attribute, string shortcut = "", bool enabled = true) {
-            attribute ^= ImGui.MenuItem(name, shortcut, true, attribute);
+            attribute ^= ImGui.MenuItem(name, shortcut, attribute, enabled);
         }
         public static void MenuToggle(string name, Property<bool> attribute, string shortcut = "", bool enabled = true) {
             var tmp = attribute.Value;
@@ -25,6 +25,12 @@ namespace TranSimCS.SilkNet {
             var tmp = text.Value;
             bool changed = ImGui.InputText(title, ref tmp, maxLength);
             if (changed) text.Value = tmp;
+            return changed;
+        }
+        public static bool InputFloat(string title, Property<float> vector) {
+            var tmp = vector.Value;
+            bool changed = ImGui.InputFloat(title, ref tmp);
+            if (changed) vector.Value = tmp;
             return changed;
         }
         public static bool InputFloat2(string title, Property<Vector2> vector) {

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ImGuiNET;
+using TranSimCS.Setting;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.SilkNet {
@@ -23,6 +24,16 @@ namespace TranSimCS.SilkNet {
             }
 
             if (ImGui.BeginMenu("Tools")) {
+                DearUI.MenuToggle("Stats", ref IsStatsOpen, "", true);
+                ImGui.EndMenu();
+            }
+
+            if (ImGui.BeginMenu("Settings")) {
+                DearUI.InputFloat("Car spawn rate", Settings.CarSpawnRateProp);
+                DearUI.MenuToggle("Enable car spawning", Settings.SpawnCarsProp);
+                DearUI.MenuToggle("Day/night cycle", Settings.DayNightCycleProp);
+                DearUI.InputFloat("Duration of a day", Settings.DayTimeLengthProp);
+                DearUI.MenuToggle("Invert all normals", Settings.InvertAllNormalsProp);
                 ImGui.EndMenu();
             }
 
@@ -38,6 +49,11 @@ namespace TranSimCS.SilkNet {
                         World = TSWorld.LoadFromFile(worldPath);
                     }
                 }
+                ImGui.End();
+            }
+            if (IsStatsOpen) {
+                ImGui.Begin("Stats");
+                ImGui.Text(Stats.Format());
                 ImGui.End();
             }
         }

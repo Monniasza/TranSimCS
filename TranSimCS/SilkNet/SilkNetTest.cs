@@ -22,6 +22,7 @@ using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Setting;
 using TranSimCS.Terrain;
+using TranSimCS.Tools;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.SilkNet {
@@ -48,6 +49,7 @@ namespace TranSimCS.SilkNet {
         //Counters
         public FPS FramesPerSecond { get; private set; }
         public FPS TicksPerSecond { get; private set; }
+        public Stats Stats { get; private set; }
         
         //World contents
         public Camera camera;
@@ -57,6 +59,7 @@ namespace TranSimCS.SilkNet {
         public bool IsMouseOverUI { get; private set; }
         public readonly List<string> Worlds = [];
         public bool IsLoadOpen;
+        public bool IsStatsOpen;
         public void Reload() {
             //Find world files
             var dirInfo = new DirectoryInfo(Program.SaveRoot);
@@ -170,6 +173,7 @@ namespace TranSimCS.SilkNet {
             World.Update(dT);
         }
         private void OnRender(double dt) {
+            Stats stats = default;
             OpenGL.ClearColor(System.Drawing.Color.CornflowerBlue);
             OpenGL.Clear(ClearBufferMask.ColorBufferBit);
             OpenGL.Clear(ClearBufferMask.DepthBufferBit);
@@ -183,17 +187,25 @@ namespace TranSimCS.SilkNet {
 
             //Add world contents
             var showNodes = true;
-            if (showNodes) foreach (var node in World.Nodes.data) 
+            if (showNodes) foreach (var node in World.Nodes.data) {
                 mesh.AddAll(node.Mesh.GetMesh());
-            foreach (var node in World.RoadSegments.data)
+                stats.Lanes += node.Lanes.Count;
+            }
+            foreach (var node in World.RoadSegments.data) {
                 mesh.AddAll(node.Mesh.GetMesh());
+                stats.Strips += node.Lanes.Count;
+            }
             foreach (var node in World.RoadSections.data)
                 mesh.AddAll(node.Mesh.GetMesh());
             foreach (var node in World.Buildings.data)
                 mesh.AddAll(node.Mesh.GetMesh());
             foreach (var node in World.Cars.data)
                 mesh.meshInstances.Add(node.meshInstance);
-            
+            stats.Segments = World.RoadSegments.data.Count;
+            stats.Nodes = World.Nodes.data.Count;
+            stats.Sections = World.RoadSections.data.Count;
+            stats.Cars = World.Cars.data.Count;
+            stats.Buildings = World.Buildings.data.Count;
 
             //Draw highlights
             Mesh roadRenderBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
@@ -264,6 +276,17 @@ namespace TranSimCS.SilkNet {
             RenderManager.Render(mesh);
             ImGuiController.Render();
             FramesPerSecond.Count++;
+
+            //Apply stats
+            var renderStats = RenderManager.Stats;
+            stats.Triangles = renderStats.TriangleCount;
+            stats.Vertices = renderStats.VertexCount;
+            stats.Materials = renderStats.MaterialCount;
+            stats.Tags = renderStats.TagCount;
+            stats.MeshDraws = renderStats.DrawCount;
+            stats.MeshInstances = renderStats.InstanceCount;
+            stats.MeshModels = renderStats.ModelCount;
+            Stats = stats;
         }
         private void KeyDown(IKeyboard keyboard, Key key, int keyCode) {
             

@@ -111,17 +111,6 @@ namespace TranSimCS.Menus.InGame {
             //Render road tool
             configuration.Tool?.Draw(time);
 
-            //Render marking points
-            if (CheckPoints.Checked) {
-                List<MarkingPointData> entries = [];
-
-                foreach (RoadNode node in World.Nodes.data)
-                    foreach (var lane in node.Lanes)
-                        foreach (var laneEnd in new HalfLane[] { lane.FrontHalf, lane.RearHalf })
-                            foreach (var alignment in new float[] { 0, 1 }) entries.Add(new() { Anchor = laneEnd, Alignment = alignment });
-                foreach (var entry in entries) MarkingRenderer.RenderMarkingPoint(entry, renderHelper);
-            }
-
             //Apply the day/night cycle
             var isDayNight = Settings.DayNightCycle;
             Vector4 dayVector = new(1, 1, 1, 1);

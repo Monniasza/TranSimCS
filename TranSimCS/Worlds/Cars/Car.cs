@@ -197,6 +197,8 @@ namespace TranSimCS.Worlds.Cars {
 
                 PositionProp.Value = newCoords;
             }
+
+            meshInstance = new(BodyMesh, PositionProp.Value.ToTransformQ(), this);
         }
         private void Overflow(SegmentHalf half) {
             if (LanePosition == null) return;

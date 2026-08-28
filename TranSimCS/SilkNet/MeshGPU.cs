@@ -51,10 +51,10 @@ namespace TranSimCS.SilkNet {
             var instanceStride = (uint)Unsafe.SizeOf<TransformQ>();
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, rm._instanceBuffer);
             gl.VertexAttribPointer(5, 3, VertexAttribPointerType.Float, false, instanceStride, 0);
-            gl.EnableVertexArrayAttrib(_vertexArray, 3);
+            gl.EnableVertexArrayAttrib(_vertexArray, 5);
             gl.VertexAttribDivisor(5, 1);
             gl.VertexAttribPointer(6, 4, VertexAttribPointerType.Float, false, instanceStride, 12);
-            gl.EnableVertexArrayAttrib(_vertexArray, 4);
+            gl.EnableVertexArrayAttrib(_vertexArray, 6);
             gl.VertexAttribDivisor(6, 1);
 
             gl.BindVertexArray(0);

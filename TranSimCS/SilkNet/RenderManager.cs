@@ -70,7 +70,6 @@ namespace TranSimCS.SilkNet {
             return texGL;
         }
 
-        private int CleanupCounter = 0;
         internal void MeshCleanup(ISet<Mesh> meshDrawInstances) {
             //Runs periodically to clean up the mesh cache to stop accumulating unnecessary meshes
             List<Mesh> deleteCachesFor = [];
@@ -172,12 +171,8 @@ namespace TranSimCS.SilkNet {
                 list.Add(instance);
                 uniqueMeshes.Add(instance.Mesh);
             }
-
-            CleanupCounter++;
-            if(CleanupCounter >= 1200) {
-                CleanupCounter = 0;
-                MeshCleanup(uniqueMeshes);
-            }
+            MeshCleanup(uniqueMeshes);
+           
 
             var groupByRenderType = allMeshes.QuickGroup(x => x.Material.BlendMode);
 
