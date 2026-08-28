@@ -40,7 +40,7 @@ namespace TranSimCS.Save2 {
             if (end == null) JsonProcessor.Fail(reader, "Missing end property");
 
             var laneStrip = new LaneStrip(start, end);
-            laneStrip.Spec = spec;
+            laneStrip.LaneSpec = spec;
             return laneStrip;
         }
 
@@ -61,7 +61,7 @@ namespace TranSimCS.Save2 {
 
             writer.WritePropertyName("spec");
             var laneSpecConverter = new LaneSpecConverter();
-            laneSpecConverter.Write(writer, value.Spec, options);
+            laneSpecConverter.Write(writer, value.LaneSpec, options);
 
             writer.WriteEndObject();
         }

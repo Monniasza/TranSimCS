@@ -15,7 +15,7 @@ using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Strip {
-    public class LaneStrip : IEquatable<LaneStrip?>, IDraggableObj, IRoadElement, IExtent {
+    public class LaneStrip : IEquatable<LaneStrip?>, IDraggableObj, IRoadElement, IExtent, ILaneSpec {
         //ROAD ELEMENT
         public Guid Guid => Road.Guid;
         public Lane? GetLane() => null;
@@ -32,30 +32,15 @@ namespace TranSimCS.Roads.Strip {
         public HalfLane StartLane { get; private set; }
         public HalfLane EndLane { get; private set; }
         public RoadStrip Road { get; internal set; }
-        private LaneSpec _spec;
+
+        public Property<LaneSpec> LaneSpecProp { get; }
+
         /// <summary>
         /// Specification of this <see cref="LaneStrip"/>, including properties like width, type, etc.
         /// </summary>
-        public LaneSpec Spec {
-            get {
-                var width = 0f;
-                var n = 0;
-                if(StartLane.Lane != null) {
-                    width += StartLane.Lane.Width;
-                    n++;
-                }
-                if(EndLane.Lane != null) {
-                    width += EndLane.Lane.Width;
-                    n++;
-                }
-                if(n != 0) _spec.Width = width / n;
-                return _spec;
-            }
-            set {
-                if (_spec == value) return;
-                Road?.FirePropertyEvent(Road, new(Guid + PropertyNames.NodeSpecSuffix));
-                _spec = value;
-            }
+        public LaneSpec LaneSpec {
+            get => LaneSpecProp.Value;
+            set => LaneSpecProp.Value = value;
         }
         public LaneRange Tag() {
             var startRange = StartLane.Bounds;
@@ -68,7 +53,8 @@ namespace TranSimCS.Roads.Strip {
             _cache = new(this);
             StartLane = startLane;
             EndLane = endLane;
-            Spec = spec ?? LaneSpec.Default;
+            LaneSpecProp = new(spec ?? LaneSpec.Default, "spec", null);
+            LaneSpecProp.ValueChanged += (s, o, n) => Road?.FirePropertyEvent(Road, new(Guid + PropertyNames.NodeSpecSuffix));
         }
 
         //Cache
@@ -109,11 +95,11 @@ namespace TranSimCS.Roads.Strip {
                    EqualityComparer<HalfLane>.Default.Equals(StartLane, other.StartLane) &&
                    EqualityComparer<HalfLane>.Default.Equals(EndLane, other.EndLane) &&
                    EqualityComparer<RoadStrip>.Default.Equals(Road, other.Road) &&
-                   EqualityComparer<LaneSpec>.Default.Equals(Spec, other.Spec);
+                   EqualityComparer<LaneSpec>.Default.Equals(LaneSpec, other.LaneSpec);
         }
 
         public override int GetHashCode() {
-            return HashCode.Combine(StartLane, EndLane, Road, Spec);
+            return HashCode.Combine(StartLane, EndLane, Road, LaneSpec);
         }
 
         public bool IsBetween(HalfLane start, HalfLane end) {
@@ -146,7 +132,7 @@ namespace TranSimCS.Roads.Strip {
             var road = Road;
             var newStart = EndLane;
             var newEnd = StartLane;
-            var newSpec = Spec.Reverse();
+            var newSpec = LaneSpec.Reverse();
 
             LaneStrip newLaneStrip = new LaneStrip(newStart, newEnd, newSpec);
             road?.AddLaneStrip(newLaneStrip);

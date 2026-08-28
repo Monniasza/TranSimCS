@@ -15,7 +15,7 @@ namespace TranSimCS.Roads.Node {
             var refframe = node.ReferenceFrame;
             foreach (var lane in node.Lanes) {
                 foreach (var laneEnd in new HalfLane[] { lane.FrontHalf, lane.RearHalf }) {
-                    var altColor = lane.Spec.Color.AlphaMul(0.5f);
+                    var altColor = lane.LaneSpec.Color.AlphaMul(0.5f);
                     var color = nodeHighlightColor ?? InGameMenu.roadSegmentHighlightColor;
                     if (SelectedHalfLane == laneEnd || (bothends && SelectedHalfLane == laneEnd.OppositeHalf)) color = laneHighlightColor ?? InGameMenu.laneHighlightColor;
                     else if (SelectedHalfLane == null || !node.Lanes.Contains(SelectedHalfLane.Lane)) color = altColor;
@@ -61,7 +61,7 @@ namespace TranSimCS.Roads.Node {
         }
         public static QuadOld GenerateLaneQuad(Lane lane, Color? color, float voffset = 0.2f, float minZ = -1, float maxZ = 1) {
             var range = lane.Bounds;
-            var altColor = lane.Spec.Color.AlphaMul(0.5f);
+            var altColor = lane.LaneSpec.Color.AlphaMul(0.5f);
             return GenerateLaneQuad(lane.RoadNode, range.Min, range.Max, color ?? altColor, voffset, minZ, maxZ);
         }
         public static QuadOld GenerateLaneQuad(RoadNode node, float lb, float rb, Color color, float voffset = 0.2f, float minZ = -1, float maxZ = 1) {
@@ -86,7 +86,7 @@ namespace TranSimCS.Roads.Node {
             var refframe = lane.RoadNode.ReferenceFrame;
             var range = lane.Bounds;
             var width = range.Max - range.Min;
-            var tags = lane.Spec.Flags;
+            var tags = lane.LaneSpec.Flags;
             var lineFlags = LaneFlags.Stop | LaneFlags.Yield;
             var lineTest = tags & lineFlags;
             if (lineTest != 0) {

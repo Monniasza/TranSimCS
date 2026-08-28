@@ -75,6 +75,10 @@ namespace TranSimCS.SilkNet {
         public Ray3 MouseRay;
         public Ray3 MouseRayOld;
 
+        //Clipboards
+        public LaneSpec LaneSpec = LaneSpec.Default;
+        public RoadFinish RoadFinish = RoadFinish.Embankment;
+
         public void Start() {
             WindowOptions options = WindowOptions.Default with {
                 Size = new Vector2D<int>(800, 600),

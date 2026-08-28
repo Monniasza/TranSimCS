@@ -74,7 +74,7 @@ namespace TranSimCS.Tools {
             else if (DestNode == null) nextAction = NextAction.Hover;
             else if (LaneStrip == null) nextAction = NextAction.Add;
             else if (menu.Game.KeyboardState.IsKeyDown(Keys.LeftAlt)) nextAction = NextAction.Reverse;
-            else if (!LaneStrip.Spec.EqualsExceptWidth(menu.configuration.LaneSpec)) nextAction = NextAction.Edit;
+            else if (!LaneStrip.LaneSpec.EqualsExceptWidth(menu.configuration.LaneSpec)) nextAction = NextAction.Edit;
             else nextAction = NextAction.Delete;
 
             (_description, actionColor) = GetForAction(nextAction);
@@ -94,7 +94,7 @@ namespace TranSimCS.Tools {
                     break;
                 case NextAction.Edit:
                     Debug.Assert(LaneStrip != null, "Invalid lane strip for Edit");
-                    LaneStrip.Spec = menu.configuration.LaneSpec;
+                    LaneStrip.LaneSpec = menu.configuration.LaneSpec;
                     break;
                 case NextAction.Delete:
                     Debug.Assert(LaneStrip != null, "Invalid lane strip for Delete");

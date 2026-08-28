@@ -190,7 +190,7 @@ namespace TranSimCS.Tools.RoadConstruction {
                 var spec = connection.LaneSpec;
                 if (isBackwards) spec.Flags = spec.Flags.LongitudinalReverse();
                 if (endNode.End == NodeEnd.Backward) spec.Flags = spec.Flags.LongitudinalReverse();
-                laneStrip.Spec = spec;
+                laneStrip.LaneSpec = spec;
                 road.AddLaneStrip(laneStrip);
             }
             world.RoadSegments.data.Add(road);

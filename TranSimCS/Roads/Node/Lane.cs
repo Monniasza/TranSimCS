@@ -17,7 +17,7 @@ namespace TranSimCS.Roads.Node {
     /// <summary>
     /// A lane defines where vehicles can ride through and in which direction.
     /// </summary>
-    public class Lane: Obj, IDraggableObj, IRoadElement {
+    public class Lane: Obj, IDraggableObj, IRoadElement, ILaneSpec {
         //Contents
         public Property<LaneDefinition> DefinitionProp { get; private set; }
         public BidirectionalDerivedProperty<LaneDefinition, LaneDefinition> InverseDefinitionProp { get; private set; }
@@ -30,7 +30,7 @@ namespace TranSimCS.Roads.Node {
         /// Specification of the lane, including properties like color, type, etc.
         /// The width here is ignored when set, but it's returned with the proper value when get.
         /// </summary>
-        public LaneSpec Spec {
+        public LaneSpec LaneSpec {
             get => Definition.LaneSpec;
             set => Definition = new(Definition.CenterPosition, value);
         }
@@ -38,7 +38,7 @@ namespace TranSimCS.Roads.Node {
             get => Definition.Bounds();
             set {
                 var newCenterPos = value.Middle();
-                var newSpec = Spec;
+                var newSpec = LaneSpec;
                 newSpec.Width = value.Width();
                 Definition = new(newCenterPos, newSpec);
             }
@@ -66,6 +66,7 @@ namespace TranSimCS.Roads.Node {
 
         public HalfLane FrontHalf { get; private set; }
         public HalfLane RearHalf { get; private set; }
+
         public HalfLane GetHalfLane(NodeEnd nodeEnd) => nodeEnd.GetConditional(RearHalf, FrontHalf);
 
         //Dragging

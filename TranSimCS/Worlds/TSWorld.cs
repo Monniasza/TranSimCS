@@ -67,7 +67,7 @@ namespace TranSimCS.Worlds
             foreach (var lane in roadStrip.Lanes)
                 if (lane.IsBetween(start, end)) return lane;
             LaneStrip strip = new LaneStrip(start, end);
-            strip.Spec = laneSpec ?? LaneSpec.Default;
+            strip.LaneSpec = laneSpec ?? LaneSpec.Default;
             roadStrip.AddLaneStrip(strip);
             return strip;
         }

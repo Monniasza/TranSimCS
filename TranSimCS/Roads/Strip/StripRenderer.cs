@@ -32,7 +32,7 @@ namespace TranSimCS.Roads.Strip {
             var midpoint = centerframe.O;
             var tangent = centerframe.Z;
             var nrm = centerframe.Y;
-            bool removeArrows = laneStrip.Spec.Flags.HasFlags(LaneFlags.Sidewalk | LaneFlags.Platform);
+            bool removeArrows = laneStrip.LaneSpec.Flags.HasFlags(LaneFlags.Sidewalk | LaneFlags.Platform);
             if (!removeArrows && tangent.LengthSquared() >= 0.000001){
                 tangent = tangent.Normalized();
                 nrm = nrm.Normalized();
@@ -84,7 +84,7 @@ namespace TranSimCS.Roads.Strip {
         }
 
         private static (RoadSplineComponent splineComponent, RoadSplineRange range) GenerateDrivableCache(LaneStrip strip) {
-            var linewidth = strip.Spec.LineWidth;
+            var linewidth = strip.LaneSpec.LineWidth;
             var tag = strip.Bounds;
             var startl = tag.startRange.Min + linewidth;
             var endl = tag.endRange.Min + linewidth;
@@ -106,9 +106,9 @@ namespace TranSimCS.Roads.Strip {
         private static (RoadSplineComponent splineComponent, RoadSplineRange range) GenerateAsphaltStrip(LaneStrip strip) {
             var splineComponent = new RoadSplineComponent() {
                 Bias = 0.5f,
-                Color = strip.Spec.Color,
+                Color = strip.LaneSpec.Color,
                 Type = RoadSplineComponentType.RoadSurface,
-                Texture = strip.Spec.Surface.GetTexture(),
+                Texture = strip.LaneSpec.Surface.GetTexture(),
             };
             var range = strip.Bounds.ToRoadSplineRange();
             return (splineComponent, range);
@@ -118,19 +118,19 @@ namespace TranSimCS.Roads.Strip {
             var color = Colors.White;
 
             //Get side-line flags
-            var mergeLeft = (laneStrip.Spec.Flags & LaneFlags.MergeLeft) != 0;
-            var mergeRight = (laneStrip.Spec.Flags & LaneFlags.MergeRight) != 0;
-            var isMerge = (laneStrip.Spec.Flags & LaneFlags.IsMerge) != 0;
+            var mergeLeft = (laneStrip.LaneSpec.Flags & LaneFlags.MergeLeft) != 0;
+            var mergeRight = (laneStrip.LaneSpec.Flags & LaneFlags.MergeRight) != 0;
+            var isMerge = (laneStrip.LaneSpec.Flags & LaneFlags.IsMerge) != 0;
 
             if (mergeLeft && mergeRight) return;
-            if (laneStrip.Spec.Flags.HasFlags(LaneFlags.Sidewalk)) return;
-            if (laneStrip.Spec.Flags.HasFlags(LaneFlags.Platform)) color = Colors.Yellow;
+            if (laneStrip.LaneSpec.Flags.HasFlags(LaneFlags.Sidewalk)) return;
+            if (laneStrip.LaneSpec.Flags.HasFlags(LaneFlags.Platform)) color = Colors.Yellow;
 
             //Get tags
             var roadTag = laneStrip.Road.Bounds;
 
             //Generate side-lines
-            var lineWidth = laneStrip.Spec.LineWidth;
+            var lineWidth = laneStrip.LaneSpec.LineWidth;
 
             RoadSplineComponent DrawSide(DualRange laneRange, LaneFlags flag, float bias) {
                 bool isSolid = IsRangeTouchingEdge(laneRange.startRange, roadTag.startRange) && IsRangeTouchingEdge(laneRange.endRange, roadTag.endRange);
@@ -139,9 +139,9 @@ namespace TranSimCS.Roads.Strip {
                 if(laneStrip.IsReverse()) DataUtil.Swap(ref leftEdges, ref rightEdges);
                 bool isOnLeftExtent = (flag & LaneFlags.NoLeft) != 0 && leftEdges.Contains(laneStrip);
                 bool isOnRightExtent = (flag & LaneFlags.NoRight) != 0 && rightEdges.Contains(laneStrip);
-                bool isPlatform = laneStrip.Spec.Flags.HasFlags(LaneFlags.Platform);
+                bool isPlatform = laneStrip.LaneSpec.Flags.HasFlags(LaneFlags.Platform);
 
-                isSolid |= (laneStrip.Spec.Flags & flag) != 0 || isOnLeftExtent || isOnRightExtent || isPlatform;
+                isSolid |= (laneStrip.LaneSpec.Flags & flag) != 0 || isOnLeftExtent || isOnRightExtent || isPlatform;
                 var lineTexture = isSolid ? RoadSplineComponentType.ClippedMarking : RoadSplineComponentType.UnclippedMarking;
                 return new RoadSplineComponent() {
                     Bias = bias,
@@ -165,7 +165,7 @@ namespace TranSimCS.Roads.Strip {
             var startRight = startRange.Max;
             var endLeft = endRange.Max;  
             var endRight = endRange.Min;
-            var linewidth = laneStrip.Spec.LineWidth;
+            var linewidth = laneStrip.LaneSpec.LineWidth;
 
             //Do merges
             if (isMerge) {

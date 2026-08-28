@@ -29,14 +29,14 @@ namespace TranSimCS.Tools {
                 var laneSpec = game.configuration.LaneSpec;
                 var selection = game.MouseOver;
                 var lane = selection?.GetLane();
-                if(lane != null) lane.Spec = laneSpec;
+                if(lane != null) lane.LaneSpec = laneSpec;
                 var strip = selection?.GetLaneStrip();
-                if (strip != null) strip.Spec = laneSpec;
+                if (strip != null) strip.LaneSpec = laneSpec;
             }
             if (button == MouseButton.Right) {
                 var selection = game.MouseOver;
-                var laneSpec = selection?.GetLaneStrip()?.Spec;
-                var nodeSpec = selection?.GetLane()?.Spec;
+                var laneSpec = selection?.GetLaneStrip()?.LaneSpec;
+                var nodeSpec = selection?.GetLane()?.LaneSpec;
                 var spec = nodeSpec ?? laneSpec;
                 if (spec == null) return;
                 game.configuration.LaneSpec = spec.Value;

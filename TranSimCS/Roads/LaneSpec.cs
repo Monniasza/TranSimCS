@@ -3,7 +3,7 @@ using TranSimCS.Property;
 
 namespace TranSimCS.Roads {
     public interface ILaneSpec {
-        public Property<LaneSpec> LaneSpecProp { get; set; }
+        public LaneSpec LaneSpec { get; set; }
     }
     public struct LaneSpec : IEquatable<LaneSpec> {
         public Color Color; // Color of the lane

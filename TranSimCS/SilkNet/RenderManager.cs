@@ -173,9 +173,6 @@ namespace TranSimCS.SilkNet {
                 uniqueMeshes.Add(instance.Mesh);
             }
             MeshCleanup(uniqueMeshes);
-           
-
-            var groupByRenderType = allMeshes.QuickGroup(x => x.Material.BlendMode);
 
             //Bind per-pass attributes
             gl.Disable(EnableCap.Blend);

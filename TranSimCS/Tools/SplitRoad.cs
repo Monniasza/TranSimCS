@@ -88,7 +88,7 @@ namespace TranSimCS.Tools {
             foreach(var strip in laneStrips) {
                 var startLane = strip.StartLane;
                 var endLane = strip.EndLane;
-                var spec = strip.Spec;
+                var spec = strip.LaneSpec;
                 if (remappings.TryGetValue(startLane, out var remappedStart)) startLane = remappedStart;
                 if (remappings.TryGetValue(endLane, out var remappedEnd)) endLane = remappedEnd;
                 newRoad.AddLaneStrip(new LaneStrip(startLane, endLane, spec));
