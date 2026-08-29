@@ -5,13 +5,15 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.ModelOld;
 using TranSimCS.SilkNet;
+using static TranSimCS.Model.MeshUnroll;
 
 namespace TranSimCS.Worlds.Cars {
     public static class CarModel {
-        public static MultiMesh CreateModel() {
+        public static MeshDrawInstance CreateModel() {
             var carMaterial = new SimpleMaterial() {
                 EmissiveName = "car-emissive",
                 TextureName = "car-albedo",
@@ -79,10 +81,8 @@ namespace TranSimCS.Worlds.Cars {
                 20,23,21, 21,23,22
             ];
 
-            MultiMesh multimesh = new MultiMesh();
-            var renderBin = multimesh.GetOrCreateRenderBinForced(carMaterial);
-            renderBin.DrawModel(verts, indices);
-            return multimesh;
+            Mesh mesh = new Mesh(null, verts, indices);
+            return new(mesh, TransformQ.Identity, carMaterial, indices.Length / 3);
         }
     }
 }

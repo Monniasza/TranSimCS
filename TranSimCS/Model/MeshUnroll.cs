@@ -33,11 +33,11 @@ namespace TranSimCS.Model {
             }
         }
 
-        public readonly struct MeshDrawInstance {
-            public readonly Mesh Mesh;
-            public readonly TransformQ Transform;
-            public readonly SimpleMaterial Material;
-            public readonly int TagCount;
+        public struct MeshDrawInstance {
+            public Mesh Mesh;
+            public TransformQ Transform;
+            public SimpleMaterial Material;
+            public int TagCount;
             public MeshDrawInstance(Mesh mesh, TransformQ transform, SimpleMaterial material, int tagCount) {
                 Mesh = mesh;
                 Transform = transform;

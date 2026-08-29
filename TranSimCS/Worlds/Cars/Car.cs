@@ -19,14 +19,15 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Save2.TypeRegistry;
 using TranSimCS.SceneGraph;
 using TranSimCS.Spline;
+using static TranSimCS.Model.MeshUnroll;
 using Path = System.IO.Path;
 
 namespace TranSimCS.Worlds.Cars {
     public class Car : Obj, IObjMesh, IPosition {
         public static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static Dictionary<string, MultiMesh> loadedMeshes = [];
-        public static ObservableList<(string, MultiMesh)> meshes = [];
+        public static Dictionary<string, MeshDrawInstance> loadedMeshes = [];
+        public static ObservableList<(string, MeshDrawInstance)> meshes = [];
         private static Random rnd = new Random();
         private static string objRoot;
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
@@ -59,13 +60,12 @@ namespace TranSimCS.Worlds.Cars {
                 try {
                     log.Info("Loading car mesh " + obj);
                     var objData = newLoader.LoadObj(obj);
-                    var multimesh = new MultiMesh();
-                    var submesh = multimesh.GetOrCreateRenderBinForced(Assets.White);
-                    var mesh = ObjConverter.ToSingleMesh(objData, submesh);
+                    var mesh = ObjConverter.ToSingleMesh(objData, null);
+                    var mdi = new MeshDrawInstance(mesh, TransformQ.Identity, Assets.White, mesh.Indices.Count / 3);
                     bool isEmpty = mesh.Vertices.Count == 0 || mesh.Indices.Count == 0;
                     if (isEmpty) throw new ApplicationException("Empty mesh"); //Meshes not empty
-                    meshes.Add((obj, multimesh));
-                    loadedMeshes.Add(obj, multimesh);
+                    meshes.Add((obj, mdi));
+                    loadedMeshes.Add(obj, mdi);
                     mesh.Stats(log);
                 } catch (Exception e) {
                     //Failed to load
@@ -77,8 +77,6 @@ namespace TranSimCS.Worlds.Cars {
         }
 
         public Property<PositionEulerAngles> PositionProp { get; }
-        public MultiMesh? BodyMesh { get; private set; }
-
         public Property<string?> MeshIdProp;
         public string? MeshId { get => MeshIdProp.Value; set => MeshIdProp.Value = value; }
 
@@ -91,21 +89,20 @@ namespace TranSimCS.Worlds.Cars {
         }
 
         public TransformQ transformQ { get; private set; }
-        public MeshInstance meshInstance { get; private set; }
+        public MeshDrawInstance meshInstance;
 
         private void PositionProp_ValueChanged(object? sender, PositionEulerAngles old, PositionEulerAngles val) {
             transformQ = val.ToTransformQ();
-            meshInstance = new(BodyMesh, transformQ, this, true);
+            meshInstance.Transform = transformQ;
             GeometryChanged?.Invoke(this);
         }
 
         private void MeshIdProp_ValueChanged(object? sender, string old, string key) {
-            BodyMesh = null;
             if (loadedMeshes.TryGetValue(key, out var bm)) {
-                BodyMesh = bm;
+                meshInstance.Mesh = bm.Mesh;
+                meshInstance.TagCount = bm.TagCount;
+                meshInstance.Material = bm.Material;
             }
-
-            meshInstance = new(BodyMesh, transformQ, this, true);
 
             GeometryChanged?.Invoke(this);
         }
@@ -234,7 +231,7 @@ namespace TranSimCS.Worlds.Cars {
                 PositionProp.Value = newCoords;
             }
 
-            meshInstance = new(BodyMesh, PositionProp.Value.ToTransformQ(), this);
+            meshInstance.Transform = PositionProp.Value.ToTransformQ();
         }
         private void Overflow(SegmentHalf half) {
             if (LanePosition == null) return;
@@ -265,7 +262,12 @@ namespace TranSimCS.Worlds.Cars {
         }
 
         public void GenerateGeometry(RenderTarget target) => target.Draw(meshInstance);
-        public AABB GetBounds() => meshInstance.GetBounds();
-        public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) => meshInstance.ComputeIntersection(ray, out distance, out tag);
+        public AABB GetBounds() => OBB.TransformBoundingBox(meshInstance.Mesh.GetBounds(), meshInstance.Transform);
+        public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) {
+            ray = meshInstance.Transform.Inverse().Transform(ray);
+            var intersect = meshInstance.Mesh.ComputeIntersection(ray, out distance, out _);
+            tag = intersect ? this : null;
+            return intersect;
+        }
     }
 }
