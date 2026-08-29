@@ -88,6 +88,8 @@ namespace TranSimCS.Worlds.Cars {
         public const string StripTypeName = "CarStripPosition";
         public override string TypeName() => StripTypeName;
 
+        public override Guid SegmentName() => LaneStrip.Guid;
+
         public static bool operator ==(CarStripPosition? left, CarStripPosition? right) {
             return (Object.ReferenceEquals(null, left)) ? Object.ReferenceEquals(null, right) : left.Equals(right);
         }

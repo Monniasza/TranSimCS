@@ -80,21 +80,27 @@ namespace TranSimCS.SilkNet {
         public RoadFinish RoadFinish = RoadFinish.Embankment;
 
         public void Start() {
-            WindowOptions options = WindowOptions.Default with {
-                Size = new Vector2D<int>(800, 600),
-                Title = "TranSim"
-            };
-            SilkWindow = Window.Create(options);
-            FramesPerSecond = new();
-            TicksPerSecond = new();
-            
-            SilkWindow.Load += OnLoad;
-            SilkWindow.Update += OnUpdate;
-            SilkWindow.Render += OnRender;
-            SilkWindow.FramebufferResize += OnResize;
-            SilkWindow.Closing += OnClose;
-            
-            SilkWindow.Run();
+            try {
+                WindowOptions options = WindowOptions.Default with {
+                    Size = new Vector2D<int>(800, 600),
+                    Title = "TranSim"
+                };
+                SilkWindow = Window.Create(options);
+                FramesPerSecond = new();
+                TicksPerSecond = new();
+
+                SilkWindow.Load += OnLoad;
+                SilkWindow.Update += OnUpdate;
+                SilkWindow.Render += OnRender;
+                SilkWindow.FramebufferResize += OnResize;
+                SilkWindow.Closing += OnClose;
+
+                SilkWindow.Run();
+            }catch(Exception e) {
+                log.Fatal("Fatal exception. Quitting the game.");
+                log.Fatal(e);
+                throw;
+            }            
         }
 
         
@@ -120,6 +126,7 @@ namespace TranSimCS.SilkNet {
             //Create contexts
             OpenGL = SilkWindow.CreateOpenGL();
             RenderManager = new(this);
+            RenderManager.OnRender += Render3D;
             ImGuiController = new(OpenGL, SilkWindow, InputContext);
 
             //Create world data
@@ -185,29 +192,12 @@ namespace TranSimCS.SilkNet {
             OpenGL.Clear(ClearBufferMask.ColorBufferBit);
             OpenGL.Clear(ClearBufferMask.DepthBufferBit);
 
-            MultiMesh mesh = new MultiMesh();
-
             RenderManager.Camera = camera;
 
             //Render GUI
             DrawUI();
 
-            //Add world contents
-            var showNodes = true;
-            if (showNodes) foreach (var node in World.Nodes.data) {
-                mesh.AddAll(node.Mesh.GetMesh());
-                stats.Lanes += node.Lanes.Count;
-            }
-            foreach (var node in World.RoadSegments.data) {
-                mesh.AddAll(node.Mesh.GetMesh());
-                stats.Strips += node.Lanes.Count;
-            }
-            foreach (var node in World.RoadSections.data)
-                mesh.AddAll(node.Mesh.GetMesh());
-            foreach (var node in World.Buildings.data)
-                mesh.AddAll(node.Mesh.GetMesh());
-            foreach (var node in World.Cars.data)
-                mesh.meshInstances.Add(node.meshInstance);
+            
 
             
             stats.Segments = World.RoadSegments.data.Count;
@@ -216,76 +206,8 @@ namespace TranSimCS.SilkNet {
             stats.Cars = World.Cars.data.Count;
             stats.Buildings = World.Buildings.data.Count;
 
-            //Draw highlights
-            Mesh roadRenderBin = mesh.GetOrCreateRenderBinForced(Assets.Road);            
-
-            var nodecolor = InGameMenu.roadSegmentHighlightColor;
-            var lanecolor = InGameMenu.laneHighlightColor;
-
-            if ((MouseOver?.SelectedObj is RoadStrip strip)) {
-                var fstag = strip.Bounds;
-                LaneRangeMethods.GenerateLaneRangeMesh(fstag, roadRenderBin, nodecolor, 0.45f);
-            }
-
-            //If a road segment is selected, draw the selection
-            if ((MouseOver?.Tag) is LaneStrip laneStrip) {
-                // Draw the selected lane tag with a different color
-                var laneTag = laneStrip.Tag();
-                LaneRangeMethods.GenerateLaneRangeMesh(laneTag, roadRenderBin, lanecolor, 0.5f);
-            }
-
-            //Draw the selected road node
-            var selectedObj = MouseOver?.Tag;
-            HalfLane? laneEnd = null;
-            if (selectedObj is IRoadElement element && element.GetLaneEnd() != null && element.GetRoadStrip() == null)
-                laneEnd = element.GetLaneEnd();
-            if (SelectNodes) foreach (var node in World.Nodes.data) {
-                NodeRenderer.GenerateRoadNodeSelectionMesh(node, roadRenderBin, laneEnd);
-            }
-
-            //Add the grass
-            Mesh grassMesh = mesh.GetOrCreateRenderBinForced(Assets.Grass);
-            InGameMenu.RenderGround(Vector3.Zero, grassMesh);
-
-            //Apply the day/night cycle
-            var isDayNight = Settings.DayNightCycle;
-            Vector4 dayVector = new(1, 1, 1, 1);
-            Vector4 nightVector = new(0.2f, 0.2f, 0.5f, 1);
-            Vector4 sunsetVector = new(1, 1, 0.5f, 1);
-
-            LUT lut = new([
-                new(-1, sunsetVector), new(0, sunsetVector), new(5, dayVector),
-                new(25, dayVector), new(30, sunsetVector), new(33, nightVector),
-                new(57, nightVector), new(60, sunsetVector), new(61, sunsetVector)
-            ]);
-
-            var seconds = World.DayTime;
-            if (!isDayNight) seconds = 15;
-            var radsPerSecond = MathF.PI / 30;
-
-            var trig = MathF.SinCos(seconds * radsPerSecond);
-            var sine = trig.Sin;
-            var cosine = trig.Cos;
-
-            var coefficient = GeometryUtils.Clamp(sine * 2, -1, 1);
-            coefficient = (sine / 2) + 0.5f;
-            var interpolatedDayNightVector = lut[seconds];
-            RenderManager.AmbientColor.Value = interpolatedDayNightVector;
-
-            //Render the sun
-            var sunDistance = 10000f;
-            var sunDiameter = 1000f;
-            var pos = new Vector3(-cosine, sine, 0) * sunDistance;
-            var normal = new Vector3(cosine, -sine, 0);
-            var tangent = new Vector3(-sine, -cosine, 0) * sunDiameter;
-            var lateral = new Vector3(0, 0, sunDiameter);
-            var startingPoint = pos - (tangent + lateral) / 2;
-            //var sunRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.White);
-            var sunRenderBin = mesh.GetOrCreateRenderBinForced(Assets.Sun);
-            sunRenderBin.DrawParallelogram(startingPoint + RenderManager.Camera.Position.ToX0Z(), tangent, lateral, Colors.White);
-
             //Render all
-            RenderManager.Render(mesh);
+            RenderManager.Render();
             ImGuiController.Render();
             FramesPerSecond.Count++;
 

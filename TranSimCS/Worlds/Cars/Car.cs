@@ -23,6 +23,8 @@ using Path = System.IO.Path;
 
 namespace TranSimCS.Worlds.Cars {
     public class Car : Obj, IObjMesh, IPosition {
+        public static Logger logger = LogManager.GetCurrentClassLogger();
+
         public static Dictionary<string, MultiMesh> loadedMeshes = [];
         public static ObservableList<(string, MultiMesh)> meshes = [];
         private static Random rnd = new Random();
@@ -134,6 +136,21 @@ namespace TranSimCS.Worlds.Cars {
         public event MeshInvalidationCallback GeometryChanged;
 
         internal void Update(float time) {
+            const float maxSpeed = 100;
+            if (float.IsNaN(Speed)) {
+                log.Warn($"The car {Guid} has an invalid speed. Deleting.");
+                World.Cars.data.Remove(this);
+                return;
+            }
+            if(Speed < 0) {
+                log.Warn($"The car {Guid} has a negative speed of {Speed}. Inverting the speed.");
+                Speed *= -1;
+            }
+            if(Speed > maxSpeed) {
+                log.Warn($"The car {Guid} is way too fast at {Speed}. Slowing down. ");
+                Speed = maxSpeed;
+            }
+
             if (World == null) return;
             if(LanePosition == null) {
                 //The car is off-road
@@ -156,9 +173,26 @@ namespace TranSimCS.Worlds.Cars {
                 }
 
                 //Overflow
-                var maxLength = LanePosition.MaxPosition();
-                if (maxLength < 0.1) throw new ArithmeticException("Zero or negative length");
-                while (LanePosition.CurrentPosition() < 0 || LanePosition.CurrentPosition() > maxLength) {
+                int maxSegments = 100;
+                int segmentCounter = 0;
+                while (true) {
+                    var maxLength = LanePosition.MaxPosition();
+                    bool badLength = maxLength < 0.1f;
+                    bool overLimit = segmentCounter > maxSegments;
+
+                    if (maxLength < 0.1) throw new ArithmeticException("Zero or negative length");
+                    if (LanePosition.CurrentPosition() >= 0 && LanePosition.CurrentPosition() <= maxLength) break;
+                    if (badLength || overLimit) {
+                        if (badLength) log.Warn($"Segment {LanePosition.SegmentName()} is excessively short. Aborting overflows");
+                        if(overLimit) log.Warn($"Segment limit exceeded on car {Guid}. Aborting overflows.");
+                        log.Warn($"Car segment position: {LanePosition.CurrentPosition()}");
+                        log.Warn($"Car segment length: {LanePosition.MaxPosition()}");
+                        log.Warn($"Car coordinates: {PositionProp.Value}");
+                        log.Warn($"Car instantenous velocity: {Velocity}");
+                        log.Warn($"Car speed: {Speed}");
+                        break;
+                    }
+
                     if (LanePosition == null) return;
 
                     var overflowIsRear = LanePosition.CurrentPosition() < 0;
@@ -171,6 +205,7 @@ namespace TranSimCS.Worlds.Cars {
                         Overflow(SegmentHalf.End);
                     }
 
+                    segmentCounter++;
                     if (World == null) return;
                 }
 
@@ -206,6 +241,7 @@ namespace TranSimCS.Worlds.Cars {
             var nextPosition = LanePosition.CurrentPosition() - LanePosition.MaxPosition();
 
             var candidates = LanePosition.FindNext(half).ToArray();
+            //log.Trace($"Candidates enumerated: {candidates.Length}");
 
             //If there are no more candidates, destroy the car
             if (candidates.Length == 0) {
@@ -219,6 +255,7 @@ namespace TranSimCS.Worlds.Cars {
                 throw new Exception("Transitioned to same strip");
 
             LanePosition = choice.Advance(nextPosition);
+            //log.Trace($"Picked candidate length: {LanePosition.MaxPosition()}");
         }
 
         public void Destroy() {

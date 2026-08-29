@@ -61,6 +61,7 @@ namespace TranSimCS.SilkNet {
                 foreach (var world in Worlds) {
                     if (ImGui.Button(world)) {
                         var worldPath = Path.Combine(Program.SaveRoot, world);
+                        log.Info($"Loading a world from path {worldPath}");
                         World = TSWorld.LoadFromFile(worldPath);
                     }
                 }

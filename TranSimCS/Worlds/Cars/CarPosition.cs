@@ -41,6 +41,10 @@ namespace TranSimCS.Worlds.Cars {
         /// Returns the stable type name of this state for serialization
         /// </summary>
         public abstract string TypeName();
+        /// <summary>
+        /// Returnsa the GUID of a segment this CarPosition represents.
+        /// </summary>
+        public abstract Guid SegmentName();
         (string TypeId, TypeRegistry<CarPosition> TypeRegistry) ITypeRegistered<CarPosition>.TypeInfo() => (TypeName(), Car.CarPositionRegistry);
     }
 }

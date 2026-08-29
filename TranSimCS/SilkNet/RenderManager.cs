@@ -21,17 +21,29 @@ using TranSimCS.Render;
 using TranSimCS.Setting;
 using TranSimCS.Terrain;
 using TranSimCS.Tools;
+using TranSimCS.Worlds;
 using static TranSimCS.Model.MeshUnroll;
 
 namespace TranSimCS.SilkNet {
-    public partial class RenderManager: IDisposable {
+    /// <summary>
+    /// A source of geometry in form of <see cref="MeshDrawInstance"/>s. Takes a <see cref="RenderTarget"/> as the context.
+    /// </summary>
+    public delegate void GeometrySupplier(RenderTarget target);
+
+
+    public class RenderManager: IDisposable {
         public readonly Property<Camera> CameraProp;
         public readonly Property<Vector4> AmbientColor;
         public readonly SilkNetTest window;
+
+        public static readonly string MeshVertSource;
+        public static readonly string FragSource;
+
         public Matrix4x4 WorldViewProjection { get; private set; }
         public Matrix4x4 World { get; private set; }
         public Matrix4x4 View { get; private set; }
         public Matrix4x4 Projection { get; private set; }
+        public event GeometrySupplier? OnRender;
         
         internal uint _instanceBuffer;
         internal uint _vertexShader;
@@ -39,8 +51,7 @@ namespace TranSimCS.SilkNet {
         internal uint _meshProgram;
         internal uint _uniformBuffer;
 
-        public static readonly string MeshVertSource;
-        public static readonly string FragSource;
+        
         static RenderManager() {
             MeshVertSource = TerrainDataBlobs.ReadEmbeddedResource("TranSimCS.Include.mesh.vert");
             FragSource = TerrainDataBlobs.ReadEmbeddedResource("TranSimCS.Include.mesh.frag");
@@ -144,7 +155,7 @@ namespace TranSimCS.SilkNet {
 
         public RenderStats Stats { get; private set; }
 
-        public void Render(MultiMesh source) {
+        public void Render() {
             SetUpEffects();
 
             //CONSTANTS
@@ -161,13 +172,15 @@ namespace TranSimCS.SilkNet {
             gl.CullFace(Settings.InvertAllNormals ? TriangleFace.Back : TriangleFace.Front);
 
             //CATEGORIZATION & COUNTING
+            List<MeshDrawInstance> instances = [];
+            OnRender?.Invoke(instances.Add);
+
             var stats = new RenderStats();
-            var allMeshes = MeshTraversal.Traverse(source).ToArray();
 
             var groups = new List<MeshDrawInstance>?[(int)MaterialBlendMode.Count];
             var uniqueMeshes = new HashSet<Mesh>();
-            for(int i = 0; i < allMeshes.Length; i++) {
-                var instance = allMeshes[i];
+            for(int i = 0; i < instances.Count; i++) {
+                var instance = instances[i];
                 var list = groups[(int)instance.Material.BlendMode] ??= [];
                 list.Add(instance);
                 uniqueMeshes.Add(instance.Mesh);
