@@ -18,7 +18,10 @@ namespace TranSimCS.Roads.Node {
 
         //Contents
         public Property<LaneDefinition> DefinitionProp { get; private set; }
-        public LaneDefinition Definition { get => DefinitionProp.Value; set => DefinitionProp.Value = value; }
+        public LaneDefinition Definition {
+            get => DefinitionProp.Value;
+            set => DefinitionProp.Value = value;
+        }
         public LaneNode LaneNode => new(Definition, Lane.Guid);
         public LaneSpec LaneSpec {
             get => Definition.LaneSpec;
@@ -38,9 +41,18 @@ namespace TranSimCS.Roads.Node {
         public HalfNode HalfNode => Lane.RoadNode.GetHalfNode(End);
         public HalfLane OppositeHalf => End.GetConditional(Lane.FrontHalf, Lane.RearHalf);
         public int Index => (End == NodeEnd.Forward) ? Lane.Index : Lane.RoadNode.Lanes.Count - Lane.Index - 1;
-        public float MiddlePosition => LaneNode.CenterPos; // Middle position of the lane, calculated as the average of left and right positions
-        public float Width => LaneNode.LaneSpec.Width;
-        public Range<float> Bounds => LaneNode.Bounds;
+        public float MiddlePosition { // Middle position of the lane, calculated as the average of left and right positions
+            get => LaneNode.CenterPos;
+            set => Definition = new(value, LaneSpec);
+        } 
+        public float Width {
+            get => LaneNode.LaneSpec.Width;
+            set => LaneSpec = LaneSpec with { Width = value };
+        }
+        public Range<float> Bounds{
+            get => LaneNode.Bounds;
+            set => Definition = Definition.WithBounds(value);
+        }
         public Guid Guid => Lane.Guid;
         
         public int ZDiscriminant() => End.Discriminant();

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using ImGuiNET;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Setting;
 using TranSimCS.Tools;
@@ -111,6 +112,35 @@ namespace TranSimCS.SilkNet {
                     ImGui.DragFloat("Spawn car speed [m/s]", ref SpawnCarVelocity, 0.05f, 0, 100, "%.2f");
                     if(ImGui.Button("Spawn a car")) {
                         CarLauncherTool.LaunchCar(World, strip, SpawnCarVelocity);
+                    }
+                }
+                if(tag is HalfLane lane) {
+                    float lpos = lane.Bounds.Min;
+                    float cpos = lane.MiddlePosition;
+                    float rpos = lane.Bounds.Max;
+                    float width = lane.Width;
+
+                    bool dimensionsChanged = false;
+                    if(ImGui.DragFloat("Move: L", ref lpos, 0.005f, rpos - 10, rpos)){
+                        if (lpos > rpos) lpos = rpos;
+                        cpos = (lpos + rpos) / 2;
+                        width = rpos - lpos;
+                        dimensionsChanged = true;
+                    }
+                    if(ImGui.DragFloat("C", ref cpos, 0.01f, -100, 100)) {
+                        float hwidth = width / 2l;
+                        lpos = cpos - hwidth;
+                        rpos = cpos + hwidth;
+                        dimensionsChanged = true;
+                    }
+                    if(ImGui.DragFloat("R", ref rpos, 0.005f, lpos, lpos + 10)){
+                        if (lpos > rpos) rpos = lpos;
+                        cpos = (lpos + rpos) / 2;
+                        width = rpos - lpos;
+                        dimensionsChanged = true;
+                    }
+                    if (dimensionsChanged) {
+                        lane.Bounds = new(lpos, rpos);
                     }
                 }
                 if(obj is Car car) {

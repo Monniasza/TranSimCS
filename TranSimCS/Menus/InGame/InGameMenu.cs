@@ -162,6 +162,7 @@ namespace TranSimCS.Menus.InGame {
              *  Positioning
              *  Stats
              *  Car placement
+             *  Lane positioning
              *  
              * To migrate:
              *  Demolition
@@ -170,7 +171,6 @@ namespace TranSimCS.Menus.InGame {
              *  Move It
              *  Section
              *  Road reversal
-             *  Lane positioning
              *  Road construction
              *  Road splitting
              *  Road spline editor
