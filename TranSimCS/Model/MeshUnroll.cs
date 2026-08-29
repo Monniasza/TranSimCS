@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Geometry;
 using TranSimCS.ModelOld;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.Model {
     public static class MeshUnroll {
@@ -46,7 +47,7 @@ namespace TranSimCS.Model {
         }
         public static class MeshTraversal {
 
-            public static IEnumerable<MeshDrawInstance> Traverse(MultiMesh root, TransformQ? transform = null) {
+            public static void Traverse(MultiMesh root, RenderTarget target, TransformQ? transform = null) {
                 var active = new HashSet<MultiMesh>();
 
                 var stack = new Stack<MeshInstance>();
@@ -65,12 +66,12 @@ namespace TranSimCS.Model {
                     // Emit renderable geometry
                     foreach (var bin in node.RenderBins) {
                         int tagcount = (frame.CoverTag == null) ? bin.Value.Tags.Count : bin.Value.Indices.Count / 3;
-                        yield return new MeshDrawInstance(
+                        target(new MeshDrawInstance(
                             bin.Value,
                             frame.PositionRotation,
                             bin.Key,
                             tagcount
-                        );
+                        ));
                     }
 
                     // Push children (mesh instances)

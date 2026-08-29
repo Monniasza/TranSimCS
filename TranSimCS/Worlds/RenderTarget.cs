@@ -11,10 +11,10 @@ namespace TranSimCS.Worlds {
     public static class RenderTargetMethods {
         public static void Draw(this RenderTarget target, MeshDrawInstance geometry) => target(geometry);
         public static void Draw(this RenderTarget target, MultiMesh mesh) {
-            foreach (var mdi in MeshUnroll.MeshTraversal.Traverse(mesh)) target(mdi);
+            MeshTraversal.Traverse(mesh, target);
         }
         public static void Draw(this RenderTarget target, MeshInstance mesh) {
-            foreach (var mdi in MeshUnroll.MeshTraversal.Traverse(mesh.Mesh, mesh.PositionRotation)) target(mdi);
+            MeshTraversal.Traverse(mesh.Mesh, target, mesh.PositionRotation);
         }
     }
 }

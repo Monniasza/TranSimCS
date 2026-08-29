@@ -170,8 +170,10 @@ namespace TranSimCS.Render {
 
             //CATEGORIZATION & COUNTING
             var stats = new RenderStats();
+            var instances = new List<MeshDrawInstance>();
+            MeshTraversal.Traverse(source, instances.Add);
             var categorizedMeshes = new List<MeshDrawInstance>[(int)MaterialBlendMode.Count];
-            foreach (var mdi in MeshTraversal.Traverse(source)) {
+            foreach (var mdi in instances) {
                 var renderBin = mdi.Mesh;
                 var renderPassID = mdi.Material.BlendMode;
 
