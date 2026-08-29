@@ -152,6 +152,30 @@ namespace TranSimCS.Menus.InGame {
 
             RoadToolsPanel = ToolsPanel.GetPanel<StripTools>(ToolAttribs.showRoadTools);
 
+            /* TOOL MIGRATION
+             * Migrated:
+             *  Settings
+             *  None
+             *  Lane spec
+             *  Inspection
+             *  Road finish
+             *  Positioning
+             *  Stats
+             *  Car placement
+             *  
+             * To migrate:
+             *  Demolition
+             *  Connection editor
+             *  Add road node
+             *  Move It
+             *  Section
+             *  Road reversal
+             *  Lane positioning
+             *  Road construction
+             *  Road splitting
+             *  Road spline editor
+             */
+
             SetUpToolPictureButton("ui/settings", new GlobalSettingsTool());
             SetUpToolPictureButton("noTool", null);
             SetUpToolPictureButton("ui/blast2", new DemolitionTool(this));
