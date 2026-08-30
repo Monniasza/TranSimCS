@@ -31,6 +31,7 @@ namespace TranSimCS.SilkNet {
 
         public void ShowMessage() {
             if (DearUI.Modal("message-box", Title)) {
+                ImGui.TextWrapped(Text);
                 foreach (var action in Actions) {
                     if (ImGui.Button(action.Text)) action.action();
                     ImGui.SameLine();

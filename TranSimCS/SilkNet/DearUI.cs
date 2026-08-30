@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -64,9 +65,10 @@ namespace TranSimCS.SilkNet {
             ImGui.PushStyleColor(
             ImGuiCol.ModalWindowDimBg,
             new Vector4(0, 0, 0, 0.5f));
-
-            ImGui.OpenPopup(id);
-            bool result = ImGui.BeginPopupModal((title == null) ? id : title + "###" + id);
+            string text = (title == null) ? id : title + "###" + id;
+            ImGui.OpenPopup(text);
+            bool result = ImGui.BeginPopupModal(text);
+            Debug.Assert(result, "Modal enabled but not open");
             return result;
         }
         public static void EndModal() {

@@ -158,6 +158,7 @@ namespace TranSimCS.SilkNet {
                         log.Info($"Loading a world from path {worldPath}");
                         try {
                             World = TSWorld.LoadFromFile(worldPath);
+                            CurrentlyOpenModal = null;
                         } catch (Exception e) {
                             Message error = Message.ErrorMessage("Failed to load the world " + SaveTitle, e, this);
                             CurrentlyOpenModal = error.ShowMessage;
@@ -202,7 +203,6 @@ namespace TranSimCS.SilkNet {
                 if (ImGui.Button("Yes")) {
                     //Overwrite the world
                     SaveTheWorld();
-                    CurrentlyOpenModal = null;
                 }
                 if (ImGui.Button("No")) {
                     //Return to the save modal
@@ -217,7 +217,8 @@ namespace TranSimCS.SilkNet {
             var worldPath = Path.Combine(Program.SaveRoot, SaveTitle);
             try {
                 World.SaveToFile(worldPath);
-            }catch(Exception e) {
+                CurrentlyOpenModal = null;
+            } catch(Exception e) {
                 Message error = Message.ErrorMessage("Failed to save the world " + SaveTitle, e, this);
                 CurrentlyOpenModal = error.ShowMessage;
                 log.Error(e);
@@ -225,7 +226,6 @@ namespace TranSimCS.SilkNet {
                 throw;
                 #endif
             }
-
         }
 
         public void CloseModals() => CurrentlyOpenModal = null;
