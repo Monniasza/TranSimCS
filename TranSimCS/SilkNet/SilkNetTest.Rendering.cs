@@ -55,6 +55,9 @@ namespace TranSimCS.SilkNet {
                 NodeRenderer.GenerateRoadNodeSelectionMesh(node, roadRenderBin, laneEnd);
             }
 
+            //Render the tool
+            Mode.Draw3D(target, mesh);
+
             //Add the grass
             Mesh grassMesh = mesh.GetOrCreateRenderBinForced(Assets.Grass);
             InGameMenu.RenderGround(Vector3.Zero, grassMesh);

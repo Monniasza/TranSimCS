@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -53,7 +54,7 @@ namespace TranSimCS.SilkNet {
         
         //World contents
         public Camera camera;
-        public TSWorld World { get; private set; } = new TSWorld();
+        public TSWorld World { get; private set; }
 
         //UI contents
         public bool IsMouseOverUI { get; private set; }
@@ -85,6 +86,15 @@ namespace TranSimCS.SilkNet {
         public LaneSpec LaneSpec = LaneSpec.Default;
         public RoadFinish RoadFinish = RoadFinish.Embankment;
 
+        public SilkNetTest() {
+            World = new TSWorld();
+            var pickMode = new PickMode(this);
+            //Create modes
+            AvailableModes = [
+                pickMode
+            ];
+            _mode = pickMode;
+        }
         public void Start() {
             try {
                 WindowOptions options = WindowOptions.Default with {
@@ -127,6 +137,7 @@ namespace TranSimCS.SilkNet {
                 mouse.Scroll += MouseScroll;
                 mouse.MouseMove += MouseMove;
                 mouse.MouseDown += MouseDown;
+                mouse.MouseUp += MouseUp;
             }
 
             //Create contexts
@@ -155,7 +166,7 @@ namespace TranSimCS.SilkNet {
             InputContext.Dispose();
             OpenGL.Dispose();
         }
-
+        
         private void OnUpdate(double dt) {
             float dT = (float)dt;
 
@@ -189,6 +200,9 @@ namespace TranSimCS.SilkNet {
                 camera.Position = TrackPosition.PositionData.Position;
             }
 
+            //Update the tool
+            Mode.Update(dt);
+
             //Update the world
             World.Update(dT);
         }
@@ -202,9 +216,6 @@ namespace TranSimCS.SilkNet {
 
             //Render GUI
             DrawUI();
-
-            
-
             
             stats.Segments = World.RoadSegments.data.Count;
             stats.Nodes = World.Nodes.data.Count;

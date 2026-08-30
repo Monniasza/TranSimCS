@@ -21,6 +21,9 @@ namespace TranSimCS.SilkNet {
             var zoomDelta = MathF.Pow(2f, -wheel.Y); // Adjust zoom factor based on scroll wheel delta
             camera.Distance *= zoomDelta; // Update camera distance based on zoom factor
             camera.Distance = float.Clamp(camera.Distance, 1, 65536);
+
+            Mode.OnScroll(wheel);
+            
         }
         private void HandleInputs(float dT) {
             var rotationSpeed = 1f;
@@ -58,25 +61,24 @@ namespace TranSimCS.SilkNet {
         }
 
         private void KeyDown(IKeyboard keyboard, Key key, int keyCode) {
-
+            if (ImGui.IsAnyItemFocused()) return;
+            Mode.OnKeyPress(key);
         }
         private void KeyUp(IKeyboard keyboard, Key key, int keyCode) {
-
+            if (ImGui.IsAnyItemFocused()) return;
+            Mode.OnKeyRelease(key);
         }
         private void KeyChar(IKeyboard keyboard, char character) {
 
         }
         private void MouseDown(IMouse mouse, MouseButton button) {
             if (IsMouseOverUI) return;
-            switch (button) {
-                case MouseButton.Left:
-                    //Select the object
-                    Sticky = MouseOver;
-                    break;
-                case MouseButton.Right:
-                    Sticky = null;
-                    break;
-            }
+            Mode.OnMousePress(button);
+            
+        }
+        private void MouseUp(IMouse mouse, MouseButton button) {
+            if (IsMouseOverUI) return;
+            Mode.OnMouseRelease(button);
         }
 
         private void MouseMove(IMouse mouse, Vector2 vector) {

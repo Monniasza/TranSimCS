@@ -58,10 +58,17 @@ namespace TranSimCS.SilkNet {
                 DearUI.MenuToggle("Select cars", ref SelectCars);
                 ImGui.EndMenu();
             }
+            if(ImGui.BeginMenu("Current mode: " + Mode.Title())) {
+                foreach(var mode in AvailableModes) 
+                    if (ImGui.MenuItem(mode.Title())) Mode = mode;
+                
+            }
 
             ImGui.EndMainMenuBar();
 
             CurrentlyOpenModal?.Invoke();
+
+            Mode.DrawUI();
 
             if (IsStatsOpen) {
                 ImGui.Begin("Stats");
