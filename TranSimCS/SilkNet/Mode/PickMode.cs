@@ -7,11 +7,11 @@ using Silk.NET.Input;
 using TranSimCS.Model;
 using TranSimCS.Worlds;
 
-namespace TranSimCS.SilkNet {
+namespace TranSimCS.SilkNet.Mode {
     public class PickMode: IMode {
         public SilkNetTest Window{ get; private set; }
         internal PickMode(SilkNetTest window) {
-            this.Window = window;
+            Window = window;
         }
 
         public string Title() => "Select";
