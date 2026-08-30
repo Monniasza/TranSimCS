@@ -10,6 +10,7 @@ using TranSimCS.Roads.Section;
 using TranSimCS.Roads.StripGenerator;
 using TranSimCS.SceneGraph;
 using TranSimCS.Setting;
+using TranSimCS.SilkNet.Mode;
 using TranSimCS.Spatial;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
@@ -29,7 +30,7 @@ namespace TranSimCS.Roads.Strip {
     /// <remarks>A <see cref="RoadStrip"/> defines the relationship between two road nodes, specifying
     /// the lanes involved at each node and their respective indices. It also includes properties for lane
     /// specifications and rendering-related data, such as meshes for visualization.</remarks>
-    public class RoadStrip: Obj, IObjMesh, IRoadElement, IRoadFinish, IDraggableObj {
+    public class RoadStrip: Obj, IObjMesh, IRoadElement, IRoadFinish, IDraggableObj, IDemolish {
         //ROAD ELEMENT
         public Lane? GetLane() => null;
         public LaneStrip? GetLaneStrip() => null;
@@ -193,6 +194,6 @@ namespace TranSimCS.Roads.Strip {
             return Mesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
         }
 
-        
+        public void Demolish() => World.RoadSegments.data.Remove(this);
     }
 }

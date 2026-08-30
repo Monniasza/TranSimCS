@@ -4,10 +4,11 @@ using Iesi.Collections.Generic;
 using MonoGame.Extended;
 using TranSimCS.Property;
 using TranSimCS.Roads.Strip;
+using TranSimCS.SilkNet.Mode;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Node {
-    public class HalfLane: IRoadElement, IDraggableObj, ILaneSpec {
+    public class HalfLane: IRoadElement, IDraggableObj, ILaneSpec, IDemolish {
         //Definition
         public Lane Lane { get; private set; }
         public NodeEnd End { get; private set; }
@@ -65,5 +66,7 @@ namespace TranSimCS.Roads.Node {
         public RoadNodeEnd? GetNodeEnd() => HalfNode.RoadNodeEnd;
         int? IRoadElement.GetIndexInHalfNode() => Index;
         public IPosition[] DraggableComponents() => [HalfNode];
+
+        public void Demolish() => Lane.Demolish();
     }
 }

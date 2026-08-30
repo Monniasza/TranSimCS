@@ -63,7 +63,6 @@ namespace TranSimCS.SilkNet {
         /// </summary>
         public void OnScroll(ScrollWheel scrollAmount) { }
 
-        public virtual Color SelectionObjectColor() => Colors.SemiClearAzure;
-        public virtual Color SelectionComponentColor() => Colors.Yellow;
+        public HighlightColors SelectionColors() => HighlightColors.DefaultHighlightColor;
     }
 }

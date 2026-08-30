@@ -22,6 +22,7 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Setting;
+using TranSimCS.SilkNet.Mode;
 using TranSimCS.Terrain;
 using TranSimCS.Tools;
 using TranSimCS.Worlds;
@@ -91,7 +92,7 @@ namespace TranSimCS.SilkNet {
             var pickMode = new PickMode(this);
             //Create modes
             AvailableModes = [
-                pickMode
+                pickMode, new ModeDemolish(this)
             ];
             _mode = pickMode;
         }

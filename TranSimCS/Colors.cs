@@ -11,6 +11,7 @@ namespace TranSimCS {
         public static Color SemiClearGray = Gray.AlphaMul(0.5f);
         public static Color SemiClearAzure = new Color(0, 160, 255).AlphaMul(0.5f);
         public static Color SemiClearWhite = Color.White.AlphaMul(0.5f);
+        public static Color SemiClearRed = new Color(255, 0, 0, 128);
         public static Color White = new Color(255, 255, 255, 255);
         public static Color Red = new Color(255, 0, 0, 255);
         public static Color Maroon = new Color(128, 0, 0, 255);

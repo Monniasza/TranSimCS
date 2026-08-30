@@ -61,7 +61,7 @@ namespace TranSimCS.SilkNet {
             if(ImGui.BeginMenu("Current mode: " + Mode.Title())) {
                 foreach(var mode in AvailableModes) 
                     if (ImGui.MenuItem(mode.Title())) Mode = mode;
-                
+                ImGui.EndMenu() ;
             }
 
             ImGui.EndMainMenuBar();

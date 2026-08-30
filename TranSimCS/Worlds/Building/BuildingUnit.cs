@@ -12,9 +12,10 @@ using TranSimCS.Model;
 using TranSimCS.Property;
 using TranSimCS.SceneGraph;
 using TranSimCS.SilkNet;
+using TranSimCS.SilkNet.Mode;
 
 namespace TranSimCS.Worlds.Building {
-    public class BuildingUnit : Obj, IPosition, IObjMesh {
+    public class BuildingUnit : Obj, IPosition, IObjMesh, IDemolish {
         public Property<PositionEulerAngles> PositionProp { get; }
         public Property<Vector3i> UnitSizeProp { get; }
         public MeshGenerator<BuildingUnit> Mesh { get; }
@@ -85,5 +86,7 @@ namespace TranSimCS.Worlds.Building {
         public void GenerateGeometry(RenderTarget target) => target.Draw(Mesh.GetMesh());
         public AABB GetBounds() => Mesh.GetMesh().GetBounds();
         public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) => Mesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
+
+        public void Demolish() => World.Buildings.data.Remove(this);
     }
 }

@@ -14,11 +14,12 @@ using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Strip;
 using TranSimCS.SceneGraph;
+using TranSimCS.SilkNet.Mode;
 using TranSimCS.Worlds;
 using Transform3 = TranSimCS.Geometry.Transform3;
 
 namespace TranSimCS.Roads.Node {
-    public class RoadNode: Obj, IPosition, IObjMesh, IRoadElement {
+    public class RoadNode: Obj, IPosition, IObjMesh, IRoadElement, IDemolish {
         //Node contents
         public Property<PositionEulerAngles> PositionProp { get; private set; }
         public BidirectionalDerivedProperty<PositionEulerAngles, PositionEulerAngles> InversePositionProp { get; private set; }
@@ -204,6 +205,8 @@ namespace TranSimCS.Roads.Node {
         public AABB GetBounds() => SelectionMesh.GetMesh().GetBounds();
 
         public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) => SelectionMesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
+
+        public void Demolish() => World.Nodes.data.Remove(this);
 
         //Connections (maintained by the node ends)
         public IEnumerable<RoadStrip> Connections => RearHalf.ConnectedSegments.Union(FrontHalf.ConnectedSegments);

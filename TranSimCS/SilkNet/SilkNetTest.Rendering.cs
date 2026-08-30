@@ -31,8 +31,10 @@ namespace TranSimCS.SilkNet {
             //Draw highlights
             Mesh roadRenderBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
 
-            var nodecolor = InGameMenu.roadSegmentHighlightColor;
-            var lanecolor = InGameMenu.laneHighlightColor;
+            var colors = Mode.SelectionColors();
+
+            var nodecolor = colors.ObjectColor;
+            var lanecolor = colors.ComponentColor;
 
             if ((MouseOver?.SelectedObj is RoadStrip strip)) {
                 var fstag = strip.Bounds;

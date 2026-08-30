@@ -18,12 +18,13 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Save2.TypeRegistry;
 using TranSimCS.SceneGraph;
+using TranSimCS.SilkNet.Mode;
 using TranSimCS.Spline;
 using static TranSimCS.Model.MeshUnroll;
 using Path = System.IO.Path;
 
 namespace TranSimCS.Worlds.Cars {
-    public class Car : Obj, IObjMesh, IPosition {
+    public class Car : Obj, IObjMesh, IPosition, IDemolish {
         public static Logger logger = LogManager.GetCurrentClassLogger();
 
         public static Dictionary<string, MeshDrawInstance> loadedMeshes = [];
@@ -165,7 +166,7 @@ namespace TranSimCS.Worlds.Cars {
                 //Interpolate
                 LanePosition = LanePosition.Advance(Speed * time);
                 if (LanePosition == null) {
-                    Destroy();
+                    Demolish();
                     return;
                 }
 
@@ -242,7 +243,7 @@ namespace TranSimCS.Worlds.Cars {
 
             //If there are no more candidates, destroy the car
             if (candidates.Length == 0) {
-                Destroy();
+                Demolish();
                 return;
             }
 
@@ -255,7 +256,7 @@ namespace TranSimCS.Worlds.Cars {
             //log.Trace($"Picked candidate length: {LanePosition.MaxPosition()}");
         }
 
-        public void Destroy() {
+        public void Demolish() {
             World.Cars.data.Remove(this);
             LanePosition = null;
             return;

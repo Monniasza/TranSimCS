@@ -11,11 +11,12 @@ using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
+using TranSimCS.SilkNet.Mode;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Strip {
-    public class LaneStrip : IEquatable<LaneStrip?>, IDraggableObj, IRoadElement, IExtent, ILaneSpec {
+    public class LaneStrip : IEquatable<LaneStrip?>, IDraggableObj, IRoadElement, IExtent, ILaneSpec, IDemolish {
         //ROAD ELEMENT
         public Guid Guid => Road.Guid;
         public Lane? GetLane() => null;
@@ -141,5 +142,7 @@ namespace TranSimCS.Roads.Strip {
         }
 
         public bool IsReverse() => StartLane.HalfNode == Road.EndNode && EndLane != StartLane;
+
+        public void Demolish() => Road.RemoveLaneStrip(this);
     }
 }

@@ -15,10 +15,11 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.SceneGraph;
 using TranSimCS.Setting;
+using TranSimCS.SilkNet.Mode;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Section {
-    public class RoadSection : Obj, IObjMesh, IRoadFinish, IDraggableObj{
+    public class RoadSection : Obj, IObjMesh, IRoadFinish, IDraggableObj, IDemolish{
         //Contents managed by TSWorld
         internal HashSet<RoadStrip> _containedSegments = new HashSet<RoadStrip>();
         public ReadOnlySet<RoadStrip> ContainedSegments => new(_containedSegments);
@@ -84,5 +85,7 @@ namespace TranSimCS.Roads.Section {
         public void GenerateGeometry(RenderTarget target) => target.Draw(Mesh.GetMesh());
         public AABB GetBounds() => SelectionMesh.GetMesh().GetBounds();
         public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) => SelectionMesh.GetMesh().ComputeIntersection(ray, out distance, out tag);
+
+        public void Demolish() => World.RoadSections.data.Remove(this);
     }
 }

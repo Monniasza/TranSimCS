@@ -10,13 +10,14 @@ using MonoGame.Extended;
 using TranSimCS.Property;
 using TranSimCS.Roads.Section;
 using TranSimCS.Roads.Strip;
+using TranSimCS.SilkNet.Mode;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Node {
     /// <summary>
     /// A half of a road node, either front or back.
     /// </summary>
-    public class HalfNode: IPosition {
+    public class HalfNode: IPosition, IDemolish {
         //Definition
         public RoadNode RoadNode { get; private set; }
         public NodeEnd End { get; private set; }
@@ -84,5 +85,7 @@ namespace TranSimCS.Roads.Node {
             oldSection?.OnDisconnect(rne);
             newSection?.OnConnect(rne);
         }
+
+        public void Demolish() => RoadNode.Demolish();
     }
 }

@@ -11,13 +11,14 @@ using TranSimCS.Geometry;
 using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Strip;
+using TranSimCS.SilkNet.Mode;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Node {
     /// <summary>
     /// A lane defines where vehicles can ride through and in which direction.
     /// </summary>
-    public class Lane: Obj, IDraggableObj, IRoadElement, ILaneSpec {
+    public class Lane: Obj, IDraggableObj, IRoadElement, ILaneSpec, IDemolish {
         //Contents
         public Property<LaneDefinition> DefinitionProp { get; private set; }
         public BidirectionalDerivedProperty<LaneDefinition, LaneDefinition> InverseDefinitionProp { get; private set; }
@@ -80,5 +81,7 @@ namespace TranSimCS.Roads.Node {
         public HalfLane? GetLaneEnd() => null;
         public RoadNodeEnd? GetNodeEnd() => null;
         int? IRoadElement.GetIndexInHalfNode() => Index;
+
+        public void Demolish() => RoadNode.RemoveLane(this);
     }
 }
