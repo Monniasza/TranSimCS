@@ -60,6 +60,20 @@ namespace TranSimCS.SilkNet {
             return changed;
         }
 
+        public static bool Modal(string id, string? title = null) {
+            ImGui.PushStyleColor(
+            ImGuiCol.ModalWindowDimBg,
+            new Vector4(0, 0, 0, 0.5f));
+
+            ImGui.OpenPopup(id);
+            bool result = ImGui.BeginPopupModal((title == null) ? id : title + "###" + id);
+            return result;
+        }
+        public static void EndModal() {
+            ImGui.EndPopup();
+            ImGui.PopStyleColor();
+        }
+
         public static bool InputObjPos(string title, ref PositionEulerAngles pea) {
             ImGui.Text(title);
             bool posChanged = ImGui.DragFloat3("Position [m]", ref pea.Position, 1, -100000, 100000, "%.3f");

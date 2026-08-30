@@ -21,7 +21,14 @@ namespace TranSimCS.SilkNet {
         private void DrawUI() {
             ImGui.BeginMainMenuBar();
             if (ImGui.BeginMenu("File")) {
-                if (ImGui.MenuItem("Load", "", IsLoadOpen, true)) IsLoadOpen ^= true;
+                if (ImGui.MenuItem("Load")) {
+                    CurrentlyOpenModal = LoadModal;
+                    Reload();
+                }
+                if (ImGui.MenuItem("Save")) {
+                    CurrentlyOpenModal = SaveModal;
+                    Reload();
+                }
                 ImGui.EndMenu();
             }
 
@@ -54,19 +61,8 @@ namespace TranSimCS.SilkNet {
 
             ImGui.EndMainMenuBar();
 
-            if (IsLoadOpen) {
-                ImGui.Begin("Load a world");
-                if (ImGui.Button("Reload"))
-                    Reload();
-                foreach (var world in Worlds) {
-                    if (ImGui.Button(world)) {
-                        var worldPath = Path.Combine(Program.SaveRoot, world);
-                        log.Info($"Loading a world from path {worldPath}");
-                        World = TSWorld.LoadFromFile(worldPath);
-                    }
-                }
-                ImGui.End();
-            }
+            CurrentlyOpenModal?.Invoke();
+
             if (IsStatsOpen) {
                 ImGui.Begin("Stats");
                 ImGui.Text(Stats.Format());
@@ -151,5 +147,87 @@ namespace TranSimCS.SilkNet {
                 ImGui.End();
             }
         }
+
+        private void LoadModal() {
+            if (DearUI.Modal("Load a world")) {
+                if (ImGui.Button("Close")) CurrentlyOpenModal = null;
+                foreach (var world in Worlds) {
+                    if (ImGui.Button(world)) {
+                        SaveTitle = world;
+                        var worldPath = Path.Combine(Program.SaveRoot, world);
+                        log.Info($"Loading a world from path {worldPath}");
+                        try {
+                            World = TSWorld.LoadFromFile(worldPath);
+                        } catch (Exception e) {
+                            Message error = Message.ErrorMessage("Failed to load the world " + SaveTitle, e, this);
+                            CurrentlyOpenModal = error.ShowMessage;
+                            log.Error(e);
+                            #if (DEBUG)
+                            throw;
+                            #endif
+                        }
+                    }
+                }
+                DearUI.EndModal();
+            }
+            
+        }
+        private void SaveModal() {
+            if (DearUI.Modal("Save a world")) {
+                ImGui.SameLine();
+                ImGui.InputText("File name", ref SaveTitle, 99);
+                ImGui.SameLine();
+                if (ImGui.Button("Save")) {
+                    var worldPath = Path.Combine(Program.SaveRoot, SaveTitle);
+                    bool fileExists = File.Exists(worldPath);
+                    if (fileExists) {
+                        //Warn the user that a world will be overwritten
+                        CurrentlyOpenModal = DuplicateSaveModal;
+                    } else {
+                        //Save the world
+                        SaveTheWorld();
+                    }
+                }
+                ImGui.SameLine();
+                if (ImGui.Button("Close")) CurrentlyOpenModal = null;
+                foreach (var world in Worlds) ImGui.TextColored(Colors.Cyan.ToVector4(), world);
+                DearUI.EndModal();
+            }
+        }
+
+        private void DuplicateSaveModal() {
+            
+            if (DearUI.Modal($"You're about to overwrite a world {SaveTitle}")) {
+                ImGui.Text("Do you want to proceed?");
+                if (ImGui.Button("Yes")) {
+                    //Overwrite the world
+                    SaveTheWorld();
+                    CurrentlyOpenModal = null;
+                }
+                if (ImGui.Button("No")) {
+                    //Return to the save modal
+                    CurrentlyOpenModal = SaveModal;
+                }
+                DearUI.EndModal();
+            }
+            
+        }
+
+        private void SaveTheWorld() {
+            var worldPath = Path.Combine(Program.SaveRoot, SaveTitle);
+            try {
+                World.SaveToFile(worldPath);
+            }catch(Exception e) {
+                Message error = Message.ErrorMessage("Failed to save the world " + SaveTitle, e, this);
+                CurrentlyOpenModal = error.ShowMessage;
+                log.Error(e);
+                #if (DEBUG)
+                throw;
+                #endif
+            }
+
+        }
+
+        public void CloseModals() => CurrentlyOpenModal = null;
     }
 }

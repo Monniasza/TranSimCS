@@ -58,8 +58,14 @@ namespace TranSimCS.SilkNet {
         //UI contents
         public bool IsMouseOverUI { get; private set; }
         public readonly List<string> Worlds = [];
-        public bool IsLoadOpen;
+        
+        public Action? CurrentlyOpenModal;
+        
         public bool IsStatsOpen;
+
+
+        public string SaveTitle = "world.transim";
+
         public bool AreExamplesOpen;
         public void Reload() {
             //Find world files
