@@ -17,7 +17,7 @@ namespace TranSimCS.Geometry{
         public static float Clamp(this float sub, float min, float max) => float.Min(max, float.Max(min, sub));
 
         public static Plane PointAndNormal(Vector3 point, Vector3 normal) {
-            var d = Vector3.Dot(point, normal);
+            var d = -Vector3.Dot(point, normal);
             return new Plane(normal, d);
         }
         public static float SmoothStep(float x) => x * x * (3 - 2 * x);

@@ -60,6 +60,18 @@ namespace TranSimCS.SilkNet {
             if (changed) vector.Value = tmp;
             return changed;
         }
+        public static bool InputInt(string title, Property<int> value, int min = 0, int max = 100) {
+            var tmp = value.Value;
+            bool changed = ImGui.DragInt(title, ref tmp, min, max);
+            if (changed) value.Value = tmp;
+            return changed;
+        }
+        public static bool InputInt(string title, Property<uint> value, int min = 0, int max = 100) {
+            var tmp = (int)value.Value;
+            bool changed = ImGui.DragInt(title, ref tmp, min, max);
+            if (changed) value.Value = (uint)tmp;
+            return changed;
+        }
 
         public static bool Modal(string id, string? title = null) {
             ImGui.PushStyleColor(

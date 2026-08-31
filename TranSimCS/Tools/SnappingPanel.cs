@@ -25,7 +25,7 @@ namespace TranSimCS.Tools {
             var settingsLabel = new Paragraph(Anchor.AutoInline, 0.5f, "Settings");
             AddChild(settingsLabel);
             isYLocal = CreateCheck("Global Y reference", "ui/ylocal");
-            isYLocal.AddProperty(game.configuration.SnapGrid.IsYLocalProp);
+            isYLocal.AddProperty(game.configuration.SnapGrid.IsHorizontalProp);
             isInfinite = CreateCheck("Infinite snapping grid", "ui/node");
             isInfinite.AddProperty(game.configuration.SnapGrid.IsInfiniteProp);
 

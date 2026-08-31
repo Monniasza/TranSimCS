@@ -21,7 +21,7 @@ namespace TranSimCS.Snapping {
         /// If true, height reference will be from the grid, along its normal vector
         /// If false, height reference will from the ground, along the Y axis
         /// </summary>
-        public readonly Property<bool> IsYLocalProp;
+        public readonly Property<bool> IsHorizontalProp;
         /// <summary>
         /// Is the snapping range infinite? The rendered grid will still be finite.
         /// </summary>
@@ -32,7 +32,7 @@ namespace TranSimCS.Snapping {
         public float CellSize { get => CellSizeProp.Value; set => CellSizeProp.Value = value; }
         public uint CellCount { get => CellCountProp.Value; set => CellCountProp.Value = value; }
         public PositionEulerAngles Position { get => PositionProp.Value; set => PositionProp.Value = value; }
-        public bool IsYLocal { get => IsYLocalProp.Value; set => IsYLocalProp.Value = value; }
+        public bool IsHorizontal { get => IsHorizontalProp.Value; set => IsHorizontalProp.Value = value; }
         public bool IsInfinite { get => IsInfiniteProp.Value; set => IsInfiniteProp.Value = value; }
 
         public MeshGenerator<SnappingGrid> Mesh { get; private set; }
@@ -41,7 +41,7 @@ namespace TranSimCS.Snapping {
             PositionProp = new(new(new(0, 0.1f, 0), 0), "pos", this);
             CellSizeProp = new(4, "cellSize", this);
             CellCountProp = new(20, "cellCount", this);
-            IsYLocalProp = new(true, "yLocal", this);
+            IsHorizontalProp = new(true, "yLocal", this);
             IsInfiniteProp = new(false, "infinite", this);
             Mesh = new(this, GenerateMesh);
             Mesh.OnMeshInvalidated += () => GeometryChanged?.Invoke(this);
@@ -68,7 +68,7 @@ namespace TranSimCS.Snapping {
             var tangent = splineFrame.Z;
             var center = splineFrame.O;
 
-            if (!IsYLocal) {
+            if (IsHorizontal) {
                 var oldNormal = normal;
                 lateral = lateral.ToX0Z().Normalized();
                 tangent = tangent.ToX0Z().Normalized();

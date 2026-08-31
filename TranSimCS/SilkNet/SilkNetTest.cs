@@ -84,7 +84,6 @@ namespace TranSimCS.SilkNet {
         public Ray3 MouseRayOld;
 
         //Clipboards
-        public LaneSpec LaneSpec = LaneSpec.Default;
         public RoadFinish RoadFinish = RoadFinish.Embankment;
 
         public SilkNetTest() {
@@ -92,9 +91,10 @@ namespace TranSimCS.SilkNet {
             var pickMode = new PickMode(this);
             //Create modes
             AvailableModes = [
-                pickMode, new ModeDemolish(this)
+                pickMode, new ModeDemolish(this), new ModeNode(this)
             ];
             _mode = pickMode;
+            snappingGrid = new();
         }
         public void Start() {
             try {

@@ -62,7 +62,10 @@ namespace TranSimCS.SilkNet {
 
             //Add the grass
             Mesh grassMesh = mesh.GetOrCreateRenderBinForced(Assets.Grass);
-            InGameMenu.RenderGround(Vector3.Zero, grassMesh);
+            if(Settings.ShowGround) InGameMenu.RenderGround(Vector3.Zero, grassMesh);
+
+            //Draw the snapping grid
+            if (SnappingEnabled) target.Draw(snappingGrid.Mesh.GetMesh());
 
             //Apply the day/night cycle
             var isDayNight = Settings.DayNightCycle;
