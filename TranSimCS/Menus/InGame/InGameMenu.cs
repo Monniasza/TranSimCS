@@ -172,9 +172,9 @@ namespace TranSimCS.Menus.InGame {
              *  Connection editor
              *  Move It
              *  Road reversal
+             *  Road splitting
              *  
              * To migrate:
-             *  Road splitting
              *  Road spline editor
              */
 
