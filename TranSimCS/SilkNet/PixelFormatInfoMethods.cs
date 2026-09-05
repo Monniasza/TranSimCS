@@ -14,7 +14,7 @@ namespace TranSimCS.SilkNet {
                 TextureFormat.R16 => 
                     MemoryMarshal.AsBytes(pixels.ToShortArray("R").AsSpan()).ToArray(),
                 TextureFormat.RG16 => 
-                    MemoryMarshal.AsBytes(pixels.ToShortArray("RG").AsSpan()).ToArray(),
+                    MemoryMarshal.AsBytes(pixels.ToShortArray("RA").AsSpan()).ToArray(),
                 TextureFormat.RGB16 => 
                     MemoryMarshal.AsBytes(pixels.ToShortArray("RGB").AsSpan()).ToArray(),
                 TextureFormat.RGBA16 =>
@@ -30,6 +30,24 @@ namespace TranSimCS.SilkNet {
         }
         public static TextureFormat GetPreferredFormat(this MagickImage image) {
             //Find the optimal pixel format
+            bool hasAlpha = image.HasAlpha;
+            bool isGray = image.ColorType is ColorType.Grayscale or ColorType.GrayscaleAlpha;
+
+            if (isGray)
+                return hasAlpha
+                    ? TextureFormat.RG16
+                    : TextureFormat.R16;
+
+            if (image.Depth > 8)
+                return hasAlpha
+                    ? TextureFormat.RGBA16
+                    : TextureFormat.RGB16;
+
+            return hasAlpha
+                ? TextureFormat.RGBA8
+                : TextureFormat.RGB8;
+
+
             var colorType = image.ColorType;
 
             //Surely simulation formats

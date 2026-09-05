@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using ImageMagick;
+using NLog;
 
 namespace TranSimCS.SilkNet {
     public static class TexturePipeline {
         private static readonly string TextureRoot = Path.Combine(Program.DataRoot, "Files/textures");
         private static readonly Dictionary<string, TextureData> textures = [];
+        private static readonly Logger log = LogManager.GetCurrentClassLogger();
 
         /// <summary>
         /// Gets a cached texture image.
@@ -23,8 +25,13 @@ namespace TranSimCS.SilkNet {
             }
             using var stream = File.OpenRead(texturePath);
             var image = new MagickImage(stream);
-            image.DetermineBitDepth();
-            image.DetermineColorType();
+
+            log.Info("Loading texture " + name);
+            log.Info($"Format: {image.Format}");
+            log.Info($"ColorType: {image.ColorType}");
+            log.Info($"Depth: {image.Depth}");
+            log.Info($"HasAlpha: {image.HasAlpha}");
+            log.Info($"IsOpaque: {image.IsOpaque}");
 
             var loadedTexture = new TextureData(image);
             textures[texturePath] = loadedTexture;
