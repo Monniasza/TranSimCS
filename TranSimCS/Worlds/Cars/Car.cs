@@ -97,9 +97,9 @@ namespace TranSimCS.Worlds.Cars {
                 meshInstance.Mesh = bm.Mesh;
                 meshInstance.TagCount = bm.TagCount;
                 meshInstance.Material = bm.Material;
-            }
+            } else throw new KeyNotFoundException($"Car model {key} not found");
 
-            GeometryChanged?.Invoke(this);
+                GeometryChanged?.Invoke(this);
         }
 
         public void Randomize() {
@@ -281,7 +281,6 @@ namespace TranSimCS.Worlds.Cars {
             }
             car.PositionProp.Value = newCarPosition; //selected position is NaN
             car.Speed = speed;
-            car.MeshId = "synthetic";
             world.Cars.data.Add(car);
             return car;
         }

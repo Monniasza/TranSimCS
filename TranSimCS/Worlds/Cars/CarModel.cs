@@ -9,8 +9,8 @@ namespace TranSimCS.Worlds.Cars {
     public static class CarModel {
         public static MeshDrawInstance CreateModel() {
             var carMaterial = new SimpleMaterial() {
-                EmissiveName = "car-emissive",
-                TextureName = "car-albedo",
+                EmissiveName = "car-emissive.png",
+                TextureName = "car-albedo.png",
                 BlendMode = MaterialBlendMode.Cutout,
             };
 

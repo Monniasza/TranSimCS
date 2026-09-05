@@ -8,6 +8,7 @@ using TranSimCS.Roads.StripGenerator;
 using TranSimCS.Save2;
 using TranSimCS.SilkNet;
 using TranSimCS.Terrain;
+using TranSimCS.Worlds.Cars;
 
 public class Program {
     public static string UserRoot { get; private set; }
@@ -59,8 +60,8 @@ public class Program {
 
         JsonProcessor.Init();
         TerrainDataBlobs.Init();
-
         Materials.ReadAssets();
+        Car.Init();
 
         SilkNetTest snt = new();
         snt.Start();
