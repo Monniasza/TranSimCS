@@ -245,8 +245,6 @@ namespace TranSimCS.Menus.InGame {
             var viewMatrix = renderManager.View;
             var projectionMatrix = renderManager.Projection;
 
-            
-
             var ray = Unprojection.CreatePickRay(new(mouseX, mouseY), new(viewport.Width, viewport.Height), viewMatrix, projectionMatrix);
             VectorMethods.CheckVector(ray.Origin, nameof(ray.Origin));
             VectorMethods.CheckVector(ray.Direction, nameof(ray.Direction));

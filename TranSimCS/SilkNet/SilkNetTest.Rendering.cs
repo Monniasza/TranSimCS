@@ -60,6 +60,14 @@ namespace TranSimCS.SilkNet {
             //Render the tool
             Mode.Draw3D(target, mesh);
 
+            //Create selectors
+            MultiMesh visibleSelectors = new();
+            MultiMesh invisibleSelectors = new();
+            Mode.AddSelectors(invisibleSelectors, visibleSelectors);
+            invisibleSelectors.AddAll(visibleSelectors);
+            mesh.AddAll(visibleSelectors);
+            World.TempSelectorsMesh.Value = invisibleSelectors;
+
             //Add the grass
             Mesh grassMesh = mesh.GetOrCreateRenderBinForced(Assets.Grass);
             if(Settings.ShowGround) InGameMenu.RenderGround(Vector3.Zero, grassMesh);
