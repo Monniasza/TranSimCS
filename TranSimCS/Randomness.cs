@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 
 namespace TranSimCS {
     public static class Randomness {
@@ -17,5 +12,6 @@ namespace TranSimCS {
             random.NextBytes(bytes);
             return new Color(bytes[0], bytes[1], bytes[2], bytes[3]);
         }
+        public static T GetRandomEntry<T>(this Random random, T[] array) => array[random.Next(array.Length)];
     }
 }

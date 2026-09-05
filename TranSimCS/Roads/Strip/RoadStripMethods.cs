@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+﻿using System.Diagnostics;
+using System.Numerics;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Section;
 using TranSimCS.Spline;

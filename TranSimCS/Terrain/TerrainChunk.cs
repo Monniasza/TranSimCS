@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using TranSimCS.Geometry;
 
 namespace TranSimCS.Terrain {
     [StructLayout(LayoutKind.Explicit)]
-    public struct TerrainChunk: IVertexType {
+    public struct TerrainChunk{
         [FieldOffset(0)]
         public float MinX;
         [FieldOffset(4)]
@@ -41,11 +36,6 @@ namespace TranSimCS.Terrain {
         [FieldOffset(16)]
         public Vector4 TextureRange;
 
-        private static VertexDeclaration _vertexDeclaration = new(
-            new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.BlendWeight, 0),
-            new VertexElement(16, VertexElementFormat.Vector4, VertexElementUsage.BlendWeight, 1)
-        );
-
         public TerrainChunk(Vector2 minPosition, Vector2 maxPosition, Vector2 minUV, Vector2 maxUV) : this() {
             MinPosition = minPosition;
             MaxPosition = maxPosition;
@@ -66,10 +56,7 @@ namespace TranSimCS.Terrain {
             MaxU = maxU;
             MaxV = maxV;
         }
-
-        public VertexDeclaration VertexDeclaration => _vertexDeclaration;
-
-        public BoundingBox GenerateBounds(Vector2 heightBounds) {
+        public AABB GenerateBounds(Vector2 heightBounds) {
             float minX = MinPosition.X;
             float minY = heightBounds.X;
             float minZ = MinPosition.Y;
@@ -78,7 +65,7 @@ namespace TranSimCS.Terrain {
             float maxY = heightBounds.Y;
             float maxZ = MaxPosition.Y;
 
-            return new BoundingBox(new(minX, minY, minZ), new(maxX, maxY, maxZ));
+            return new AABB(new(minX, minY, minZ), new(maxX, maxY, maxZ));
         }
     }
 }

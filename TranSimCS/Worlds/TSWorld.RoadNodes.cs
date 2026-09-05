@@ -1,14 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TranSimCS.Collections;
-using TranSimCS.Property;
 using TranSimCS.Roads.Node;
-using TranSimCS.Tools;
 
 namespace TranSimCS.Worlds {
     public partial class TSWorld {

@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Numerics;
-using MLEM.Maths;
 using TranSimCS.Geometry;
-using TranSimCS.Model;
 using TranSimCS.SilkNet;
 
 namespace TranSimCS.Model {

@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
-
-namespace TranSimCS {
+﻿namespace TranSimCS {
     public static class Colors {
         public static Color SmokedGlass = Color.Black.AlphaMul(0.5f);
         public static Color SemiClearGray = Gray.AlphaMul(0.5f);

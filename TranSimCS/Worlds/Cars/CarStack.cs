@@ -4,7 +4,6 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Save2;
 using TranSimCS.Setting;
-using TranSimCS.Tools;
 using TranSimCS.Worlds.Stack;
 
 namespace TranSimCS.Worlds.Cars {
@@ -36,7 +35,7 @@ namespace TranSimCS.Worlds.Cars {
                 var passable = lane.IsLanePassable();
                 if (passable) continue;
                 var decision = rnd.NextSingle() < chance;
-                if (decision) CarLauncherTool.LaunchCar(World, strip);
+                if (decision) Car.LaunchCar(World, strip);
             }
         }
 

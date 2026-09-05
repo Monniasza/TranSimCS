@@ -34,12 +34,9 @@ namespace TranSimCS {
             B = (byte)(vector.Z.Clamp(0, 1) * 255);
             A = (byte)(vector.W.Clamp(0, 1) * 255);
         }
-        public Color(Microsoft.Xna.Framework.Color c) => PackedValue = c.PackedValue;
 
         public Vector4 ToVector4() => new(R / 255f, G / 255f, B / 255f, A / 255f);
         public Color MulAlpha(float alpha) => new Color(ToVector4() * alpha);
-
-        public Microsoft.Xna.Framework.Color ToMonoGame() => new Microsoft.Xna.Framework.Color(PackedValue);
 
 
         public static Color White => new(255, 255, 255);

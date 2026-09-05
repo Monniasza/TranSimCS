@@ -1,15 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using LanguageExt.ClassInstances;
 using TranSimCS.Geometry;
-using TranSimCS.Menus.InGame;
 
 namespace TranSimCS.Worlds {
     //Component-interfaces for objects
     public interface IDraggableObj {
         public IPosition[] DraggableComponents();
-        public Plane DragPlane() => InGameMenu.groundPlane;
+        public Plane DragPlane() => new Plane(0, 1, 0, 0);
     }
     public static class DragMethods {
         public static void Drag(this IEnumerable<IDraggableObj> obj, Vector3 delta) => Drag(obj.SelectMany(x => x.DraggableComponents()), delta);

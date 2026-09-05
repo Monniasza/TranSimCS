@@ -21,7 +21,7 @@ namespace TranSimCS.Save2 {
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
                 switch (propertyName.ToLower()) {
                     case "position":
-                        position = vector3Converter.Read(ref reader0, typeof(Microsoft.Xna.Framework.Vector3), options);
+                        position = vector3Converter.Read(ref reader0, typeof(Vector3), options);
                         break;
                     case "azimuth":
                         reader0.Read();

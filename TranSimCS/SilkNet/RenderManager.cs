@@ -4,23 +4,14 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using Arch.LowLevel.Jagged;
-using DotNet.Collections.Generic;
 using LanguageExt.Pipes;
-using LanguageExt.UnitsOfMeasure;
 using Silk.NET.OpenGL;
 using TranSimCS.Collections;
-using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.ModelOld;
 using TranSimCS.Property;
-using TranSimCS.Render;
 using TranSimCS.Setting;
 using TranSimCS.Terrain;
-using TranSimCS.Tools;
 using TranSimCS.Worlds;
 using static TranSimCS.Model.MeshUnroll;
 
@@ -30,6 +21,15 @@ namespace TranSimCS.SilkNet {
     /// </summary>
     public delegate void GeometrySupplier(RenderTarget target);
 
+    public struct RenderStats {
+        public int VertexCount;
+        public int TriangleCount;
+        public int InstanceCount;
+        public int MaterialCount;
+        public int TagCount;
+        public int ModelCount;
+        public int DrawCount;
+    }
 
     public class RenderManager: IDisposable {
         public readonly Property<Camera> CameraProp;

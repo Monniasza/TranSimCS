@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using ImageMagick;
-using Microsoft.Xna.Framework.Graphics.PackedVector;
-using Silk.NET.OpenGL;
-using StbImageSharp;
 
 namespace TranSimCS.SilkNet {
     public static class PixelFormatInfoMethods {

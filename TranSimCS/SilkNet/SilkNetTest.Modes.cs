@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TranSimCS.Mode;
 
 namespace TranSimCS.SilkNet {
     // Modes for the OpenGL window

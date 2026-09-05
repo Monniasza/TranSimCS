@@ -1,13 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using LanguageExt.Pipes;
 using TranSimCS.Geometry;
-using TranSimCS.Menus.InGame;
-using TranSimCS.SilkNet;
 
 namespace TranSimCS {
     public struct Camera: IEquatable<Camera> {

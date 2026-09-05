@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 using TranSimCS.Geometry;
-using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Setting;
-using TranSimCS.Tools;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.SilkNet {
@@ -70,7 +65,7 @@ namespace TranSimCS.SilkNet {
 
             //Add the grass
             Mesh grassMesh = mesh.GetOrCreateRenderBinForced(Materials.Grass);
-            if(Settings.ShowGround) InGameMenu.RenderGround(Vector3.Zero, grassMesh);
+            if(Settings.ShowGround) RenderGround(Vector3.Zero, grassMesh);
 
             //Draw the snapping grid
             if (SnappingEnabled) target.Draw(snappingGrid.Mesh.GetMesh());
@@ -115,6 +110,48 @@ namespace TranSimCS.SilkNet {
             //Push meshes
             foreach (var element in meshes) element.GenerateGeometry(target);
             target.Draw(mesh);
+        }
+        
+        public static void RenderGround(Vector3 posoffset, Mesh renderBin) {
+            posoffset.Y = 0;
+
+            //Render the center
+            GroundParallelogram(renderBin, posoffset, new(-1, 0, -1), Vector3.UnitX * 2, Vector3.UnitZ * 2, 1000);
+
+            //Render concentric rings, each 2 times bigger
+            float scale = 1000;
+            Vector3[] basisVectors = new Vector3[] {
+                Vector3.UnitX, Vector3.UnitZ, -Vector3.UnitX, -Vector3.UnitZ, Vector3.UnitX
+            };
+
+            for (int i = 0; i < 6; i++) {
+                for (int j = 0; j < 4; j++) {
+                    var prevVector = basisVectors[j];
+                    var nextVector = basisVectors[j + 1];
+                    GroundParallelogram(renderBin, posoffset, -(nextVector + (prevVector * 2)), prevVector, nextVector * 3, scale);
+                }
+                scale *= 2;
+            }
+        }
+        private static void GroundParallelogram(Mesh renderBin, Vector3 initialpos, Vector3 basepos, Vector3 xplus, Vector3 yplus, float scale) {
+            var a = (initialpos + basepos * scale);
+            var s = scale / 100;
+            var C = Colors.White;
+            var xmul = xplus * scale;
+            var ymul = yplus * scale;
+            var b = a + ymul;
+            var c = b + xmul;
+            var d = a + xmul;
+            renderBin.DrawQuad(
+                GenerateGroundVertex(a, s, C),
+                GenerateGroundVertex(b, s, C),
+                GenerateGroundVertex(c, s, C),
+                GenerateGroundVertex(d, s, C)
+            );
+        }
+        private static Vertex GenerateGroundVertex(Vector3 pos, float texscale, Color? color = null) {
+            var c = color ?? Colors.White;
+            return new Vertex(pos, c, new(pos.X / texscale, pos.Z / texscale));
         }
     }
 }

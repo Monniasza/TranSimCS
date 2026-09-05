@@ -6,12 +6,12 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Geometry;
+using TranSimCS.Mode;
 using TranSimCS.Model;
 using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
-using TranSimCS.SilkNet.Mode;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
 

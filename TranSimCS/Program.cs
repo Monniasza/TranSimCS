@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using NLog;
 using TranSimCS;
@@ -11,7 +8,6 @@ using TranSimCS.Roads.StripGenerator;
 using TranSimCS.Save2;
 using TranSimCS.SilkNet;
 using TranSimCS.Terrain;
-using TranSimCS.Tools;
 
 public class Program {
     public static string UserRoot { get; private set; }
@@ -62,7 +58,6 @@ public class Program {
         StripSplineGenerator.typeRegistry.Register("anisotropic", IgnoreSavedTokenConverter<StripSplineGenerator>.FromConstant(AnisotropicStripSplineGenerator.Instance));
 
         JsonProcessor.Init();
-        InspectMethods.Init();
         TerrainDataBlobs.Init();
 
         Materials.ReadAssets();

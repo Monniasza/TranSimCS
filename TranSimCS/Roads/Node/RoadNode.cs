@@ -5,10 +5,10 @@ using System.Linq;
 using System.Numerics;
 using Iesi.Collections.Generic;
 using TranSimCS.Geometry;
+using TranSimCS.Mode;
 using TranSimCS.Property;
 using TranSimCS.Roads.Strip;
 using TranSimCS.SceneGraph;
-using TranSimCS.SilkNet.Mode;
 using TranSimCS.Worlds;
 using Transform3 = TranSimCS.Geometry.Transform3;
 

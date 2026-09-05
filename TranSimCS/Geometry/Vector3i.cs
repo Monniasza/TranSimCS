@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+using System.Numerics;
 
 namespace TranSimCS.Geometry {
     public struct Vector3i(int x, int y, int z): IComparable<Vector3i>, IEquatable<Vector3i>{

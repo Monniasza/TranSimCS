@@ -1,17 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using ImGuiNET;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Select;
 using TranSimCS.Setting;
-using TranSimCS.Tools;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Cars;
 
@@ -115,7 +109,7 @@ namespace TranSimCS.SilkNet {
                 if(tag is LaneStrip strip) {
                     ImGui.DragFloat("Spawn car speed [m/s]", ref SpawnCarVelocity, 0.05f, 0, 100, "%.2f");
                     if(ImGui.Button("Spawn a car")) {
-                        CarLauncherTool.LaunchCar(World, strip, SpawnCarVelocity);
+                        Car.LaunchCar(World, strip, SpawnCarVelocity);
                     }
                 }
                 if(tag is HalfLane lane) {

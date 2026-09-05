@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using TranSimCS.Geometry;
+using TranSimCS.Mode;
 using TranSimCS.Model;
 using TranSimCS.Property;
 using TranSimCS.Roads.Node;
@@ -10,11 +11,9 @@ using TranSimCS.Roads.Section;
 using TranSimCS.Roads.StripGenerator;
 using TranSimCS.SceneGraph;
 using TranSimCS.Setting;
-using TranSimCS.SilkNet.Mode;
 using TranSimCS.Spatial;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
-using static TranSimCS.Roads.Roads;
 
 namespace TranSimCS.Roads.Strip {
     public class RoadStripEventArgs : EventArgs {

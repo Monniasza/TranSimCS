@@ -1,5 +1,5 @@
-﻿using Microsoft.Xna.Framework;
-using System;
+﻿using System;
+using System.Numerics;
 
 namespace TranSimCS.Spline {
     public static class Bezier3Extensions {

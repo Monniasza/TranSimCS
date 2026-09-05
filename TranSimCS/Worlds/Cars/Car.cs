@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using MLEM.Maths;
 using NLog;
 using TranSimCS.Collections;
 using TranSimCS.Geometry;
+using TranSimCS.Mode;
 using TranSimCS.Model;
 using TranSimCS.Model.OBJ;
 using TranSimCS.Property;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Save2.TypeRegistry;
-using TranSimCS.SilkNet.Mode;
+using TranSimCS.Spatial;
 using static TranSimCS.Model.MeshUnroll;
 using Path = System.IO.Path;
 
@@ -256,13 +256,34 @@ namespace TranSimCS.Worlds.Cars {
             return;
         }
 
-        public void GenerateGeometry(RenderTarget target) => target.Draw(meshInstance);
-        public AABB GetBounds() => OBB.TransformBoundingBox(meshInstance.Mesh.GetBounds(), meshInstance.Transform);
+        public void GenerateGeometry(RenderTarget target) {
+            if(meshInstance.Mesh != null)
+                target.Draw(meshInstance);
+        }
+        public AABB GetBounds() => (meshInstance.Mesh == null) ? default : OBB.TransformBoundingBox(meshInstance.Mesh.GetBounds(), meshInstance.Transform);
         public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) {
+            if(meshInstance.Mesh == null) return IBVHElement.Reject(ray, out distance, out tag);
             ray = meshInstance.Transform.Inverse().Transform(ray);
             var intersect = meshInstance.Mesh.ComputeIntersection(ray, out distance, out _);
             tag = intersect ? this : null;
             return intersect;
+        }
+
+        public static Car LaunchCar(TSWorld world, LaneStrip strip, float speed = 25) {
+            var startingLane = strip.StartLane;
+            var newCarPosition = startingLane.GetRoadNode().PositionProp.Value;
+            if (startingLane.End == NodeEnd.Backward) newCarPosition.Azimuth ^= (1 << 31);
+            Car car = new Car();
+            car.Randomize();
+            if (strip != null) {
+                var lanePosition = new CarStripPosition(strip, 0);
+                car.LanePosition = lanePosition;
+            }
+            car.PositionProp.Value = newCarPosition; //selected position is NaN
+            car.Speed = speed;
+            car.MeshId = "synthetic";
+            world.Cars.data.Add(car);
+            return car;
         }
     }
 }

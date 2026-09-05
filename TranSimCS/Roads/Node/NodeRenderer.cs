@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Numerics;
 using TranSimCS.Geometry;
-using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Select;
+using TranSimCS.SilkNet;
 
 namespace TranSimCS.Roads.Node {
     public static class NodeRenderer {
@@ -16,9 +11,11 @@ namespace TranSimCS.Roads.Node {
             var refframe = node.ReferenceFrame;
             foreach (var lane in node.Lanes) {
                 foreach (var laneEnd in new HalfLane[] { lane.FrontHalf, lane.RearHalf }) {
+                    var colors = HighlightColors.DefaultHighlightColor;
+
                     var altColor = lane.LaneSpec.Color.AlphaMul(0.5f);
-                    var color = nodeHighlightColor ?? InGameMenu.roadSegmentHighlightColor;
-                    if (SelectedHalfLane == laneEnd || (bothends && SelectedHalfLane == laneEnd.OppositeHalf)) color = laneHighlightColor ?? InGameMenu.laneHighlightColor;
+                    var color = nodeHighlightColor ?? colors.ObjectColor;
+                    if (SelectedHalfLane == laneEnd || (bothends && SelectedHalfLane == laneEnd.OppositeHalf)) color = laneHighlightColor ?? colors.ComponentColor;
                     else if (SelectedHalfLane == null || !node.Lanes.Contains(SelectedHalfLane.Lane)) color = altColor;
                     var range = lane.Bounds;
                     var zdiscriminant = laneEnd.End.GetConditional(-1, 0);

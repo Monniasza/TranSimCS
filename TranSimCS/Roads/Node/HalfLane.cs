@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using Iesi.Collections.Generic;
 using TranSimCS.Geometry;
+using TranSimCS.Mode;
 using TranSimCS.Property;
 using TranSimCS.Roads.Strip;
-using TranSimCS.SilkNet.Mode;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Node {

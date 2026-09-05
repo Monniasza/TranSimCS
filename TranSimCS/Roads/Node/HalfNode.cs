@@ -4,10 +4,10 @@ using System.Collections.Immutable;
 using System.Numerics;
 using Iesi.Collections.Generic;
 using TranSimCS.Geometry;
+using TranSimCS.Mode;
 using TranSimCS.Property;
 using TranSimCS.Roads.Section;
 using TranSimCS.Roads.Strip;
-using TranSimCS.SilkNet.Mode;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Node {

@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+using System.Numerics;
 using TranSimCS.Model;
 
 namespace TranSimCS.Geometry {
@@ -34,7 +31,7 @@ namespace TranSimCS.Geometry {
             bool allOnPlane = true;
 
             for (int i = 0; i < 4; i++) {
-                distances[i] = plane.DotCoordinate(vertices[i]);
+                distances[i] = plane.SignedDistance(vertices[i]);
 
                 if (MathF.Abs(distances[i]) > Epsilon)
                     allOnPlane = false;

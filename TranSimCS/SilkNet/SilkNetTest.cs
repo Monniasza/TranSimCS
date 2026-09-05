@@ -6,7 +6,6 @@ using System.Linq;
 using System.Numerics;
 using ImageMagick;
 using ImGuiNET;
-using Microsoft.Xna.Framework.Input;
 using NLog;
 using Silk.NET.Input;
 using Silk.NET.Maths;
@@ -14,17 +13,9 @@ using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
 using TranSimCS.Geometry;
-using TranSimCS.Model;
-using TranSimCS.Render;
-using TranSimCS.Roads;
-using TranSimCS.Roads.Node;
-using TranSimCS.Roads.Range;
-using TranSimCS.Roads.Strip;
+using TranSimCS.Mode;
 using TranSimCS.Select;
-using TranSimCS.Setting;
-using TranSimCS.SilkNet.Mode;
 using TranSimCS.Terrain;
-using TranSimCS.Tools;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.SilkNet {

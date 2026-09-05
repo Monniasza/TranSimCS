@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+﻿using System.Numerics;
 
 namespace TranSimCS.Spline {
     public struct SplineStrip(Bezier3 left, Bezier3 right): IPatch {

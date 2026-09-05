@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
-using TranSimCS.ModelOld;
+﻿using TranSimCS.ModelOld;
 using TranSimCS.SilkNet;
 
 namespace TranSimCS {
@@ -15,9 +6,6 @@ namespace TranSimCS {
         public static TextureData WhiteTex { get; private set; }
         public static TextureData Black { get; private set; }
         public static TextureData GrassTex { get; private set; }
-
-        public static Effect ShaderEffect {  get; private set; }
-        public static Effect TerrainShaderEffect { get; private set; }
 
         public static SimpleMaterial Asphalt { get; private set; }
         public static SimpleMaterial Road { get; private set; }

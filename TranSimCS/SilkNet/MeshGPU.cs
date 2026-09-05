@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using CommunityToolkit.HighPerformance;
-using Microsoft.Xna.Framework.Graphics;
 using Silk.NET.OpenGL;
 using TranSimCS.Geometry;
 using TranSimCS.Model;

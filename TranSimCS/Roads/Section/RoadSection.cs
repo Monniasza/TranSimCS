@@ -8,6 +8,7 @@ using System.Numerics;
 using Iesi.Collections.Generic;
 using TranSimCS.Collections;
 using TranSimCS.Geometry;
+using TranSimCS.Mode;
 using TranSimCS.Model;
 using TranSimCS.Property;
 using TranSimCS.Roads;
@@ -15,7 +16,6 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.SceneGraph;
 using TranSimCS.Setting;
-using TranSimCS.SilkNet.Mode;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Section {
