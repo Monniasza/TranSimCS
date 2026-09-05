@@ -90,7 +90,7 @@ namespace TranSimCS.Roads.Node {
             var lineFlags = LaneFlags.Stop | LaneFlags.Yield;
             var lineTest = tags & lineFlags;
             if (lineTest != 0) {
-                var lineBin = mesh.GetOrCreateRenderBinForced((lineTest == LaneFlags.Yield) ? Assets.LineYield : Assets.Road);
+                var lineBin = mesh.GetOrCreateRenderBinForced((lineTest == LaneFlags.Yield) ? Materials.LineYield : Materials.Road);
                 
                 var voffset = refframe.Y * 0.1f;
                 var p0 = refframe.O + refframe.X * range.Min + voffset;
@@ -101,7 +101,7 @@ namespace TranSimCS.Roads.Node {
             //Generate the impassable barrier
             var isPassable = lane.IsLanePassable();
             if (!isPassable) {
-                var barrierBin = mesh.GetOrCreateRenderBinForced(Assets.Impassable);
+                var barrierBin = mesh.GetOrCreateRenderBinForced(Materials.Impassable);
                 var barrierHeight = 0.5f;
                 var barrierNormal = -refframe.Z;
                 var p1 = refframe.O + refframe.X * range.Min + refframe.Y * barrierHeight;

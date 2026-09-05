@@ -29,7 +29,7 @@ namespace TranSimCS.Tools {
             float v2 = 0.3f;
             var orange = new Color(255, 128, 0, 128);
             var red = new Color(255, 0, 0, 128);
-            Mesh renderBin = game.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
+            Mesh renderBin = game.renderHelper.GetOrCreateRenderBinForced(Materials.Road);
             var roadSelection = game.MouseOver?.Tag as IRoadElement;
 
             var selLane = roadSelection?.GetLane();
@@ -70,8 +70,8 @@ namespace TranSimCS.Tools {
                     }
                     break;
                 case RoadSection roadSection:
-                    var selmesh = roadSection.SelectionMesh.GetMesh().GetOrCreateRenderBinForced(Assets.Asphalt);
-                    var whiteBin = game.renderHelper.GetOrCreateRenderBinForced(Assets.WhiteTransparent);
+                    var selmesh = roadSection.SelectionMesh.GetMesh().GetOrCreateRenderBinForced(Materials.Asphalt);
+                    var whiteBin = game.renderHelper.GetOrCreateRenderBinForced(Materials.WhiteTransparent);
                     var voffset = roadSection.Normal * 0.2f;
                     var txVerts = selmesh.Vertices.Select(x => new Vertex(x.Position + voffset, red, x.TexCoord)).ToArray();
                     whiteBin.DrawModel(txVerts, selmesh.Indices);

@@ -202,7 +202,7 @@ namespace TranSimCS.Roads.Strip {
 
             if (DebugOptions.DebugIslands) {
                 var retransformedPointsHighUp = Retransform(frm, untransformedPath, h * 2).ToArray();
-                var roadBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
+                var roadBin = mesh.GetOrCreateRenderBinForced(Materials.Road);
                 for (int i = 0; i < retransformedPointsHighUp.Length; i++) {
                     var prev = retransformedPointsHighUp[i];
                     var next = retransformedPointsHighUp[(i + 1) % retransformedPointsHighUp.Length];

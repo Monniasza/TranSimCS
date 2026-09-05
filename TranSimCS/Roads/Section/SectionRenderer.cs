@@ -151,7 +151,7 @@ namespace TranSimCS.Roads.Section {
                 GenerateSectionWithoutSlope(surfaceMesh, roadSection, accuracy);
             }
 
-            var renderBin = multimesh.GetOrCreateRenderBinForced(Assets.Asphalt);
+            var renderBin = multimesh.GetOrCreateRenderBinForced(Materials.Asphalt);
             renderBin.DrawModel(surfaceMesh);
             renderBin.AddTagsToLastTriangles(-1, roadSection);
         }
@@ -235,9 +235,9 @@ namespace TranSimCS.Roads.Section {
             var projectedAsphalt = meshedAsphalt;
             var projectedDashes = meshedDashes;
 
-            var asphaltMesh = multimesh.GetOrCreateRenderBinForced(Assets.Asphalt);
-            var whiteMesh = multimesh.GetOrCreateRenderBinForced(Assets.EmissiveWhite);
-            var dashedMesh = multimesh.GetOrCreateRenderBinForced(Assets.LineDash);
+            var asphaltMesh = multimesh.GetOrCreateRenderBinForced(Materials.Asphalt);
+            var whiteMesh = multimesh.GetOrCreateRenderBinForced(Materials.EmissiveWhite);
+            var dashedMesh = multimesh.GetOrCreateRenderBinForced(Materials.LineDash);
             multimesh.AddAll(projectedAsphalt);
             whiteMesh.DrawModel(projectedWhite);
             multimesh.AddAll(projectedDashes);

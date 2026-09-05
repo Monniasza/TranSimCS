@@ -50,7 +50,7 @@ namespace TranSimCS.Tools {
                 var refframe = node.ReferenceFrame;
                 foreach (var lane in node.Lanes) {
                     var bounds = lane.Bounds;
-                    var arrowBin = menu.renderHelper.GetOrCreateRenderBinForced(Assets.Arrow);
+                    var arrowBin = menu.renderHelper.GetOrCreateRenderBinForced(Materials.Arrow);
                     var quad = NodeRenderer.GenerateLaneQuad(lane, Colors.SemiClearGray, 0.5f);
                     arrowBin.DrawQuad(quad);
                 }

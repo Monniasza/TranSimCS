@@ -150,7 +150,7 @@ namespace TranSimCS.SilkNet.Mode {
         }
         void IMode.AddSelectors(MultiMesh invisible, MultiMesh visible) {
             //Draw selectors
-            var renderBin = visible.GetOrCreateRenderBinForced(Assets.White);
+            var renderBin = visible.GetOrCreateRenderBinForced(Materials.White);
             void TickMark(Mesh renderBin, Vector3 pos, Vector3 normal, Vector3 tangent, Color c, float yoffset = 0.5f) {
                 pos += normal * yoffset;
                 var pos1 = pos - tangent * 0.5f;

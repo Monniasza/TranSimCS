@@ -149,7 +149,7 @@ namespace TranSimCS
 
             MlemPlatform.Current = new MlemPlatform.DesktopGl<TextInputEventArgs>((w, c) => w.TextInput += c);
 
-            Assets.ReadAssets();
+            Materials.ReadAssets();
 
             Car.Init();
 

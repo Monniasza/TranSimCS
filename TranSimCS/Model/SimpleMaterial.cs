@@ -14,21 +14,21 @@ namespace TranSimCS.ModelOld {
         /// <summary>
         /// The texture used by the renderer. null for no texturing
         /// </summary>
-        public TextureData Texture = Assets.WhiteTex.Convert();
-        public TextureData Emissive = Assets.Black.Convert();
+        public TextureData Texture = Materials.WhiteTex;
+        public TextureData Emissive = Materials.Black;
         public MaterialBlendMode BlendMode = MaterialBlendMode.Opaque;
         public float EmissiveIsMask = 0;
         public bool CullBack = true;
 
-        public string TextureName { set => Texture = Assets.Content.Load<Texture2D>(value).Convert(); }
-        public string EmissiveName { set => Emissive = Assets.Content.Load<Texture2D>(value).Convert(); }
+        public string TextureName { set => Texture = TexturePipeline.GetTexture(value); }
+        public string EmissiveName { set => Emissive = TexturePipeline.GetTexture(value); }
 
         public SimpleMaterial() { }
-        public SimpleMaterial(string texture = "white", MaterialBlendMode blendMode = MaterialBlendMode.Opaque) {
+        public SimpleMaterial(string texture = "white.png", MaterialBlendMode blendMode = MaterialBlendMode.Opaque) {
             TextureName = texture;
             BlendMode = blendMode;
         }
-        public SimpleMaterial(string texture = "white") {
+        public SimpleMaterial(string texture = "white.png") {
             TextureName = texture;
         }
         public static SimpleMaterial NewEmissive(string texture, MaterialBlendMode blendMode = MaterialBlendMode.Opaque) {
@@ -36,7 +36,7 @@ namespace TranSimCS.ModelOld {
                 EmissiveIsMask = 1,
                 EmissiveName = texture,
                 BlendMode = blendMode,
-                Texture = Assets.Black.Convert()
+                Texture = Materials.Black
             };
         }
 

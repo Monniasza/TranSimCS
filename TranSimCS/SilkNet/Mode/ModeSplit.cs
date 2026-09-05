@@ -88,7 +88,7 @@ namespace TranSimCS.SilkNet.Mode {
 
             if (RoadPosition != null) {
                 var spline = RoadPosition.Road.ToolBasis;
-                var renderBin = renderMeshPool.GetOrCreateRenderBinForced(Assets.WhiteTransparent);
+                var renderBin = renderMeshPool.GetOrCreateRenderBinForced(Materials.WhiteTransparent);
 
                 //Draw the spline
                 SplitRoadMethods.DrawRoadSpline(RoadPosition.Road, renderBin, Colors.Cyan);

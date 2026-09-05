@@ -29,7 +29,7 @@ namespace TranSimCS.SilkNet {
             meshes.AddRange(World.Cars.data);
 
             //Draw highlights
-            Mesh roadRenderBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
+            Mesh roadRenderBin = mesh.GetOrCreateRenderBinForced(Materials.Road);
 
             var colors = Mode.SelectionColors();
 
@@ -69,7 +69,7 @@ namespace TranSimCS.SilkNet {
             World.TempSelectorsMesh.Value = invisibleSelectors;
 
             //Add the grass
-            Mesh grassMesh = mesh.GetOrCreateRenderBinForced(Assets.Grass);
+            Mesh grassMesh = mesh.GetOrCreateRenderBinForced(Materials.Grass);
             if(Settings.ShowGround) InGameMenu.RenderGround(Vector3.Zero, grassMesh);
 
             //Draw the snapping grid
@@ -109,7 +109,7 @@ namespace TranSimCS.SilkNet {
             var lateral = new Vector3(0, 0, sunDiameter);
             var startingPoint = pos - (tangent + lateral) / 2;
             //var sunRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.White);
-            var sunRenderBin = mesh.GetOrCreateRenderBinForced(Assets.Sun);
+            var sunRenderBin = mesh.GetOrCreateRenderBinForced(Materials.Sun);
             sunRenderBin.DrawParallelogram(startingPoint + RenderManager.Camera.Position.ToX0Z(), tangent, lateral, Colors.White);
 
             //Push meshes

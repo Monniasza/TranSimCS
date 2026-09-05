@@ -130,7 +130,7 @@ namespace TranSimCS.Tools {
             var centerStartIndex = sourceLane.MiddlePosition;
             var startPos = sourceFrame.O + sourceFrame.X * centerStartIndex + sourceFrame.Y * yoffset;
 
-            var renderBin = menu.renderHelper.GetOrCreateRenderBinForced(Assets.WhiteTransparent);
+            var renderBin = menu.renderHelper.GetOrCreateRenderBinForced(Materials.WhiteTransparent);
             var color = actionColor;
             float width = 0.5f;
             

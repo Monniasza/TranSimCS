@@ -180,7 +180,7 @@ namespace TranSimCS.SilkNet.Mode {
         void IMode.Draw3D(RenderTarget target, MultiMesh renderMeshPool) {
             if (State == null || !float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt)) return;
             Color previewColor = new Color(64, 64, 64, 128);
-            var material = Assets.Asphalt;
+            var material = Materials.Asphalt;
             material.BlendMode = ModelOld.MaterialBlendMode.Transparent;
 
             var accuracy = Settings.RoadAccuracy;
@@ -195,7 +195,7 @@ namespace TranSimCS.SilkNet.Mode {
 
             //Generate a preview of the node position
             var refframe = State.GeneratedNodePosition.CalcReferenceFrame();
-            var roadRenderBin = renderMeshPool.GetOrCreateRenderBinForced(Assets.Road);
+            var roadRenderBin = renderMeshPool.GetOrCreateRenderBinForced(Materials.Road);
             var front = refframe.O + refframe.Z * 2;
             var back = refframe.O - refframe.Z * 2;
             roadRenderBin.DrawLine(refframe.O, front, refframe.Y, Colors.Red);
@@ -206,7 +206,7 @@ namespace TranSimCS.SilkNet.Mode {
             var centerSpline = State.GeneratedSplines.Middle;
             var splineEndTangent = Vector3.Normalize(centerSpline.d - centerSpline.c);
             if (!splineEndTangent.IsFinite()) return;
-            var arrowBin = renderMeshPool.GetOrCreateRenderBinForced(Assets.Arrow);
+            var arrowBin = renderMeshPool.GetOrCreateRenderBinForced(Materials.Arrow);
             foreach (var laneNode in LaneMappings.EndingLanes) {
                 var laneCenter = laneNode.CenterPos;
                 var laneWidth = laneNode.LaneSpec.Width;

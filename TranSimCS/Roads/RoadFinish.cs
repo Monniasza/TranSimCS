@@ -17,17 +17,17 @@ namespace TranSimCS.Roads {
                 case Surface.None:
                     return null;
                 case Surface.Asphalt:
-                    return Assets.Asphalt;
+                    return Materials.Asphalt;
                 case Surface.Dirt:
-                    return Assets.Grass;
+                    return Materials.Grass;
                 case Surface.Concrete:
-                    return Assets.Concrete;
+                    return Materials.Concrete;
                 case Surface.Tiles:
-                    return Assets.Tiles;
+                    return Materials.Tiles;
                 case Surface.Cobble:
-                    return Assets.Cobble;
+                    return Materials.Cobble;
                 case Surface.Grass:
-                    return Assets.Grass;
+                    return Materials.Grass;
                 default:
                     throw new ArgumentException($"Unknown surface: {surface}");
             }

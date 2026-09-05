@@ -36,11 +36,11 @@ namespace TranSimCS.Worlds.Building {
             var height = size.y;
 
             //Generate the sides
-            var windowsMesh = mesh.GetOrCreateRenderBinForced(Assets.BuildingWindows);
+            var windowsMesh = mesh.GetOrCreateRenderBinForced(Materials.BuildingWindows);
             EmitStrip(unit, unit.UnitSizeProp.Value, windowsMesh);
 
             //Generate the rooftop
-            var roofMesh = mesh.GetOrCreateRenderBinForced(Assets.Concrete);
+            var roofMesh = mesh.GetOrCreateRenderBinForced(Materials.Concrete);
             var dx = Vector3.UnitX * 4 * width;
             var dy = Vector3.UnitZ * 4 * depth;
             roofMesh.DrawParallelogram(Vector3.UnitY * 4 * height, dx, dy, Colors.White, new RectangleF(0, 0, width, depth));

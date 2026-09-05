@@ -62,7 +62,7 @@ namespace TranSimCS.Worlds.Cars {
                     log.Info("Loading car mesh " + obj);
                     var objData = newLoader.LoadObj(obj);
                     var mesh = ObjConverter.ToSingleMesh(objData, null);
-                    var mdi = new MeshDrawInstance(mesh, TransformQ.Identity, Assets.White, mesh.Indices.Count / 3);
+                    var mdi = new MeshDrawInstance(mesh, TransformQ.Identity, Materials.White, mesh.Indices.Count / 3);
                     bool isEmpty = mesh.Vertices.Count == 0 || mesh.Indices.Count == 0;
                     if (isEmpty) throw new ApplicationException("Empty mesh"); //Meshes not empty
                     meshes.Add((obj, mdi));

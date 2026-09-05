@@ -108,7 +108,7 @@ namespace TranSimCS.Roads.Node {
             Mesh = new MeshGenerator<RoadNode>(this, NodeRenderer.GenerateNodeVisualMesh);
             DependencyChanged += HandleDependencyChanged;
             SelectionMesh = new(this, (node, mesh) => {
-                var roadBin = mesh.GetOrCreateRenderBinForced(Assets.Road);
+                var roadBin = mesh.GetOrCreateRenderBinForced(Materials.Road);
                 NodeRenderer.GenerateRoadNodeSelectionMesh(node, roadBin, null);
             });
             PositionProp.ValueChanged += PositionProp_ValueChanged;

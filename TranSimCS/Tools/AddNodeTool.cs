@@ -80,7 +80,7 @@ namespace TranSimCS.Tools {
             var startPointR = frame.O + height + (frame.X * 0.5f * medianWidth);
 
             //Generate lanes
-            Mesh bin = menu.renderHelper.GetOrCreateRenderBinForced(Assets.Road);
+            Mesh bin = menu.renderHelper.GetOrCreateRenderBinForced(Materials.Road);
             bin.DrawParallelogram(startPointR, widthR, length, laneColor, new(0, 0, rightLanes, 1));
             bin.DrawParallelogram(startPointL, -widthL, -length, laneColor, new(0, 0, leftLanes, 1));
 

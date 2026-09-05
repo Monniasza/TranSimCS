@@ -96,7 +96,7 @@ namespace TranSimCS.SilkNet.Mode {
             var startPointR = frame.O + height + frame.X * 0.5f * medianWidth;
 
             //Generate lanes
-            Mesh bin = renderMeshPool.GetOrCreateRenderBinForced(Assets.Road);
+            Mesh bin = renderMeshPool.GetOrCreateRenderBinForced(Materials.Road);
             bin.DrawParallelogram(startPointR, widthR, length, laneColor, new(0, 0, rightLanes, 1));
             bin.DrawParallelogram(startPointL, -widthL, -length, laneColor, new(0, 0, leftLanes, 1));
 

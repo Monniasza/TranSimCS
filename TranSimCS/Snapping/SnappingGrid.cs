@@ -53,7 +53,7 @@ namespace TranSimCS.Snapping {
             float totalSize = scale * increment;
             PositionEulerAngles snapPos = Position;
             var refFrame = snapPos.CalcReferenceFrame();
-            Mesh gridRenderBin = mesh.GetOrCreateRenderBinForced(Assets.Grid);
+            Mesh gridRenderBin = mesh.GetOrCreateRenderBinForced(Materials.Grid);
             refFrame.O -= 0.001f * refFrame.Y; //Sink the grid a little bit so it doesn't Z-fight with 0-height road elements
             Vector3 origin = refFrame.O - totalSize * refFrame.X - totalSize * refFrame.Z;
             gridRenderBin.DrawParallelogram(origin, refFrame.X * totalSize * 2, refFrame.Z * totalSize * 2, Colors.White, new(-scale, -scale, 2 * scale, 2 * scale));

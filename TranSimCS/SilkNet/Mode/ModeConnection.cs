@@ -128,7 +128,7 @@ namespace TranSimCS.SilkNet.Mode {
             var centerStartIndex = sourceLane.MiddlePosition;
             var startPos = sourceFrame.O + sourceFrame.X * centerStartIndex + sourceFrame.Y * yoffset;
 
-            var renderBin = renderMeshPool.GetOrCreateRenderBinForced(Assets.WhiteTransparent);
+            var renderBin = renderMeshPool.GetOrCreateRenderBinForced(Materials.WhiteTransparent);
             var color = actionColor;
             float width = 0.5f;
 

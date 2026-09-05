@@ -71,7 +71,7 @@ namespace TranSimCS.Tools {
 
             if(RoadPosition != null) {
                 var spline = RoadPosition.Road.ToolBasis;
-                var renderBin = Menu.renderHelper.GetOrCreateRenderBinForced(Assets.WhiteTransparent);
+                var renderBin = Menu.renderHelper.GetOrCreateRenderBinForced(Materials.WhiteTransparent);
 
                 //Draw the spline
                 SplitRoadMethods.DrawRoadSpline(RoadPosition.Road, renderBin, Colors.Cyan);

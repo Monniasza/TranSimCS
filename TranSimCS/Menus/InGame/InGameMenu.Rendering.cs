@@ -24,7 +24,7 @@ namespace TranSimCS.Menus.InGame {
         public Stats Stats { get; private set; }
 
         private void DrawHighlights(Microsoft.Xna.Framework.GameTime time) {
-            Mesh renderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Road);
+            Mesh renderBin = renderHelper.GetOrCreateRenderBinForced(Materials.Road);
 
             var nodecolor = roadSegmentHighlightColor;
             var lanecolor = laneHighlightColor;
@@ -96,7 +96,7 @@ namespace TranSimCS.Menus.InGame {
             renderHelper.AddAll(SelectorObjects);
 
             //If the add lane button is selected, draw it
-            Mesh plusRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Add);
+            Mesh plusRenderBin = renderHelper.GetOrCreateRenderBinForced(Materials.Add);
             if (MouseOver?.Tag is AddLaneSelection selection)
                 NodeRenderer.CreateAddLane(selection, plusRenderBin, configuration.LaneSpec.Width, roadSegmentHighlightColor, 0.5f);
 
@@ -105,7 +105,7 @@ namespace TranSimCS.Menus.InGame {
             
             //Render ground with multiple planes
             var centerPos = renderManager.Camera.Position;
-            Mesh grassBin = renderHelper.GetOrCreateRenderBinForced(Assets.Grass);
+            Mesh grassBin = renderHelper.GetOrCreateRenderBinForced(Materials.Grass);
             if(Settings.ShowGround) RenderGround(centerPos, grassBin);
 
             //Render road tool
@@ -145,7 +145,7 @@ namespace TranSimCS.Menus.InGame {
             var lateral = new Vector3(0, 0, sunDiameter);
             var startingPoint = pos - (tangent + lateral) / 2;
             //var sunRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.White);
-            var sunRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.Sun);
+            var sunRenderBin = renderHelper.GetOrCreateRenderBinForced(Materials.Sun);
             sunRenderBin.DrawParallelogram(startingPoint + renderManager.Camera.Position.ToX0Z(), tangent, lateral, Colors.White);
 
             //Render the render helper

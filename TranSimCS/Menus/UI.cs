@@ -20,7 +20,7 @@ namespace TranSimCS.Menus {
         public static Checkbox CreateCheck(InGameMenu menu, Element container, string name, string? icon = null, Color? checkColor = null, Color? uncheckColor = null) {
             var check = new Checkbox(Anchor.AutoInline, new(21, 21), "", false);
             check.AddTooltip(name);
-            check.Checkmark = LoadStyleProp(menu, icon ?? Assets.CrossIcon);
+            check.Checkmark = LoadStyleProp(menu, icon ?? Materials.CrossIcon);
             check.UncheckColor = (uncheckColor ?? Colors.Gray).ToMonoGame();
             check.CheckColor = (checkColor ?? Colors.White).ToMonoGame();
             container.AddChild(check);
@@ -70,6 +70,7 @@ namespace TranSimCS.Menus {
         public static Image.TextureCallback CreateTextureCallback(Texture2D texture2D) {
             return (_) => new MLEM.Textures.TextureRegion(texture2D);
         }
-        public static Image.TextureCallback CreateTextureCallback(string name) => CreateTextureCallback(Assets.Content.Load<Texture2D>(name));
+        //public static Image.TextureCallback CreateTextureCallback(string name) => CreateTextureCallback(Materials.Content.Load<Texture2D>(name));
+        public static Image.TextureCallback CreateTextureCallback(string name) => throw null;
     }
 }

@@ -160,7 +160,7 @@ namespace TranSimCS.Render {
 
         public void Render(MultiMesh source) {
             //CONSTANTS
-            var shader = Assets.ShaderEffect;
+            var shader = Materials.ShaderEffect;
             var writeDepth = DepthStencilState.Default;
             var keepDepth = DepthStencilState.DepthRead;
             gpu.SamplerStates[0] = SamplerState.PointWrap;
@@ -231,7 +231,7 @@ namespace TranSimCS.Render {
             
             if (bucket == null || bucket.Count == 0) return;
 
-            var shader = Assets.ShaderEffect;
+            var shader = Materials.ShaderEffect;
 
             //Bind per-pass attributes
             gpu.BlendState = blendState;
@@ -276,9 +276,9 @@ namespace TranSimCS.Render {
                     //shader.Parameters["Albedo"].SetValue(albedo);
                     //shader.Parameters["Emissive"].SetValue(emissive);
                     //shader.Parameters["EmissiveIsMask"].SetValue(material.EmissiveIsMask);
-                    shader.Parameters["Albedo"].SetValue(Assets.GrassTex);
+                    //shader.Parameters["Albedo"].SetValue(Materials.GrassTex);
                     //shader.Parameters["Emissive"].SetValue(GetCachedTexture(Assets.Grass.Emissive));
-                    shader.Parameters["Emissive"].SetValue(Assets.Black);
+                    //shader.Parameters["Emissive"].SetValue(Materials.Black);
                     shader.Parameters["EmissiveIsMask"].SetValue(0);
 
                     gpu.RasterizerState = !material.CullBack ? RasterizerState.CullNone : Settings.InvertAllNormals ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;

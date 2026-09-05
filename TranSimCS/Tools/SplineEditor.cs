@@ -116,7 +116,7 @@ namespace TranSimCS.Tools {
         }
         void ITool.AddSelectors(MultiMesh invisibleSelectors, MultiMesh visibleSelectors) {
             //Draw selectors
-            var renderBin = visibleSelectors.GetOrCreateRenderBinForced(Assets.White);
+            var renderBin = visibleSelectors.GetOrCreateRenderBinForced(Materials.White);
             void TickMark(Mesh renderBin, Vector3 pos, Vector3 normal, Vector3 tangent, Color c, float yoffset = 0.5f) {
                 pos += normal * yoffset;
                 var pos1 = pos - tangent * 0.5f;

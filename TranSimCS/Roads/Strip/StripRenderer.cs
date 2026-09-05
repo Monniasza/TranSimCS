@@ -46,7 +46,7 @@ namespace TranSimCS.Roads.Strip {
                 //Show direction by switchin to light yellow if reverse
                 if (laneStrip.IsReverse()) arrowColor = Colors.LightYellow;
 
-                var arrowBin = renderer.GetOrCreateRenderBinForced(Assets.Arrow);
+                var arrowBin = renderer.GetOrCreateRenderBinForced(Materials.Arrow);
                 arrowBin.DrawLine(midpoint - displacement, midpoint + displacement, nrm, arrowColor, arrowWidth);
             } //else Zero tangential. It's wrong!
 
@@ -148,7 +148,7 @@ namespace TranSimCS.Roads.Strip {
                     Bias = bias,
                     Color = color,
                     Type = lineTexture,
-                    Texture = isSolid ? Assets.EmissiveWhite : Assets.LineDash,
+                    Texture = isSolid ? Materials.EmissiveWhite : Materials.LineDash,
                 };
             }
 

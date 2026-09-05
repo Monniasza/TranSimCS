@@ -9,6 +9,7 @@ using NLog;
 using TranSimCS;
 using TranSimCS.Roads.StripGenerator;
 using TranSimCS.Save2;
+using TranSimCS.SilkNet;
 using TranSimCS.Terrain;
 using TranSimCS.Tools;
 
@@ -64,7 +65,12 @@ public class Program {
         InspectMethods.Init();
         TerrainDataBlobs.Init();
 
-        Game1.Start(args);
+        //Game1.Start(args);
+
+        Materials.ReadAssets();
+
+        SilkNetTest snt = new();
+        snt.Start();
     }
 
     // ===== SYSTEM.TEXT.JSON (NEW METHODS) =====
