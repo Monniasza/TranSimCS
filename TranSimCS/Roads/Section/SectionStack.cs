@@ -56,7 +56,7 @@ namespace TranSimCS.Roads.Section {
             section.Finish = finish;
             foreach (var node in list) 
                 node.ConnectedSection.Value = section;
-            section.MainSlopeNodes.Value = new(start.HalfNode, end.HalfNode);
+            section.MainSlopeNodes.Value = new(start?.HalfNode, end?.HalfNode);
             return section;
             
         }

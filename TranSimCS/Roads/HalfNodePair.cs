@@ -5,7 +5,7 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 
 namespace TranSimCS.Roads {
-    public struct HalfNodePair(HalfNode start, HalfNode end): IReadOnlyList<HalfNode> {
+    public struct HalfNodePair(HalfNode? start, HalfNode? end): IReadOnlyList<HalfNode> {
         public HalfNode? Start = start;
         public HalfNode? End = end;
 
