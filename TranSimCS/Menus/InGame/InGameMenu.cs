@@ -168,9 +168,9 @@ namespace TranSimCS.Menus.InGame {
              *  Add road node
              *  Road construction
              *  Section
+             *  Connection editor
              *  
              * To migrate:
-             *  Connection editor
              *  Move It
              *  Road reversal
              *  Road splitting

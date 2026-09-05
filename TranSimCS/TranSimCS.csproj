@@ -46,6 +46,7 @@
   <ItemGroup>
     <None Remove="Icon.ico" />
     <None Remove="Icon.bmp" />
+    <None Remove="SilkNet\Mode\ModeConnection.cs~RF6cd6c09f.TMP" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Icon.ico" />
