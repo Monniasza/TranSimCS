@@ -17,7 +17,7 @@ namespace TranSimCS.Roads.Section {
         public Vector3 Center { get; private set; }
         public Vector3 Normal { get; private set; }
         public WorkingPlane WorkingPlane { get; private set; }
-        public ImmutableArray<RoadNodeEnd> SortedNodes { get; private set; }
+        public ImmutableArray<HalfNode> SortedNodes { get; private set; }
 
         internal SectionCache(RoadSection section) {
             Section = section;
@@ -30,16 +30,16 @@ namespace TranSimCS.Roads.Section {
                 var frame = node.PositionProp.Value;
                 var mat = frame.CalcReferenceFrame();
                 normal += mat.Y;
-                center += node.CenterPosition;
+                center += node.RoadNode.CenterPosition;
             }
             Center = (section.Nodes.Count == 0) ? new(0, 0, 0) : center / section.Nodes.Count;
             Normal = (normal.LengthSquared() > 1e-6f) ? normal.Normalized() : Vector3.UnitY;
 
             //Sort the nodes clockwise
-            SortedNodes = section.Nodes.Order(Comparer<RoadNodeEnd>.Create(CompareNodes2)).ToImmutableArray();
+            SortedNodes = section.Nodes.Order(Comparer<HalfNode>.Create(CompareNodes2)).ToImmutableArray();
 
             //Find arbitrary vectors for the working plane
-            var frame0 = SortedNodes[0].CalcReferenceFrame();
+            var frame0 = SortedNodes[0].Cache.ReferenceFrame;
             var tangential = frame0.Z;
             var binormal = frame0.X;
             WorkingPlane = new(Center, binormal, tangential);
@@ -52,9 +52,9 @@ namespace TranSimCS.Roads.Section {
                 Normal)) > 0.99f);
         }
 
-        public int CompareNodes2(RoadNodeEnd n1, RoadNodeEnd n2) {
-            var r1 = Center - n1.CenterPosition;
-            var r2 = Center - n2.CenterPosition;
+        public int CompareNodes2(HalfNode n1, HalfNode n2) {
+            var r1 = Center - n1.RoadNode.CenterPosition;
+            var r2 = Center - n2.RoadNode.CenterPosition;
             var a1 = Math.Atan2(r1.X, r1.Z);
             var a2 = Math.Atan2(r2.X, r2.Z);
             return a1.CompareTo(a2);

@@ -56,7 +56,7 @@ namespace TranSimCS.Roads.Section {
             section.Finish = finish;
             foreach (var node in list) 
                 node.ConnectedSection.Value = section;
-            section.MainSlopeNodes.Value = new(start, end);
+            section.MainSlopeNodes.Value = new(start.HalfNode, end.HalfNode);
             return section;
             
         }
@@ -73,10 +73,10 @@ namespace TranSimCS.Roads.Section {
             JsonSerializer.Serialize(writer, obj.Nodes, options);
 
             writer.WritePropertyName("start");
-            nodeEndConverter.Write(writer, obj.MainSlopeNodes.Value.Start, options);
+            nodeEndConverter.Write(writer, obj.MainSlopeNodes.Value.Start?.RoadNodeEnd, options);
 
             writer.WritePropertyName("end");
-            nodeEndConverter.Write(writer, obj.MainSlopeNodes.Value.End, options);
+            nodeEndConverter.Write(writer, obj.MainSlopeNodes.Value.End?.RoadNodeEnd, options);
 
             var finishConverter = new RoadFinishConverter();
             writer.WritePropertyName("finish");

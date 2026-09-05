@@ -87,9 +87,9 @@ namespace TranSimCS.Tools {
                             if (node == null) return;
                             var slopeNodes = Section.MainSlopeNodes.Value;
                             if (Menu.Game.KeyboardState.IsKeyDown(Keys.LeftControl)) {
-                                slopeNodes.End = node;
+                                slopeNodes.End = node?.HalfNode;
                             } else {
-                                slopeNodes.Start = node;
+                                slopeNodes.Start = node?.HalfNode;
                             }
                             Section.MainSlopeNodes.Value = slopeNodes;
                         }

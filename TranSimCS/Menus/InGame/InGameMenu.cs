@@ -167,11 +167,11 @@ namespace TranSimCS.Menus.InGame {
              *  Demolition
              *  Add road node
              *  Road construction
+             *  Section
              *  
              * To migrate:
              *  Connection editor
              *  Move It
-             *  Section
              *  Road reversal
              *  Road splitting
              *  Road spline editor

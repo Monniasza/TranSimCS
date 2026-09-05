@@ -22,7 +22,7 @@ namespace TranSimCS.Roads.Section {
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static void GenerateIntersectionStrip(Mesh mesh, RoadNodeEnd start, RoadNodeEnd end, int accuracy = 17) {
+        public static void GenerateIntersectionStrip(Mesh mesh, HalfNode start, HalfNode end, int accuracy = 17) {
             //Generate bounding edges
             var startLeft = calcBoundingLineEndFaced(start, -1);
             var startRight = calcBoundingLineEndFaced(start, 1);
@@ -46,13 +46,13 @@ namespace TranSimCS.Roads.Section {
         /// <param name="end">end node</param>
         /// <param name="discriminant">determines the sidea</param>
         /// <returns></returns>
-        public static Bezier3 GenerateRoadEdge(RoadNodeEnd start, RoadNodeEnd end, int discriminant) {
+        public static Bezier3 GenerateRoadEdge(HalfNode start, HalfNode end, int discriminant) {
             LineEnd startPos = calcBoundingLineEndFaced(start, discriminant);
             LineEnd endPos = calcBoundingLineEndFaced(end, -discriminant);
             return GenerateJoinSpline(startPos.Ray, endPos.Ray);
         }
 
-        public static void GenerateSubrangeVerts(Mesh mesh, RoadNodeEnd[] nodes, int discriminant, int accuracy = 17) {
+        public static void GenerateSubrangeVerts(Mesh mesh, HalfNode[] nodes, int discriminant, int accuracy = 17) {
             var lbound = 1;
             var ubound = nodes.Length - 2;
 
@@ -74,9 +74,9 @@ namespace TranSimCS.Roads.Section {
                 var topSpline = prevSpline;
 
                 if (lbound == ubound) { //One node remaining
-                    var bounds = startNode.Bounds();
-                    var lpos = calcLineEnd(startNode, bounds.LocalLeft).Position;
-                    var rpos = calcLineEnd(startNode, bounds.LocalRight).Position;
+                    var bounds = startNode.Bounds;
+                    var lpos = calcLineEnd(startNode, bounds.Min).Position;
+                    var rpos = calcLineEnd(startNode, bounds.Max).Position;
                     bottomSpline = new LineSegment(rpos, lpos);
                 } else { //More nodes remaining
                     var innerSpline = GenerateRoadEdge(startNode, endNode, -1);
@@ -98,9 +98,9 @@ namespace TranSimCS.Roads.Section {
             }
         }
 
-        private static void GenerateSectionBySlope(Mesh surfaceMesh, RoadSection roadSection, RoadNodeEnd start, RoadNodeEnd end, int accuracy = 17) {
+        private static void GenerateSectionBySlope(Mesh surfaceMesh, RoadSection roadSection, HalfNode start, HalfNode end, int accuracy = 17) {
             //Rotate the list so the 1st main end lies on the index 0
-            var circularList = DLNode<RoadNodeEnd>.CreateCircular(roadSection.Nodes);
+            var circularList = DLNode<HalfNode>.CreateCircular(roadSection.Nodes);
             var startNode = circularList;
             while (startNode.val != start) startNode = startNode.Next;
             var endNode = circularList;
@@ -317,14 +317,14 @@ namespace TranSimCS.Roads.Section {
             //Generate endcaps
             for (int i = 0; i < splineCount; i++) {
                 var node = roadSection.SortedNodes[i];
-                var refframe = node.Node.ReferenceFrame;
-                var bounds = node.Bounds();
+                var refframe = node.Cache.ReferenceFrame;
+                var bounds = node.Bounds;
                 var mulbreadth = breadth;
                 if (node.End == NodeEnd.Backward) mulbreadth *= -1;
-                var p0 = refframe.O + refframe.X * bounds.LocalLeft;
-                var p1 = refframe.O + refframe.X * bounds.LocalRight;
-                var p2 = refframe.O + refframe.X * (bounds.LocalRight + mulbreadth) - refframe.Y * height;
-                var p3 = refframe.O + refframe.X * (bounds.LocalLeft - mulbreadth) - refframe.Y * height;
+                var p0 = refframe.O + refframe.X * bounds.Min;
+                var p1 = refframe.O + refframe.X * bounds.Max;
+                var p2 = refframe.O + refframe.X * (bounds.Min + mulbreadth) - refframe.Y * height;
+                var p3 = refframe.O + refframe.X * (bounds.Max - mulbreadth) - refframe.Y * height;
                 var u0 = new Vector2(bounds.Min, 0);
                 var u1 = new Vector2(bounds.Max, 0);
                 var u2 = new Vector2(bounds.Max + breadth, height);
@@ -338,7 +338,7 @@ namespace TranSimCS.Roads.Section {
         }
 
         private static Vector3[] GenerateSectionPerimeter(RoadSection roadSection, int accuracy = 17) {
-            var nodes = roadSection.Nodes.Select(x => x.HalfNode).Rev().ToArray();
+            var nodes = roadSection.Nodes.Rev().ToArray();
             var perimeter = new List<Vector3>();
 
             for (int i = 0; i < nodes.Length; i++) {
@@ -357,8 +357,8 @@ namespace TranSimCS.Roads.Section {
             return perimeter.ToArray();
         }
 
-        private static List<RoadNodeEnd> CollectNodes(DLNode<RoadNodeEnd> from, DLNode<RoadNodeEnd> to) {
-            var result = new List<RoadNodeEnd>();
+        private static List<HalfNode> CollectNodes(DLNode<HalfNode> from, DLNode<HalfNode> to) {
+            var result = new List<HalfNode>();
             var i = from;
             while (i != to) {
                 result.Add(i.val);

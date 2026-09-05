@@ -89,6 +89,7 @@ namespace TranSimCS.SilkNet {
             //Create modes
             AvailableModes = [
                 pickMode, new ModeDemolish(this), new ModeNode(this), new ModeSegment(this),
+                new ModeSection(this),
             ];
             _mode = pickMode;
             snappingGrid = new();

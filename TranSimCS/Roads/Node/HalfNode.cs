@@ -81,9 +81,8 @@ namespace TranSimCS.Roads.Node {
 
         //Event listeners
         private void ConnectedSection_ValueChanged(object sender, RoadSection oldSection, RoadSection newSection) {
-            var rne = RoadNodeEnd;
-            oldSection?.OnDisconnect(rne);
-            newSection?.OnConnect(rne);
+            oldSection?.OnDisconnect(this);
+            newSection?.OnConnect(this);
         }
 
         public void Demolish() => RoadNode.Demolish();

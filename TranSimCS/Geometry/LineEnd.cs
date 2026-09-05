@@ -32,11 +32,11 @@ namespace TranSimCS.Geometry
                 (leftEnd, rightEnd) = (rightEnd, leftEnd);
             return (leftEnd, rightEnd);
         }
-        public static LineEnd calcBoundingLineEndFaced(RoadNodeEnd node, int discriminator = 1) {
-            var (Min, Max, LocalLeft, LocalRight) = node.Bounds();
+        public static LineEnd calcBoundingLineEndFaced(HalfNode node, int discriminator = 1) {
+            var (l, r) = node.Bounds;
             if (discriminator < 0)
-                return calcLineEnd(node, LocalLeft);
-            return calcLineEnd(node, LocalRight);
+                return calcLineEnd(node, l);
+            return calcLineEnd(node, r);
         }
 
         public static LineEnd calcLineEnd(IPosition node, float offset, NodeEnd end) {

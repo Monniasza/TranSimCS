@@ -25,11 +25,11 @@ namespace TranSimCS.Roads.Section {
         public ReadOnlySet<RoadStrip> ContainedSegments => new(_containedSegments);
 
         //Added nodes, maintained by the road section
-        private HashSet<RoadNodeEnd> nodes = new();
-        public ReadOnlySet<RoadNodeEnd> Nodes => new(nodes);
+        private HashSet<HalfNode> nodes = new();
+        public ReadOnlySet<HalfNode> Nodes => new(nodes);
 
         //Section contents
-        public readonly Property<RoadNodeEndPair> MainSlopeNodes;
+        public readonly Property<HalfNodePair> MainSlopeNodes;
         public readonly Property<RoadFinish> FinishProperty;
 
         public event MeshInvalidationCallback GeometryChanged;
@@ -45,7 +45,7 @@ namespace TranSimCS.Roads.Section {
         public Vector3 Center => Cache.Center;
         public Vector3 Normal => Cache.Normal;
         public WorkingPlane WorkingPlane => Cache.WorkingPlane;
-        public ImmutableArray<RoadNodeEnd> SortedNodes => Cache.SortedNodes;
+        public ImmutableArray<HalfNode> SortedNodes => Cache.SortedNodes;
 
         public RoadSection() {
             MainSlopeNodes = new(default, "slopeNodes", this);
@@ -60,12 +60,12 @@ namespace TranSimCS.Roads.Section {
             GeometryChanged?.Invoke(this);
         }
 
-        internal void OnConnect(RoadNodeEnd node) {
+        internal void OnConnect(HalfNode node) {
             nodes.Add(node);
             FirePropertyEvent(this, new(PropertyNames.NodeOfSection));
         }
 
-        internal void OnDisconnect(RoadNodeEnd node) {
+        internal void OnDisconnect(HalfNode node) {
             nodes.Remove(node);
 
             //If there are fewer than 1 node, demolish this

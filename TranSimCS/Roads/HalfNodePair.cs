@@ -5,19 +5,19 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 
 namespace TranSimCS.Roads {
-    public struct RoadNodeEndPair(RoadNodeEnd start, RoadNodeEnd end): IReadOnlyList<RoadNodeEnd> {
-        public RoadNodeEnd Start = start;
-        public RoadNodeEnd End = end;
+    public struct HalfNodePair(HalfNode start, HalfNode end): IReadOnlyList<HalfNode> {
+        public HalfNode? Start = start;
+        public HalfNode? End = end;
 
         //Conversion to collections
-        public (RoadNodeEnd, RoadNodeEnd) ToTuple => (Start, End);
-        public RoadNodeEnd[] ToArray => [Start, End];
-        public RoadNodeEnd GetElement(int index) {
+        public (HalfNode?, HalfNode?) ToTuple => (Start, End);
+        public HalfNode?[] ToArray => [Start, End];
+        public HalfNode? GetElement(int index) {
             if (index == 0) return Start;
             if (index == 1) return End;
             throw new IndexOutOfRangeException();
         }
-        public RoadNodeEnd GetElement(SegmentHalf index) {
+        public HalfNode? GetElement(SegmentHalf index) {
             if (index == SegmentHalf.Start) return Start;
             if (index == SegmentHalf.End) return End;
             throw new IndexOutOfRangeException();
@@ -26,8 +26,8 @@ namespace TranSimCS.Roads {
         //Implementation of I(ReadOnly)List
         public int Count => 2;
 
-        public IEnumerator<RoadNodeEnd> GetEnumerator() {
-            IEnumerable<RoadNodeEnd> e = ToArray;
+        public IEnumerator<HalfNode?> GetEnumerator() {
+            IEnumerable<HalfNode?> e = ToArray;
             return e.GetEnumerator();
         }
 
@@ -35,8 +35,8 @@ namespace TranSimCS.Roads {
             return GetEnumerator();
         }
 
-        public IEnumerable<RoadNodeEnd> this[int key] => [GetElement(key)];
+        public IEnumerable<HalfNode> this[int key] => [GetElement(key)];
 
-        RoadNodeEnd IReadOnlyList<RoadNodeEnd>.this[int index] => GetElement(index);
+        HalfNode IReadOnlyList<HalfNode>.this[int index] => GetElement(index);
     }
 }
