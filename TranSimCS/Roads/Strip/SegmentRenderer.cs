@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using Clipper2Lib;
-using Microsoft.Xna.Framework.Graphics;
-using MonoGame.Extended;
 using TranSimCS.Debugging;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
@@ -119,7 +117,7 @@ namespace TranSimCS.Roads.Strip {
         public static void RenderSingleEndedInnerCircle(RoadStrip connection, MultiMesh renderHelper, float length) {
             var accuracy = Settings.RoadAccuracy;
             //Compute the limits of the road segment
-            Range<float> leftBounds = default, rightBounds = default;
+            Interval<float> leftBounds = default, rightBounds = default;
             foreach (var lane in connection.Lanes) {
                 var boundsA = lane.StartLane.Bounds;
                 var boundsB = lane.EndLane.Bounds;

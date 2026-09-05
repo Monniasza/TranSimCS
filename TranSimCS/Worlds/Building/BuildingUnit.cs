@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework.Graphics;
+﻿using System.Numerics;
 using MLEM.Maths;
-using MonoGame.Extended.Collections;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Property;

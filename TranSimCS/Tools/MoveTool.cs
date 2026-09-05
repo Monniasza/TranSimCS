@@ -1,17 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using LanguageExt;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
-using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
-using TranSimCS.Model;
 using TranSimCS.Worlds;
-using TranSimCS.Worlds.Stack;
 
 namespace TranSimCS.Tools {
     public class MoveTool(InGameMenu game) : ITool {

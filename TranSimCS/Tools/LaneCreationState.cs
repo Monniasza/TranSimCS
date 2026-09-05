@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Numerics;
-using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Roads;
@@ -16,8 +15,8 @@ namespace TranSimCS.Tools {
     public class LaneCreationState {
         //SOURCE STATE
         public readonly HalfLane StartLane;
-        public Range<float> StartRange;
-        public Range<float> EndRange;
+        public Interval<float> StartRange;
+        public Interval<float> EndRange;
 
         //EXTERNAL SOURCE STATE
         public Vector3 TargetPosition;

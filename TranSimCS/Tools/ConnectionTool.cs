@@ -4,7 +4,6 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
-using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Model;

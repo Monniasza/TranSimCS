@@ -1,7 +1,6 @@
 using System;
 using System.Numerics;
-using MonoGame.Extended;
-using TranSimCS.Geometry.SplineFrames;
+using TranSimCS.Geometry;
 
 namespace TranSimCS.Roads.Node {
     public enum NodeEnd {
@@ -20,7 +19,7 @@ namespace TranSimCS.Roads.Node {
             return 0;
         }
 
-        public static Range<T> ConvertConventions<T>(this NodeEnd end, Range<T> range) where T : IUnaryNegationOperators<T, T>, IComparable<T> {
+        public static Interval<T> ConvertConventions<T>(this NodeEnd end, Interval<T> range) where T : IUnaryNegationOperators<T, T>, IComparable<T> {
             if(end == NodeEnd.Backward) return new(-range.Max, -range.Min);
             return range;
         }

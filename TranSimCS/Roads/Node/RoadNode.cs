@@ -1,17 +1,11 @@
 using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Numerics;
-using System.Reflection;
 using Iesi.Collections.Generic;
-using MonoGame.Extended;
 using TranSimCS.Geometry;
-using TranSimCS.Model;
 using TranSimCS.Property;
-using TranSimCS.Roads;
 using TranSimCS.Roads.Strip;
 using TranSimCS.SceneGraph;
 using TranSimCS.SilkNet.Mode;
@@ -32,7 +26,7 @@ namespace TranSimCS.Roads.Node {
         private RoadNodeCache? _cache;
         public RoadNodeCache Cache => _cache ??= new RoadNodeCache(this);
         public Vector3 CenterPosition => Cache.CenterPosition;
-        public Range<float> Bounds => NodeSpec.Range;
+        public Interval<float> Bounds => NodeSpec.Range;
         public Transform3 ReferenceFrame => Cache.ReferenceFrame;
         public IList<Lane> SortedLanes => Cache.SortedLanes;
 

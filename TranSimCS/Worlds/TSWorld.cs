@@ -1,14 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Xna.Framework;
-using System.Text;
-using System.Threading.Tasks;
 using TranSimCS.Roads;
-using System.Collections.ObjectModel;
-using Arch.Core;
-using System.Diagnostics;
-using TranSimCS.Collections;
 using NLog;
 using TranSimCS.Model;
 using TranSimCS.SceneGraph;
@@ -19,7 +10,6 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Roads.Section;
 using TranSimCS.Property;
 using TranSimCS.Setting;
-using MonoGame.Extended;
 using TranSimCS.Worlds.Paths;
 
 namespace TranSimCS.Worlds

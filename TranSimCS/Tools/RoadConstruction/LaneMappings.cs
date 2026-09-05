@@ -2,7 +2,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
@@ -19,8 +18,8 @@ namespace TranSimCS.Tools.RoadConstruction {
         public ImmutableArray<LaneMapping> Mappings { get; private set; }
         public ImmutableArray<HalfLane> StartingLanes { get; private set; }
         public ImmutableArray<LaneNode> EndingLanes { get; private set; }
-        public Range<float> EndRange { get; private set; }
-        public Range<float> StartRange { get; private set; }
+        public Interval<float> EndRange { get; private set; }
+        public Interval<float> StartRange { get; private set; }
         public int LaneIndexGoingToSource { get; private set; }
         public LaneCreationState LaneCreationState { get; private set; }
 

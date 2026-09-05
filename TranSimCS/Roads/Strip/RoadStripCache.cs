@@ -2,7 +2,6 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Numerics;
-using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Roads.Range;
 using TranSimCS.Spline;
@@ -55,8 +54,8 @@ namespace TranSimCS.Roads.Strip {
         }
         
         private LaneRange GenerateBounds() {
-            Range<float> startRange = default;
-            Range<float> endRange = default;
+            Interval<float> startRange = default;
+            Interval<float> endRange = default;
             foreach (var lane in RoadStrip.Lanes) {
                 var startLane = lane.StartLane;
                 var endLane = lane.EndLane;

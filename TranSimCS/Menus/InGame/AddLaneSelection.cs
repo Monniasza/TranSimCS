@@ -1,5 +1,5 @@
 ﻿using System;
-using MonoGame.Extended;
+using TranSimCS.Geometry;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
@@ -18,7 +18,7 @@ namespace TranSimCS.Menus.InGame {
             this.nodeEnd = nodeEnd;
         }
 
-        public Range<float> CalculateOffsets(float width) {
+        public Interval<float> CalculateOffsets(float width) {
             if(side < 0) 
                 return new(position - width, position);
             return new(position, position + width);

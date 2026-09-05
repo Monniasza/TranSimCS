@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads.Range;
@@ -152,7 +151,7 @@ namespace TranSimCS.Roads.Strip {
                 };
             }
 
-            bool IsRangeTouchingEdge(Range<float> lineWidth, Range<float> endingRange) {
+            bool IsRangeTouchingEdge(Interval<float> lineWidth, Interval<float> endingRange) {
                 float delta = 0.01f;
                 var d0 = Math.Abs(lineWidth.Min - endingRange.Min);
                 var d1 = Math.Abs(lineWidth.Max - endingRange.Max);
@@ -192,7 +191,7 @@ namespace TranSimCS.Roads.Strip {
 
         
         public static Vector3 VOffset(float x, float y) => new(x, y, 0);
-        public static DualRange LaneStripToRoadStripRange(LaneStrip strip, Range<float> startRange, Range<float> endRange) {
+        public static DualRange LaneStripToRoadStripRange(LaneStrip strip, Interval<float> startRange, Interval<float> endRange) {
             if (strip.IsReverse()) DataUtil.Swap(ref startRange, ref endRange);
             return new(startRange, endRange);
         }

@@ -1,5 +1,4 @@
 ﻿using System;
-using MonoGame.Extended;
 using TranSimCS.Geometry;
 
 namespace TranSimCS.Roads.Node {
@@ -11,7 +10,7 @@ namespace TranSimCS.Roads.Node {
             CenterPosition = centerPosition;
             LaneSpec = laneSpec;
         }
-        public LaneDefinition WithBounds(Range<float> range) {
+        public LaneDefinition WithBounds(Interval<float> range) {
             var result = this;
             result.CenterPosition = range.Middle();
             result.LaneSpec.Width = range.Width();

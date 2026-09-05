@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using LanguageExt.ClassInstances;
-using MonoGame.Extended;
+﻿using System.Numerics;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Geometry {

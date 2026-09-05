@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Iesi.Collections.Generic;
-using MonoGame.Extended;
+using TranSimCS.Geometry;
 using TranSimCS.Property;
 using TranSimCS.Roads.Strip;
 using TranSimCS.SilkNet.Mode;
@@ -50,7 +50,7 @@ namespace TranSimCS.Roads.Node {
             get => LaneNode.LaneSpec.Width;
             set => LaneSpec = LaneSpec with { Width = value };
         }
-        public Range<float> Bounds{
+        public Interval<float> Bounds{
             get => LaneNode.Bounds;
             set => Definition = Definition.WithBounds(value);
         }

@@ -1,12 +1,12 @@
 ﻿using System;
-using MonoGame.Extended;
+using TranSimCS.Geometry;
 
 namespace TranSimCS.Roads.Node {
     public sealed class LaneNode: IComparable<LaneNode>, IEquatable<LaneNode>{
         public readonly Guid ID;
         public readonly LaneSpec LaneSpec;
         public readonly float CenterPos;
-        public Range<float> Bounds { get; private set; }
+        public Interval<float> Bounds { get; private set; }
 
         public LaneNode(LaneSpec laneSpec, float centerPos, Guid? guid = null) {
             ID = guid ?? Guid.NewGuid();
@@ -17,14 +17,14 @@ namespace TranSimCS.Roads.Node {
         public LaneNode(LaneDefinition laneDefinition, Guid? guid = null) : this(laneDefinition.LaneSpec, laneDefinition.CenterPosition, guid) { }
         public LaneDefinition ToLaneDefinition => new(CenterPos, LaneSpec);
 
-        public LaneNode WithBounds(Range<float> bounds) {
+        public LaneNode WithBounds(Interval<float> bounds) {
             var laneSpec = LaneSpec;
             var centerPos = (bounds.Min + bounds.Max) /2;
             laneSpec.Width = bounds.Max - bounds.Min;
             return new LaneNode(laneSpec, centerPos);
         }
 
-        public static LaneNode FromBounds(LaneSpec spec, Range<float> bounds, Guid? guid = null){
+        public static LaneNode FromBounds(LaneSpec spec, Interval<float> bounds, Guid? guid = null){
             spec.Width = bounds.Max - bounds.Min;
             var cpos = (bounds.Min + bounds.Max) / 2;
             return new(spec, cpos, guid);

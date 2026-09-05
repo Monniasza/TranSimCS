@@ -1,15 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Iesi.Collections.Generic;
-using Microsoft.Xna.Framework;
-using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Property;
-using TranSimCS.Roads;
 using TranSimCS.Roads.Strip;
 using TranSimCS.SilkNet.Mode;
 using TranSimCS.Worlds;
@@ -35,7 +28,7 @@ namespace TranSimCS.Roads.Node {
             get => Definition.LaneSpec;
             set => Definition = new(Definition.CenterPosition, value);
         }
-        public Range<float> Bounds {
+        public Interval<float> Bounds {
             get => Definition.Bounds();
             set {
                 var newCenterPos = value.Middle();

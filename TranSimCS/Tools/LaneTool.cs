@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using TranSimCS.Geometry;
@@ -130,7 +126,7 @@ namespace TranSimCS.Tools {
                         newRight += dx;
                         if (!lmbNew && newRight < newLeft) newRight = newLeft;
                     }
-                    selectedLane.Bounds = new MonoGame.Extended.Range<float>(newLeft, newRight);
+                    selectedLane.Bounds = new Interval<float>(newLeft, newRight);
                     DeltaX -= dx;
                 }
             }

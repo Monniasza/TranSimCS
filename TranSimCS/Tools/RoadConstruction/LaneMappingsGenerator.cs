@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using LanguageExt.ClassInstances;
-using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
@@ -145,13 +141,13 @@ namespace TranSimCS.Tools.RoadConstruction {
         class LaneMappingNode {
             public int originalIndex;
             public LaneMappingOutput group;
-            public Range<float> originalBounds;
+            public Interval<float> originalBounds;
             public float leftOffset;
             public float rightOffset;
             public LaneMappingNode(LaneMappingOutput group, int originalIndex) {
                 Debug.Assert(group.GeneratedLanes.Length >= 0, "No lanes to union"); 
                 this.group = group;
-                this.originalBounds = group.GeneratedLanes.Select(x => x.Destination.Bounds).RangeUnion();
+                this.originalBounds = group.GeneratedLanes.Select(x => x.Destination.Bounds).IntervalUnion();
                 this.originalIndex = originalIndex;
             }
         }

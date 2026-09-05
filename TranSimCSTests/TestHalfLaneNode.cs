@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MonoGame.Extended;
+﻿using TranSimCS.Geometry;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Worlds;
@@ -32,9 +26,9 @@ namespace TranSimCSTests {
             var rightLane = node.AddLane(new(LaneSpec.Default, 2));
 
             var frontRange = node.FrontHalf.Bounds;
-            Assert.Equal(new Range<float>(-2.5f, 3.5f), frontRange);
+            Assert.Equal(new Interval<float>(-2.5f, 3.5f), frontRange);
             var rearRange = node.RearHalf.Bounds;
-            Assert.Equal(new Range<float>(-3.5f, 2.5f), rearRange);
+            Assert.Equal(new Interval<float>(-3.5f, 2.5f), rearRange);
         }
 
         [Fact]

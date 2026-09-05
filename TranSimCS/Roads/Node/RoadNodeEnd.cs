@@ -69,7 +69,7 @@ namespace TranSimCS.Roads.Node {
             return section;
         }
 
-        public MonoGame.Extended.Range<float> Range() => Node.Bounds;
+        public Interval<float> Range() => Node.Bounds;
         public HalfNode? HalfNode => Node?.GetHalfNode(End);
     }
 }

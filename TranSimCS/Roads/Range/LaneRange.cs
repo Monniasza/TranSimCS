@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Numerics;
-using MonoGame.Extended;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.Roads.Node;
@@ -9,9 +8,9 @@ using static TranSimCS.Geometry.GeometryUtils;
 using static TranSimCS.Roads.Strip.StripRenderer;
 
 namespace TranSimCS.Roads.Range {
-    public struct DualRange(Range<float> startRange, Range<float> endRange) {
-        public Range<float> startRange = startRange;
-        public Range<float> endRange = endRange;
+    public struct DualRange(Interval<float> startRange, Interval<float> endRange) {
+        public Interval<float> startRange = startRange;
+        public Interval<float> endRange = endRange;
 
         public static DualRange operator |(DualRange a, DualRange b) {
             var newEnd = a.endRange.Union(b.endRange);
@@ -19,10 +18,10 @@ namespace TranSimCS.Roads.Range {
             return new(newStart, newEnd);
         }
     }
-    public struct LaneRange(RoadStrip road, Range<float> startRange, Range<float> endRange): IRoadElement {
+    public struct LaneRange(RoadStrip road, Interval<float> startRange, Interval<float> endRange): IRoadElement {
         public RoadStrip road = road; // The road connection this tag is associated with
-        public Range<float> startRange = startRange;
-        public Range<float> endRange = endRange;
+        public Interval<float> startRange = startRange;
+        public Interval<float> endRange = endRange;
 
         //ROAD ELEMENT
         public Guid Guid => road.Guid;

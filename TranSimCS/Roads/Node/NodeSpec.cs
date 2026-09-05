@@ -3,16 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MonoGame.Extended;
 using TranSimCS.Geometry;
 
 namespace TranSimCS.Roads.Node {
     public sealed class NodeSpec: IEquatable<NodeSpec>, IEnumerable<LaneNode> {
         public readonly ImmutableArray<LaneNode> Lanes;
         public readonly ImmutableDictionary<Guid, LaneNode> LaneXRef;
-        public readonly Range<float> Range;
+        public readonly Interval<float> Range;
         public static readonly NodeSpec Empty = new([]);
         public NodeSpec(IEnumerable<LaneNode> data) {
             Range = data.Select(x => x.Bounds).AggregateOrDefault(new(0, 0), (x, y) => x.Union(y));
