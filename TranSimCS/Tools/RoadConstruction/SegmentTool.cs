@@ -141,7 +141,7 @@ namespace TranSimCS.Tools.RoadConstruction {
                 if (LaneMappings == null || !State.GeneratedNodePosition.IsFinite()) return;
 
                 //Advance to the next road node
-                State = LaneReconcillation.BuildConnections(State, LaneMappings, Menu);
+                //State = LaneReconcillation.BuildConnections(State, LaneMappings, Menu);
                 SegmentTools.AddRemoveLeft.Value = 0;
                 SegmentTools.AddRemoveRight.Value = 0;
                 SegmentTools.IncludeExcludeLeft.Value = 0;
@@ -171,7 +171,7 @@ namespace TranSimCS.Tools.RoadConstruction {
 
             State?.StartRange = LaneMappings!.StartRange;
             State?.EndRange = LaneMappings!.EndRange;
-            State?.Generate(Menu);
+            //State?.Generate(Menu);
         }
         void ITool.Draw(Microsoft.Xna.Framework.GameTime gameTime) {
             if (State == null || !float.IsFinite(State.GeneratedNodePosition.Inclination) || !float.IsFinite(State.GeneratedNodePosition.Tilt)) return;

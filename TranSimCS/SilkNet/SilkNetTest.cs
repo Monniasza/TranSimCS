@@ -83,18 +83,16 @@ namespace TranSimCS.SilkNet {
         public Ray3 MouseRay;
         public Ray3 MouseRayOld;
 
-        //Clipboards
-        public RoadFinish RoadFinish = RoadFinish.Embankment;
-
         public SilkNetTest() {
             World = new TSWorld();
             var pickMode = new PickMode(this);
             //Create modes
             AvailableModes = [
-                pickMode, new ModeDemolish(this), new ModeNode(this)
+                pickMode, new ModeDemolish(this), new ModeNode(this), new ModeSegment(this),
             ];
             _mode = pickMode;
             snappingGrid = new();
+            SegmentPresets.RoadMode = RoadModes[2];
         }
         public void Start() {
             try {

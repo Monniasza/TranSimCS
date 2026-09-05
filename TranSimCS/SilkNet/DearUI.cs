@@ -60,16 +60,22 @@ namespace TranSimCS.SilkNet {
             if (changed) vector.Value = tmp;
             return changed;
         }
-        public static bool InputInt(string title, Property<int> value, int min = 0, int max = 100) {
+        public static bool InputInt(string title, Property<int> value, float vel = 0.05f, int min = 0, int max = 100) {
             var tmp = value.Value;
             bool changed = ImGui.DragInt(title, ref tmp, min, max);
             if (changed) value.Value = tmp;
             return changed;
         }
-        public static bool InputInt(string title, Property<uint> value, int min = 0, int max = 100) {
+        public static bool InputInt(string title, Property<uint> value, float vel = 0.05f, int min = 0, int max = 100) {
             var tmp = (int)value.Value;
-            bool changed = ImGui.DragInt(title, ref tmp, min, max);
+            bool changed = ImGui.DragInt(title, ref tmp, vel, min, max);
             if (changed) value.Value = (uint)tmp;
+            return changed;
+        }
+        public static bool InputUInt(string title, ref uint value, float vel = 0.05f, uint min = 0, uint max = 100) {
+            var tmp = (int)value;
+            bool changed = ImGui.DragInt(title, ref tmp, vel, (int)min, (int)max);
+            value = (uint)tmp;
             return changed;
         }
 

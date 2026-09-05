@@ -14,11 +14,6 @@ namespace TranSimCS.SilkNet {
         /// </summary>s
         public string Title();
         /// <summary>
-        /// The longer mode description. Invoked in the mode information window. Use Dear ImGui.
-        /// </summary>
-        public void Description() { }
-
-        /// <summary>
         /// Called to draw any mode UIs. TranSim uses Dear ImGui, an immediate mode UI library that does not store UI state.
         /// </summary>
         public void DrawUI() { }
@@ -62,6 +57,13 @@ namespace TranSimCS.SilkNet {
         /// Called when a mouse is scrolled
         /// </summary>
         public void OnScroll(ScrollWheel scrollAmount) { }
+
+        /// <summary>
+        /// Called to add dynamically generated selectors to the scene
+        /// </summary>
+        /// <param name="invisible">invisible selectors target</param>
+        /// <param name="visible">visible selectors target</param>
+        public void AddSelectors(MultiMesh invisible, MultiMesh visible) { }
 
         public HighlightColors SelectionColors() => HighlightColors.DefaultHighlightColor;
     }

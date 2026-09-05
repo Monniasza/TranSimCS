@@ -59,7 +59,7 @@ namespace TranSimCS.Tools {
         public string Name => "From the snapping grid";
 
         public void CreateValues(RoadPlan plan) {
-            var refframe = plan.menu.configuration.SnapGrid.Position.CalcReferenceFrame();
+            var refframe = plan.menu.snappingGrid.Position.CalcReferenceFrame();
             plan.endTangent = refframe.Z;
             plan.endLateral = refframe.X;
         }

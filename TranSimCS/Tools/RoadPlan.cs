@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Menus.InGame;
+using TranSimCS.SilkNet;
 
 namespace TranSimCS.Tools {
     public class RoadPlan {
@@ -16,7 +17,7 @@ namespace TranSimCS.Tools {
         public Vector3 endPos;
         public Vector3 endLateral;
 
-        public InGameMenu menu;
+        public SilkNetTest menu;
 
         public void Align(Alignment alignment, float width) {
             var calculatedAlignments = alignment.GetAlignments();

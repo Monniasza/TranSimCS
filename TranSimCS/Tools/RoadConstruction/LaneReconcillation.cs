@@ -10,11 +10,12 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
+using TranSimCS.SilkNet;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Tools.RoadConstruction {
     public class LaneReconcillation {
-        public static LaneCreationState? BuildConnections(LaneCreationState startingState, LaneMappings laneMappings, InGameMenu menu) {
+        public static LaneCreationState? BuildConnections(LaneCreationState startingState, LaneMappings laneMappings, SilkNetTest menu) {
             //Get the state
             var destLane = startingState.SnappedLane;
             var destinationNode = destLane?.GetNodeEnd()?.HalfNode;
@@ -53,7 +54,7 @@ namespace TranSimCS.Tools.RoadConstruction {
                 //List previous lanes
                 var prevLanes = laneMappings.StartingLanes;
 
-                GenerateLaneConnections(laneMappings.Presets.DirectionChoice, startingState.StartLane.HalfNode, nodeHalf, prevLanes, newLanes, laneMappings.Mappings, menu.configuration.RoadFinish, menu.World);
+                GenerateLaneConnections(laneMappings.Presets.DirectionChoice, startingState.StartLane.HalfNode, nodeHalf, prevLanes, newLanes, laneMappings.Mappings, menu.RoadFinish, menu.World);
 
                 return new LaneCreationState(newLaneEnd);
             }
@@ -165,7 +166,7 @@ namespace TranSimCS.Tools.RoadConstruction {
                 destLanes[i] = destinationNode.GetLaneByIndex(endingLaneIndex).OppositeHalf;
             }
 
-            GenerateLaneConnections(laneMappings.Presets.DirectionChoice, startingState.StartLane.HalfNode, destinationNode.OppositeHalf, laneMappings.StartingLanes, destLanes, laneMappings.Mappings, menu.configuration.RoadFinish, menu.World);
+            GenerateLaneConnections(laneMappings.Presets.DirectionChoice, startingState.StartLane.HalfNode, destinationNode.OppositeHalf, laneMappings.StartingLanes, destLanes, laneMappings.Mappings, menu.RoadFinish, menu.World);
             return passthroughEnd == null ? null : new LaneCreationState(passthroughEnd);
         }
 

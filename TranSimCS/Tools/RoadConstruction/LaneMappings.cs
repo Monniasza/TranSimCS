@@ -12,7 +12,7 @@ namespace TranSimCS.Tools.RoadConstruction {
         /// <summary>
         /// Presets used to generate this set of <see cref="LaneMappings"/>
         /// </summary>
-        public SegmentTools.Presets Presets { get; private set; }
+        public RoadPresets Presets { get; private set; }
         /// <summary>
         /// Connections between 
         /// </summary>
@@ -24,7 +24,7 @@ namespace TranSimCS.Tools.RoadConstruction {
         public int LaneIndexGoingToSource { get; private set; }
         public LaneCreationState LaneCreationState { get; private set; }
 
-        public LaneMappings(LaneCreationState laneCreationState, SegmentTools.Presets presets) {
+        public LaneMappings(LaneCreationState laneCreationState, RoadPresets presets) {
             //Set fields up
             Presets = presets;
             LaneCreationState = laneCreationState;
@@ -93,7 +93,7 @@ namespace TranSimCS.Tools.RoadConstruction {
             LaneIndexGoingToSource = laneMappingSourceToDest;
         }
 
-        private void CalculateConnections(SegmentTools.Presets presets) {
+        private void CalculateConnections(RoadPresets presets) {
             var laneChangesLeft = presets.AddRemoveLeft;
             var laneChangesRight = presets.AddRemoveRight;
 

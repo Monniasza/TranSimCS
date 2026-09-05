@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MLEM.Ui.Elements;
@@ -18,8 +16,8 @@ namespace TranSimCS.Tools.RoadConstruction {
         public readonly Property<bool> IsInclusive;
         public readonly Property<DirectionChoice> DirectionChoice;
 
-        public Presets CurrentPresets {
-            get => new Presets() {
+        public RoadPresets CurrentPresets {
+            get => new RoadPresets() {
                 AddRemoveLeft = AddRemoveLeft.Value,
                 AddRemoveRight = AddRemoveRight.Value,
                 IncludeExcludeLeft = IncludeExcludeLeft.Value,
@@ -33,39 +31,6 @@ namespace TranSimCS.Tools.RoadConstruction {
                 IncludeExcludeRight.Value = value.IncludeExcludeRight;
                 IsInclusive.Value = value.IsInclusive;
                 DirectionChoice.Value = value.DirectionChoice;
-            }
-        }
-
-        public struct Presets : IEquatable<Presets> {
-            public int AddRemoveLeft;
-            public int AddRemoveRight;
-            public uint IncludeExcludeLeft;
-            public uint IncludeExcludeRight;
-            public bool IsInclusive;
-            public DirectionChoice DirectionChoice;
-            public override bool Equals(object? obj) {
-                return obj is Presets presets && Equals(presets);
-            }
-
-            public bool Equals(Presets other) {
-                return AddRemoveLeft == other.AddRemoveLeft &&
-                       AddRemoveRight == other.AddRemoveRight &&
-                       IncludeExcludeLeft == other.IncludeExcludeLeft &&
-                       IncludeExcludeRight == other.IncludeExcludeRight &&
-                       IsInclusive == other.IsInclusive &&
-                       DirectionChoice == other.DirectionChoice;
-            }
-
-            public override int GetHashCode() {
-                return HashCode.Combine(AddRemoveLeft, AddRemoveRight, IncludeExcludeLeft, IncludeExcludeRight, IsInclusive, DirectionChoice);
-            }
-
-            public static bool operator ==(Presets left, Presets right) {
-                return left.Equals(right);
-            }
-
-            public static bool operator !=(Presets left, Presets right) {
-                return !(left == right);
             }
         }
 

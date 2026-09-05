@@ -7,6 +7,7 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
+using TranSimCS.SilkNet;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
@@ -43,10 +44,9 @@ namespace TranSimCS.Tools {
             $"Creating a segment. Chord-length: {CenterLine.ChordLength()}, arc-length: {CenterLine.ArcLength()}";
         
         //GENERATION
-        public void Generate(InGameMenu menu) {
-            var stripTools = menu.ToolsPanel.GetPanel<StripTools>(ToolAttribs.showRoadTools);
-            SplineMode = stripTools.RoadMode.Value;
-            Alignment = stripTools.AlignmentProp.Value;
+        public void Generate(SilkNetTest menu) {
+            SplineMode = menu.SegmentPresets.RoadMode;
+            Alignment = menu.SegmentPresets.Alignment;
 
             DeltaOffset = 0;
             SnappedLane = null;
@@ -80,11 +80,11 @@ namespace TranSimCS.Tools {
                 DestinationNodeEnd = laneEnd.End;
             } else {
                 //Create a synthetic end
-                Plane selectionPlane = menu.ReferencePlane;
+                Plane selectionPlane = menu.snappingGrid.CreateSnappingPlane();
                 TargetPosition = GeometryUtils.IntersectRayPlane(menu.MouseRay, selectionPlane);
-                if (menu.CheckSnap.Checked)
+                if (menu.SnappingEnabled)
                     //Snap the position
-                    TargetPosition = menu.configuration.SnapGrid.Snap(TargetPosition);
+                    TargetPosition = menu.snappingGrid.Snap(TargetPosition);
                 RoadPlan plan = new RoadPlan {
                     startLateral = startLateral,
                     endLateral = startLateral,
@@ -103,8 +103,8 @@ namespace TranSimCS.Tools {
                 Debug.Assert(plan.endTangent.IsFinite(), "Invalid end tangent");
 
                 //Flatten tilt or inclination
-                if (stripTools.flattenTilt.Checked) plan.endLateral = plan.endLateral.ToX0Z().Normalized();
-                if (stripTools.flattenIncline.Checked) plan.endTangent = plan.endTangent.ToX0Z().Normalized();
+                if (menu.SegmentPresets.IsTiltFlat) plan.endLateral = plan.endLateral.ToX0Z().Normalized();
+                if (menu.SegmentPresets.IsInclineFlat) plan.endTangent = plan.endTangent.ToX0Z().Normalized();
 
                 if (!(plan.endTangent.IsFinite() && plan.endLateral.IsFinite())) {
                     plan.endTangent = plan.startTangent;
@@ -116,8 +116,8 @@ namespace TranSimCS.Tools {
                 //Calculate the NodePosition
                 var newNodePosition = PositionEulerAngles.FromPosTangentLateral(correctedPosition, plan.endTangent, plan.endLateral);
                 if (StartLane.End == NodeEnd.Backward) newNodePosition.Azimuth += int.MinValue;
-                if (stripTools.flattenTilt.Checked) newNodePosition.Tilt = 0;
-                if (stripTools.flattenIncline.Checked) newNodePosition.Inclination = 0;
+                if (menu.SegmentPresets.IsTiltFlat) newNodePosition.Tilt = 0;
+                if (menu.SegmentPresets.IsInclineFlat) newNodePosition.Inclination = 0;
                 GeneratedNodePosition = newNodePosition;
             }
 

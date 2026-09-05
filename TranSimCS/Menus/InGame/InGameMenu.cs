@@ -164,17 +164,15 @@ namespace TranSimCS.Menus.InGame {
              *  Car placement
              *  Lane positioning
              *  
-             *  
              *  Demolition
-             *  
+             *  Add road node
+             *  Road construction
              *  
              * To migrate:
              *  Connection editor
-             *  Add road node
              *  Move It
              *  Section
              *  Road reversal
-             *  Road construction
              *  Road splitting
              *  Road spline editor
              */
