@@ -1,5 +1,6 @@
 using System.Numerics;
 using TranSimCS.Geometry;
+using TranSimCS.Tools.RoadConstruction;
 
 namespace TranSimCS.Tools {
     public interface RoadMode {

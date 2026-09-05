@@ -4,7 +4,6 @@ using ImGuiNET;
 using Silk.NET.Input;
 using TranSimCS.Geometry;
 using TranSimCS.Menus;
-using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;

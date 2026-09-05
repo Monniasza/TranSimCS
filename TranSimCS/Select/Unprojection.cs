@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Geometry;
 
-namespace TranSimCS.Menus.InGame {
+namespace TranSimCS.Select {
     public static class Unprojection {
         public static Ray3 CreatePickRay(
             Vector2 mousePosition,

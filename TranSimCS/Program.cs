@@ -65,8 +65,6 @@ public class Program {
         InspectMethods.Init();
         TerrainDataBlobs.Init();
 
-        //Game1.Start(args);
-
         Materials.ReadAssets();
 
         SilkNetTest snt = new();

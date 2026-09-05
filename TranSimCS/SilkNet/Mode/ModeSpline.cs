@@ -13,7 +13,7 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Select;
-using TranSimCS.Tools;
+using TranSimCS.Tools.RoadConstruction;
 
 namespace TranSimCS.SilkNet.Mode {
     public class ModeSpline(SilkNetTest menu) : IMode {

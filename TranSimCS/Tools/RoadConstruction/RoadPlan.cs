@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using TranSimCS.Menus.InGame;
 using TranSimCS.SilkNet;
 
-namespace TranSimCS.Tools {
+namespace TranSimCS.Tools.RoadConstruction {
     public class RoadPlan {
         public Vector3 startTangent;
         public Vector3 startPos;

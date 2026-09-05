@@ -6,6 +6,7 @@ using MLEM.Ui.Style;
 using TranSimCS.Menus;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
+using TranSimCS.Tools.RoadConstruction;
 
 namespace TranSimCS.Tools {
     public class StripTools : Panel {

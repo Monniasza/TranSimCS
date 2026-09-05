@@ -7,6 +7,7 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Select;
+using TranSimCS.Tools.RoadConstruction;
 
 namespace TranSimCS.Tools {
     public class SplineEditor: ITool {

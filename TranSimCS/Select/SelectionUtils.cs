@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TranSimCS.Menus.InGame;
 using TranSimCS.Model;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.SilkNet;
 using TranSimCS.Tools;
 
-namespace TranSimCS.Menus.InGame {
+namespace TranSimCS.Select {
     public static class SelectionUtils {
         public static void AddAddLaneSelectors(MultiMesh meshes, SilkNetTest game) {
             var target = meshes.GetOrCreateRenderBinForced(Materials.Add);

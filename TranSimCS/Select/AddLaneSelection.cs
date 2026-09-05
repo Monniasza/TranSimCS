@@ -4,7 +4,7 @@ using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 
-namespace TranSimCS.Menus.InGame {
+namespace TranSimCS.Select {
     public struct AddLaneSelection: IRoadElement {
         public sbyte side; //-1 for left, 1 for right
         public float position;
@@ -48,6 +48,6 @@ namespace TranSimCS.Menus.InGame {
         public Lane? GetLane() => null;
         public HalfLane? GetLaneEnd() => null;
         public RoadNodeEnd GetNodeEnd() => nodeEnd;
-        int? IRoadElement.GetIndexInHalfNode() => (side * ZDiscriminant() > 0) ? nodeEnd.Node.Lanes.Count : -1;
+        int? IRoadElement.GetIndexInHalfNode() => side * ZDiscriminant() > 0 ? nodeEnd.Node.Lanes.Count : -1;
     }
 }

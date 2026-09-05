@@ -4,7 +4,7 @@ using TranSimCS.Model;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Setting;
 
-namespace TranSimCS.Tools {
+namespace TranSimCS.Tools.RoadConstruction {
     public static class SplitRoadMethods {
         public static void DrawRoadSpline(RoadStrip road, Mesh mesh, Color c, float width = 0.2f, float yoffset = 0.4f) {
             var spline = road.ToolBasis;

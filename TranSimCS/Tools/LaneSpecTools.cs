@@ -10,6 +10,7 @@ using TranSimCS.Menus.InGame;
 using TranSimCS.Property;
 using TranSimCS.Roads;
 using TranSimCS.Setting;
+using TranSimCS.Tools.RoadConstruction;
 
 namespace TranSimCS.Tools {
     public class LaneSpecTools : Panel {
