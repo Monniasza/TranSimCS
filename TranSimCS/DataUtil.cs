@@ -54,6 +54,16 @@ namespace TranSimCS {
             long b = Convert.ToInt64(flags);
             return (a & b) != 0;
         }
+        public static T ShiftLeft<T>(this T subject, int offset) where T: struct, Enum {
+            long subject2 = Convert.ToInt64(subject);
+            var result = subject2 << offset;
+            return (T)Enum.ToObject(typeof(T), result);
+        }
+        public static T ShiftRight<T>(this T subject, int offset) where T : struct, Enum {
+            long subject2 = Convert.ToInt64(subject);
+            var result = subject2 >>> offset;
+            return (T)Enum.ToObject(typeof(T), result);
+        }
         public static T WithFlags<T>(this T subject, T flags, bool newValue) where T : struct, Enum{
             long subject2 = Convert.ToInt64(subject);
             long flags2 = Convert.ToInt64(flags);

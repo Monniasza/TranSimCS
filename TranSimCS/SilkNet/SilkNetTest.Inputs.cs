@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using ImGuiNET;
 using Silk.NET.Input;
 using TranSimCS.Geometry;
-using TranSimCS.Menus.InGame;
+using TranSimCS.Select;
 
 namespace TranSimCS.SilkNet {
     public partial class SilkNetTest {
@@ -71,13 +71,19 @@ namespace TranSimCS.SilkNet {
         private void KeyChar(IKeyboard keyboard, char character) {
 
         }
+
+        public MouseState MouseState { get; private set; }
+        public MouseState MouseStateOld { get; private set; }
+
         private void MouseDown(IMouse mouse, MouseButton button) {
             if (IsMouseOverUI) return;
+            MouseState = MouseState.SetButton(button, true);
             Mode.OnMousePress(button);
             
         }
         private void MouseUp(IMouse mouse, MouseButton button) {
             if (IsMouseOverUI) return;
+            MouseState = MouseState.SetButton(button, false);
             Mode.OnMouseRelease(button);
         }
 

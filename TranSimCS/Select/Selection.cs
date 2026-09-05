@@ -8,7 +8,7 @@ using TranSimCS.Geometry;
 using TranSimCS.SceneGraph;
 using TranSimCS.Worlds;
 
-namespace TranSimCS.Menus.InGame {
+namespace TranSimCS.Select {
     public struct Selection {
         public static Selection Invalid => new Selection {
             SceneNode = null,
@@ -26,12 +26,12 @@ namespace TranSimCS.Menus.InGame {
 
         public static Selection CalculateSelection(SceneRoot graph, Ray3 ray) {
             Selection result = graph.Find(ray);
-            if (result.SceneNode == null) return Selection.Invalid;
+            if (result.SceneNode == null) return Invalid;
 
             //Check if all parents are enabled
             var node = result.SceneNode;
             while(node != null) {
-                if(!node.Active.Value) return Selection.Invalid;
+                if(!node.Active.Value) return Invalid;
                 node = node.Parent;
             }
 

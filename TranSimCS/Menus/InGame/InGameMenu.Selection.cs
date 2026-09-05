@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
+using TranSimCS.Select;
 
 namespace TranSimCS.Menus.InGame {
     //Selection-related stuff

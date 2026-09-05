@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MLEM.Input;
 using TranSimCS.Menus.InGame;
+using TranSimCS.Select;
 
 namespace TranSimCS.Tools {
     public class LaneSpecTool(InGameMenu game) : ITool {

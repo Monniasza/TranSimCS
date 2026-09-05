@@ -12,6 +12,7 @@ using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Strip;
+using TranSimCS.Select;
 using TranSimCS.Setting;
 using TranSimCS.SilkNet;
 using TranSimCS.Spline;

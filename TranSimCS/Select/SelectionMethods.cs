@@ -7,7 +7,7 @@ using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 
-namespace TranSimCS.Menus.InGame {
+namespace TranSimCS.Select {
     public static class SelectionMethods {
         public static IRoadElement? AsRoadElement(this Selection selection) => selection.As<IRoadElement>();
         public static Lane? GetLane(this Selection selection) => (selection.Tag as IRoadElement)?.GetLane();

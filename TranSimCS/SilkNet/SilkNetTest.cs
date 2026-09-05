@@ -89,7 +89,8 @@ namespace TranSimCS.SilkNet {
             //Create modes
             AvailableModes = [
                 pickMode, new ModeDemolish(this), new ModeNode(this), new ModeSegment(this),
-                new ModeSection(this), new ModeConnection(this),
+                new ModeSection(this), new ModeConnection(this), new ModeMoveIt(this),
+                new ModeReverse(this),
             ];
             _mode = pickMode;
             snappingGrid = new();
@@ -191,10 +192,6 @@ namespace TranSimCS.SilkNet {
             //Handle picking
             IsMouseOverUI = ImGui.IsWindowHovered(ImGuiHoveredFlags.AnyWindow);
             if (!IsMouseOverUI) HandleInputs(dT);
-
-            //Push previous values
-            MousePositionPrev = MousePosition;
-
             //Track object positions
             if(TrackPosition != null) {
                 camera.Position = TrackPosition.PositionData.Position;
@@ -205,6 +202,10 @@ namespace TranSimCS.SilkNet {
 
             //Update the world
             World.Update(dT);
+
+            //Push previous values
+            MousePositionPrev = MousePosition;
+            MouseStateOld = MouseState;
         }
         private void OnRender(double dt) {
             Stats stats = default;

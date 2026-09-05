@@ -10,6 +10,7 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Section;
 using TranSimCS.Roads.Strip;
+using TranSimCS.Select;
 using TranSimCS.SilkNet;
 using TranSimCS.Worlds;
 

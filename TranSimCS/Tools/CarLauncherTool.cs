@@ -9,6 +9,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Menus.InGame;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
+using TranSimCS.Select;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Cars;
 
