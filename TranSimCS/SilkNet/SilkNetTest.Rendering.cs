@@ -54,7 +54,7 @@ namespace TranSimCS.SilkNet {
             }
 
             //Render the pin
-            if(Sticky != null) {
+            if(Sticky?.SceneNode != null) {
                 var pinnedBox = Sticky.Value.SceneNode.GetBounds();
                 var point = new Vector3(
                     (pinnedBox.Min.X + pinnedBox.Max.X) / 2,
