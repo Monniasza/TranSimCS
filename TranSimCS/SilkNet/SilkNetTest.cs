@@ -168,10 +168,12 @@ namespace TranSimCS.SilkNet {
             ImGuiController.MakeCurrent();
 
             //Create the pick ray
-            MouseRayOld = MouseRay;
-            MouseRay = Unprojection.CreatePickRay(MousePosition, new(SilkWindow.Size.X, SilkWindow.Size.Y), RenderManager.View, RenderManager.Projection);
-            VectorMethods.CheckVector(MouseRay.Origin, nameof(MouseRay.Origin));
-            VectorMethods.CheckVector(MouseRay.Direction, nameof(MouseRay.Direction));
+            if (SilkWindow.Size.X > 0 && SilkWindow.Size.Y > 0) {
+                MouseRayOld = MouseRay;
+                MouseRay = Unprojection.CreatePickRay(MousePosition, new(SilkWindow.Size.X, SilkWindow.Size.Y), RenderManager.View, RenderManager.Projection);
+                VectorMethods.CheckVector(MouseRay.Origin, nameof(MouseRay.Origin));
+                VectorMethods.CheckVector(MouseRay.Direction, nameof(MouseRay.Direction));
+            }
 
             //Enable/disable selection
             World.RoadSections.trackerSpatial.sceneTree.Active.Value = SelectSections;

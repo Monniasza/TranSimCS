@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Numerics;
 using ImGuiNET;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
@@ -40,6 +41,36 @@ namespace TranSimCS.SilkNet {
                 ImGui.EndMenu();
             }
 
+            //Show the toolbar
+            var viewport = ImGui.GetMainViewport();
+
+            float height = ImGui.GetFrameHeightWithSpacing();
+
+            ImGui.SetNextWindowPos(
+                new Vector2(
+                    viewport.WorkPos.X,
+                    viewport.WorkPos.Y + viewport.WorkSize.Y - height));
+
+            ImGui.SetNextWindowSize(
+                new Vector2(viewport.WorkSize.X, height));
+
+            var menuBarFlags =
+                ImGuiWindowFlags.NoTitleBar |
+                ImGuiWindowFlags.NoResize |
+                ImGuiWindowFlags.NoMove |
+                ImGuiWindowFlags.NoScrollbar |
+                ImGuiWindowFlags.NoSavedSettings |
+                ImGuiWindowFlags.MenuBar;
+
+            if (ImGui.Begin("##BottomMenuBar", menuBarFlags)) {
+                if (ImGui.BeginMenuBar()) {
+                    foreach (var mode in AvailableModes)
+                        if (ImGui.MenuItem(mode.Title(), "", mode == Mode)) Mode = mode;
+                    ImGui.EndMenuBar();
+                }
+                ImGui.End();
+            }
+
             if (ImGui.BeginMenu("Settings")) {
                 DearUI.InputFloat("Car spawn rate", Settings.CarSpawnRateProp);
                 DearUI.MenuToggle("Enable car spawning", Settings.SpawnCarsProp);
@@ -51,11 +82,6 @@ namespace TranSimCS.SilkNet {
                 DearUI.MenuToggle("Select road sections", ref SelectSections);
                 DearUI.MenuToggle("Select cars", ref SelectCars);
                 ImGui.EndMenu();
-            }
-            if(ImGui.BeginMenu("Current mode: " + Mode.Title())) {
-                foreach(var mode in AvailableModes) 
-                    if (ImGui.MenuItem(mode.Title())) Mode = mode;
-                ImGui.EndMenu() ;
             }
 
             ImGui.EndMainMenuBar();

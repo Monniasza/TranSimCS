@@ -137,6 +137,7 @@ namespace TranSimCS.SilkNet {
         }
         private void SetUpEffects() {
             var windowDimensions = window.SilkWindow.Size;
+            if (windowDimensions.X <= 0 || windowDimensions.Y <= 0) return;
             WorldViewProjection = Camera.GetCombinedMatrix(windowDimensions.X, windowDimensions.Y, out var world, out var view, out var projection);
             World = world;
             View = view;
