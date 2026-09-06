@@ -27,5 +27,17 @@ namespace TranSimCS.SilkNet {
                 _ => throw new ArgumentException("Invalid TextureFormat")
             };
         }
+
+        public static (int bytesPerChannel, int channels) GetToRGBAFormats(this TextureFormat tf) {
+            return tf switch {
+                TextureFormat.R16 => (2, 1),
+                TextureFormat.RG16 => (2, 2),
+                TextureFormat.RGB16 => (2, 3),
+                TextureFormat.RGBA16 => (2, 4),
+                TextureFormat.RGB8 => (1, 3),
+                TextureFormat.RGBA8 => (1, 4),
+                _ => throw new ArgumentException("Invalid TextureFormat")
+            };
+        }
     }
 }

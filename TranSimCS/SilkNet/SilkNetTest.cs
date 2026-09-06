@@ -91,7 +91,7 @@ namespace TranSimCS.SilkNet {
             try {
                 WindowOptions options = WindowOptions.Default with {
                     Size = new Vector2D<int>(800, 600),
-                    Title = "TranSim"
+                    Title = "TranSim",
                 };
                 SilkWindow = Window.Create(options);
                 FramesPerSecond = new();
@@ -118,6 +118,10 @@ namespace TranSimCS.SilkNet {
         }
 
         private void OnLoad() {
+            //Set the window icon
+            var windowIcon = TexturePipeline.GetTexture("logo1024.png").ToRawImage();
+            SilkWindow.SetWindowIcon(ref windowIcon);
+
             //Add handlers for inputs
             InputContext = SilkWindow.CreateInput();
             for (int i = 0; i < InputContext.Keyboards.Count; i++) {
