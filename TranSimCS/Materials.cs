@@ -43,9 +43,10 @@ namespace TranSimCS {
             GrassTex = TexturePipeline.GetTexture("seamlessTextures2/grass1.jpg");
 
             Asphalt = new("seamlessTextures2/IMGP5511_seamless.jpg");
-            
+
             Grass = new("seamlessTextures2/grass1.jpg");
-            
+            //Grass = new("logo1024.png", MaterialBlendMode.Cutout);
+
             Concrete = new("seamlessTextures2/IMGP5514_seamless_2.jpg");
             Cobble = new("seamlessTextures2/rock02.jpg");
             Tiles = new("pavement.png");
