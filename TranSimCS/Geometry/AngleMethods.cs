@@ -11,5 +11,8 @@ namespace TranSimCS.Geometry {
         public const float DegsInRad = 180 / MathF.PI;
         public static Vector3 ToDegrees(this Vector3 vector) => vector * DegsInRad;
         public static Vector3 ToRadians(this Vector3 vector) => vector * RadsInDeg;
+
+        public static float ToDegrees(this float vector) => vector * DegsInRad;
+        public static float ToRadians(this float vector) => vector * RadsInDeg;
     }
 }

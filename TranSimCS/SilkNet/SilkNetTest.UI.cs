@@ -84,6 +84,9 @@ namespace TranSimCS.SilkNet {
                 ImGui.EndMenu();
             }
 
+            //Show a compass
+            DrawCompass(camera.Azimuth);
+
             ImGui.EndMainMenuBar();
 
             CurrentlyOpenModal?.Invoke();
@@ -102,6 +105,7 @@ namespace TranSimCS.SilkNet {
             if (Sticky != null) ShowObjectWindow(Sticky.Value);
         }
 
+        public bool ShowCompass;
 
         //Object window-specific properties
         public float SpawnCarVelocity = 20;
