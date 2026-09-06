@@ -10,5 +10,6 @@
         public const string NodeSpecSuffix = ".spec";
         public const string LaneListOfNode = "nodeLanes";
         public const string NodeOfSection = "sectionNode";
+        public const string PhaseOfTrafficLight = "lightPhase";
     }
 }
