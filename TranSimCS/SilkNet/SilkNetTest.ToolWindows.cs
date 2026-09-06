@@ -28,11 +28,11 @@ namespace TranSimCS.SilkNet {
 
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
-                ImGui.SliderInt("##leftLanes", ref LeftLanes, 0, 20);
+                ImGui.DragInt("##leftLanes", ref LeftLanes, 0, 20);
                 ImGui.TableNextColumn();
-                ImGui.SliderFloat("##medianWidth", ref MedianWidth, 0, 100);
+                ImGui.DragFloat("##medianWidth", ref MedianWidth, 0, 100);
                 ImGui.TableNextColumn();
-                ImGui.SliderInt("##rightLanes", ref RightLanes, 0, 20);
+                ImGui.DragInt("##rightLanes", ref RightLanes, 0, 20);
 
                 ImGui.EndTable();
             }
