@@ -70,7 +70,11 @@ namespace TranSimCS.Roads.Section {
             JsonSerializer.Serialize(writer, obj.Guid, options);
 
             writer.WritePropertyName("nodes");
-            JsonSerializer.Serialize(writer, obj.Nodes, options);
+            writer.WriteStartArray();
+            foreach (var node in obj.Nodes) {
+                nodeEndConverter.Write(writer, node?.RoadNodeEnd, options);
+            }
+            writer.WriteEndArray();
 
             writer.WritePropertyName("start");
             nodeEndConverter.Write(writer, obj.MainSlopeNodes.Value.Start?.RoadNodeEnd, options);
