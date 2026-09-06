@@ -85,5 +85,11 @@ namespace TranSimCS.Geometry {
         public static bool operator !=(TransformQ left, TransformQ right) {
             return !(left == right);
         }
+
+        public static TransformQ LookTowards(Vector3 origin, Vector3 cameraPos, Vector3 up) {
+            Vector3 tangent = Vector3.Normalize(cameraPos - origin);
+            Matrix4x4 mat = Matrix4x4.CreateWorld(origin, tangent, up);
+            return new TransformQ(origin, mat.ToTransformQ().Rotation);
+        }
     }
 }

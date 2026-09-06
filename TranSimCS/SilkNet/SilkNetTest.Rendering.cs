@@ -9,6 +9,7 @@ using TranSimCS.Roads.Range;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Setting;
 using TranSimCS.Worlds;
+using static TranSimCS.Model.MeshUnroll;
 
 namespace TranSimCS.SilkNet {
     public partial class SilkNetTest {
@@ -51,6 +52,21 @@ namespace TranSimCS.SilkNet {
             if (SelectNodes) foreach (var node in World.Nodes.data) {
                 NodeRenderer.GenerateRoadNodeSelectionMesh(node, roadRenderBin, laneEnd);
             }
+
+            //Render the pin
+            if(Sticky != null) {
+                var pinnedBox = Sticky.Value.SceneNode.GetBounds();
+                var point = new Vector3(
+                    (pinnedBox.Min.X + pinnedBox.Max.X) / 2,
+                    pinnedBox.Max.Y,
+                    (pinnedBox.Min.Z + pinnedBox.Max.Z)/2
+                );
+                var centerCameraPos = camera.Position - camera.GetOffsetVector();
+                var transform = TransformQ.LookTowards(point, centerCameraPos, Vector3.UnitY);
+                MeshDrawInstance mdi = new(MenuModels.BillboardVertical, transform, Materials.MapPin, 0);
+                target(mdi);
+            }
+            
 
             //Render the tool
             Mode.Draw3D(target, mesh);

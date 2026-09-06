@@ -20,6 +20,8 @@ namespace TranSimCS {
         
         public static SimpleMaterial White { get; private set; }
         public static SimpleMaterial WhiteTransparent { get; private set; }
+
+        public static SimpleMaterial MapPin { get; private set; }
         
 
         public static readonly string CrossIcon = "ui/check";
@@ -64,6 +66,8 @@ namespace TranSimCS {
             Impassable = SimpleMaterial.NewEmissive("signs/trafficbarrier.png");
 
             Sun = new("sun/simple glowing 128px.png", MaterialBlendMode.Transparent);
+
+            MapPin = SimpleMaterial.NewEmissive("navpin.png", MaterialBlendMode.Cutout);
         }
     }
 }
