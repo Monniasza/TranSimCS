@@ -95,6 +95,10 @@ namespace TranSimCS.Geometry {
             return intersectsX && intersectsY && intersectsZ;
         }
 
-        public static AABB CreateMerged(AABB a, AABB b) => new(Vector3.Min(a.Min, b.Min), Vector3.Max(a.Max, b.Max));
+        public static AABB CreateMerged(AABB a, AABB b) {
+            if(a.Min == a.Max) return b;
+            if(b.Min == b.Max) return a;
+            return new(Vector3.Min(a.Min, b.Min), Vector3.Max(a.Max, b.Max));
+        }
     }
 }

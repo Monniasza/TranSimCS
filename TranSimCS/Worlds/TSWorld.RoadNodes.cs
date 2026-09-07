@@ -1,5 +1,6 @@
 ﻿using System;
 using TranSimCS.Roads.Node;
+using TranSimCS.TrafficLights;
 
 namespace TranSimCS.Worlds {
     public partial class TSWorld {
@@ -14,6 +15,10 @@ namespace TranSimCS.Worlds {
         private void AddIfAbsent(RoadNode node) {
             if (Nodes.data.Contains(node)) return;
             Nodes.data.Add(node);
+        }
+        internal void AddIfAbsent(TrafficLightGroup tlg) {
+            if (TrafficLights.data.Contains(tlg)) return;
+            TrafficLights.data.Add(tlg);
         }
     }
 }

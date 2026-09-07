@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Geometry;
 using TranSimCS.ModelOld;
+using TranSimCS.Spatial;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Model {
@@ -33,7 +34,7 @@ namespace TranSimCS.Model {
             }
         }
 
-        public struct MeshDrawInstance {
+        public struct MeshDrawInstance: IBVHElement {
             public Mesh Mesh;
             public TransformQ Transform;
             public SimpleMaterial Material;
@@ -44,6 +45,14 @@ namespace TranSimCS.Model {
                 Material = material;
                 TagCount = tagCount;
             }
+
+            public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) {
+                var inverse = Transform.Inverse();
+                var inverseRay = inverse.Transform(ray);
+                var isIntersecting = Mesh.ComputeIntersection(inverseRay, out distance, out tag);
+                return isIntersecting;
+            }
+            public AABB GetBounds() => OBB.TransformBoundingBox(Mesh?.GetBounds() ?? default, Transform);
         }
         public static class MeshTraversal {
 

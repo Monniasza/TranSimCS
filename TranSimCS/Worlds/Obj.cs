@@ -34,7 +34,8 @@ namespace TranSimCS.Worlds {
             } 
         }
 
-        public Obj() {
+        public Obj(Guid? guid = null) {
+            if (guid != null) Guid = guid.Value;
             PropertyChanged += HandlePropertyChanged;
         }
         private void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e) => FireDependencyEvent(this, this, e.PropertyName);

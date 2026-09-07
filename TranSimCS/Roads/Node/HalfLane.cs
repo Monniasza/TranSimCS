@@ -5,6 +5,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Mode;
 using TranSimCS.Property;
 using TranSimCS.Roads.Strip;
+using TranSimCS.TrafficLights;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Node {
@@ -28,6 +29,21 @@ namespace TranSimCS.Roads.Node {
             get => Definition.LaneSpec;
             set => Definition = new(MiddlePosition, value);
         }
+
+        //Traffic lights
+        public Property<TrafficLightGroup?> TrafficLightProp { get; private set; }
+        public TrafficLightGroup? TrafficLight {
+            get => TrafficLightProp.Value;
+            set => TrafficLightProp.Value = value;
+        }
+        public bool IsPassingAllowed() {
+            var lights = TrafficLight;
+            if (lights == null) return true;
+            if(lights.Phases.Count == 0) return true;
+            var currentPhase = lights.Phases[lights.CurrentPhase];
+            return currentPhase.GreenLanes.Contains(this);
+        }
+
         //The constructor
         internal HalfLane(Lane lane, NodeEnd end) {
             Lane = lane;
@@ -35,6 +51,14 @@ namespace TranSimCS.Roads.Node {
             DefinitionProp = end.GetConditional(lane.InverseDefinitionProp, lane.DefinitionProp);
             _connectedLaneStrips = new();
             ConnectedLaneStrips = new(_connectedLaneStrips);
+            TrafficLightProp = new(null, Guid + PropertyNames.TrafficLightOfLaneSuffix, RoadNode);
+            TrafficLightProp.ValueChanged += TrafficLightProp_ValueChanged;
+        }
+
+        private void TrafficLightProp_ValueChanged(IProperty<TrafficLightGroup?> property, TrafficLightGroup? oldValue, TrafficLightGroup? newValue) {
+            oldValue?.OnLaneRemoved(this);
+            newValue?.OnLaneAdded(this);
+            newValue?.World?.AddIfAbsent(newValue);
         }
 
         //Derived properties

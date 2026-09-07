@@ -84,6 +84,10 @@ namespace TranSimCS.Worlds {
                         reader0.Read();
                         DayTime = reader0.GetSingle();
                         break;
+                    case "trafficlights":
+                        TrafficLights.data.Clear();
+                        TrafficLights.ReadFromJson(ref reader0, options);
+                        break;
                 }
             }, true);
         }

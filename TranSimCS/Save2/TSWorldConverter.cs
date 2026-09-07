@@ -32,6 +32,9 @@ namespace TranSimCS.Save2 {
             writer.WritePropertyName("cars");
             value.Cars.SaveToJson(writer, options);
 
+            writer.WritePropertyName("trafficLights");
+            value.TrafficLights.SaveToJson(writer, options);
+
             writer.WriteNumber("daytime", value.DayTime);
             
             writer.WriteEndObject();

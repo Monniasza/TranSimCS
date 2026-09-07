@@ -7,6 +7,7 @@ using TranSimCS.Property;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Section;
 using TranSimCS.Roads.Strip;
+using TranSimCS.TrafficLights;
 
 namespace TranSimCS.Worlds {
     public partial class TSWorld {
@@ -14,6 +15,7 @@ namespace TranSimCS.Worlds {
         public SegmentStack RoadSegments { get; }
         public SectionStack RoadSections { get; }
         public NodeStack Nodes { get; }
+        public TrafficLightStack TrafficLights { get; }
 
         //Segment handlers
         private void HandleAddRoadSegment(RoadStrip segment) {
@@ -152,6 +154,7 @@ namespace TranSimCS.Worlds {
             roadNode.FrontHalf.ConnectedSection.Value,
             roadNode.RearHalf.ConnectedSection.Value,
             .. roadNode.Connections,
+            .. roadNode.GetAllHalfLanes().Select(x => x.TrafficLight)
         ];
         private void HandleAddRoadNode(RoadNode node) {
             // Handle the addition of a new road node
@@ -177,6 +180,10 @@ namespace TranSimCS.Worlds {
             var rearSection = node.RearHalf.ConnectedSection;
             node.FrontEnd.ConnectedSection.Value = null;
             node.RearEnd.ConnectedSection.Value = null;
+
+            //Delete attached traffic lights
+            var halfLanes = node.GetAllHalfLanes();
+            foreach (var halfLane in halfLanes) halfLane.TrafficLight = null;
 
             //Delete all connected road strips
             foreach (var segment in node.Connections) {
@@ -237,6 +244,30 @@ namespace TranSimCS.Worlds {
                 if (oldValue != null) roadStrip.FireDependencyEvent(roadStrip, oldValue, PropertyNames.SectionOfSegment);
                 if (newValue != null) roadStrip.FireDependencyEvent(roadStrip, newValue, PropertyNames.SectionOfSegment);
             }
+        }
+    
+        //Traffic lights
+        private void HandleAddTrafficLight(TrafficLightGroup tlight) {
+            //Add missing lanes
+            foreach(var lane in tlight.ControlledHalfLanes.ToArray()) {
+                var roadNodeOfLane = lane.RoadNode;
+                if(roadNodeOfLane == null) {
+                    //Delete this lane
+                    lane.TrafficLight = null;
+                    tlight.OnLaneRemoved(lane);
+                } else {
+                    //Add the attached road node
+                    AddIfAbsent(roadNodeOfLane);
+                }
+            }
+        }
+        private void HandleRemoveTrafficLight(TrafficLightGroup tlight) {
+            //Remove the traffic light from all lanes
+            foreach(var lane in tlight.ControlledHalfLanes)
+                lane.TrafficLight = null;
+
+            //Fire events
+            tlight.FirePropertyEvent(tlight, new(PropertyNames.DeleteFromWorld));
         }
     }
 }

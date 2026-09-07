@@ -72,6 +72,7 @@ namespace TranSimCS.Worlds
             RoadSections = new SectionStack(this);
             Cars = new CarStack(this);
             Paths = new(this);
+            TrafficLights = new(this);
 
             //Spatial indexing
             TempSelectorsMesh = new Property<Model.MultiMesh>(new Model.MultiMesh(), "selectors", null, Equality.ReferenceEqualComparer<MultiMesh>());
@@ -85,6 +86,7 @@ namespace TranSimCS.Worlds
             Nodes.data.ItemRemoved += HandleRemoveRoadNode;
             RoadSections.data.ItemAdded += HandleAddRoadSection;
             RoadSections.data.ItemRemoved += HandleRemoveRoadSection;
+            TrafficLights.data.ItemAdded += HandleAddTrafficLight;
         }
 
         

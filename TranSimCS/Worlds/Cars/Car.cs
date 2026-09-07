@@ -208,7 +208,7 @@ namespace TranSimCS.Worlds.Cars {
                 var xyz = xyzt.ToXYZ();
                 VectorMethods.CheckVector(xyz, "xyz");
                 var t = xyzt.W;
-                if (!float.IsFinite(t)) throw new ArithmeticException("Invalid spline paramater ");
+                if (!float.IsFinite(t)) throw new ArithmeticException("Invalid spline parameter");
 
                 var referenceFrame = LanePosition.GetPositionFrame(t);
                 var lateral = referenceFrame.X;
