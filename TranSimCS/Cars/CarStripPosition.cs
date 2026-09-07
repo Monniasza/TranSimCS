@@ -14,7 +14,7 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Save2;
 using TranSimCS.Spline;
 
-namespace TranSimCS.Worlds.Cars {
+namespace TranSimCS.Cars {
     public class CarStripPosition : CarPosition, IEquatable<CarStripPosition>{
         /// <summary>
         /// On which lane strip is the car currently driving? Null for off-road
@@ -30,10 +30,7 @@ namespace TranSimCS.Worlds.Cars {
         /// </summary>
         public bool IsReverse { get; private set; }
 
-        public static CarStripPosition FromEnd(LaneStripEnd laneStrip) {
-            var isEntryFromEnd = laneStrip.half == SegmentHalf.End;
-            return new(laneStrip.strip, 0, isEntryFromEnd);
-        }
+        
         public CarStripPosition(LaneStrip laneStrip, float lanePosition = 0, bool isReverse = false) {
             ArgumentNullException.ThrowIfNull(laneStrip, nameof(laneStrip));
             if(!float.IsFinite(lanePosition)) throw new ArgumentException("Invalid lanePosition");
@@ -64,12 +61,7 @@ namespace TranSimCS.Worlds.Cars {
             return new(LaneStrip, LaneArcLength + amount, IsReverse);
         }
 
-        public override IEnumerable<CarPosition> FindNext(SegmentHalf half) {
-            if(IsReverse) half = half.Inverse();
-            var nextLane = LaneStrip.GetHalf(half);
-            nextLane = nextLane.OppositeHalf;
-            return nextLane.ConnectedLaneStrips.Select(FromEnd);
-        }
+        public override IEnumerable<CarPosition> FindNext(SegmentHalf half) => RouteMethods.FindNext(LaneStrip, IsReverse, half);
 
         private bool IsReverseToRoad => LaneStrip.IsReverse() ^ IsReverse;
 
@@ -91,7 +83,7 @@ namespace TranSimCS.Worlds.Cars {
         public override Guid SegmentName() => LaneStrip.Guid;
 
         public static bool operator ==(CarStripPosition? left, CarStripPosition? right) {
-            return (Object.ReferenceEquals(null, left)) ? Object.ReferenceEquals(null, right) : left.Equals(right);
+            return ReferenceEquals(null, left) ? ReferenceEquals(null, right) : left.Equals(right);
         }
 
         public static bool operator !=(CarStripPosition? left, CarStripPosition? right) {

@@ -14,10 +14,11 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Save2.TypeRegistry;
 using TranSimCS.Spatial;
+using TranSimCS.Worlds;
 using static TranSimCS.Model.MeshUnroll;
 using Path = System.IO.Path;
 
-namespace TranSimCS.Worlds.Cars {
+namespace TranSimCS.Cars {
     public class Car : Obj, IObjMesh, IPosition, IDemolish {
         public static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -260,7 +261,7 @@ namespace TranSimCS.Worlds.Cars {
             if(meshInstance.Mesh != null)
                 target.Draw(meshInstance);
         }
-        public AABB GetBounds() => (meshInstance.Mesh == null) ? default : OBB.TransformBoundingBox(meshInstance.Mesh.GetBounds(), meshInstance.Transform);
+        public AABB GetBounds() => meshInstance.Mesh == null ? default : OBB.TransformBoundingBox(meshInstance.Mesh.GetBounds(), meshInstance.Transform);
         public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) {
             if(meshInstance.Mesh == null) return IBVHElement.Reject(ray, out distance, out tag);
             ray = meshInstance.Transform.Inverse().Transform(ray);
@@ -272,7 +273,7 @@ namespace TranSimCS.Worlds.Cars {
         public static Car LaunchCar(TSWorld world, LaneStrip strip, float speed = 25) {
             var startingLane = strip.StartLane;
             var newCarPosition = startingLane.GetRoadNode().PositionProp.Value;
-            if (startingLane.End == NodeEnd.Backward) newCarPosition.Azimuth ^= (1 << 31);
+            if (startingLane.End == NodeEnd.Backward) newCarPosition.Azimuth ^= 1 << 31;
             Car car = new Car();
             car.Randomize();
             if (strip != null) {

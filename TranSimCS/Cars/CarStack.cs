@@ -4,9 +4,11 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Save2;
 using TranSimCS.Setting;
+using TranSimCS.Worlds;
+using TranSimCS.Worlds.Cars;
 using TranSimCS.Worlds.Stack;
 
-namespace TranSimCS.Worlds.Cars {
+namespace TranSimCS.Cars {
     public class CarStack : ObjectStack<Car, CarStack> {
         private static readonly Random rnd = new Random();
 

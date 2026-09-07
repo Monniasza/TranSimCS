@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Iesi.Collections.Generic;
+using TranSimCS.Cars;
 using TranSimCS.Geometry;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Spatial;
-using TranSimCS.Worlds.Cars;
 
 namespace TranSimCS.Worlds.Paths {
     /// <summary>

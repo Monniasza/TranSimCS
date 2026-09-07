@@ -5,7 +5,7 @@ using TranSimCS.ModelOld;
 using TranSimCS.SilkNet;
 using static TranSimCS.Model.MeshUnroll;
 
-namespace TranSimCS.Worlds.Cars {
+namespace TranSimCS.Cars {
     public static class CarModel {
         public static MeshDrawInstance CreateModel() {
             var carMaterial = new SimpleMaterial() {
