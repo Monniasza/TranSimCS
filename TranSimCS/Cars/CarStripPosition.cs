@@ -12,10 +12,11 @@ using TranSimCS.Model;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Save2;
+using TranSimCS.Save2.TypeRegistry;
 using TranSimCS.Spline;
 
 namespace TranSimCS.Cars {
-    public class CarStripPosition : CarPosition, IEquatable<CarStripPosition>{
+    public struct CarStripPosition : IEquatable<CarStripPosition>{
         /// <summary>
         /// On which lane strip is the car currently driving? Null for off-road
         /// </summary>
@@ -43,7 +44,7 @@ namespace TranSimCS.Cars {
             return obj is CarStripPosition position && Equals(position);
         }
 
-        public bool Equals(CarStripPosition? other) {
+        public bool Equals(CarStripPosition other) {
             return other != null &&
                    LaneStrip == other.LaneStrip &&
                    LaneArcLength == other.LaneArcLength &&
@@ -54,35 +55,17 @@ namespace TranSimCS.Cars {
             return HashCode.Combine(LaneStrip, LaneArcLength, IsReverse);
         }
 
-        public override CarStripPosition? Advance(float amount) {
-            //Validate the current state
-            if (LaneStrip.Road == null) return null;
-
-            return new(LaneStrip, LaneArcLength + amount, IsReverse);
-        }
-
-        public override IEnumerable<CarPosition> FindNext(SegmentHalf half) => RouteMethods.FindNext(LaneStrip, IsReverse, half);
-
         private bool IsReverseToRoad => LaneStrip.IsReverse() ^ IsReverse;
 
-        public override float CurrentPosition() => LaneArcLength;
+        public LUT GetPositionLookup() => IsReverseToRoad ? LaneStrip.SplineLUT.Reverse : LaneStrip.SplineLUT.Forward;
 
-        public override float MaxPosition() => LaneStrip.SplineLUT.Length;
-
-        public override LUT GetPositionLookup() => IsReverseToRoad ? LaneStrip.SplineLUT.Reverse : LaneStrip.SplineLUT.Forward;
-
-        public override Transform3 GetPositionFrame(float t) {
+        public Transform3 GetPositionFrame(float t) {
             var result = LaneStrip.SplineLUT.spline.SampleFrame(t);
             if (IsReverseToRoad) result = result.Around();
             return result;
         }
 
-        public const string StripTypeName = "CarStripPosition";
-        public override string TypeName() => StripTypeName;
-
-        public override Guid SegmentName() => LaneStrip.Guid;
-
-        public override RoutePosition ToRoute() {
+        public RoutePosition ToRoute() {
             Route route = new Route([new RouteInput(LaneStrip, IsReverse)]);
             return new(route, LaneArcLength);
         }
@@ -141,12 +124,12 @@ namespace TranSimCS.Cars {
             }
 
             writer.WriteStartObject();
-            writer.WriteBoolean("reverse", value.IsReverse);
-            if (float.IsFinite(value.LaneArcLength)) writer.WriteNumber("pos", value.LaneArcLength);
-            if(value.LaneStrip != null) {
+            writer.WriteBoolean("reverse", value.Value.IsReverse);
+            if (float.IsFinite(value.Value.LaneArcLength)) writer.WriteNumber("pos", value.Value.LaneArcLength);
+            if(value.Value.LaneStrip != null) {
                 var stripConverter = (StripRefConverter)options.GetConverter(typeof(LaneStrip));
                 writer.WritePropertyName("strip");
-                stripConverter.Write(writer, value.LaneStrip, options);
+                stripConverter.Write(writer, value.Value.LaneStrip, options);
             }
             writer.WriteEndObject();
         }

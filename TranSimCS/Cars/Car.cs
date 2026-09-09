@@ -29,11 +29,11 @@ namespace TranSimCS.Cars {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         public static ObjLoader newLoader;
 
-        public static readonly TypeRegistry<CarPosition> CarPositionRegistry;
+        //public static readonly TypeRegistry<CarStripPosition> CarPositionRegistry;
 
         static Car() {
-            CarPositionRegistry = new();
-            CarPositionRegistry.Register(CarStripPosition.StripTypeName, new LanePositionConverter());
+            //CarPositionRegistry = new();
+            //CarPositionRegistry.Register(CarStripPosition.StripTypeName, new LanePositionConverter());
         }
 
         public static void Init() {

@@ -68,10 +68,14 @@ namespace TranSimCS.Cars {
                     speed = reader0.GetSingle();
                     break;
                 case "strip":
-                    strip = stripConverter.Read(ref reader0, typeof(LaneStrip), options).ToRoute();
+                    strip = stripConverter.Read(ref reader0, typeof(LaneStrip), options).Value.ToRoute();
                     break;
                 case "state":
-                    strip = Car.CarPositionRegistry.Read(ref reader0, typeof(CarPosition), options).ToRoute();
+                    JsonProcessor.ReadJsonObjectProperties(ref reader0, (ref reader1, innerName) => {
+                        if (innerName == "data") {
+                            strip = stripConverter.Read(ref reader1, typeof(LaneStrip), options).Value.ToRoute();
+                        } else reader1.Skip();
+                    });
                     break;
                 case "route":
                     var routeConverter = new RoutePositionConverter(world);

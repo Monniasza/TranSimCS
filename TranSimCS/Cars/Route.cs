@@ -19,7 +19,8 @@ namespace TranSimCS.Cars {
     public sealed class Route {
         //Data
         public ImmutableArray<RouteKey> LaneStrips { get; private set; }
-        public Route(IEnumerable<RouteInput> roads) {
+        public Route(IEnumerable<RouteInput> roads) : this(roads.ToArray()) { }
+        public Route(params RouteInput[] roads){
             ArgumentNullException.ThrowIfNull(roads, nameof(roads));
             if (!roads.Any()) {
                 throw new ArgumentException(
@@ -27,18 +28,17 @@ namespace TranSimCS.Cars {
                     nameof(roads)
                 );
             }
-            List<RouteKey> elements = new List<RouteKey>();
+            var elements = new RouteKey[roads.Length];
             float cumulativeDistance = 0;
-            foreach (var road in roads) {
+            for(int i = 0; i < elements.Length; i++) {
+                var road = roads[i];
                 var startDist = cumulativeDistance;
                 var endDist = startDist + road.road.SplineLUT.Length;
-                elements.Add(new RouteKey(road.road, road.isReverse, startDist, endDist));
+                elements[i] = new RouteKey(road.road, road.isReverse, startDist, endDist);
                 cumulativeDistance = endDist;
             }
             LaneStrips = elements.ToImmutableArray();
         }
-        public Route(IEnumerable<RouteKey> roads)
-            : this(roads.Select(RouteMethods.ToRouteInput).ToArray()) { }
 
         //Operations
         public int Find(float meters) {
@@ -66,16 +66,19 @@ namespace TranSimCS.Cars {
         public CarStripPosition FindValue(float meters) {
             var idx = Find(meters);
             if (idx < 0) idx = 0;
-            if (idx > LaneStrips.Length) idx = LaneStrips.Length - 1;
+            if (idx >= LaneStrips.Length) idx = LaneStrips.Length - 1;
             return LaneStrips[idx].Project(meters);
         }
         public Route? Pop(int count) {
-            var remaining = LaneStrips.Skip(count);
+            if (count <= 0) return this;
+            int remaining = LaneStrips.Length - count;
+            if (remaining <= 0) return null;
 
-            if (!remaining.Any())
-                return null;
+            var elements = new RouteInput[remaining];
+            for(int i = 0; i < remaining; i++) 
+                elements[i] = LaneStrips[i+count].ToRouteInput;
 
-            return remaining.ToRoute();
+            return new Route(elements);
         }
         public Route Plan(float metersFromStart) {
             if (metersFromStart <= LaneStrips[^1].EndPosition) return this;
@@ -90,14 +93,14 @@ namespace TranSimCS.Cars {
                 var next = (CarStripPosition)candidates.GetRandomElement();
                 elements.Add(new(next.LaneStrip, next.IsReverse, element.EndPosition, element.EndPosition + next.LaneStrip.SplineLUT.Length));
             }
-            return new Route(elements);
+            return elements.ToRoute();
         }
         public float Length() => LaneStrips[^1].EndPosition;
 
         public Transform3 GetPosition(float arclength) {
             var currentStrip = FindValue(arclength);
             var positionLUT = currentStrip.GetPositionLookup();
-            var xyzt = positionLUT[currentStrip.CurrentPosition()];
+            var xyzt = positionLUT[currentStrip.LaneArcLength];
             var xyz = xyzt.ToXYZ();
             VectorMethods.CheckVector(xyz, "xyz");
             var t = xyzt.W;
@@ -113,9 +116,11 @@ namespace TranSimCS.Cars {
     public static class RouteMethods {
         public static RouteInput ToRouteInput(this RouteKey key) => key.ToRouteInput;
         public static RouteKey ToRouteKey(this RouteInput input) => new RouteKey(input);
+
+        public static Route ToRoute(this RouteInput[] inputs) => new Route(inputs);
         public static Route ToRoute(this IEnumerable<RouteInput> inputs) => new Route(inputs);
-        public static Route ToRoute(this IEnumerable<RouteKey> inputs) => new Route(inputs);
-        public static IEnumerable<CarPosition> FindNext(LaneStrip strip, bool isReverse, SegmentHalf half) {
+        public static Route ToRoute(this IEnumerable<RouteKey> inputs) => new Route(inputs.Select(x => x.ToRouteInput));
+        public static IEnumerable<CarStripPosition> FindNext(LaneStrip strip, bool isReverse, SegmentHalf half) {
             if (isReverse) half = half.Inverse();
             var nextLane = strip.GetHalf(half);
             nextLane = nextLane.OppositeHalf;
