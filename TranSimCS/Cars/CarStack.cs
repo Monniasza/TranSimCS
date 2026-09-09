@@ -5,7 +5,6 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Save2;
 using TranSimCS.Setting;
 using TranSimCS.Worlds;
-using TranSimCS.Worlds.Cars;
 using TranSimCS.Worlds.Stack;
 
 namespace TranSimCS.Cars {
