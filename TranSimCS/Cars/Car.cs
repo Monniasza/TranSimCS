@@ -124,7 +124,9 @@ namespace TranSimCS.Cars {
             pr.Inclination *= -1;
             PositionProp.Value = pr;
         }
-        public CarPosition? LanePosition;
+
+        public RoutePosition CurrentRoute;
+
 
         public event MeshInvalidationCallback GeometryChanged;
 
@@ -145,79 +147,26 @@ namespace TranSimCS.Cars {
             }
 
             if (World == null) return;
-            if(LanePosition == null) {
-                //The car is off-road
-                var vel = Velocity;
-                VectorMethods.CheckVector(vel, "vel");
-                var pr = PositionProp.Value;
-                VectorMethods.CheckVector(pr.Position, "pr.Position");
-                if (!float.IsFinite(pr.Inclination)) throw new ArithmeticException("Invalid pitch");
-                if (!float.IsFinite(pr.Tilt)) throw new ArithmeticException("Invalid roll");
-                var xyz = pr.Position + vel * time;
-                VectorMethods.CheckVector(xyz, "xyz");
-                pr.Position = xyz;
-                PositionProp.Value = pr;
+            if(CurrentRoute.Route == null) {
+                log.Error($"The car {Guid} is off-road. Deleting.");
+                Demolish();
+                return;
             } else {
                 //Interpolate
-                LanePosition = LanePosition.Advance(Speed * time);
-                if (LanePosition == null) {
+                var dpos = Speed * time;
+                var newRoute = CurrentRoute.Advance(dpos);
+                if (newRoute == null) {
                     Demolish();
                     return;
                 }
-
-                //Overflow
-                int maxSegments = 100;
-                int segmentCounter = 0;
-                while (true) {
-                    var maxLength = LanePosition.MaxPosition();
-                    bool badLength = maxLength < 0.1f;
-                    bool overLimit = segmentCounter > maxSegments;
-
-                    if (maxLength < 0.1) throw new ArithmeticException("Zero or negative length");
-                    if (LanePosition.CurrentPosition() >= 0 && LanePosition.CurrentPosition() <= maxLength) break;
-                    if (badLength || overLimit) {
-                        if (badLength) log.Warn($"Segment {LanePosition.SegmentName()} is excessively short. Aborting overflows");
-                        if(overLimit) log.Warn($"Segment limit exceeded on car {Guid}. Aborting overflows.");
-                        log.Warn($"Car segment position: {LanePosition.CurrentPosition()}");
-                        log.Warn($"Car segment length: {LanePosition.MaxPosition()}");
-                        log.Warn($"Car coordinates: {PositionProp.Value}");
-                        log.Warn($"Car instantenous velocity: {Velocity}");
-                        log.Warn($"Car speed: {Speed}");
-                        break;
-                    }
-
-                    if (LanePosition == null) return;
-
-                    var overflowIsRear = LanePosition.CurrentPosition() < 0;
-
-                    if (overflowIsRear) {
-                        //Passed the beginning
-                        Overflow(SegmentHalf.Start);
-                    } else {
-                        //Passed the end
-                        Overflow(SegmentHalf.End);
-                    }
-
-                    segmentCounter++;
-                    if (World == null) return;
-                }
+                CurrentRoute = newRoute.Value;
 
                 //Put the car in the world
-                var positionLUT = LanePosition.GetPositionLookup();
+                var referenceFrame = CurrentRoute.GetPositionFrame();
 
-                var xyzt = positionLUT[LanePosition.CurrentPosition()];
-                var xyz = xyzt.ToXYZ();
-                VectorMethods.CheckVector(xyz, "xyz");
-                var t = xyzt.W;
-                if (!float.IsFinite(t)) throw new ArithmeticException("Invalid spline parameter");
-
-                var referenceFrame = LanePosition.GetPositionFrame(t);
-                var lateral = referenceFrame.X;
-                VectorMethods.CheckVector(lateral, "lateral");
+                var xyz = referenceFrame.O;
                 var tangential = referenceFrame.Z;
-                VectorMethods.CheckVector(tangential, "tangential");
-
-                xyz = referenceFrame.O;
+                var lateral = referenceFrame.X;
 
                 var newCoords = PositionEulerAngles.FromPosTangentLateral(xyz, tangential, lateral);
                 
@@ -229,31 +178,9 @@ namespace TranSimCS.Cars {
 
             meshInstance.Transform = PositionProp.Value.ToTransformQ();
         }
-        private void Overflow(SegmentHalf half) {
-            if (LanePosition == null) return;
-            var nextPosition = LanePosition.CurrentPosition() - LanePosition.MaxPosition();
-
-            var candidates = LanePosition.FindNext(half).ToArray();
-            //log.Trace($"Candidates enumerated: {candidates.Length}");
-
-            //If there are no more candidates, destroy the car
-            if (candidates.Length == 0) {
-                Demolish();
-                return;
-            }
-
-            //Car gets stuck when hitting a next segment
-            var choice = rnd.GetRandomEntry(candidates);
-            if (choice == LanePosition)
-                throw new Exception("Transitioned to same strip");
-
-            LanePosition = choice.Advance(nextPosition);
-            //log.Trace($"Picked candidate length: {LanePosition.MaxPosition()}");
-        }
 
         public void Demolish() {
             World.Cars.data.Remove(this);
-            LanePosition = null;
             return;
         }
 
@@ -278,7 +205,7 @@ namespace TranSimCS.Cars {
             car.Randomize();
             if (strip != null) {
                 var lanePosition = new CarStripPosition(strip, 0);
-                car.LanePosition = lanePosition;
+                car.CurrentRoute = lanePosition.ToRoute();
             }
             car.PositionProp.Value = newCarPosition; //selected position is NaN
             car.Speed = speed;

@@ -82,6 +82,11 @@ namespace TranSimCS.Cars {
 
         public override Guid SegmentName() => LaneStrip.Guid;
 
+        public override RoutePosition ToRoute() {
+            Route route = new Route([new RouteInput(LaneStrip, IsReverse)]);
+            return new(route, LaneArcLength);
+        }
+
         public static bool operator ==(CarStripPosition? left, CarStripPosition? right) {
             return ReferenceEquals(null, left) ? ReferenceEquals(null, right) : left.Equals(right);
         }

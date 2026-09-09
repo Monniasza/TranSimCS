@@ -23,9 +23,12 @@ namespace TranSimCS.Cars {
                         break;
                     case "strips":
                         JsonProcessor.ReadJsonArrayProperties(ref reader0, (ref reader1, idx) => {
+                            //Already on the StartArray of the route element
                             var strip = stripConverter.Read(ref reader1, typeof(LaneStrip), options);
                             reader1.Read();
                             var isReverse = reader1.GetBoolean();
+                            JsonProcessor.AssertTokenType(ref reader1, JsonTokenType.EndArray);
+                            //reader1.Read();
                             rows.Add(new(strip, isReverse));
                         });
                         break;
@@ -43,10 +46,13 @@ namespace TranSimCS.Cars {
             var stripSerializer = new StripRefConverter(world);
             writer.WriteStartObject();
             writer.WriteNumber("position", value.Position);
+            writer.WritePropertyName("strips");
             writer.WriteStartArray();
             foreach(var segment in value.Route.LaneStrips) {
+                writer.WriteStartArray();
                 stripSerializer.Write(writer, segment.road, options);
                 writer.WriteBooleanValue(segment.isReverse);
+                writer.WriteEndArray();
             }
             writer.WriteEndArray();
             writer.WriteEndObject();

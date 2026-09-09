@@ -45,34 +45,38 @@ namespace TranSimCS.Cars {
             PositionEulerAngles? pos = null;
             string? mesh = null;
             float speed = 0;
-            CarPosition? strip = null;
+            RoutePosition strip = default;
 
             var objPosConverter = new ObjPosConverter();
             var stripConverter = new LanePositionConverter();
 
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, propertyName) => {
-                switch (propertyName.ToLower()) {
-                    case "id":
-                        reader0.Read();
-                        guid = Guid.Parse(reader0.GetString()!);
-                        break;
-                    case "pos":
-                        pos = objPosConverter.Read(ref reader0, typeof(PositionEulerAngles), options);
-                        break;
-                    case "mesh":
-                        reader0.Read();
-                        mesh = reader0.GetString();
-                        break;
-                    case "speed":
-                        reader0.Read();
-                        speed = reader0.GetSingle();
-                        break;
-                    case "strip":
-                        strip = stripConverter.Read(ref reader0, typeof(LaneStrip), options);
-                        break;
-                    case "state":
-                        strip = Car.CarPositionRegistry.Read(ref reader0, typeof(CarPosition), options);
-                        break;
+            switch (propertyName.ToLower()) {
+                case "id":
+                    reader0.Read();
+                    guid = Guid.Parse(reader0.GetString()!);
+                    break;
+                case "pos":
+                    pos = objPosConverter.Read(ref reader0, typeof(PositionEulerAngles), options);
+                    break;
+                case "mesh":
+                    reader0.Read();
+                    mesh = reader0.GetString();
+                    break;
+                case "speed":
+                    reader0.Read();
+                    speed = reader0.GetSingle();
+                    break;
+                case "strip":
+                    strip = stripConverter.Read(ref reader0, typeof(LaneStrip), options).ToRoute();
+                    break;
+                case "state":
+                    strip = Car.CarPositionRegistry.Read(ref reader0, typeof(CarPosition), options).ToRoute();
+                    break;
+                case "route":
+                    var routeConverter = new RoutePositionConverter(world);
+                    strip = routeConverter.Read(ref reader0, typeof(RoutePosition), options);
+                    break;
                 }
             });
 
@@ -83,7 +87,7 @@ namespace TranSimCS.Cars {
             car.PositionProp.Value = pos.Value;
             car.MeshId = mesh;
             car.Speed = speed;
-            car.LanePosition = strip;
+            car.CurrentRoute = strip;
             return car;
         }
 
@@ -93,6 +97,7 @@ namespace TranSimCS.Cars {
 
             writer.WritePropertyName("pos");
             var objPosConverter = new ObjPosConverter();
+            var routeConverter = new RoutePositionConverter(world);
             objPosConverter.Write(writer, value.PositionProp.Value, options);
 
             writer.WritePropertyName("mesh");
@@ -101,8 +106,8 @@ namespace TranSimCS.Cars {
             writer.WritePropertyName("speed");
             writer.WriteNumberValue(value.Speed);
 
-            writer.WritePropertyName("state");
-            Car.CarPositionRegistry.Write(writer, value.LanePosition, options);
+            writer.WritePropertyName("route");
+            routeConverter.Write(writer, value.CurrentRoute, options);
 
             writer.WriteEndObject();
         }

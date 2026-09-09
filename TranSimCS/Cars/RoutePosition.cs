@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TranSimCS.Geometry;
 
 namespace TranSimCS.Cars {
     public struct RoutePosition {
@@ -46,5 +47,6 @@ namespace TranSimCS.Cars {
 
             return new(route, position);
         }
+        public Transform3 GetPositionFrame() => Route.GetPosition(Position);
     }
 }

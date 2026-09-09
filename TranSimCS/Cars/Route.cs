@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TranSimCS.Geometry;
 using TranSimCS.Roads.Strip;
 
 namespace TranSimCS.Cars {
@@ -92,6 +93,22 @@ namespace TranSimCS.Cars {
             return new Route(elements);
         }
         public float Length() => LaneStrips[^1].EndPosition;
+
+        public Transform3 GetPosition(float arclength) {
+            var currentStrip = FindValue(arclength);
+            var positionLUT = currentStrip.GetPositionLookup();
+            var xyzt = positionLUT[currentStrip.CurrentPosition()];
+            var xyz = xyzt.ToXYZ();
+            VectorMethods.CheckVector(xyz, "xyz");
+            var t = xyzt.W;
+            if (!float.IsFinite(t)) throw new ArithmeticException("Invalid spline parameter");
+            var referenceFrame = currentStrip.GetPositionFrame(t);
+            var lateral = referenceFrame.X;
+            VectorMethods.CheckVector(lateral, "lateral");
+            var tangential = referenceFrame.Z;
+            VectorMethods.CheckVector(tangential, "tangential");
+            return referenceFrame;
+        }
     }
     public static class RouteMethods {
         public static RouteInput ToRouteInput(this RouteKey key) => key.ToRouteInput;

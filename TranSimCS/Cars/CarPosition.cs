@@ -45,6 +45,10 @@ namespace TranSimCS.Cars {
         /// Returnsa the GUID of a segment this CarPosition represents.
         /// </summary>
         public abstract Guid SegmentName();
+        /// <summary>
+        /// Converts this to a <see cref="RoutePosition"/>
+        /// </summary>
+        public abstract RoutePosition ToRoute();
         (string TypeId, TypeRegistry<CarPosition> TypeRegistry) ITypeRegistered<CarPosition>.TypeInfo() => (TypeName(), Car.CarPositionRegistry);
     }
 }
