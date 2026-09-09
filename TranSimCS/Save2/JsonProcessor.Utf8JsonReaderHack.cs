@@ -40,8 +40,8 @@ namespace TranSimCS.Save2 {
             return (ref reader) => {
                 T result;
                 fixed (Utf8JsonReader* ptr = &reader) {
-                    var newPtr = ptr + fieldOffset;
-                    var castedPtr = (T*)ptr;
+                    var newPtr = (byte*)ptr + fieldOffset;
+                    var castedPtr = (T*)newPtr;
                     result = *castedPtr;
                 }
                 return result;
@@ -56,7 +56,7 @@ namespace TranSimCS.Save2 {
                 var reader = element;
                 var ptr = &element;
                 TField result;
-                var newPtr = ptr + fieldOffset;
+                var newPtr = (byte*)ptr + fieldOffset;
                 var castedPtr = (TField*)newPtr;
                 result = *castedPtr;
                 return result;
