@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using LanguageExt.ClassInstances.Pred;
-using TranSimCS.Geometry;
-using TranSimCS.Geometry.SplineFrames;
-using TranSimCS.Roads.Node;
-using TranSimCS.Roads.Strip;
+﻿using System.Numerics;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Spline {

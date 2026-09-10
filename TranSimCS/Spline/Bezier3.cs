@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Numerics;
 using TranSimCS.Geometry;
-using TranSimCS.Geometry.SplineFrames;
 
 namespace TranSimCS.Spline{
     public struct LineSegment: ISpline<Vector3> {
@@ -236,7 +235,7 @@ namespace TranSimCS.Spline{
                 midpoint = (minT + maxT) / 2;
                 var sample = this[midpoint];
                 var tangential = Tangential(midpoint);
-                var dist = SplineFrame.SignedDistance(sample, tangential, position);
+                var dist = PlaneMethods.SignedDistance(sample, tangential, position);
                 if (MathF.Abs(dist) < tolerance) {
                     //Satisfactory tolerance
                     break;

@@ -19,5 +19,8 @@ namespace TranSimCS.Geometry {
         /// Negative values are inside the plane's half-space, positive values are outside, and zero is on the plane
         /// </summary>
         public static float PrenormSignedDistance(this Plane plane, Vector3 vector) => Vector3.Dot(vector, plane.Normal) + plane.D;
+
+        public static float SignedDistance(Vector3 position, Vector3 normal, Vector3 subject) =>
+            Vector3.Dot(subject - position, normal.Normalized());
     }
 }

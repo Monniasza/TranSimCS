@@ -29,15 +29,6 @@ namespace TranSimCS {
             array[a] = array[b];
             array[b] = tmp;
         }
-        public static int SwapFlags(int source, int leftFlag, int rightFlag) {
-            bool left = (source & leftFlag) != 0;
-            bool right = (source & rightFlag) != 0;
-
-            if (left != right)
-                source ^= leftFlag | rightFlag;
-
-            return source;
-        }
         public static T SwapFlags<T>(T value, T leftFlag, T rightFlag)
     where T : struct, Enum {
             long source = Convert.ToInt64(value);
@@ -59,11 +50,6 @@ namespace TranSimCS {
             var result = subject2 << offset;
             return (T)Enum.ToObject(typeof(T), result);
         }
-        public static T ShiftRight<T>(this T subject, int offset) where T : struct, Enum {
-            long subject2 = Convert.ToInt64(subject);
-            var result = subject2 >>> offset;
-            return (T)Enum.ToObject(typeof(T), result);
-        }
         public static T WithFlags<T>(this T subject, T flags, bool newValue) where T : struct, Enum{
             long subject2 = Convert.ToInt64(subject);
             long flags2 = Convert.ToInt64(flags);
@@ -76,10 +62,6 @@ namespace TranSimCS {
             long fields2 = Convert.ToInt64(fields);
             subject2 = (subject2 & ~fields2) | flags2;
             return (T)Enum.ToObject(typeof(T), subject2);
-        }
-
-        public static T? OrDefault<T>(T? value) {
-            return value ?? default;
         }
     }
 }

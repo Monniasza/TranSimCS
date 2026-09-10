@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using Clipper2Lib;
 using NLog;
+using TranSimCS.Collections;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.ModelOld;

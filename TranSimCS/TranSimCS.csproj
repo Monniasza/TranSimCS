@@ -93,10 +93,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Roads\Crossing\" />
-    <Folder Include="Worlds\Dependency\" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Include\**\*" />
   </ItemGroup>
   <Target Name="RestoreDotnetTools" BeforeTargets="CollectPackageReferences">

@@ -10,7 +10,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.SilkNet;
 
-namespace TranSimCS.Render {
+namespace TranSimCS.Collections {
     public class DLNode<T> {
         public static DLNode<T> CreateLinear(params T[] list) => CreateLinear((IEnumerable<T>)list);
         public static DLNode<T> CreateLinear(IEnumerable<T> list) {

@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Clipper2Lib;
-using TranSimCS.Geometry.SplineFrames;
+﻿using Clipper2Lib;
 using TranSimCS.Model;
 using TranSimCS.Polygons;
 using TranSimCS.Roads.Range;
+using TranSimCS.Spline;
 
 namespace TranSimCS.Roads {
     /// <summary>
@@ -66,7 +61,7 @@ namespace TranSimCS.Roads {
         /// </summary>
         /// <param name="road"></param>
         /// <returns></returns>
-        public SplineFrame CalculateSplineFrame(T road);
+        public OrthodistantBasis CalculateSplineFrame(T road);
         /// <summary>
         /// Calculates a length over which polygons returned by <b>polygon-generating methods</b> will reach the ends of the <see cref="SplineFrame"/>.
         /// </summary>

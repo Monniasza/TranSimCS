@@ -14,11 +14,6 @@ namespace TranSimCS.Collections {
 
         public ObservableList() { }
 
-        public ObservableList(IEnumerable<T> data) {
-            _elements.AddRange(data);
-        }
-
-
         public T this[int index] { get => _elements[index]; set => _elements[index] = value; }
 
         public int Count => _elements.Count;

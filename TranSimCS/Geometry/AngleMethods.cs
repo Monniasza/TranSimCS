@@ -13,6 +13,5 @@ namespace TranSimCS.Geometry {
         public static Vector3 ToRadians(this Vector3 vector) => vector * RadsInDeg;
 
         public static float ToDegrees(this float vector) => vector * DegsInRad;
-        public static float ToRadians(this float vector) => vector * RadsInDeg;
     }
 }

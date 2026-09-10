@@ -1,9 +1,11 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using TranSimCS.Roads.Node;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Geometry
 {
+    [Obsolete("Removal planned")]
     public readonly struct LineEnd {
         public Vector3 Position { get; }
         public Vector3 Tangential { get; }
@@ -18,20 +20,8 @@ namespace TranSimCS.Geometry
             Lateral = lateral;
         }
 
-        public static LineEnd calcLineEnd(RoadNodeEnd node, float offset)
-            => calcLineEnd(node.Node, offset, node.End);
-
         public static LineEnd calcLineEnd(HalfNode node, float offset)
-            => calcLineEnd(node, offset, NodeEnd.Forward); 
-
-        public static (LineEnd, LineEnd) calcBoundingLineEnds(RoadNodeEnd node) {
-            var bounds = node.Bounds();
-            var leftEnd = calcLineEnd(node, bounds.Min);
-            var rightEnd = calcLineEnd(node, bounds.Max);
-            if (node.End == NodeEnd.Backward)
-                (leftEnd, rightEnd) = (rightEnd, leftEnd);
-            return (leftEnd, rightEnd);
-        }
+            => calcLineEnd(node, offset, NodeEnd.Forward);
         public static LineEnd calcBoundingLineEndFaced(HalfNode node, int discriminator = 1) {
             var (l, r) = node.Bounds;
             if (discriminator < 0)

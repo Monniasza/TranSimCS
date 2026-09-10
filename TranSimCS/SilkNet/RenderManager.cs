@@ -206,12 +206,12 @@ namespace TranSimCS.SilkNet {
             var gl = window.OpenGL;
 
             //Group meshes by mesh
-            var groupedMeshes = meshes.QuickGroup(x => x.Mesh);
-            stats.ModelCount += groupedMeshes.Count;
+            var groupedMeshes = meshes.GroupBy(x => x.Mesh);
             foreach (var meshGroup in groupedMeshes) {
+                stats.ModelCount++;
                 var mesh = meshGroup.Key;
-                var instances = meshGroup.Value;
-                if (instances.Count == 0 || mesh.Vertices.Count == 0 || mesh.Indices.Count == 0) continue;
+                var instances = meshGroup.ToArray();
+                if (instances.Length == 0 || mesh.Vertices.Count == 0 || mesh.Indices.Count == 0) continue;
 
                 //Bind the mesh
                 var meshGPU = GetCachedMesh(mesh);
@@ -219,13 +219,13 @@ namespace TranSimCS.SilkNet {
                 CheckError("BindVertexArray");
 
                 //For each material
-                var groupedByMaterial = instances.QuickGroup(x => x.Material);
-                stats.MaterialCount += groupedByMaterial.Count;
+                var groupedByMaterial = instances.GroupBy(x => x.Material);
                 foreach (var materialGroup in groupedByMaterial) {
+                    stats.MaterialCount++;
                     var material = materialGroup.Key;
-                    var materialInstances = materialGroup.Value;
+                    var materialInstances = materialGroup.ToArray();
 
-                    if (materialInstances.Count == 0) continue;
+                    if (materialInstances.Length == 0) continue;
                     var positionValues = materialInstances.Select(x => x.Transform).ToArray();
 
                     //Bind uniforms
@@ -254,7 +254,7 @@ namespace TranSimCS.SilkNet {
 
                     stats.DrawCount++;
                     unsafe {
-                        gl.DrawElementsInstanced(PrimitiveType.Triangles, (uint)(mesh.Indices.Count), DrawElementsType.UnsignedShort, null, (uint)(instances.Count));
+                        gl.DrawElementsInstanced(PrimitiveType.Triangles, (uint)(mesh.Indices.Count), DrawElementsType.UnsignedShort, null, (uint)(instances.Length));
 
                         //gl.DrawElements(PrimitiveType.Triangles, (uint)(mesh.Indices.Count), DrawElementsType.UnsignedShort, null);
                     }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Numerics;
 using TranSimCS.Geometry;
-using TranSimCS.Geometry.SplineFrames;
 
 namespace TranSimCS.Spline {
     public struct OrthodistantBasis {
@@ -81,7 +80,7 @@ namespace TranSimCS.Spline {
                 vX = sample.X;
                 vY = sample.Y;
                 var tangential = -Vector3.Cross(vY, vX);
-                var dist = SplineFrame.SignedDistance(pO, tangential, position);
+                var dist = PlaneMethods.SignedDistance(pO, tangential, position);
                 if (MathF.Abs(dist) < tolerance) {
                     //Satisfactory tolerance
                     break;
