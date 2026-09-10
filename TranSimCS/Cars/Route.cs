@@ -45,25 +45,8 @@ namespace TranSimCS.Cars {
 
         //Operations
         public int Find(float meters) {
-            int min = 0;
-            int max = LaneStrips.Length - 1;
-            while(min <= max) {
-                int mid = (min + max) >> 1;
-                var element = LaneStrips[mid];
-                if (meters >= element.StartPosition && meters <= element.EndPosition) {
-                    //Found a match
-                    return mid;
-                }
-                if(meters < element.StartPosition) {
-                    //Before the strip
-                    max = mid - 1;
-                } else {
-                    //After the strip
-                    min = mid + 1;
-                }
-            }
-            //Not in range
-            if (meters < LaneStrips[0].StartPosition) return -1;
+            for(int i = 0; i < LaneStrips.Length; i++) 
+                if (LaneStrips[i].EndPosition >= meters) return i;
             return LaneStrips.Length;
         }
         public CarStripPosition FindValue(float meters) {
