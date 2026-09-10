@@ -7,6 +7,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using LanguageExt;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace TranSimCS {
     public struct LUTKey: IComparable<LUTKey>, IEquatable<LUTKey> {
@@ -87,7 +88,8 @@ namespace TranSimCS {
                     //Exact find
                     return Data[binarySearch].Y;
                 }
-        }}
+            }
+        }
 
         public static LUT CreateFromPoints(params Vector3[] points) {
             float step = 1.0f / (points.Length - 1);

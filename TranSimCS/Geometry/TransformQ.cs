@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.Geometry {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -90,6 +91,12 @@ namespace TranSimCS.Geometry {
             Vector3 tangent = Vector3.Normalize(cameraPos - origin);
             Matrix4x4 mat = Matrix4x4.CreateWorld(origin, tangent, up);
             return new TransformQ(origin, mat.ToTransformQ().Rotation);
+        }
+        public static TransformQ FromPosTangentLateral(Vector3 pos, Vector3 tangent, Vector3 lateral) {
+            var nrm = Vector3.Cross(lateral, tangent).Normalized();
+            Matrix4x4 mat = Matrix4x4.CreateWorld(pos, tangent, nrm);
+
+            return new TransformQ(pos, Quaternion.CreateFromRotationMatrix(mat));
         }
     }
 }

@@ -119,7 +119,7 @@ namespace TranSimCS.SilkNet {
                 ImGui.Text($"Picked coordinates: {selection.Coordinates.X}  {selection.Coordinates.Y}  {selection.Coordinates.Z}");
                 ImGui.Text($"Picked tag: {tag}");
                 if(obj is IPosition positionable) {
-                    DearUI.InputObjPos("Position/Rotation", positionable.PositionProp);
+                    DearUI.InputObjPos("Position/Rotation", positionable);
                     if(ImGui.Button("Track this object")) {
                         TrackPosition = positionable;
                     }

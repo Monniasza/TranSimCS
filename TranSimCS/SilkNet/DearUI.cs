@@ -102,10 +102,10 @@ namespace TranSimCS.SilkNet {
             if(rotChanged) pea.YawPitchRoll = yawPitchRoll.ToRadians();
             return posChanged | rotChanged;
         }
-        public static bool InputObjPos(string title, Property<PositionEulerAngles> pea) {
-            var tmp = pea.Value;
+        public static bool InputObjPos(string title, IPosition pea) {
+            var tmp = pea.PositionData;
             var result = InputObjPos(title, ref tmp);
-            if(result) pea.Value = tmp;
+            if(result) pea.PositionData = tmp;
             return result;
         }
         public static bool InputLaneSpec(string title, ref LaneSpec laneSpec) {

@@ -204,5 +204,7 @@ namespace TranSimCS.Roads.Node {
 
         //Connections (maintained by the node ends)
         public IEnumerable<RoadStrip> Connections => RearHalf.ConnectedSegments.Union(FrontHalf.ConnectedSegments);
+
+        public PositionEulerAngles PositionData { get => PositionProp.Value; set => PositionProp.Value = value; }
     }
 }

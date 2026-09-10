@@ -76,6 +76,8 @@ namespace TranSimCS.Roads.Node {
         public Vector3 CenterPos => RoadNode.CenterPosition;
         public Interval<float> Bounds => NodeSpec.Range;
 
+        public PositionEulerAngles PositionData { get => PositionProp.Value; set => PositionProp.Value = value; }
+
         //Event listeners
         private void ConnectedSection_ValueChanged(object sender, RoadSection oldSection, RoadSection newSection) {
             oldSection?.OnDisconnect(this);

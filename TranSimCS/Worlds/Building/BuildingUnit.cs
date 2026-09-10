@@ -12,6 +12,7 @@ namespace TranSimCS.Worlds.Building {
         public Property<PositionEulerAngles> PositionProp { get; }
         public Property<Vector3i> UnitSizeProp { get; }
         public MeshGenerator<BuildingUnit> Mesh { get; }
+        public PositionEulerAngles PositionData { get => PositionProp.Value; set => PositionProp.Value = value; }
 
         public BuildingUnit() {
             PositionProp = new Property<PositionEulerAngles>(PositionEulerAngles.Zero, "pos", this);

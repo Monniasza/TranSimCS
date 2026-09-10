@@ -6,18 +6,9 @@ namespace TranSimCS.Worlds {
     /// </summary>
     public interface IPosition: IDraggableObj {
         /// <summary>
-        /// The position property of the object.
+        /// The object's position
         /// </summary>
-        Property<PositionEulerAngles> PositionProp { get; }
-        public PositionEulerAngles PositionData { get => PositionProp.Value; set => PositionProp.Value = value;}
+        public PositionEulerAngles PositionData { get; set; }
         IPosition[] IDraggableObj.DraggableComponents() => [this];
-    }
-
-    /// <summary>
-    /// Adapts a Property&lt;ObjPos&gt; to IPosition.
-    /// </summary>
-    /// <param name="property"></param>
-    public class PositionAdapter(Property<PositionEulerAngles> property) : IPosition {
-        public Property<PositionEulerAngles> PositionProp => property;
     }
 }

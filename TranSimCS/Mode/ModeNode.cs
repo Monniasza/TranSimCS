@@ -148,7 +148,7 @@ namespace TranSimCS.Mode {
                 pp.Inclination = 0;
                 PrePosition = pp;
             } else if(menu.LeftLanes + menu.RightLanes > 0){
-                var pp = Reference?.PositionProp?.Value ?? PositionEulerAngles.Zero;
+                var pp = Reference?.PositionData ?? PositionEulerAngles.Zero;
                 pp.Position = selectedPosition;
                 PrePosition = pp;
             }

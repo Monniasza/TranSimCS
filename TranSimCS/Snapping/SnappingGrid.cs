@@ -36,6 +36,7 @@ namespace TranSimCS.Snapping {
         public bool IsInfinite { get => IsInfiniteProp.Value; set => IsInfiniteProp.Value = value; }
 
         public MeshGenerator<SnappingGrid> Mesh { get; private set; }
+        public PositionEulerAngles PositionData { get => PositionProp.Value; set => PositionProp.Value = value; }
 
         public SnappingGrid() {
             PositionProp = new(new(new(0, 0.1f, 0), 0), "pos", this);

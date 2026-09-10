@@ -12,7 +12,6 @@ using TranSimCS.Model.OBJ;
 using TranSimCS.Property;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
-using TranSimCS.Save2.TypeRegistry;
 using TranSimCS.Spatial;
 using TranSimCS.Worlds;
 using static TranSimCS.Model.MeshUnroll;
@@ -20,8 +19,6 @@ using Path = System.IO.Path;
 
 namespace TranSimCS.Cars {
     public class Car : Obj, IObjMesh, IPosition, IDemolish {
-        public static Logger logger = LogManager.GetCurrentClassLogger();
-
         public static Dictionary<string, MeshDrawInstance> loadedMeshes = [];
         public static ObservableList<(string, MeshDrawInstance)> meshes = [];
         private static Random rnd = new Random();
@@ -29,13 +26,7 @@ namespace TranSimCS.Cars {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         public static ObjLoader newLoader;
 
-        //public static readonly TypeRegistry<CarStripPosition> CarPositionRegistry;
-
-        static Car() {
-            //CarPositionRegistry = new();
-            //CarPositionRegistry.Register(CarStripPosition.StripTypeName, new LanePositionConverter());
-        }
-
+        //Algorithms
         public static void Init() {
             //Load all meshes
             objRoot = Path.Combine(Program.DataRoot, "Files", "eracoon_cars", "obj");
@@ -71,26 +62,38 @@ namespace TranSimCS.Cars {
                 }
             }
         }
-
-        public Property<PositionEulerAngles> PositionProp { get; }
-        public Property<string?> MeshIdProp;
-        public string? MeshId { get => MeshIdProp.Value; set => MeshIdProp.Value = value; }
-
-        public Car() {
-            PositionProp = new(PositionEulerAngles.Zero, "position", this);
-            PositionProp.ValidateChanges += (s, old, val) => VectorMethods.CheckPosition(val, "position");
-            PositionProp.ValueChanged += PositionProp_ValueChanged;
-            MeshIdProp = new(null, "meshId", this);
-            MeshIdProp.ValueChanged += MeshIdProp_ValueChanged;
+        public static Car LaunchCar(TSWorld world, LaneStrip strip, float speed = 25) {
+            var startingLane = strip.StartLane;
+            var newCarPosition = startingLane.GetRoadNode().PositionProp.Value;
+            if (startingLane.End == NodeEnd.Backward) newCarPosition.Azimuth ^= 1 << 31;
+            Car car = new Car();
+            car.Randomize();
+            if (strip != null) {
+                var lanePosition = new CarStripPosition(strip, 0);
+                car.CurrentRoute = lanePosition.ToRoute();
+            }
+            car.Speed = speed;
+            world.Cars.data.Add(car);
+            return car;
         }
 
-        public TransformQ transformQ { get; private set; }
-        public MeshDrawInstance meshInstance;
+        //Authoritative properties
+        public Property<string?> MeshIdProp;
+        public string? MeshId { get => MeshIdProp.Value; set => MeshIdProp.Value = value; }
+        public float Speed;
+        public RoutePosition CurrentRoute;
 
-        private void PositionProp_ValueChanged(object? sender, PositionEulerAngles old, PositionEulerAngles val) {
-            transformQ = val.ToTransformQ();
-            meshInstance.Transform = transformQ;
-            GeometryChanged?.Invoke(this);
+        //Derived properties
+        PositionEulerAngles IPosition.PositionData {
+            get => meshInstance.Transform.ToObjPos();
+            set { } //ignore set
+        }
+        public MeshDrawInstance meshInstance;
+        
+
+        public Car() {
+            MeshIdProp = new(null, "meshId", this);
+            MeshIdProp.ValueChanged += MeshIdProp_ValueChanged;
         }
 
         private void MeshIdProp_ValueChanged(object? sender, string old, string key) {
@@ -99,36 +102,12 @@ namespace TranSimCS.Cars {
                 meshInstance.TagCount = bm.TagCount;
                 meshInstance.Material = bm.Material;
             } else throw new KeyNotFoundException($"Car model {key} not found");
-
-                GeometryChanged?.Invoke(this);
+            GeometryChanged?.Invoke(this);
         }
 
         public void Randomize() {
             MeshId = "synthetic";
         }
-
-        public float Speed;
-        public Vector3 Velocity {
-            get => PositionProp.Value.GetTangential() * Speed;
-            set {
-                var atan3 = PositionEulerAngles.Atan3(value);
-                var pr = PositionProp.Value;
-                pr.Azimuth = GeometryUtils.RadiansToField(atan3.Azimuth);
-                pr.Inclination = atan3.Inclination;
-                Speed = value.Length();
-            }
-        }
-        public void Reverse() {
-            var pr = PositionProp.Value;
-            pr.Azimuth += RoadNode.AZIMUTH_SOUTH;
-            pr.Inclination *= -1;
-            PositionProp.Value = pr;
-        }
-
-        public RoutePosition CurrentRoute;
-
-
-        public event MeshInvalidationCallback GeometryChanged;
 
         internal void Update(float time) {
             const float maxSpeed = 100;
@@ -145,38 +124,29 @@ namespace TranSimCS.Cars {
                 log.Warn($"The car {Guid} is way too fast at {Speed}. Slowing down. ");
                 Speed = maxSpeed;
             }
-
             if (World == null) return;
             if(CurrentRoute.Route == null) {
                 log.Error($"The car {Guid} is off-road. Deleting.");
                 Demolish();
                 return;
-            } else {
-                //Interpolate
-                var dpos = Speed * time;
-                var newRoute = CurrentRoute.Advance(dpos);
-                if (newRoute == null) {
-                    Demolish();
-                    return;
-                }
-                CurrentRoute = newRoute.Value;
-
-                //Put the car in the world
-                var referenceFrame = CurrentRoute.GetPositionFrame();
-
-                var xyz = referenceFrame.O;
-                var tangential = referenceFrame.Z;
-                var lateral = referenceFrame.X;
-
-                var newCoords = PositionEulerAngles.FromPosTangentLateral(xyz, tangential, lateral);
-                
-                if (!float.IsFinite(newCoords.Inclination)) throw new ArithmeticException("Invalid pitch #2");
-                if (!float.IsFinite(newCoords.Tilt)) throw new ArithmeticException("Invalid roll #2");
-
-                PositionProp.Value = newCoords;
             }
+            
+            //Interpolate
+            var dpos = Speed * time;
+            var newRoute = CurrentRoute.Advance(dpos);
+            if (newRoute == null) {
+                Demolish();
+                return;
+            }
+            CurrentRoute = newRoute.Value;
 
-            meshInstance.Transform = PositionProp.Value.ToTransformQ();
+            //Put the car in the world
+            var referenceFrame = CurrentRoute.GetPositionFrame();
+            var newCoords = referenceFrame.ToQuaternion();
+            
+
+            meshInstance.Transform = newCoords;
+            GeometryChanged?.Invoke(this);
         }
 
         public void Demolish() {
@@ -184,6 +154,8 @@ namespace TranSimCS.Cars {
             return;
         }
 
+        //Geometry
+        public event MeshInvalidationCallback GeometryChanged;
         public void GenerateGeometry(RenderTarget target) {
             if(meshInstance.Mesh != null)
                 target.Draw(meshInstance);
@@ -195,22 +167,6 @@ namespace TranSimCS.Cars {
             var intersect = meshInstance.Mesh.ComputeIntersection(ray, out distance, out _);
             tag = intersect ? this : null;
             return intersect;
-        }
-
-        public static Car LaunchCar(TSWorld world, LaneStrip strip, float speed = 25) {
-            var startingLane = strip.StartLane;
-            var newCarPosition = startingLane.GetRoadNode().PositionProp.Value;
-            if (startingLane.End == NodeEnd.Backward) newCarPosition.Azimuth ^= 1 << 31;
-            Car car = new Car();
-            car.Randomize();
-            if (strip != null) {
-                var lanePosition = new CarStripPosition(strip, 0);
-                car.CurrentRoute = lanePosition.ToRoute();
-            }
-            car.PositionProp.Value = newCarPosition; //selected position is NaN
-            car.Speed = speed;
-            world.Cars.data.Add(car);
-            return car;
         }
     }
 }

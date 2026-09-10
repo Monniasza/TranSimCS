@@ -71,5 +71,7 @@ namespace TranSimCS.Roads.Node {
 
         public Interval<float> Range() => Node.Bounds;
         public HalfNode? HalfNode => Node?.GetHalfNode(End);
+
+        public PositionEulerAngles PositionData { get => PositionProp.Value; set => PositionProp.Value = value; }
     }
 }
