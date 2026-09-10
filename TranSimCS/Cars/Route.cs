@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using LanguageExt.UnitsOfMeasure;
 using TranSimCS.Geometry;
 using TranSimCS.Roads.Strip;
 
@@ -98,19 +101,25 @@ namespace TranSimCS.Cars {
         public float Length() => LaneStrips[^1].EndPosition;
 
         public Transform3 GetPosition(float arclength) {
+            const float eps = 0.001f;
             var currentStrip = FindValue(arclength);
             var positionLUT = currentStrip.GetPositionLookup();
-            var xyzt = positionLUT[currentStrip.LaneArcLength];
-            var xyz = xyzt.ToXYZ();
-            VectorMethods.CheckVector(xyz, "xyz");
-            var t = xyzt.W;
-            if (!float.IsFinite(t)) throw new ArithmeticException("Invalid spline parameter");
-            var referenceFrame = currentStrip.GetPositionFrame(t);
-            var lateral = referenceFrame.X;
-            VectorMethods.CheckVector(lateral, "lateral");
-            var tangential = referenceFrame.Z;
-            VectorMethods.CheckVector(tangential, "tangential");
-            return referenceFrame;
+            var prevXYZT = positionLUT[currentStrip.LaneArcLength];
+            var nextXYZT = positionLUT[currentStrip.LaneArcLength + eps];
+            var position = prevXYZT.ToXYZ();
+            var nextPos = nextXYZT.ToXYZ();
+            var t = prevXYZT.W;
+            var snormal = currentStrip.LaneStrip.SplineLUT.spline.NormalSpline[t];
+            var tangential = Vector3.Normalize(nextPos - position);
+            var lateral = Vector3.Cross(snormal, tangential).Normalized();
+            var normal = Vector3.Cross(tangential, lateral).Normalized();
+
+            //Validation
+            Debug.Assert(float.IsFinite(t), "Invalid spline parameter");
+            Debug.Assert(position.IsFinite(), "Invalid position");
+            Debug.Assert(tangential.IsFinite(), "Invalid tangent");
+            Debug.Assert(lateral.IsFinite(), "Invalid lateral");
+            return new(lateral, normal, tangential, position);
         }
     }
     public static class RouteMethods {
