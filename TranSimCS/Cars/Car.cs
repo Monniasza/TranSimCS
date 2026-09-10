@@ -81,6 +81,7 @@ namespace TranSimCS.Cars {
         public Property<string?> MeshIdProp;
         public string? MeshId { get => MeshIdProp.Value; set => MeshIdProp.Value = value; }
         public float Speed;
+
         public RoutePosition CurrentRoute;
 
         //Derived properties

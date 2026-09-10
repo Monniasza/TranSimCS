@@ -60,21 +60,6 @@ namespace TranSimCS.Geometry {
             var roll = MathF.Atan2(yComp, xComp);
             return new Vector3(yaw, pitch, roll);
         }
-        public void TransformOutOfPlace(Mesh src, Mesh dst) {
-            if (dst == null) dst = src;
-            var count = src.Vertices.Count;
-            var transformedVertices = src.Vertices.Select(Transform).ToArray();
-            dst.DrawModel(transformedVertices, src.Indices, src.Tags);
-        }
-        public void TransformOutOfPlace(MultiMesh src, MultiMesh dst) {
-            foreach (var bin in src.RenderBins) {
-                var tgtBin = dst.GetOrCreateRenderBinForced(bin.Key);
-                TransformOutOfPlace(bin.Value, tgtBin);
-            }
-            var transform = ToQuaternion();
-            foreach(var meshInstance in src.meshInstances) 
-                dst.meshInstances.Add(meshInstance.Transform(transform));
-        }
         public void TransformInPlace(Mesh mesh) => mesh.Vertices.TransformInPlace(Transform);
         public void TransformInPlace(MultiMesh mesh) {
             foreach(var submesh in mesh.RenderBins) TransformInPlace(submesh.Value);

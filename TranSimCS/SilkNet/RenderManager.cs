@@ -200,7 +200,7 @@ namespace TranSimCS.SilkNet {
             Stats = stats;
         }
 
-        private void RenderPass(IEnumerable<MeshDrawInstance>? meshes, float alphaCutoff, ref RenderStats stats) {
+        private void RenderPass(List<MeshDrawInstance>? meshes, float alphaCutoff, ref RenderStats stats) {
             if(meshes == null) return;
 
             var gl = window.OpenGL;
