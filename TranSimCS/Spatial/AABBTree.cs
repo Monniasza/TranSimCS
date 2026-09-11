@@ -159,7 +159,6 @@ namespace TranSimCS.Spatial {
             }
         }
         private void BalanceAVL(AABBNode<T> node) {
-            Debug.Print("Balancing...");
             while (node != null) {
                 Validate(node);
                 if (node.Item != null) {
@@ -167,8 +166,6 @@ namespace TranSimCS.Spatial {
                     node = node.Parent;
                     continue;
                 }
-
-                Debug.Print("Node validation succeeded");
 
                 //Check if balancing is needed
                 var bias = Balance(node);
