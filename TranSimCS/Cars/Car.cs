@@ -143,14 +143,15 @@ namespace TranSimCS.Cars {
             CurrentRoute = trimmedRoute.Value;
 
             //Plan the route
+            const float lookahead = 10;
             var maxDeltaPos = Speed * time;
             CurrentRoute = CurrentRoute.PlanIfNeeded(maxDeltaPos);
 
             //Find obstacles
-            var obstacle = CurrentRoute.FindObstacle(maxDeltaPos, Speed);
+            var obstacle = CurrentRoute.FindObstacle(maxDeltaPos + lookahead, Speed);
 
             //Interpolate
-            var deltaPos = obstacle.relativeDistance;
+            var deltaPos = float.Min(obstacle.relativeDistance, maxDeltaPos);
             if (deltaPos < 0) deltaPos = 0;
             var newRoute = CurrentRoute.Advance(deltaPos);
             if (newRoute == null) {
