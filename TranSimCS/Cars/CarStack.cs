@@ -44,14 +44,21 @@ namespace TranSimCS.Cars {
 
             //Index cars
             foreach (var car in data) {
+                const float lookahead = 10;
+                var firstStrip = car.CurrentRoute.Route.Find(car.CurrentRoute.Position);
+                var lastStrip = car.CurrentRoute.Route.Find(car.CurrentRoute.Position + lookahead);
                 var routePosition = car.CurrentRoute.Position;
-                var segmentPosition = car.CurrentRoute.Route.FindValue(routePosition);
-                var isReverse = segmentPosition.IsReverse;
-                var stripPosition = isReverse ? segmentPosition.LaneStrip.SplineLUT.Length - segmentPosition.LaneArcLength : segmentPosition.LaneArcLength;
-                var strip = segmentPosition.LaneStrip;
-                CarEntry entry = new(car, stripPosition);
-                var insertionIndex = strip.FindFirstAheadIndex(stripPosition);
-                strip._carsOnStrip.Insert(insertionIndex, entry);
+                if (lastStrip >= car.CurrentRoute.Route.LaneStrips.Length) lastStrip = car.CurrentRoute.Route.LaneStrips.Length - 1;
+                for(int i = 0; i < lastStrip; i++) {
+                    var node = car.CurrentRoute.Route.LaneStrips[i];
+                    var projectedPosition = node.Project(routePosition).LaneArcLength;
+                    var isReverse = node.isReverse;
+                    var strip = node.road;
+                    var stripPosition = isReverse ? node.Span - projectedPosition : projectedPosition;
+                    CarEntry entry = new(car, stripPosition);
+                    var insertionIndex = strip.FindFirstAheadIndex(stripPosition);
+                    strip._carsOnStrip.Insert(insertionIndex, entry);
+                }
             }
 
             //Spawn cars
