@@ -47,6 +47,7 @@ namespace TranSimCS.SilkNet {
         //World contents
         public Camera camera;
         public TSWorld World { get; private set; }
+        public float SimulationSpeed = 1;
 
         //UI contents
         public bool IsMouseOverUI { get; private set; }
@@ -198,7 +199,7 @@ namespace TranSimCS.SilkNet {
             Mode.Update(dt);
 
             //Update the world
-            World.Update(dT);
+            if(SimulationSpeed > 0) World.Update(dT * SimulationSpeed);
 
             //Push previous values
             MousePositionPrev = MousePosition;

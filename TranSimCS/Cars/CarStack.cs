@@ -49,12 +49,14 @@ namespace TranSimCS.Cars {
                 var lastStrip = car.CurrentRoute.Route.Find(car.CurrentRoute.Position + lookahead);
                 var routePosition = car.CurrentRoute.Position;
                 if (lastStrip >= car.CurrentRoute.Route.LaneStrips.Length) lastStrip = car.CurrentRoute.Route.LaneStrips.Length - 1;
-                for(int i = 0; i < lastStrip; i++) {
+                for(int i = firstStrip; i <= lastStrip; i++) {
                     var node = car.CurrentRoute.Route.LaneStrips[i];
                     var projectedPosition = node.Project(routePosition).LaneArcLength;
                     var isReverse = node.isReverse;
                     var strip = node.road;
                     var stripPosition = isReverse ? node.Span - projectedPosition : projectedPosition;
+                    //if (stripPosition < 0) stripPosition = 0;
+                    //if (stripPosition > node.Span) stripPosition = node.Span;
                     CarEntry entry = new(car, stripPosition);
                     var insertionIndex = strip.FindFirstAheadIndex(stripPosition);
                     strip._carsOnStrip.Insert(insertionIndex, entry);

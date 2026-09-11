@@ -81,6 +81,7 @@ namespace TranSimCS.SilkNet {
                 DearUI.MenuToggle("Select road segments", ref SelectSegments);
                 DearUI.MenuToggle("Select road sections", ref SelectSections);
                 DearUI.MenuToggle("Select cars", ref SelectCars);
+                ImGui.DragFloat("Simulation speed", ref SimulationSpeed, 0.001f, 0, 32);
                 ImGui.EndMenu();
             }
 
