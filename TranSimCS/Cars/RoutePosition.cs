@@ -61,7 +61,7 @@ namespace TranSimCS.Cars {
 
             return new(route, position);
         }
-        public Obstacle FindObstacle(float maxDist, float maxVelocity) {
+        public Obstacle FindObstacle(float maxDist, float maxVelocity, Car self) {
             Obstacle obstacle = new(maxDist, maxVelocity);
 
             //Find traffic lights
@@ -104,48 +104,62 @@ namespace TranSimCS.Cars {
                     obstacle = obstacle.Combine(lightObstacle);
                 }
 
-                //Merge check: Do not merge if cars are 10 m or less behind
+                //Merge check: the car furthest forward gets priority.  Without this,
+                //two cars near the merge both yield and deadlock.
                 var rawSiblings = endNode.ConnectedLaneStrips;
                 var distanceToMerge = key.EndPosition - localPosition - 10;
                 Obstacle mergeObstacle = new Obstacle(distanceToMerge, 0);
+                var ownDistanceToMerge = key.Span - localPosition;
                 foreach(var sibling in rawSiblings) {
-
-                    //Check each sibling
                     var cars = sibling.strip._carsOnStrip;
                     var length = sibling.strip.SplineLUT.Length;
 
                     if (sibling.strip == segment) continue; //Do not check the same segment
-                    if (sibling.strip._carsOnStrip.Count == 0) continue; //No cars on the sibling
+                    if (cars.Count == 0) continue; //No cars on the sibling
+
+                    CarEntry? contender = null;
+                    float contenderDistanceToMerge = 0;
 
                     if (sibling.half == SegmentHalf.End) {
-                        //Going forward
+                        //Entries are sorted by position, so the last forward car is
+                        //the one closest to this endpoint.
                         for (int j = cars.Count - 1; j >= 0; j--) {
                             var car = cars[j];
-
-                            // Cars farther than 10 m from the endpoint can be ignored.
-                            if (length - car.positionOnStrip > 10)
+                            contenderDistanceToMerge = length - car.positionOnStrip;
+                            if (contenderDistanceToMerge > 10)
                                 break;
 
                             if (!car.isReverse) {
-                                obstacle = obstacle.Combine(mergeObstacle);
+                                contender = car;
                                 break;
                             }
                         }
                     } else {
-                        //Going backward
+                        //The first reverse car is closest to this endpoint.
                         for (int j = 0; j < cars.Count; j++) {
                             var car = cars[j];
-
-                            // Cars farther than 10 m from the endpoint can be ignored.
-                            if (car.positionOnStrip > 10)
+                            contenderDistanceToMerge = car.positionOnStrip;
+                            if (contenderDistanceToMerge > 10)
                                 break;
 
                             if (car.isReverse) {
-                                obstacle = obstacle.Combine(mergeObstacle);
+                                contender = car;
                                 break;
                             }
                         }
                     }
+
+                    if (contender == null) continue;
+
+                    // A smaller distance means the sibling is further forward. GUID
+                    // breaks exact ties so two cars never both enter the merge.
+                    const float positionTieEpsilon = 0.001f;
+                    var siblingHasPriority =
+                        contenderDistanceToMerge < ownDistanceToMerge - positionTieEpsilon ||
+                        (MathF.Abs(contenderDistanceToMerge - ownDistanceToMerge) <= positionTieEpsilon &&
+                         contender.Value.car.Guid.CompareTo(self.Guid) < 0);
+                    if (siblingHasPriority)
+                        obstacle = obstacle.Combine(mergeObstacle);
                 }
             }
             return obstacle;

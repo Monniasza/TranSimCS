@@ -182,7 +182,7 @@ namespace TranSimCS.Cars {
             route = route.PlanIfNeeded(maxDeltaPos);
 
             //Find obstacles
-            var obstacle = route.FindObstacle(maxDeltaPos + lookahead, Speed);
+            var obstacle = route.FindObstacle(maxDeltaPos + lookahead, Speed, this);
 
             //Interpolate
             const float minMovement = 0;
