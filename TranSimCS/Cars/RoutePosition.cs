@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Silk.NET.Vulkan;
 using TranSimCS.Geometry;
 
 namespace TranSimCS.Cars {
@@ -47,6 +48,30 @@ namespace TranSimCS.Cars {
 
             return new(route, position);
         }
+        public Obstacle FindObstacle(float maxDist, float maxVelocity) {
+            Obstacle obstacle = new(maxDist, maxVelocity);
+
+            //Find traffic lights
+            var minSegment = Route.Find(Position);
+            var maxSegment = Route.Find(Position + maxDist);
+            for (int i = minSegment; i <= maxSegment; i++) {
+                var key = Route.LaneStrips[i];
+                var segment = key.road;
+                var isReverse = key.isReverse;
+                var endNode = isReverse ? segment.StartLane : segment.EndLane;
+                var attachedTrafficLight = endNode.TrafficLight;
+                if (attachedTrafficLight == null) continue;
+                var isGreen = attachedTrafficLight.IsGreen(endNode);
+                if (!isGreen) {
+                    Obstacle lightObstacle = new(key.EndPosition - Position - 1, 0);
+                    obstacle = obstacle.Combine(lightObstacle);
+                    break; //Any further traffic lights will be obscured
+                }
+            }
+
+            return obstacle;
+        }
+
         public Transform3 GetPositionFrame() => Route.GetPosition(Position);
     }
 }

@@ -40,7 +40,7 @@ namespace TranSimCS.Roads.Node {
             var lights = TrafficLight;
             if (lights == null) return true;
             if(lights.Phases.Count == 0) return true;
-            var currentPhase = lights.Phases[lights.CurrentPhase];
+            var currentPhase = lights.Phases[lights.PhaseId];
             return currentPhase.GreenLanes.Contains(this);
         }
 

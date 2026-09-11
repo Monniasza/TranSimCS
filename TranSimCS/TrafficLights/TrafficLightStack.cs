@@ -64,7 +64,7 @@ namespace TranSimCS.TrafficLights {
             TrafficLightGroup result = new(guid);
             result.Phases.AddRange(phases);
             result.Time = timer;
-            result.CurrentPhase = phaseNumber;
+            result.PhaseId = phaseNumber;
             foreach (var lane in lanes) lane.TrafficLight = result;
             return result;
         }
@@ -81,7 +81,7 @@ namespace TranSimCS.TrafficLights {
                 laneEndConverter.Write(writer, lane, options);
             }
             writer.WriteEndArray();
-            writer.WriteNumber("phasenumber", obj.CurrentPhase);
+            writer.WriteNumber("phasenumber", obj.PhaseId);
             writer.WritePropertyName("phases");
             writer.WriteStartArray();
             foreach(var phase in obj.Phases) {

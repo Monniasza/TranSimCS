@@ -131,10 +131,14 @@ namespace TranSimCS.Cars {
                 Demolish();
                 return;
             }
-            
+
+            //Find obstacles
+            var maxDeltaPos = Speed * time;
+            var obstacle = CurrentRoute.FindObstacle(maxDeltaPos, Speed);
+
             //Interpolate
-            var dpos = Speed * time;
-            var newRoute = CurrentRoute.Advance(dpos);
+            var deltaPos = obstacle.RoutePosition;
+            var newRoute = CurrentRoute.Advance(deltaPos);
             if (newRoute == null) {
                 Demolish();
                 return;

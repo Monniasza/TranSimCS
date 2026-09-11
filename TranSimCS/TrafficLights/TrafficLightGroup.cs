@@ -38,13 +38,14 @@ namespace TranSimCS.TrafficLights {
 
         //Simulation properties
         public float Time;
-        public int CurrentPhase;
+        public int PhaseId;
         public List<TrafficLightPhase> Phases { get; private set; } = [];
 
         //Generated properties
         public ImmutableArray<GeneratedNode> GeneratedGeometry;
 
         public event MeshInvalidationCallback GeometryChanged;
+        public TrafficLightPhase CurrentPhase => (Phases.Count == 0) ? EmptyPhase : Phases[PhaseId];
 
         public TrafficLightGroup(Guid? guid = null): base(guid) {
             DependencyChanged += HandleDependencyChanged;
@@ -66,36 +67,41 @@ namespace TranSimCS.TrafficLights {
             //Advance the state
             int i = 0;
             const int max = 100;
-            while (hasPhases && lights.Phases[lights.CurrentPhase].Duration < lights.Time){
+            while (hasPhases && lights.Phases[lights.PhaseId].Duration < lights.Time){
                 if(i == max) {
                     log.Warn("Excessive phase advancement. Maybe all phases are 0 seconds? " + lights.Guid);
                 }
-                var duration = lights.Phases[lights.CurrentPhase].Duration;
+                var duration = lights.Phases[lights.PhaseId].Duration;
                 if(!float.IsFinite(duration) || duration <= 0) {
                     log.Error($"The phase has a negative, zero, or invalid duration: {duration}. Deleting.");
-                    lights.Phases.RemoveAt(lights.CurrentPhase);
-                    if (lights.CurrentPhase >= lights.Phases.Count) lights.CurrentPhase = 0;
+                    lights.Phases.RemoveAt(lights.PhaseId);
+                    if (lights.PhaseId >= lights.Phases.Count) lights.PhaseId = 0;
                     continue;
                 }
                 if(duration < 0.1) {
                     log.Warn("The phase has a very short duration");
                 }
                 lights.Time -= duration;
-                lights.CurrentPhase++;
-                if(lights.CurrentPhase >= lights.Phases.Count) lights.CurrentPhase = 0;
+                lights.PhaseId++;
+                if(lights.PhaseId >= lights.Phases.Count) lights.PhaseId = 0;
                 i++;
             }
 
-            if (!hasPhases) lights.CurrentPhase = 0;
+            if (!hasPhases) lights.PhaseId = 0;
 
             //Emit the state
             lights.GenerateInstances();
         }
 
+        public bool IsGreen(HalfLane lane) {
+            if (Phases.Count == 0) return true;
+            return CurrentPhase.GreenLanes.Contains(lane);
+        }
+
         private void GenerateInstances() {
             //Emit the state
             bool hasPhases = Phases.Count > 0;
-            var currentPhase = hasPhases ? Phases[CurrentPhase] : EmptyPhase;
+            var currentPhase = hasPhases ? Phases[PhaseId] : EmptyPhase;
             int j = 0;
             const float height = 3.5f;
             var output = new GeneratedNode[ControlledHalfLanes.Count];
