@@ -71,6 +71,19 @@ namespace TranSimCS.Roads.Strip {
         //Car cache. Maintained by CarStack
         internal List<CarEntry> _carsOnStrip = [];
         public IReadOnlyList<CarEntry> CarsOnStrip => _carsOnStrip.AsReadOnly();
+        internal void InsertCar(Car car) {
+
+        }
+        internal void RemoveCar(Car car) {
+            for (int i = 0; i < _carsOnStrip.Count; i++) {
+                var entry = _carsOnStrip[i];
+                if(entry.car == car) {
+                    _carsOnStrip.RemoveAt(i);
+                    i--;
+                }
+            }
+        }
+
         /// <summary>
         /// Find the index of the first car ahead of <paramref name="position"/>, or <see cref="CarsOnStrip"/>.Count, if not found
         /// </summary>

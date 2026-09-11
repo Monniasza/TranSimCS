@@ -24,6 +24,12 @@ namespace TranSimCS.Cars {
 
             //Add a car every 5 seconds on each lane
             world.OnUpdate += World_OnUpdate;
+
+            data.ItemRemoved += Data_ItemRemoved;
+        }
+
+        private void Data_ItemRemoved(Car obj) {
+            obj.RemoveFromIndices();
         }
 
         private void World_OnUpdate(float seconds) {
@@ -35,34 +41,6 @@ namespace TranSimCS.Cars {
             foreach (var car in data) car.Update(seconds);
             timer.Stop();
             log.Trace($"Updated {data.Count} Cars in {timer.Elapsed.TotalMilliseconds} ms");
-
-            //Clear indices
-            foreach(var segment in world.RoadSegments.data) {
-                foreach (var strip in segment.Lanes) {
-                    strip._carsOnStrip.Clear();
-                }
-            }
-
-            //Index cars
-            foreach (var car in data) {
-                const float lookahead = 10;
-                var firstStrip = car.CurrentRoute.Route.Find(car.CurrentRoute.Position);
-                var lastStrip = car.CurrentRoute.Route.Find(car.CurrentRoute.Position + lookahead);
-                var routePosition = car.CurrentRoute.Position;
-                if (lastStrip >= car.CurrentRoute.Route.LaneStrips.Length) lastStrip = car.CurrentRoute.Route.LaneStrips.Length - 1;
-                for(int i = firstStrip; i <= lastStrip; i++) {
-                    var node = car.CurrentRoute.Route.LaneStrips[i];
-                    var projectedPosition = node.Project(routePosition).LaneArcLength;
-                    var isReverse = node.isReverse;
-                    var strip = node.road;
-                    var stripPosition = isReverse ? node.Span - projectedPosition : projectedPosition;
-                    //if (stripPosition < 0) stripPosition = 0;
-                    //if (stripPosition > node.Span) stripPosition = node.Span;
-                    CarEntry entry = new(car, stripPosition, isReverse);
-                    var insertionIndex = strip.FindFirstAheadIndex(stripPosition);
-                    strip._carsOnStrip.Insert(insertionIndex, entry);
-                }
-            }
 
             //Spawn cars
             if (Settings.SpawnCars) {

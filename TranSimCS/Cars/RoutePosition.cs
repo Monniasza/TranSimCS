@@ -69,7 +69,6 @@ namespace TranSimCS.Cars {
             var maxSegment = Route.Find(Position + maxDist);
             if (maxSegment >= Route.LaneStrips.Length) maxSegment = Route.LaneStrips.Length - 1;
             for (int i = minSegment; i <= maxSegment; i++) {
-                bool earlyExit = false;
                 var key = Route.LaneStrips[i];
                 var segment = key.road;
                 var isReverse = key.isReverse;
@@ -86,41 +85,38 @@ namespace TranSimCS.Cars {
                     //A car was found
                     var nextCar = segment.CarsOnStrip[nextCarAheadIndex];
                     var carPosition = nextCar.positionOnStrip;
-                    if(isReverse) carPosition = key.Span - carPosition;
+                    if (isReverse) carPosition = key.Span - carPosition;
                     var velocity = nextCar.car.Speed;
                     if (isReverse) velocity *= -1;
 
                     //Validate the lookup
                     var distToVehicle = carPosition - localPosition;
                     var distanceToObstacle = distToVehicle - 5;
-                    var successorLocalPosition = nextCar.positionOnStrip;
-                    if(nextCar.isReverse) successorLocalPosition = key.Span - successorLocalPosition;
-                    var verifyPosition = successorLocalPosition - localPosition;
-                    Debug.Assert(MathF.Abs(verifyPosition - distToVehicle) < 0.1f, $"Wrong car returned. Distance: {distToVehicle} != {distanceToObstacle}. Positions: {verifyPosition} != {distToVehicle}");
+                    
                     Obstacle carObstacle = new(distanceToObstacle, velocity);
                     obstacle = obstacle.Combine(carObstacle);
-                    earlyExit = true;
                 }
 
                 var attachedTrafficLight = endNode.TrafficLight;
-                if (attachedTrafficLight == null) continue;
-                var isGreen = attachedTrafficLight.IsGreen(endNode);
+                var isGreen = attachedTrafficLight == null || attachedTrafficLight.IsGreen(endNode);
                 if (!isGreen) {
                     Obstacle lightObstacle = new(key.EndPosition - localPosition - 1, 0);
                     obstacle = obstacle.Combine(lightObstacle);
-                    earlyExit = true; //Any further traffic lights will be obscured
                 }
 
                 //Merge check: Do not merge if cars are 10 m or less behind
-                var isGoingToMergeSoon = minSegment != maxSegment;
                 var rawSiblings = endNode.ConnectedLaneStrips;
-                Obstacle mergeObstacle = new Obstacle(0, 0);
+                var distanceToMerge = key.EndPosition - localPosition - 10;
+                Obstacle mergeObstacle = new Obstacle(distanceToMerge, 0);
                 foreach(var sibling in rawSiblings) {
+
                     //Check each sibling
                     var cars = sibling.strip._carsOnStrip;
                     var length = sibling.strip.SplineLUT.Length;
+
                     if (sibling.strip == segment) continue; //Do not check the same segment
                     if (sibling.strip._carsOnStrip.Count == 0) continue; //No cars on the sibling
+
                     if (sibling.half == SegmentHalf.End) {
                         //Going forward
                         for (int j = cars.Count - 1; j >= 0; j--) {
@@ -131,8 +127,7 @@ namespace TranSimCS.Cars {
                                 break;
 
                             if (!car.isReverse) {
-                                obstacle = mergeObstacle;
-                                earlyExit = true;
+                                obstacle = obstacle.Combine(mergeObstacle);
                                 break;
                             }
                         }
@@ -146,15 +141,12 @@ namespace TranSimCS.Cars {
                                 break;
 
                             if (car.isReverse) {
-                                obstacle = mergeObstacle;
-                                earlyExit = true;
+                                obstacle = obstacle.Combine(mergeObstacle);
                                 break;
                             }
                         }
                     }
                 }
-
-                if (earlyExit) break;
             }
             return obstacle;
         }

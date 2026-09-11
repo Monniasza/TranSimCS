@@ -82,7 +82,35 @@ namespace TranSimCS.Cars {
         public string? MeshId { get => MeshIdProp.Value; set => MeshIdProp.Value = value; }
         public float Speed;
 
-        public RoutePosition CurrentRoute;
+        private LaneStrip[]? _insertedPositions;
+        private RoutePosition _route;
+        public RoutePosition CurrentRoute{
+            get => _route;
+            set {
+                RemoveFromIndices();
+                _route = value;
+                const float lookahead = 10;
+                var firstStrip = _route.Route.Find(_route.Position);
+                var lastStrip = _route.Route.Find(_route.Position + lookahead);
+                var routePosition = _route.Position;
+                if (lastStrip >= _route.Route.LaneStrips.Length) lastStrip = _route.Route.LaneStrips.Length - 1;
+                LaneStrip[] insertedPosition = new LaneStrip[lastStrip - firstStrip + 1];
+                for (int i = firstStrip; i <= lastStrip; i++) {
+                    var node = _route.Route.LaneStrips[i];
+                    var projectedPosition = node.Project(routePosition).LaneArcLength;
+                    var isReverse = node.isReverse;
+                    var strip = node.road;
+                    var stripPosition = isReverse ? node.Span - projectedPosition : projectedPosition;
+                    //if (stripPosition < 0) stripPosition = 0;
+                    //if (stripPosition > node.Span) stripPosition = node.Span;
+                    CarEntry entry = new(this, stripPosition, isReverse);
+                    var insertionIndex = strip.FindFirstAheadIndex(stripPosition);
+                    strip._carsOnStrip.Insert(insertionIndex, entry);
+                    insertedPosition[i - firstStrip] = strip;
+                }
+                _insertedPositions = insertedPosition;
+            }
+        }
 
         //Derived properties
         PositionEulerAngles IPosition.PositionData {
@@ -90,7 +118,12 @@ namespace TranSimCS.Cars {
             set { } //ignore set
         }
         public MeshDrawInstance meshInstance;
-        
+        internal void RemoveFromIndices() {
+            //Remove the car from the old road strip
+            if (_insertedPositions != null) foreach (var strip in _insertedPositions)
+                strip.RemoveCar(this);
+            _insertedPositions = null;
+        }
 
         public Car() {
             MeshIdProp = new(null, "meshId", this);
@@ -133,41 +166,43 @@ namespace TranSimCS.Cars {
             }
 
             //Trim dead segments
-            var trimmedRoute = CurrentRoute.Trim();
+            var route = CurrentRoute;
+            var trimmedRoute = route.Trim();
             if (trimmedRoute == null) {
                 //Route died under the car, deleting
                 log.Warn($"The car {Guid} has no valid trimmed route. Deleting.");
                 Demolish();
                 return;
             }
-            CurrentRoute = trimmedRoute.Value;
+            route = trimmedRoute.Value;
 
             //Plan the route
             const float lookahead = 10;
             var maxDeltaPos = Speed * time;
-            CurrentRoute = CurrentRoute.PlanIfNeeded(maxDeltaPos);
+            route = route.PlanIfNeeded(maxDeltaPos);
 
             //Find obstacles
-            var obstacle = CurrentRoute.FindObstacle(maxDeltaPos + lookahead, Speed);
+            var obstacle = route.FindObstacle(maxDeltaPos + lookahead, Speed);
 
             //Interpolate
             const float minMovement = 0;
             var deltaPos = obstacle.relativeDistance;
             if (deltaPos > maxDeltaPos) deltaPos = maxDeltaPos;
             if (deltaPos < minMovement) deltaPos = minMovement;
-            var newRoute = CurrentRoute.Advance(deltaPos);
+            var newRoute = route.Advance(deltaPos);
             if (newRoute == null) {
                 Demolish();
                 return;
             }
-            CurrentRoute = newRoute.Value;
+            route = newRoute.Value;
 
             //Put the car in the world
-            var referenceFrame = CurrentRoute.GetPositionFrame();
+            var referenceFrame = route.GetPositionFrame();
             var newCoords = referenceFrame.ToQuaternion();
 
             meshInstance.Transform = newCoords;
             GeometryChanged?.Invoke(this);
+            CurrentRoute = route;
         }
 
         public void Demolish() {
