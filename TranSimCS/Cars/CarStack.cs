@@ -8,6 +8,7 @@ using TranSimCS.Save2;
 using TranSimCS.Setting;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Stack;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TranSimCS.Cars {
     public class CarStack : ObjectStack<Car, CarStack> {
@@ -57,7 +58,7 @@ namespace TranSimCS.Cars {
                     var stripPosition = isReverse ? node.Span - projectedPosition : projectedPosition;
                     //if (stripPosition < 0) stripPosition = 0;
                     //if (stripPosition > node.Span) stripPosition = node.Span;
-                    CarEntry entry = new(car, stripPosition);
+                    CarEntry entry = new(car, stripPosition, isReverse);
                     var insertionIndex = strip.FindFirstAheadIndex(stripPosition);
                     strip._carsOnStrip.Insert(insertionIndex, entry);
                 }
@@ -77,6 +78,22 @@ namespace TranSimCS.Cars {
                     if(enoughRoom) Car.LaunchCar(World, strip);
                 }
             }
+
+            //Validate the car indices
+#if DEBUG
+            foreach (var segment in world.RoadSegments.data) {
+                foreach (var strip in segment.Lanes) {
+                    for (int i = 1; i < strip._carsOnStrip.Count; i++) {
+                        Debug.Assert(
+                            strip._carsOnStrip[i - 1].positionOnStrip <=
+                            strip._carsOnStrip[i].positionOnStrip,
+                            $"CarsOnStrip not sorted: " +
+                            $"{strip._carsOnStrip[i - 1].positionOnStrip} > " +
+                            $"{strip._carsOnStrip[i].positionOnStrip}");
+                    }
+                }
+            }
+#endif 
         }
 
         public override Car ReadElementFromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {

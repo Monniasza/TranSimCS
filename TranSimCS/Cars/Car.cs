@@ -151,8 +151,10 @@ namespace TranSimCS.Cars {
             var obstacle = CurrentRoute.FindObstacle(maxDeltaPos + lookahead, Speed);
 
             //Interpolate
-            var deltaPos = float.Min(obstacle.relativeDistance, maxDeltaPos);
-            if (deltaPos < 0) deltaPos = 0;
+            const float minMovement = 0;
+            var deltaPos = obstacle.relativeDistance;
+            if (deltaPos > maxDeltaPos) deltaPos = maxDeltaPos;
+            if (deltaPos < minMovement) deltaPos = minMovement;
             var newRoute = CurrentRoute.Advance(deltaPos);
             if (newRoute == null) {
                 Demolish();

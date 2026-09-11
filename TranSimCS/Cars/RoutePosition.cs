@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Silk.NET.Vulkan;
 using TranSimCS.Geometry;
+using TranSimCS.Roads.Strip;
 
 namespace TranSimCS.Cars {
     public struct RoutePosition {
@@ -88,7 +89,15 @@ namespace TranSimCS.Cars {
                     if(isReverse) carPosition = key.Span - carPosition;
                     var velocity = nextCar.car.Speed;
                     if (isReverse) velocity *= -1;
-                    Obstacle carObstacle = new(carPosition - localPosition - 5, velocity);
+
+                    //Validate the lookup
+                    var distToVehicle = carPosition - localPosition;
+                    var distanceToObstacle = distToVehicle - 5;
+                    var successorLocalPosition = nextCar.positionOnStrip;
+                    if(nextCar.isReverse) successorLocalPosition = key.Span - successorLocalPosition;
+                    var verifyPosition = successorLocalPosition - localPosition;
+                    Debug.Assert(MathF.Abs(verifyPosition - distToVehicle) < 0.1f, $"Wrong car returned. Distance: {distToVehicle} != {distanceToObstacle}. Positions: {verifyPosition} != {distToVehicle}");
+                    Obstacle carObstacle = new(distanceToObstacle, velocity);
                     obstacle = obstacle.Combine(carObstacle);
                     earlyExit = true;
                 }
@@ -102,9 +111,51 @@ namespace TranSimCS.Cars {
                     earlyExit = true; //Any further traffic lights will be obscured
                 }
 
+                //Merge check: Do not merge if cars are 10 m or less behind
+                var isGoingToMergeSoon = minSegment != maxSegment;
+                var rawSiblings = endNode.ConnectedLaneStrips;
+                Obstacle mergeObstacle = new Obstacle(0, 0);
+                foreach(var sibling in rawSiblings) {
+                    //Check each sibling
+                    var cars = sibling.strip._carsOnStrip;
+                    var length = sibling.strip.SplineLUT.Length;
+                    if (sibling.strip == segment) continue; //Do not check the same segment
+                    if (sibling.strip._carsOnStrip.Count == 0) continue; //No cars on the sibling
+                    if (sibling.half == SegmentHalf.End) {
+                        //Going forward
+                        for (int j = cars.Count - 1; j >= 0; j--) {
+                            var car = cars[j];
+
+                            // Cars farther than 10 m from the endpoint can be ignored.
+                            if (length - car.positionOnStrip > 10)
+                                break;
+
+                            if (!car.isReverse) {
+                                obstacle = mergeObstacle;
+                                earlyExit = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        //Going backward
+                        for (int j = 0; j < cars.Count; j++) {
+                            var car = cars[j];
+
+                            // Cars farther than 10 m from the endpoint can be ignored.
+                            if (car.positionOnStrip > 10)
+                                break;
+
+                            if (car.isReverse) {
+                                obstacle = mergeObstacle;
+                                earlyExit = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 if (earlyExit) break;
             }
-
             return obstacle;
         }
 
