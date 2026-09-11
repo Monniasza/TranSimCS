@@ -88,7 +88,7 @@ namespace TranSimCS.Cars {
                     if(isReverse) carPosition = key.Span - carPosition;
                     var velocity = nextCar.car.Speed;
                     if (isReverse) velocity *= -1;
-                    Obstacle carObstacle = new(carPosition - localPosition - 3, velocity);
+                    Obstacle carObstacle = new(carPosition - localPosition - 5, velocity);
                     obstacle = obstacle.Combine(carObstacle);
                     earlyExit = true;
                 }
