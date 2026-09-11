@@ -52,7 +52,7 @@ namespace TranSimCS.Cars {
                     if (passable) continue;
                     var decision = rnd.NextSingle() < chance;
                     if (!decision) continue;
-                    var enoughRoom = strip.CarsOnStrip.Count == 0 || strip.CarsOnStrip[0].positionOnStrip >= 3;
+                    var enoughRoom = strip.CarsOnStrip.Count == 0 || strip.CarsOnStrip[0].positionOnStrip >= 5;
                     if(enoughRoom) Car.LaunchCar(World, strip);
                 }
             }

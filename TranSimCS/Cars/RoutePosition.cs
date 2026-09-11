@@ -30,7 +30,7 @@ namespace TranSimCS.Cars {
         }
 
         public RoutePosition PlanIfNeeded(float meters) {
-            var position = Position + meters;
+            var position = Position;
             var route = Route;
             if (route.Length() < maxRemainingToPlanMore) {
                 route = route.Plan(distanceToPlanAhead);
