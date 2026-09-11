@@ -32,9 +32,27 @@ namespace TranSimCS.Cars {
             log.Trace($"Updating {data.Count} Cars");
             Stopwatch timer = Stopwatch.StartNew();
             foreach (var car in data) car.Update(seconds);
+            timer.Stop();
             log.Trace($"Updated {data.Count} Cars in {timer.Elapsed.TotalMilliseconds} ms");
 
+            //Clear indices
+            foreach(var segment in world.RoadSegments.data) {
+                foreach (var strip in segment.Lanes) {
+                    strip._carsOnStrip.Clear();
+                }
+            }
+
             //Index cars
+            foreach (var car in data) {
+                var routePosition = car.CurrentRoute.Position;
+                var segmentPosition = car.CurrentRoute.Route.FindValue(routePosition);
+                var isReverse = segmentPosition.IsReverse;
+                var stripPosition = isReverse ? segmentPosition.LaneStrip.SplineLUT.Length - segmentPosition.LaneArcLength : segmentPosition.LaneArcLength;
+                var strip = segmentPosition.LaneStrip;
+                CarEntry entry = new(car, stripPosition);
+                var insertionIndex = strip.FindFirstAheadIndex(stripPosition);
+                strip._carsOnStrip.Insert(insertionIndex, entry);
+            }
 
             //Spawn cars
             if (Settings.SpawnCars) {
@@ -45,7 +63,9 @@ namespace TranSimCS.Cars {
                     var passable = lane.IsLanePassable();
                     if (passable) continue;
                     var decision = rnd.NextSingle() < chance;
-                    if (decision) Car.LaunchCar(World, strip);
+                    if (!decision) continue;
+                    var enoughRoom = strip.CarsOnStrip.Count == 0 || strip.CarsOnStrip[0].positionOnStrip >= 3;
+                    if(enoughRoom) Car.LaunchCar(World, strip);
                 }
             }
         }

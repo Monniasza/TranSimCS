@@ -132,12 +132,26 @@ namespace TranSimCS.Cars {
                 return;
             }
 
-            //Find obstacles
+            //Trim dead segments
+            var trimmedRoute = CurrentRoute.Trim();
+            if (trimmedRoute == null) {
+                //Route died under the car, deleting
+                log.Warn($"The car {Guid} has no valid trimmed route. Deleting.");
+                Demolish();
+                return;
+            }
+            CurrentRoute = trimmedRoute.Value;
+
+            //Plan the route
             var maxDeltaPos = Speed * time;
+            CurrentRoute = CurrentRoute.PlanIfNeeded(maxDeltaPos);
+
+            //Find obstacles
             var obstacle = CurrentRoute.FindObstacle(maxDeltaPos, Speed);
 
             //Interpolate
-            var deltaPos = obstacle.RoutePosition;
+            var deltaPos = obstacle.relativeDistance;
+            if (deltaPos < 0) deltaPos = 0;
             var newRoute = CurrentRoute.Advance(deltaPos);
             if (newRoute == null) {
                 Demolish();
@@ -148,7 +162,6 @@ namespace TranSimCS.Cars {
             //Put the car in the world
             var referenceFrame = CurrentRoute.GetPositionFrame();
             var newCoords = referenceFrame.ToQuaternion();
-            
 
             meshInstance.Transform = newCoords;
             GeometryChanged?.Invoke(this);

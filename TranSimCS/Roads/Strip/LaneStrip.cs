@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using TranSimCS.Cars;
 using TranSimCS.Geometry;
 using TranSimCS.Mode;
 using TranSimCS.Model;
@@ -64,6 +65,46 @@ namespace TranSimCS.Roads.Strip {
         public GridMesh<Vector3, RoadSplineComponent> AllStrips => _cache.AllStrips;
         public MultiMesh GetMesh() => _cache.Mesh;
         public ExtentIndex ExtentIndex => _cache.ExtentIndex;
+        public bool IsAlive => Road != null;
+        public bool IsDead => Road == null;
+
+        //Car cache. Maintained by CarStack
+        internal List<CarEntry> _carsOnStrip = [];
+        public IReadOnlyList<CarEntry> CarsOnStrip => _carsOnStrip.AsReadOnly();
+        /// <summary>
+        /// Find the index of the first car ahead of <paramref name="position"/>, or <see cref="CarsOnStrip"/>.Count, if not found
+        /// </summary>
+        public int FindFirstAheadIndex(float position) {
+            int min = 0;
+            int max = _carsOnStrip.Count;
+
+            while (min < max) {
+                int mid = (min + max) >> 1;
+                if (_carsOnStrip[mid].positionOnStrip <= position)
+                    min = mid + 1;
+                else
+                    max = mid;
+            }
+            return min;
+        }
+        /// <summary>
+        /// Find the index of the last car behind <paramref name="position"/>, or -1 if not found
+        /// </summary>
+        public int FindLastBehindIndex(float position) {
+            int min = 0;
+            int max = _carsOnStrip.Count;
+
+            while (min < max) {
+                int mid = (min + max) >> 1;
+
+                if (_carsOnStrip[mid].positionOnStrip < position)
+                    min = mid + 1;
+                else
+                    max = mid;
+            }
+
+            return min - 1;
+        }
 
         public void InvalidateMesh() {
             _cache.Invalidate();// Invalidate the cached mesh, forcing it to be regenerated next time
@@ -141,7 +182,7 @@ namespace TranSimCS.Roads.Strip {
             return newLaneStrip;
         }
 
-        public bool IsReverse() => StartLane.HalfNode == Road.EndNode && EndLane != StartLane;
+        public bool IsReverse() => StartLane.HalfNode == Road?.EndNode && EndLane != StartLane;
 
         public void Demolish() => Road.RemoveLaneStrip(this);
     }

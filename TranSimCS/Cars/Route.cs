@@ -16,6 +16,7 @@ namespace TranSimCS.Cars {
         public RouteKey(LaneStrip road, bool isReverse) : this(road, isReverse, 0, 0) { }
         public RouteKey(RouteInput input) : this(input.road, input.isReverse, 0, 0) { }
 
+        public float Span => EndPosition - StartPosition;
         public RouteInput ToRouteInput => new(road, isReverse);
         public CarStripPosition Project(float meters) => new(road, meters - StartPosition, isReverse);
     }
@@ -55,18 +56,38 @@ namespace TranSimCS.Cars {
             if (idx >= LaneStrips.Length) idx = LaneStrips.Length - 1;
             return LaneStrips[idx].Project(meters);
         }
+        /// <summary>
+        /// Trims the route to the last live segment (not deleted from the world)
+        /// </summary>
+        /// <returns></returns>
+        public Route? Trim() {
+            int maxCount = LaneStrips.Length;
+            int validCount = 0;
+            for(int i = 0; i < maxCount; i++) {
+                var strip = LaneStrips[i];
+                if (strip.road == null || strip.road.IsDead) break;
+                validCount++;
+            }
+            if (validCount == maxCount) return this;
+            if (validCount == 0) return null;
+            var trimmed = new RouteInput[validCount];
+            for(int i = 0; i < trimmed.Length; i++)
+                trimmed[i] = LaneStrips[i].ToRouteInput();
+            return new Route(trimmed);
+        }
         public Route? Pop(int count) {
             if (count <= 0) return this;
             int remaining = LaneStrips.Length - count;
             if (remaining <= 0) return null;
 
             var elements = new RouteInput[remaining];
-            for(int i = 0; i < remaining; i++) 
-                elements[i] = LaneStrips[i+count].ToRouteInput;
-
+            for(int i = 0; i < remaining; i++) {
+                elements[i] = LaneStrips[i + count].ToRouteInput;
+            }
             return new Route(elements);
         }
         public Route Plan(float metersFromStart) {
+            //Look for dead segments
             if (metersFromStart <= LaneStrips[^1].EndPosition) return this;
             var elements = LaneStrips.ToList();
             while (elements[^1].EndPosition < metersFromStart) {
