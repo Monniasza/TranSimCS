@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Text.Json;
+using NLog;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Save2;
@@ -9,34 +11,42 @@ using TranSimCS.Worlds.Stack;
 
 namespace TranSimCS.Cars {
     public class CarStack : ObjectStack<Car, CarStack> {
+        private static Logger log = LogManager.GetCurrentClassLogger();
         private static readonly Random rnd = new Random();
 
         private readonly TSWorld world;
         public readonly TrackerSpatial<Car, CarStack> trackerSpatial;
-        public readonly UpdateLoopTracker<Car, CarStack> trackerUpdate;
         public CarStack(TSWorld world) : base(world) {
             this.world = world;
             trackerSpatial = new TrackerSpatial<Car, CarStack>(world);
-            trackerUpdate = new((x, t) => x.Update(t));
             stackTrackers.Add(trackerSpatial);
-            stackTrackers.Add(trackerUpdate);
 
             //Add a car every 5 seconds on each lane
             world.OnUpdate += World_OnUpdate;
         }
 
         private void World_OnUpdate(float seconds) {
-            if (!Settings.SpawnCars) return;
+            //Clear car indices
 
-            var chance = Settings.CarSpawnRate * seconds;
+            //Simulate all cars
+            log.Trace($"Updating {data.Count} Cars");
+            Stopwatch timer = Stopwatch.StartNew();
+            foreach (var car in data) car.Update(seconds);
+            log.Trace($"Updated {data.Count} Cars in {timer.Elapsed.TotalMilliseconds} ms");
 
-            foreach(var node in World.Nodes.data) foreach(var lane in node.Lanes) foreach(var strip in lane.Connections) {
-                if (strip.EndLane.Lane == lane) continue; //Strip ends here, do not spawn
-                //Check if a strip is a dead end
-                var passable = lane.IsLanePassable();
-                if (passable) continue;
-                var decision = rnd.NextSingle() < chance;
-                if (decision) Car.LaunchCar(World, strip);
+            //Index cars
+
+            //Spawn cars
+            if (Settings.SpawnCars) {
+                var chance = Settings.CarSpawnRate * seconds;
+                foreach (var node in World.Nodes.data) foreach (var lane in node.Lanes) foreach (var strip in lane.Connections) {
+                    if (strip.EndLane.Lane == lane) continue; //Strip ends here, do not spawn
+                                                                //Check if a strip is a dead end
+                    var passable = lane.IsLanePassable();
+                    if (passable) continue;
+                    var decision = rnd.NextSingle() < chance;
+                    if (decision) Car.LaunchCar(World, strip);
+                }
             }
         }
 
