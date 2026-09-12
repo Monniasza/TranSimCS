@@ -109,21 +109,17 @@ namespace TranSimCS.Cars {
             var currentStrip = FindValue(arclength);
             var positionLUT = currentStrip.GetPositionLookup();
             var prevXYZT = positionLUT[currentStrip.LaneArcLength];
-            var nextXYZT = positionLUT[currentStrip.LaneArcLength + eps];
             var position = prevXYZT.ToXYZ();
-            var nextPos = nextXYZT.ToXYZ();
             var t = prevXYZT.W;
-            var snormal = currentStrip.LaneStrip.SplineLUT.spline.NormalSpline[t];
-            var tangential = Vector3.Normalize(nextPos - position);
-            var lateral = Vector3.Cross(snormal, tangential).Normalized();
-            var normal = Vector3.Cross(tangential, lateral).Normalized();
+            var resample = currentStrip.GetPositionFrame(t);
 
             //Validation
             Debug.Assert(float.IsFinite(t), "Invalid spline parameter");
-            Debug.Assert(position.IsFinite(), "Invalid position");
-            Debug.Assert(tangential.IsFinite(), "Invalid tangent");
-            Debug.Assert(lateral.IsFinite(), "Invalid lateral");
-            return new(lateral, normal, tangential, position);
+            Debug.Assert(resample.O.IsFinite(), "Invalid position");
+            Debug.Assert(resample.X.IsFinite(), "Invalid lateral");
+            Debug.Assert(resample.Y.IsFinite(), "Invalid normal");
+            Debug.Assert(resample.Z.IsFinite(), "Invalid tangent");
+            return resample;
         }
     }
     public static class RouteMethods {
