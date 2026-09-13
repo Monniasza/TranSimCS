@@ -75,7 +75,7 @@ namespace TranSimCS.SilkNet {
                 DearUI.InputFloat("Car spawn rate", Settings.CarSpawnRateProp);
                 DearUI.MenuToggle("Enable car spawning", Settings.SpawnCarsProp);
                 DearUI.MenuToggle("Day/night cycle", Settings.DayNightCycleProp);
-                DearUI.InputFloat("Duration of a day", Settings.DayTimeLengthProp);
+                DearUI.InputFloat("Duration of a day", Settings.DayTimeLengthProp, 1, 0);
                 DearUI.MenuToggle("Invert all normals", Settings.InvertAllNormalsProp);
                 DearUI.MenuToggle("Select road nodes", ref SelectNodes);
                 DearUI.MenuToggle("Select road segments", ref SelectSegments);

@@ -33,7 +33,7 @@ namespace TranSimCS.Mode {
                     if (mouseover?.SelectedObj == null) {
                         ImGui.TextColored(maroon, "No object selected");
                     } else if (mouseover?.Tag is HalfLane) {
-                        ImGui.TextColored(green, "[LMB] to add traffic lights to this lane. [Shift+LMB] to add traffic lights to all lanes on this node half");
+                        ImGui.TextColored(green, "[LMB] to add traffic lights to this lane. [Shift+LMB] to add traffic lights to all lanes on this half node");
                     } else if (mouseover?.Tag is RoadSection) {
                         ImGui.TextColored(green, "[LMB] to add traffic lights to this road section.");
                     } else if (mouseover?.SelectedObj is TrafficLightGroup) {
@@ -42,7 +42,19 @@ namespace TranSimCS.Mode {
                         ImGui.TextColored(red, "The selected object does not support traffic lights.");
                     }
                 } else {
-                    
+                    ImGui.Text("[Q] to go to the previous phase");
+                    ImGui.Text("[E] to go to the next phase");
+                    ImGui.Text("[RMB] to quit editing traffic lights");
+                    ImGui.DragInt($"Phase", ref SelectedGroup.PhaseId, 0.01f, 0, SelectedGroup.Phases.Count - 1);
+                    if (mouseover?.SelectedObj == null) {
+                        ImGui.TextColored(maroon, "No object selected");
+                    } else if (mouseover?.Tag is HalfLane) {
+                        ImGui.TextColored(green, "[LMB] to add traffic lights to this lane. [Shift+LMB] to add traffic lights to all lanes on this half node");
+                    } else if (mouseover?.Tag is TrafficLight) {
+                        ImGui.TextColored(yellow, "[LMB] to toggle this traffic light");
+                    } else {
+                        ImGui.TextColored(red, "The selected object does not support traffic lights.");
+                    }
                 }
 
                 
@@ -50,7 +62,11 @@ namespace TranSimCS.Mode {
         }
 
         void IMode.OnMousePress(MouseButton button) {
-            
+            bool shiftPressed = ImGui.IsKeyDown(ImGuiKey.LeftShift);
+            var mouseover = game.MouseOver?.Tag;
+            if(mouseover is HalfLane hlane) {
+
+            }
         }
     }
 }

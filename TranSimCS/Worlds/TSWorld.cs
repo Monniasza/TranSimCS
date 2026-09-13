@@ -26,7 +26,10 @@ namespace TranSimCS.Worlds
         private float _daytime;
         public float DayTime {
             get => _daytime;
-            set => _daytime = ((value % 60) + 60) % 60;
+            set {
+                if(!float.IsFinite(value)) throw new ArgumentException("Invalid daytime: " + value);
+                _daytime = ((value % 60) + 60) % 60;
+            }
         }
 
         public RoadStrip? FindRoadStrip(HalfNode start, HalfNode end) {
@@ -100,7 +103,8 @@ namespace TranSimCS.Worlds
             OnUpdate?.Invoke(deltaTime);
 
             // Update logic for the world can be added here
-            DayTime += (60 / Settings.DayTimeLength) * deltaTime;
+            var dday = (60 / Settings.DayTimeLength) * deltaTime;
+            if(float.IsFinite(dday)) DayTime += dday;
             diagCounter++;
             if(diagCounter >= 60) {
                 diagCounter = 0;
