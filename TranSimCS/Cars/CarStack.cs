@@ -94,7 +94,6 @@ namespace TranSimCS.Cars {
 
         public override Car ReadElementFromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
             Guid? guid = null;
-            PositionEulerAngles? pos = null;
             string? mesh = null;
             float speed = 0;
             RoutePosition strip = default;
@@ -107,9 +106,6 @@ namespace TranSimCS.Cars {
                     case "id":
                         reader0.Read();
                         guid = Guid.Parse(reader0.GetString()!);
-                        break;
-                    case "pos":
-                        pos = objPosConverter.Read(ref reader0, typeof(PositionEulerAngles), options);
                         break;
                     case "mesh":
                         reader0.Read();
@@ -139,7 +135,6 @@ namespace TranSimCS.Cars {
             });
 
             if (guid == null) throw new JsonException("Missing id property");
-            if (pos == null) throw new JsonException($"Missing pos property for car {guid}");
             Car car = new();
             car.Guid = guid.Value;
             car.MeshId = mesh;
