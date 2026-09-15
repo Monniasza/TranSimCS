@@ -81,36 +81,7 @@ namespace TranSimCS.Cars {
         public Property<string?> MeshIdProp;
         public string? MeshId { get => MeshIdProp.Value; set => MeshIdProp.Value = value; }
         public float Speed;
-
-        private LaneStrip[]? _insertedPositions;
-        private RoutePosition _route;
-        public RoutePosition CurrentRoute{
-            get => _route;
-            set {
-                RemoveFromIndices();
-                _route = value;
-                const float lookahead = 10;
-                var firstStrip = _route.Route.Find(_route.Position);
-                var lastStrip = _route.Route.Find(_route.Position + lookahead);
-                var routePosition = _route.Position;
-                if (lastStrip >= _route.Route.LaneStrips.Length) lastStrip = _route.Route.LaneStrips.Length - 1;
-                LaneStrip[] insertedPosition = new LaneStrip[lastStrip - firstStrip + 1];
-                for (int i = firstStrip; i <= lastStrip; i++) {
-                    var node = _route.Route.LaneStrips[i];
-                    var projectedPosition = node.Project(routePosition).LaneArcLength;
-                    var isReverse = node.isReverse;
-                    var strip = node.road;
-                    var stripPosition = isReverse ? node.Span - projectedPosition : projectedPosition;
-                    //if (stripPosition < 0) stripPosition = 0;
-                    //if (stripPosition > node.Span) stripPosition = node.Span;
-                    CarEntry entry = new(this, stripPosition, isReverse);
-                    var insertionIndex = strip.FindFirstAheadIndex(stripPosition);
-                    strip._carsOnStrip.Insert(insertionIndex, entry);
-                    insertedPosition[i - firstStrip] = strip;
-                }
-                _insertedPositions = insertedPosition;
-            }
-        }
+        public RoutePosition CurrentRoute;
 
         //Derived properties
         PositionEulerAngles IPosition.PositionData {
@@ -118,12 +89,6 @@ namespace TranSimCS.Cars {
             set { } //ignore set
         }
         public MeshDrawInstance meshInstance;
-        internal void RemoveFromIndices() {
-            //Remove the car from the old road strip
-            if (_insertedPositions != null) foreach (var strip in _insertedPositions)
-                strip.RemoveCar(this);
-            _insertedPositions = null;
-        }
 
         public Car() {
             MeshIdProp = new(null, "meshId", this);
