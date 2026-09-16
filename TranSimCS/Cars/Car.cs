@@ -148,7 +148,8 @@ namespace TranSimCS.Cars {
 
             //Interpolate
             const float minMovement = 0;
-            var deltaPos = obstacle.relativeDistance;
+            //var deltaPos = obstacle.relativeDistance;
+            var deltaPos = maxDeltaPos;
             if (deltaPos > maxDeltaPos) deltaPos = maxDeltaPos;
             if (deltaPos < minMovement) deltaPos = minMovement;
             Advance(deltaPos);

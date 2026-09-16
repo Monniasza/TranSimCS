@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 using NLog;
@@ -33,6 +34,12 @@ namespace TranSimCS.Cars {
                     strip._carsOnStrip.Clear();
 
             //Generate all car indices
+            List<LaneStrip> insertedLaneStrips = [];
+            void InsertCarIntoStrip(CarEntry car, LaneStrip strip) {
+                if(strip._carsOnStrip.Count == 0) insertedLaneStrips.Add(strip);
+                strip._carsOnStrip.Add(car);
+            }
+
             foreach(var car in data) {
                 const float lookahead = 10;
                 var firstStrip = car.FindIndexFromDistance(car.RoutePositionFromStart);
@@ -40,19 +47,19 @@ namespace TranSimCS.Cars {
                 var routePosition = car.RoutePositionFromStart;
                 if (lastStrip >= car.RouteElementCount) lastStrip = car.RouteElementCount - 1;
                 for(int i = 0; i < firstStrip; i++) routePosition -= car.GetRouteElement(i).road.SplineLUT.Length;
-                LaneStrip[] insertedPosition = new LaneStrip[lastStrip - firstStrip + 1];
                 for (int i = firstStrip; i <= lastStrip; i++) {
                     var node = car.GetRouteElement(i);
                     var isReverse = node.isReverse;
                     var strip = node.road;
-                    var stripPosition = isReverse ? node.road.SplineLUT.Length - (float)routePosition : (float)routePosition;
+                    var stripPosition = isReverse ? strip.SplineLUT.Length - routePosition : routePosition;
                     CarEntry entry = new(car, stripPosition, isReverse);
-                    var insertionIndex = strip.FindFirstAheadIndex(stripPosition);
-                    strip._carsOnStrip.Insert(insertionIndex, entry);
-                    insertedPosition[i - firstStrip] = strip;
+                    InsertCarIntoStrip(entry, strip);
                     routePosition -= node.road.SplineLUT.Length;
                 }
             }
+
+            //Sort car lists
+            foreach (var strip in insertedLaneStrips) strip._carsOnStrip.Sort();
 
             //Simulate all cars
             log.Trace($"Updating {data.Count} Cars");
