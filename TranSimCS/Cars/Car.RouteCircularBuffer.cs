@@ -49,6 +49,7 @@ namespace TranSimCS.Cars {
             GrowCapacity(_routeBufferCount + 1);
             var index = MapIndex(_routeBufferCount);
             _routeBuffer[index] = routeElement;
+            _routeBufferCount++;
         }
 
         public RoutePosition GetRoute() {
