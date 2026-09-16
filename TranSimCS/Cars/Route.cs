@@ -132,9 +132,12 @@ namespace TranSimCS.Cars {
         public static Route ToRoute(this IEnumerable<RouteInput> inputs) => new Route(inputs);
         public static Route ToRoute(this IEnumerable<RouteKey> inputs) => new Route(inputs.Select(x => x.ToRouteInput));
         public static IEnumerable<CarStripPosition> FindNext(LaneStrip strip, bool isReverse, SegmentHalf half) {
+            ArgumentNullException.ThrowIfNull(strip);
             if (isReverse) half = half.Inverse();
             var nextLane = strip.GetHalf(half);
+            if (nextLane == null) return [];
             nextLane = nextLane.OppositeHalf;
+            if (nextLane == null) return [];
             return nextLane.ConnectedLaneStrips.Select(FromEnd);
         }
         public static CarStripPosition FromEnd(LaneStripEnd laneStrip) {

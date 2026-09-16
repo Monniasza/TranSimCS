@@ -36,6 +36,10 @@ namespace TranSimCS.Cars {
             while(countedLength < distanceToPlanAhead) {
                 //Plan more segments
                 var element = GetRouteElement(RouteElementCount - 1);
+                if (element.road == null) {
+                    log.Error($"The car {Guid} has an invalid route entry. Stopping route planning.");
+                    break;
+                }
                 var candidates = RouteMethods.FindNext(element.road, element.isReverse, SegmentHalf.End).ToArray();
                 if (candidates.Length == 0) {
                     break;

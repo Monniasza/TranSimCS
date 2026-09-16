@@ -13,13 +13,12 @@ namespace TranSimCS.Cars {
         internal int _routeBufferCount = 0;
         internal int MapIndex(int index) => (index + _routeBufferHead) % _routeBuffer.Length;
         private void GrowCapacity(int minCapacity) {
-            _routeBufferCount = minCapacity;
             if (minCapacity <= _routeBuffer.Length) return;
             int newCapacity = _routeBuffer.Length;
             while (newCapacity < minCapacity) newCapacity *= 2;
 
-            int elementsAfterEnd = int.Max(0, _routeBufferHead + _routeBufferCount - _routeBuffer.Length);
-            int elementsBeforeEnd = _routeBuffer.Length - elementsAfterEnd;
+            int elementsBeforeEnd = int.Min(_routeBufferCount, _routeBuffer.Length - _routeBufferHead);
+            int elementsAfterEnd = _routeBufferCount - elementsBeforeEnd;
 
             var newBuffer = new RouteInput[newCapacity];
             Array.Copy(_routeBuffer, _routeBufferHead, newBuffer, 0, elementsBeforeEnd); //Copy elements before the end
@@ -54,8 +53,8 @@ namespace TranSimCS.Cars {
 
         public RoutePosition GetRoute() {
             RouteInput[] routeInputs = new RouteInput[_routeBufferCount];
-            int elementsAfterEnd = int.Max(0, _routeBufferHead + _routeBufferCount - _routeBuffer.Length);
-            int elementsBeforeEnd = _routeBuffer.Length - elementsAfterEnd;
+            int elementsBeforeEnd = int.Min(_routeBufferCount, _routeBuffer.Length - _routeBufferHead);
+            int elementsAfterEnd = _routeBufferCount - elementsBeforeEnd;
             Array.Copy(_routeBuffer, _routeBufferHead, routeInputs, 0, elementsBeforeEnd); //Copy elements before the end
             if (elementsAfterEnd > 0) Array.Copy(_routeBuffer, 0, routeInputs, elementsBeforeEnd, elementsAfterEnd); //If needec, copy elements after the end
             return new(new Route(routeInputs), RoutePositionFromStart);
@@ -65,6 +64,7 @@ namespace TranSimCS.Cars {
             _routeBufferHead = 0;
             GrowCapacity(route.Route.LaneStrips.Length);
             for (int i = 0; i < route.Route.LaneStrips.Length; i++) _routeBuffer[i] = route.Route.LaneStrips[i].ToRouteInput();
+            _routeBufferCount = route.Route.LaneStrips.Length;
             RoutePositionFromStart = route.Position;
         }
     }
