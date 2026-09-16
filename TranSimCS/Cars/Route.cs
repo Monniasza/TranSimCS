@@ -11,7 +11,9 @@ using TranSimCS.Geometry;
 using TranSimCS.Roads.Strip;
 
 namespace TranSimCS.Cars {
-    public record struct RouteInput(LaneStrip road, bool isReverse);
+    public record struct RouteInput(LaneStrip road, bool isReverse){
+        public CarStripPosition ToCarStripPosition(float meters) => new CarStripPosition(road, meters, isReverse);
+    }
     public record struct RouteKey(LaneStrip road, bool isReverse, float StartPosition, float EndPosition) {
         public RouteKey(LaneStrip road, bool isReverse) : this(road, isReverse, 0, 0) { }
         public RouteKey(RouteInput input) : this(input.road, input.isReverse, 0, 0) { }

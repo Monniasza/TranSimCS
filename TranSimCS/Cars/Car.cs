@@ -18,7 +18,7 @@ using static TranSimCS.Model.MeshUnroll;
 using Path = System.IO.Path;
 
 namespace TranSimCS.Cars {
-    public class Car : Obj, IObjMesh, IPosition, IDemolish {
+    public partial class Car : Obj, IObjMesh, IPosition, IDemolish {
         public static Dictionary<string, MeshDrawInstance> loadedMeshes = [];
         public static ObservableList<(string, MeshDrawInstance)> meshes = [];
         private static Random rnd = new Random();
@@ -70,7 +70,7 @@ namespace TranSimCS.Cars {
             car.Randomize();
             if (strip != null) {
                 var lanePosition = new CarStripPosition(strip, 0);
-                car.CurrentRoute = lanePosition.ToRoute();
+                car.SetRoute(lanePosition.ToRoute());
             }
             car.Speed = speed;
             world.Cars.data.Add(car);
@@ -81,7 +81,6 @@ namespace TranSimCS.Cars {
         public Property<string?> MeshIdProp;
         public string? MeshId { get => MeshIdProp.Value; set => MeshIdProp.Value = value; }
         public float Speed;
-        public RoutePosition CurrentRoute;
 
         //Derived properties
         PositionEulerAngles IPosition.PositionData {
@@ -124,50 +123,46 @@ namespace TranSimCS.Cars {
                 Speed = maxSpeed;
             }
             if (World == null) return;
-            if(CurrentRoute.Route == null) {
+            if(RouteElementCount == 0) {
                 log.Error($"The car {Guid} is off-road. Deleting.");
                 Demolish();
                 return;
             }
 
             //Trim dead segments
-            var route = CurrentRoute;
-            var trimmedRoute = route.Trim();
-            if (trimmedRoute == null) {
+            TrimUntilDead();
+            if (RouteElementCount == 0) {
                 //Route died under the car, deleting
                 log.Warn($"The car {Guid} has no valid trimmed route. Deleting.");
                 Demolish();
                 return;
             }
-            route = trimmedRoute.Value;
 
             //Plan the route
             const float lookahead = 10;
             var maxDeltaPos = Speed * time;
-            route = route.PlanIfNeeded(maxDeltaPos);
+            PlanAhead();
 
             //Find obstacles
-            var obstacle = route.FindObstacle(maxDeltaPos + lookahead, Speed, this);
+            var obstacle = FindObstacle(maxDeltaPos + lookahead, Speed);
 
             //Interpolate
             const float minMovement = 0;
             var deltaPos = obstacle.relativeDistance;
             if (deltaPos > maxDeltaPos) deltaPos = maxDeltaPos;
             if (deltaPos < minMovement) deltaPos = minMovement;
-            var newRoute = route.Advance(deltaPos);
-            if (newRoute == null) {
+            Advance(deltaPos);
+            if (RouteElementCount == 0) {
                 Demolish();
                 return;
             }
-            route = newRoute.Value;
 
             //Put the car in the world
-            var referenceFrame = route.GetPositionFrame();
+            var referenceFrame = GetPositionFrame();
             var newCoords = referenceFrame.ToQuaternion();
 
             meshInstance.Transform = newCoords;
             GeometryChanged?.Invoke(this);
-            CurrentRoute = route;
         }
 
         public void Demolish() {

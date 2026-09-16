@@ -35,21 +35,22 @@ namespace TranSimCS.Cars {
             //Generate all car indices
             foreach(var car in data) {
                 const float lookahead = 10;
-                var firstStrip = car.CurrentRoute.Route.Find(car.CurrentRoute.Position);
-                var lastStrip = car.CurrentRoute.Route.Find(car.CurrentRoute.Position + lookahead);
-                var routePosition = car.CurrentRoute.Position;
-                if (lastStrip >= car.CurrentRoute.Route.LaneStrips.Length) lastStrip = car.CurrentRoute.Route.LaneStrips.Length - 1;
+                var firstStrip = car.FindIndexFromDistance(car.RoutePositionFromStart);
+                var lastStrip = car.FindIndexFromDistance(car.RoutePositionFromStart + lookahead);
+                var routePosition = car.RoutePositionFromStart;
+                if (lastStrip >= car.RouteElementCount) lastStrip = car.RouteElementCount - 1;
+                for(int i = 0; i < firstStrip; i++) routePosition -= car.GetRouteElement(i).road.SplineLUT.Length;
                 LaneStrip[] insertedPosition = new LaneStrip[lastStrip - firstStrip + 1];
                 for (int i = firstStrip; i <= lastStrip; i++) {
-                    var node = car.CurrentRoute.Route.LaneStrips[i];
-                    var projectedPosition = node.Project(routePosition).LaneArcLength;
+                    var node = car.GetRouteElement(i);
                     var isReverse = node.isReverse;
                     var strip = node.road;
-                    var stripPosition = isReverse ? node.Span - projectedPosition : projectedPosition;
+                    var stripPosition = isReverse ? node.road.SplineLUT.Length - (float)routePosition : (float)routePosition;
                     CarEntry entry = new(car, stripPosition, isReverse);
                     var insertionIndex = strip.FindFirstAheadIndex(stripPosition);
                     strip._carsOnStrip.Insert(insertionIndex, entry);
                     insertedPosition[i - firstStrip] = strip;
+                    routePosition -= node.road.SplineLUT.Length;
                 }
             }
 
@@ -139,7 +140,7 @@ namespace TranSimCS.Cars {
             car.Guid = guid.Value;
             car.MeshId = mesh;
             car.Speed = speed;
-            car.CurrentRoute = strip;
+            car.SetRoute(strip);
             return car;
         }
 
@@ -155,7 +156,7 @@ namespace TranSimCS.Cars {
 
             writer.WritePropertyName("route");
             var routeConverter = new RoutePositionConverter(world);
-            routeConverter.Write(writer, value.CurrentRoute, options);
+            routeConverter.Write(writer, value.GetRoute(), options);
 
             writer.WriteEndObject();
         }
