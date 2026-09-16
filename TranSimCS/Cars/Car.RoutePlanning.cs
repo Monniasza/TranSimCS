@@ -47,8 +47,11 @@ namespace TranSimCS.Cars {
         }
         public bool Advance(float meters) {
             RoutePositionFromStart += meters;
-            while (RouteElementCount > 0 && RoutePositionFromStart >= GetRouteElement(0).road.SplineLUT.Length) 
+            while (RouteElementCount > 0 && RoutePositionFromStart >= GetRouteElement(0).road.SplineLUT.Length) {
+                RoutePositionFromStart -= GetRouteElement(0).road.SplineLUT.Length;
                 PopRouteElements(1);
+            }
+                
             return RouteElementCount > 0;
         }
         public int FindIndexFromDistance(float meters) {
@@ -180,7 +183,10 @@ namespace TranSimCS.Cars {
             for (int i = 0; i < RouteElementCount; i++) {
                 var road = GetRouteElement(i);
                 var newDistance = distance - road.road.SplineLUT.Length;
-                if (newDistance >= 0) continue;
+                if (newDistance >= 0) {
+                    distance = newDistance;
+                    continue;
+                }
 
                 const float eps = 0.001f;
                 var currentStrip = road.ToCarStripPosition(distance);

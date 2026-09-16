@@ -13,6 +13,7 @@ namespace TranSimCS.Cars {
         internal int _routeBufferCount = 0;
         internal int MapIndex(int index) => (index + _routeBufferHead) % _routeBuffer.Length;
         private void GrowCapacity(int minCapacity) {
+            _routeBufferCount = minCapacity;
             if (minCapacity <= _routeBuffer.Length) return;
             int newCapacity = _routeBuffer.Length;
             while (newCapacity < minCapacity) newCapacity *= 2;
@@ -24,6 +25,7 @@ namespace TranSimCS.Cars {
             Array.Copy(_routeBuffer, _routeBufferHead, newBuffer, 0, elementsBeforeEnd); //Copy elements before the end
             if(elementsAfterEnd > 0) Array.Copy(_routeBuffer, 0, newBuffer, elementsBeforeEnd, elementsAfterEnd); //If needec, copy elements after the end
 
+            _routeBufferHead = 0;
             _routeBuffer = newBuffer;
         }
 
@@ -48,7 +50,6 @@ namespace TranSimCS.Cars {
             GrowCapacity(_routeBufferCount + 1);
             var index = MapIndex(_routeBufferCount);
             _routeBuffer[index] = routeElement;
-            _routeBufferCount++;
         }
 
         public RoutePosition GetRoute() {
@@ -61,7 +62,6 @@ namespace TranSimCS.Cars {
         }
 
         public void SetRoute(RoutePosition route) {
-            _routeBufferCount = route.Route.LaneStrips.Length;
             _routeBufferHead = 0;
             GrowCapacity(route.Route.LaneStrips.Length);
             for (int i = 0; i < route.Route.LaneStrips.Length; i++) _routeBuffer[i] = route.Route.LaneStrips[i].ToRouteInput();
