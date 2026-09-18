@@ -29,7 +29,7 @@ namespace TranSimCS.Roads.Node {
 
         public void CopyTo(HalfLane[] array, int arrayIndex) {
             ArgumentNullException.ThrowIfNull(nameof(array));
-            if(arrayIndex < 0 || arrayIndex >= Count) throw new ArgumentOutOfRangeException(nameof(arrayIndex));
+            if(arrayIndex < 0 || arrayIndex >= array.Length) throw new ArgumentOutOfRangeException(nameof(arrayIndex));
             for(int i = 0; i < Count && i+arrayIndex < array.Length; i++) array[i+arrayIndex] = this[i];
         }
 
