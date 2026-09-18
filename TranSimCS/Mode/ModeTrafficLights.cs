@@ -62,11 +62,29 @@ namespace TranSimCS.Mode {
         }
 
         void IMode.OnMousePress(MouseButton button) {
+            
+        }
+        void LeftPress() {
             bool shiftPressed = ImGui.IsKeyDown(ImGuiKey.LeftShift);
             var mouseover = game.MouseOver?.Tag;
-            if(mouseover is HalfLane hlane) {
-
+            if (mouseover is HalfLane hlane) {
+                var assignedTrafficLight = hlane.TrafficLight;
+                if (assignedTrafficLight == null) {
+                    assignedTrafficLight = new();
+                    hlane.TrafficLight = assignedTrafficLight;
+                }
+                if (shiftPressed) {
+                    var lanes = hlane.HalfNode.GetLaneList();
+                    foreach (var lane in lanes) lane.TrafficLight = assignedTrafficLight;
+                }
+                SelectedGroup = assignedTrafficLight;
+            }
+            if (mouseover is RoadSection section) {
+                foreach (var node in section.Nodes)
+                
             }
         }
+
+        static RoadSection? GetAssignedRoadSection(HalfLane hlane) => hlane.OppositeHalf.HalfNode.ConnectedSection.Value;
     }
 }
