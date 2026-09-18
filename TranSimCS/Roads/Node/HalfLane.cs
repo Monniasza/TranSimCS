@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Iesi.Collections.Generic;
 using TranSimCS.Geometry;
 using TranSimCS.Mode;
@@ -39,13 +40,21 @@ namespace TranSimCS.Roads.Node {
         /// </summary>
         public RoadSection? GetAssignedRoadSection() => OppositeHalf.HalfNode.ConnectedSection.Value;
 
+        /// <summary>
+        /// Whether a car can actually arrive at this half-lane via a connected lane strip. A strip's traffic
+        /// flows from its StartLane to its EndLane, so this half-lane only ever receives cars if it is the
+        /// End side of at least one connected strip. A light placed on a half-lane with no incoming strip
+        /// would never be seen by any car, so such half-lanes are not eligible for HasTrafficLight.
+        /// </summary>
+        public bool HasIncomingLaneStrip => ConnectedLaneStrips.Any(strip => strip.half == SegmentHalf.End);
+
         //Whether this half-lane should be given a traffic light when its assigned road section has a traffic light group.
-        //Not every half-lane needs a light, so this is an opt-in toggle.
+        //Not every half-lane needs a light, so this is an opt-in toggle, and only half-lanes with an incoming lane strip are eligible.
         //Bidirectional association: toggling this keeps HalfLane.HasTrafficLight and RoadSection.LanesWithTrafficLights in sync.
         public Property<bool> HasTrafficLightProp { get; private set; }
         public bool HasTrafficLight {
             get => HasTrafficLightProp.Value;
-            set => HasTrafficLightProp.Value = value;
+            set => HasTrafficLightProp.Value = value && HasIncomingLaneStrip;
         }
 
         private void HasTrafficLightProp_ValueChanged(IProperty<bool> property, bool oldValue, bool newValue) {

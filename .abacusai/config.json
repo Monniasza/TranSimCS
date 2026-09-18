@@ -2,7 +2,10 @@
   "permissions": {
     "strictness": "strict",
     "allow": [
-      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff --stat)"
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff --stat)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCS/TranSimCS.csproj -v quiet 2>&1 | Select-String -Pattern \"Liczba b\" ; echo done)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCS/TranSimCS.csproj -v quiet 2>&1 | Select-String -Pattern \"error CS|Liczba b\")",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git status --short)"
     ]
   }
 }

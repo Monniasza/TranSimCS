@@ -125,8 +125,8 @@ namespace TranSimCS.Mode {
         // a road section controlled by the currently selected group (if any), so it can be given a light.
         private HalfLane? GetControlledLane(LaneStrip strip) {
             if (SelectedGroup == null) return null;
-            if (SelectedGroup.ControlledSections.Contains(strip.StartLane.GetAssignedRoadSection())) return strip.StartLane;
-            if (SelectedGroup.ControlledSections.Contains(strip.EndLane.GetAssignedRoadSection())) return strip.EndLane;
+            if (strip.StartLane.HasIncomingLaneStrip && SelectedGroup.ControlledSections.Contains(strip.StartLane.GetAssignedRoadSection())) return strip.StartLane;
+            if (strip.EndLane.HasIncomingLaneStrip && SelectedGroup.ControlledSections.Contains(strip.EndLane.GetAssignedRoadSection())) return strip.EndLane;
             return null;
         }
 

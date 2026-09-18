@@ -54,7 +54,7 @@ namespace TranSimCS.Roads.Node {
         public override RoadNode ReadElementFromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
             Guid? guid = null;
             PositionEulerAngles? pos = null;
-            List<LaneNode> lanes = new();
+            List<(LaneNode node, bool frontLight, bool rearLight)> lanes = new();
             string name = "";
 
             var objPosConverter = new ObjPosConverter();
@@ -71,8 +71,8 @@ namespace TranSimCS.Roads.Node {
                         break;
                     case "lanes":
                         JsonProcessor.ReadJsonArrayProperties(ref reader0, (ref reader1, _) => {
-                            var lane = laneConverter.Read(ref reader1, typeof(Lane), options);
-                            lanes.Add(lane);
+                            var lane = laneConverter.Read(ref reader1, typeof(Lane), options, out var frontLight, out var rearLight);
+                            lanes.Add((lane, frontLight, rearLight));
                         });
                         break;
                     case "name":
@@ -86,8 +86,10 @@ namespace TranSimCS.Roads.Node {
             if (pos == null) throw new JsonException($"Missing pos property for node {guid}");
 
             RoadNode node = new RoadNode(name, pos.Value, guid);
-            foreach (var lane in lanes) {
-                node.AddLane(lane);
+            foreach (var (laneNode, frontLight, rearLight) in lanes) {
+                var lane = node.AddLane(laneNode);
+                if (frontLight) lane.FrontHalf.HasTrafficLight = true;
+                if (rearLight) lane.RearHalf.HasTrafficLight = true;
             }
             return node;
         }
@@ -110,7 +112,7 @@ namespace TranSimCS.Roads.Node {
             writer.WriteStartArray();
             var laneConverter = new LaneConverter();
             foreach (var lane in value.Lanes) {
-                laneConverter.Write(writer, lane.LaneNode, options);
+                laneConverter.Write(writer, lane.LaneNode, options, lane.FrontHalf.HasTrafficLight, lane.RearHalf.HasTrafficLight);
             }
             writer.WriteEndArray();
 
