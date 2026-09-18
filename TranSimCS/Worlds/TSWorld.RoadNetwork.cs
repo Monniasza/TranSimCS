@@ -141,6 +141,9 @@ namespace TranSimCS.Worlds {
             }
             section._containedSegments.Clear();
 
+            //Detach the traffic light group, if any
+            section.TrafficLightGroup = null;
+
             //Fire dependency events
             foreach (var segment in segments) {
                 segment.FireDependencyEvent(segment, section, PropertyNames.SectionOfSegment);
@@ -180,10 +183,6 @@ namespace TranSimCS.Worlds {
             var rearSection = node.RearHalf.ConnectedSection;
             node.FrontEnd.ConnectedSection.Value = null;
             node.RearEnd.ConnectedSection.Value = null;
-
-            //Delete attached traffic lights
-            var halfLanes = node.GetAllHalfLanes();
-            foreach (var halfLane in halfLanes) halfLane.TrafficLight = null;
 
             //Delete all connected road strips
             foreach (var segment in node.Connections) {
@@ -247,24 +246,26 @@ namespace TranSimCS.Worlds {
         }
     
         //Traffic lights
+        private void AddIfAbsent(RoadSection section) {
+            if (RoadSections.data.Contains(section)) return;
+            RoadSections.data.Add(section);
+        }
         private void HandleAddTrafficLight(TrafficLightGroup tlight) {
-            //Add missing lanes
-            foreach(var lane in tlight.ControlledHalfLanes.ToArray()) {
-                var roadNodeOfLane = lane.RoadNode;
-                if(roadNodeOfLane == null) {
-                    //Delete this lane
-                    lane.TrafficLight = null;
-                    tlight.OnLaneRemoved(lane);
+            //Add missing sections
+            foreach(var section in tlight.ControlledSections.ToArray()) {
+                if(section.World == null) {
+                    //Detach this orphaned section
+                    section.TrafficLightGroup = null;
                 } else {
-                    //Add the attached road node
-                    AddIfAbsent(roadNodeOfLane);
+                    //Add the attached road section
+                    AddIfAbsent(section);
                 }
             }
         }
         private void HandleRemoveTrafficLight(TrafficLightGroup tlight) {
-            //Remove the traffic light from all lanes
-            foreach(var lane in tlight.ControlledHalfLanes)
-                lane.TrafficLight = null;
+            //Detach the traffic light from all sections
+            foreach(var section in tlight.ControlledSections.ToArray())
+                section.TrafficLightGroup = null;
 
             //Fire events
             tlight.FirePropertyEvent(tlight, new(PropertyNames.DeleteFromWorld));

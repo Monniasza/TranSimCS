@@ -4,6 +4,7 @@ using Iesi.Collections.Generic;
 using TranSimCS.Geometry;
 using TranSimCS.Mode;
 using TranSimCS.Property;
+using TranSimCS.Roads.Section;
 using TranSimCS.Roads.Strip;
 using TranSimCS.TrafficLights;
 using TranSimCS.Worlds;
@@ -30,12 +31,14 @@ namespace TranSimCS.Roads.Node {
             set => Definition = new(MiddlePosition, value);
         }
 
-        //Traffic lights
-        public Property<TrafficLightGroup?> TrafficLightProp { get; private set; }
-        public TrafficLightGroup? TrafficLight {
-            get => TrafficLightProp.Value;
-            set => TrafficLightProp.Value = value;
-        }
+        //Traffic lights. Attached to the road section this lane leads into (see GetAssignedRoadSection), not to the lane itself.
+        public TrafficLightGroup? TrafficLight => GetAssignedRoadSection()?.TrafficLightGroup;
+
+        /// <summary>
+        /// Gets the road section that a car in this lane is about to enter, and which this lane's traffic light (if any) belongs to.
+        /// </summary>
+        public RoadSection? GetAssignedRoadSection() => OppositeHalf.HalfNode.ConnectedSection.Value;
+
         public bool IsPassingAllowed() {
             var lights = TrafficLight;
             if (lights == null) return true;
@@ -51,14 +54,6 @@ namespace TranSimCS.Roads.Node {
             DefinitionProp = end.GetConditional(lane.InverseDefinitionProp, lane.DefinitionProp);
             _connectedLaneStrips = new();
             ConnectedLaneStrips = new(_connectedLaneStrips);
-            TrafficLightProp = new(null, Guid + PropertyNames.TrafficLightOfLaneSuffix, RoadNode);
-            TrafficLightProp.ValueChanged += TrafficLightProp_ValueChanged;
-        }
-
-        private void TrafficLightProp_ValueChanged(IProperty<TrafficLightGroup?> property, TrafficLightGroup? oldValue, TrafficLightGroup? newValue) {
-            oldValue?.OnLaneRemoved(this);
-            newValue?.OnLaneAdded(this);
-            newValue?.World?.AddIfAbsent(newValue);
         }
 
         //Derived properties

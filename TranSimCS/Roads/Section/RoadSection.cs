@@ -16,6 +16,7 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.SceneGraph;
 using TranSimCS.Setting;
+using TranSimCS.TrafficLights;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Section {
@@ -31,6 +32,13 @@ namespace TranSimCS.Roads.Section {
         //Section contents
         public readonly Property<HalfNodePair> MainSlopeNodes;
         public readonly Property<RoadFinish> FinishProperty;
+
+        //Traffic lights. A section can have at most one traffic light group, but a group can control several sections.
+        public Property<TrafficLightGroup?> TrafficLightGroupProp { get; private set; }
+        public TrafficLightGroup? TrafficLightGroup {
+            get => TrafficLightGroupProp.Value;
+            set => TrafficLightGroupProp.Value = value;
+        }
 
         public event MeshInvalidationCallback GeometryChanged;
 
@@ -50,9 +58,17 @@ namespace TranSimCS.Roads.Section {
         public RoadSection() {
             MainSlopeNodes = new(default, "slopeNodes", this);
             FinishProperty = new(RoadFinish.Embankment, "finish", this);
+            TrafficLightGroupProp = new(null, Guid + PropertyNames.TrafficLightOfSectionSuffix, this);
+            TrafficLightGroupProp.ValueChanged += TrafficLightGroupProp_ValueChanged;
             Mesh = new MeshGenerator<RoadSection>(this, SectionRenderer.GenerateSectionMesh);
             SelectionMesh = new MeshGenerator<RoadSection>(this, SectionRenderer.GenerateSectionSelectionMesh);
             SelectionMesh.OnMeshInvalidated += HandleMeshInvalidated;
+        }
+
+        private void TrafficLightGroupProp_ValueChanged(IProperty<TrafficLightGroup?> property, TrafficLightGroup? oldValue, TrafficLightGroup? newValue) {
+            oldValue?.OnSectionRemoved(this);
+            newValue?.OnSectionAdded(this);
+            newValue?.World?.AddIfAbsent(newValue);
         }
 
         private void HandleMeshInvalidated() {

@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Section;
 using TranSimCS.Save2;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Stack;
@@ -22,20 +23,21 @@ namespace TranSimCS.TrafficLights {
         }
 
         public override TrafficLightGroup ReadElementFromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
-            var laneEndConverter = new LaneEndConverter(World);
             var phaseConverter = new TrafficLightPhaseConverter(World);
 
             Guid? guid = null;
-            List<HalfLane> lanes = [];
+            List<RoadSection> sections = [];
             List<TrafficLightPhase> phases = [];
             int phaseNumber = 0;
             float timer = 0;
 
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, name) => {
                 switch (name) {
-                    case "lanes":
+                    case "sections":
                         JsonProcessor.ReadJsonArrayProperties(ref reader0, (ref reader1, idx) => {
-                            lanes.Add(laneEndConverter.Read(ref reader1, typeof(HalfLane), options));
+                            JsonProcessor.ForceRead(ref reader1);
+                            var sectionGuid = Guid.Parse(reader1.GetString());
+                            sections.Add(World.RoadSections.data.Find(sectionGuid));
                         });
                         break;
                     case "phases":
@@ -65,20 +67,19 @@ namespace TranSimCS.TrafficLights {
             result.Phases.AddRange(phases);
             result.Time = timer;
             result.PhaseId = phaseNumber;
-            foreach (var lane in lanes) lane.TrafficLight = result;
+            foreach (var section in sections) if (section != null) section.TrafficLightGroup = result;
             return result;
         }
 
         public override void SaveElementToJson(Utf8JsonWriter writer, TrafficLightGroup obj, JsonSerializerOptions options) {
-            var laneEndConverter = new LaneEndConverter(World);
             var phaseConverter = new TrafficLightPhaseConverter(World);
 
             writer.WriteStartObject();
             writer.WriteString("guid", obj.Guid);
-            writer.WritePropertyName("lanes");
+            writer.WritePropertyName("sections");
             writer.WriteStartArray();
-            foreach(var lane in obj.ControlledHalfLanes) {
-                laneEndConverter.Write(writer, lane, options);
+            foreach(var section in obj.ControlledSections) {
+                writer.WriteStringValue(section.Guid);
             }
             writer.WriteEndArray();
             writer.WriteNumber("phasenumber", obj.PhaseId);

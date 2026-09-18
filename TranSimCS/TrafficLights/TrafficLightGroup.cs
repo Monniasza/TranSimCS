@@ -10,6 +10,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Mode;
 using TranSimCS.Property;
 using TranSimCS.Roads.Node;
+using TranSimCS.Roads.Section;
 using TranSimCS.Worlds;
 using static TranSimCS.Model.MeshUnroll;
 
@@ -24,17 +25,23 @@ namespace TranSimCS.TrafficLights {
         public static readonly TrafficLightPhase EmptyPhase = new TrafficLightPhase(1, ImmutableHashSet<HalfLane>.Empty);
 
         //Structural properties
-        private readonly List<HalfLane> _controlledHalfLanes = [];
-        public ReadOnlyCollection<HalfLane> ControlledHalfLanes => new(_controlledHalfLanes);
-        internal void OnLaneAdded(HalfLane hlane) {
-            _controlledHalfLanes.Add(hlane);
-            FirePropertyEvent(this, new(PropertyNames.LanesOfTrafficLight));
+        private readonly List<RoadSection> _controlledSections = [];
+        public ReadOnlyCollection<RoadSection> ControlledSections => new(_controlledSections);
+        internal void OnSectionAdded(RoadSection section) {
+            _controlledSections.Add(section);
+            FirePropertyEvent(this, new(PropertyNames.SectionsOfTrafficLight));
         }
-        internal void OnLaneRemoved(HalfLane hlane) {
-            _controlledHalfLanes.Remove(hlane);
-            if (_controlledHalfLanes.Count < 1) Demolish();
-            FirePropertyEvent(this, new(PropertyNames.LanesOfTrafficLight));
+        internal void OnSectionRemoved(RoadSection section) {
+            _controlledSections.Remove(section);
+            if (_controlledSections.Count < 1) Demolish();
+            FirePropertyEvent(this, new(PropertyNames.SectionsOfTrafficLight));
         }
+
+        //Half-lanes controlled by this group, derived from the controlled road sections.
+        //A half-lane is controlled by this group when it directly leads into one of the controlled sections.
+        public IEnumerable<HalfLane> ControlledHalfLanes =>
+            _controlledSections.SelectMany(section => section.Nodes)
+                .SelectMany(node => node.OppositeHalf.GetLaneList());
 
         //Simulation properties
         public float Time;
@@ -104,8 +111,9 @@ namespace TranSimCS.TrafficLights {
             var currentPhase = hasPhases ? Phases[PhaseId] : EmptyPhase;
             int j = 0;
             const float height = 3.5f;
-            var output = new GeneratedNode[ControlledHalfLanes.Count];
-            foreach (var lane in ControlledHalfLanes) {
+            var controlledHalfLanes = ControlledHalfLanes.ToArray();
+            var output = new GeneratedNode[controlledHalfLanes.Length];
+            foreach (var lane in controlledHalfLanes) {
                 bool isGreen = currentPhase.GreenLanes.Contains(lane);
                 var model = isGreen ? TrafficLightMeshes.Green : TrafficLightMeshes.Red;
                 var nodeTransform = lane.HalfNode.Cache.ReferenceFrame;
@@ -159,7 +167,10 @@ namespace TranSimCS.TrafficLights {
         }
 
 
-        public void Demolish() => lane.TrafficLight = null;
+        public void Demolish() {
+            var section = lane.GetAssignedRoadSection();
+            if (section != null && section.TrafficLightGroup == TrafficLightGroup) section.TrafficLightGroup = null;
+        }
 
         public override bool Equals(object? obj) {
             return obj is TrafficLight light && Equals(light);

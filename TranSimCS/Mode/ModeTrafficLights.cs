@@ -1,22 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Immutable;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 using ImGuiNET;
 using Silk.NET.Input;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Section;
+using TranSimCS.Select;
 using TranSimCS.SilkNet;
 using TranSimCS.TrafficLights;
 
 namespace TranSimCS.Mode {
     /// <summary>
-    /// The traffic light editor.
-    /// Click on sections and 
+    /// The traffic light editor. Traffic light groups are attached to road sections: each section can hold
+    /// at most one group, but a group can control several sections.
+    /// Click on a road section to create/select its traffic light group. While a group is being edited,
+    /// click on other sections to attach/detach them, and click on individual lights to toggle them for
+    /// the current phase.
     /// </summary>
-    /// <param name="game"></param>
     public sealed class ModeTrafficLights(SilkNetTest game) : IMode {
         public string Title() => "Traffic lights";
 
@@ -30,61 +30,106 @@ namespace TranSimCS.Mode {
             if (ImGui.Begin("Traffic light editor")) {
                 var mouseover = game.MouseOver;
                 if (SelectedGroup == null) {
-                    if (mouseover?.SelectedObj == null) {
-                        ImGui.TextColored(maroon, "No object selected");
-                    } else if (mouseover?.Tag is HalfLane) {
-                        ImGui.TextColored(green, "[LMB] to add traffic lights to this lane. [Shift+LMB] to add traffic lights to all lanes on this half node");
-                    } else if (mouseover?.Tag is RoadSection) {
-                        ImGui.TextColored(green, "[LMB] to add traffic lights to this road section.");
+                    if (mouseover?.Tag is RoadSection section) {
+                        if (section.TrafficLightGroup == null)
+                            ImGui.TextColored(green, "[LMB] to create a traffic light group for this road section");
+                        else
+                            ImGui.TextColored(yellow, "[LMB] to edit this road section's traffic light group");
                     } else if (mouseover?.SelectedObj is TrafficLightGroup) {
-                        ImGui.TextColored(yellow, "[LMB] to edit this traffic light group.");
+                        ImGui.TextColored(yellow, "[LMB] to edit this traffic light group");
+                    } else if (mouseover?.Tag != null) {
+                        ImGui.TextColored(red, "The selected object does not support traffic lights");
                     } else {
-                        ImGui.TextColored(red, "The selected object does not support traffic lights.");
+                        ImGui.TextColored(maroon, "No object selected");
                     }
                 } else {
-                    ImGui.Text("[Q] to go to the previous phase");
-                    ImGui.Text("[E] to go to the next phase");
                     ImGui.Text("[RMB] to quit editing traffic lights");
-                    ImGui.DragInt($"Phase", ref SelectedGroup.PhaseId, 0.01f, 0, SelectedGroup.Phases.Count - 1);
-                    if (mouseover?.SelectedObj == null) {
-                        ImGui.TextColored(maroon, "No object selected");
-                    } else if (mouseover?.Tag is HalfLane) {
-                        ImGui.TextColored(green, "[LMB] to add traffic lights to this lane. [Shift+LMB] to add traffic lights to all lanes on this half node");
-                    } else if (mouseover?.Tag is TrafficLight) {
-                        ImGui.TextColored(yellow, "[LMB] to toggle this traffic light");
+                    ImGui.Text("[Q] previous phase, [E] next phase");
+
+                    if (ImGui.Button("Add phase"))
+                        SelectedGroup.Phases.Add(new TrafficLightPhase(30, ImmutableHashSet<HalfLane>.Empty));
+                    ImGui.SameLine();
+                    if (SelectedGroup.Phases.Count > 0 && ImGui.Button("Remove current phase")) {
+                        SelectedGroup.Phases.RemoveAt(SelectedGroup.PhaseId);
+                        if (SelectedGroup.PhaseId >= SelectedGroup.Phases.Count)
+                            SelectedGroup.PhaseId = Math.Max(0, SelectedGroup.Phases.Count - 1);
+                    }
+
+                    if (SelectedGroup.Phases.Count > 0) {
+                        int phaseId = SelectedGroup.PhaseId;
+                        if (ImGui.DragInt("Phase", ref phaseId, 0.05f, 0, SelectedGroup.Phases.Count - 1))
+                            SelectedGroup.PhaseId = Math.Clamp(phaseId, 0, SelectedGroup.Phases.Count - 1);
+
+                        var phase = SelectedGroup.Phases[SelectedGroup.PhaseId];
+                        float duration = phase.Duration;
+                        if (ImGui.DragFloat("Duration", ref duration, 0.1f, 0.1f, 300f))
+                            SelectedGroup.Phases[SelectedGroup.PhaseId] = phase with { Duration = duration };
                     } else {
-                        ImGui.TextColored(red, "The selected object does not support traffic lights.");
+                        ImGui.TextColored(maroon, "This group has no phases; all lights are permanently green");
+                    }
+
+                    if (mouseover?.Tag is RoadSection section) {
+                        if (section.TrafficLightGroup == SelectedGroup)
+                            ImGui.TextColored(yellow, "[LMB] to detach this road section from the group");
+                        else
+                            ImGui.TextColored(green, "[LMB] to attach this road section to the group");
+                    } else if (mouseover?.Tag is TrafficLight light && light.TrafficLightGroup == SelectedGroup) {
+                        var isGreen = SelectedGroup.Phases.Count > 0 && SelectedGroup.CurrentPhase.GreenLanes.Contains(light.lane);
+                        ImGui.TextColored(isGreen ? green : red, "[LMB] to toggle this light for the current phase");
+                    } else if (mouseover?.Tag != null) {
+                        ImGui.TextColored(red, "The selected object does not support traffic lights");
+                    } else {
+                        ImGui.TextColored(maroon, "No object selected");
                     }
                 }
-
-                
             }
+            ImGui.End();
         }
 
         void IMode.OnMousePress(MouseButton button) {
-            
-        }
-        void LeftPress() {
-            bool shiftPressed = ImGui.IsKeyDown(ImGuiKey.LeftShift);
-            var mouseover = game.MouseOver?.Tag;
-            if (mouseover is HalfLane hlane) {
-                var assignedTrafficLight = hlane.TrafficLight;
-                if (assignedTrafficLight == null) {
-                    assignedTrafficLight = new();
-                    hlane.TrafficLight = assignedTrafficLight;
-                }
-                if (shiftPressed) {
-                    var lanes = hlane.HalfNode.GetLaneList();
-                    foreach (var lane in lanes) lane.TrafficLight = assignedTrafficLight;
-                }
-                SelectedGroup = assignedTrafficLight;
-            }
-            if (mouseover is RoadSection section) {
-                foreach (var node in section.Nodes)
-                
+            var mouseover = game.MouseOver;
+            switch (button) {
+                case MouseButton.Left:
+                    if (SelectedGroup == null) {
+                        if (mouseover?.Tag is RoadSection section) {
+                            var group = section.TrafficLightGroup;
+                            if (group == null) {
+                                group = new TrafficLightGroup();
+                                section.TrafficLightGroup = group;
+                            }
+                            SelectedGroup = group;
+                        } else if (mouseover?.SelectedObj is TrafficLightGroup existingGroup) {
+                            SelectedGroup = existingGroup;
+                        }
+                    } else {
+                        if (mouseover?.Tag is RoadSection section) {
+                            section.TrafficLightGroup = section.TrafficLightGroup == SelectedGroup ? null : SelectedGroup;
+                        } else if (mouseover?.Tag is TrafficLight light && light.TrafficLightGroup == SelectedGroup) {
+                            ToggleLight(light.lane);
+                        }
+                    }
+                    break;
+                case MouseButton.Right:
+                    SelectedGroup = null;
+                    break;
             }
         }
 
-        static RoadSection? GetAssignedRoadSection(HalfLane hlane) => hlane.OppositeHalf.HalfNode.ConnectedSection.Value;
+        private void ToggleLight(HalfLane lane) {
+            if (SelectedGroup == null) return;
+            if (SelectedGroup.Phases.Count == 0)
+                SelectedGroup.Phases.Add(new TrafficLightPhase(30, ImmutableHashSet<HalfLane>.Empty));
+
+            var phaseId = SelectedGroup.PhaseId;
+            var phase = SelectedGroup.Phases[phaseId];
+            var greenLanes = phase.GreenLanes.Contains(lane) ? phase.GreenLanes.Remove(lane) : phase.GreenLanes.Add(lane);
+            SelectedGroup.Phases[phaseId] = phase with { GreenLanes = greenLanes };
+        }
+
+        void IMode.OnKeyPress(Key key) {
+            if (SelectedGroup == null || SelectedGroup.Phases.Count == 0) return;
+            if (key == Key.Q) SelectedGroup.PhaseId = Math.Max(0, SelectedGroup.PhaseId - 1);
+            if (key == Key.E) SelectedGroup.PhaseId = Math.Min(SelectedGroup.Phases.Count - 1, SelectedGroup.PhaseId + 1);
+        }
     }
 }

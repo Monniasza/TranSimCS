@@ -11,8 +11,8 @@
         public const string LaneListOfNode = "nodeLanes";
         public const string NodeOfSection = "sectionNode";
         public const string PhaseOfTrafficLight = "lightPhase";
-        public const string LanesOfTrafficLight = "lightLanes";
-        public const string LaneOfTrafficLight = "lightLane";
-        public const string TrafficLightOfLaneSuffix = "laneLight";
+        public const string SectionsOfTrafficLight = "lightSections";
+        public const string SectionOfTrafficLight = "lightSection";
+        public const string TrafficLightOfSectionSuffix = "sectionLight";
     }
 }

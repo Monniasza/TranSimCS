@@ -90,6 +90,7 @@ namespace TranSimCS.Worlds
             RoadSections.data.ItemAdded += HandleAddRoadSection;
             RoadSections.data.ItemRemoved += HandleRemoveRoadSection;
             TrafficLights.data.ItemAdded += HandleAddTrafficLight;
+            TrafficLights.data.ItemRemoved += HandleRemoveTrafficLight;
         }
 
         
