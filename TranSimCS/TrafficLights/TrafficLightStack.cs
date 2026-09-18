@@ -35,7 +35,7 @@ namespace TranSimCS.TrafficLights {
                 switch (name) {
                     case "sections":
                         JsonProcessor.ReadJsonArrayProperties(ref reader0, (ref reader1, idx) => {
-                            JsonProcessor.ForceRead(ref reader1);
+                            //JsonProcessor.ForceRead(ref reader1);
                             var sectionGuid = Guid.Parse(reader1.GetString());
                             sections.Add(World.RoadSections.data.Find(sectionGuid));
                         });

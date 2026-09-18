@@ -54,7 +54,7 @@ namespace TranSimCS.Roads.Node {
         public Property<bool> HasTrafficLightProp { get; private set; }
         public bool HasTrafficLight {
             get => HasTrafficLightProp.Value;
-            set => HasTrafficLightProp.Value = value && HasIncomingLaneStrip;
+            set => HasTrafficLightProp.Value = value;
         }
 
         private void HasTrafficLightProp_ValueChanged(IProperty<bool> property, bool oldValue, bool newValue) {

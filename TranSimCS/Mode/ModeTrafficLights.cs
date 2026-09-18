@@ -99,8 +99,12 @@ namespace TranSimCS.Mode {
                             if (group == null) {
                                 group = new TrafficLightGroup();
                                 section.TrafficLightGroup = group;
+                                game.World.TrafficLights.data.Add(group);
+                                foreach(var node in section.Nodes) foreach(var lane in node.OppositeHalf.SortedLanes) {
+                                    var hasIncomingLanes = lane.HasIncomingLaneStrip;
+                                    if(hasIncomingLanes) lane.HasTrafficLight = true;
+                                }
                             }
-                            game.World.TrafficLights.data.Add(group);
                             SelectedGroup = group;
                         } else if (mouseover?.SelectedObj is TrafficLightGroup existingGroup) {
                             SelectedGroup = existingGroup;
@@ -125,8 +129,8 @@ namespace TranSimCS.Mode {
         // a road section controlled by the currently selected group (if any), so it can be given a light.
         private HalfLane? GetControlledLane(LaneStrip strip) {
             if (SelectedGroup == null) return null;
-            if (strip.StartLane.HasIncomingLaneStrip && SelectedGroup.ControlledSections.Contains(strip.StartLane.GetAssignedRoadSection())) return strip.StartLane;
-            if (strip.EndLane.HasIncomingLaneStrip && SelectedGroup.ControlledSections.Contains(strip.EndLane.GetAssignedRoadSection())) return strip.EndLane;
+            if (strip.StartLane.TrafficLight == SelectedGroup) return strip.StartLane;
+            if (strip.EndLane.TrafficLight == SelectedGroup) return strip.EndLane;
             return null;
         }
 
@@ -141,7 +145,7 @@ namespace TranSimCS.Mode {
         }
         private void AddPhase() {
             SelectedGroup.Phases.Add(new TrafficLightPhase(30, ImmutableHashSet<HalfLane>.Empty));
-            if (SelectedGroup.PhaseId == SelectedGroup.Phases.Count - 1) SelectedGroup.PhaseId++;
+            if (SelectedGroup.PhaseId == SelectedGroup.Phases.Count - 2) SelectedGroup.PhaseId++;
         }
 
         void IMode.OnKeyPress(Key key) {
