@@ -74,6 +74,7 @@ namespace TranSimCS.TrafficLights {
             //Advance the state
             int i = 0;
             const int max = 100;
+            lights.Time += dt;
             while (hasPhases && lights.Phases[lights.PhaseId].Duration < lights.Time){
                 if(i == max) {
                     log.Warn("Excessive phase advancement. Maybe all phases are 0 seconds? " + lights.Guid);

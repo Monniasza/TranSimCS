@@ -46,6 +46,7 @@ namespace TranSimCS.Mode {
                 } else {
                     ImGui.Text("[RMB] to quit editing traffic lights");
                     ImGui.Text("[Q] previous phase, [E] next phase");
+                    ImGui.DragFloat("Counter", ref SelectedGroup.Time, 0.1f, 0, float.PositiveInfinity);
 
                     if (ImGui.Button("Add phase")) AddPhase();
                     ImGui.SameLine();
@@ -57,8 +58,11 @@ namespace TranSimCS.Mode {
 
                     if (SelectedGroup.Phases.Count > 0) {
                         int phaseId = SelectedGroup.PhaseId;
-                        if (ImGui.DragInt("Phase", ref phaseId, 0.05f, 0, SelectedGroup.Phases.Count - 1))
+                        if (ImGui.DragInt("Phase", ref phaseId, 0.05f, 0, SelectedGroup.Phases.Count - 1)) {
                             SelectedGroup.PhaseId = Math.Clamp(phaseId, 0, SelectedGroup.Phases.Count - 1);
+                            SelectedGroup.Time = 0;
+                        }
+                            
 
                         var phase = SelectedGroup.Phases[SelectedGroup.PhaseId];
                         float duration = phase.Duration;
