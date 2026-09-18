@@ -40,6 +40,13 @@ namespace TranSimCS.Roads.Section {
             set => TrafficLightGroupProp.Value = value;
         }
 
+        //Half-lanes leading into this section that opted in to having a traffic light (see HalfLane.HasTrafficLight).
+        //This is the other side of that bidirectional association: HalfLane.HasTrafficLight <-> RoadSection.LanesWithTrafficLights.
+        private readonly HashSet<HalfLane> _lanesWithTrafficLights = new();
+        public ReadOnlySet<HalfLane> LanesWithTrafficLights => new(_lanesWithTrafficLights);
+        internal void OnLaneTrafficLightAdded(HalfLane lane) => _lanesWithTrafficLights.Add(lane);
+        internal void OnLaneTrafficLightRemoved(HalfLane lane) => _lanesWithTrafficLights.Remove(lane);
+
         public event MeshInvalidationCallback GeometryChanged;
 
         public RoadFinish Finish { get => FinishProperty.Value; set => FinishProperty.Value = value; }

@@ -5,6 +5,7 @@ using ImGuiNET;
 using Silk.NET.Input;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Section;
+using TranSimCS.Roads.Strip;
 using TranSimCS.Select;
 using TranSimCS.SilkNet;
 using TranSimCS.TrafficLights;
@@ -75,6 +76,9 @@ namespace TranSimCS.Mode {
                     } else if (mouseover?.Tag is TrafficLight light && light.TrafficLightGroup == SelectedGroup) {
                         var isGreen = SelectedGroup.Phases.Count > 0 && SelectedGroup.CurrentPhase.GreenLanes.Contains(light.lane);
                         ImGui.TextColored(isGreen ? green : red, "[LMB] to toggle this light for the current phase");
+                    } else if (mouseover?.Tag is LaneStrip strip && GetControlledLane(strip) is HalfLane hl) {
+                        ImGui.TextColored(hl.HasTrafficLight ? yellow : green,
+                            hl.HasTrafficLight ? "[LMB] to remove the traffic light from this lane" : "[LMB] to give this lane a traffic light");
                     } else if (mouseover?.Tag != null) {
                         ImGui.TextColored(red, "The selected object does not support traffic lights");
                     } else {
@@ -106,6 +110,8 @@ namespace TranSimCS.Mode {
                             section.TrafficLightGroup = section.TrafficLightGroup == SelectedGroup ? null : SelectedGroup;
                         } else if (mouseover?.Tag is TrafficLight light && light.TrafficLightGroup == SelectedGroup) {
                             ToggleLight(light.lane);
+                        } else if (mouseover?.Tag is LaneStrip strip && GetControlledLane(strip) is HalfLane hl) {
+                            hl.HasTrafficLight = !hl.HasTrafficLight;
                         }
                     }
                     break;
@@ -113,6 +119,15 @@ namespace TranSimCS.Mode {
                     SelectedGroup = null;
                     break;
             }
+        }
+
+        // Given a lane strip under the mouse, finds which of its two ends is the half-lane entering
+        // a road section controlled by the currently selected group (if any), so it can be given a light.
+        private HalfLane? GetControlledLane(LaneStrip strip) {
+            if (SelectedGroup == null) return null;
+            if (SelectedGroup.ControlledSections.Contains(strip.StartLane.GetAssignedRoadSection())) return strip.StartLane;
+            if (SelectedGroup.ControlledSections.Contains(strip.EndLane.GetAssignedRoadSection())) return strip.EndLane;
+            return null;
         }
 
         private void ToggleLight(HalfLane lane) {

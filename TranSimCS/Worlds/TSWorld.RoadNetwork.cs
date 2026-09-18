@@ -232,6 +232,13 @@ namespace TranSimCS.Worlds {
                 }
             }
 
+            //Move traffic light lane registrations from the old section to the new one
+            if (halfNode.OppositeHalf.GetLaneList() is { } lanesWithLights) foreach (var lane in lanesWithLights) {
+                if (!lane.HasTrafficLight) continue;
+                oldValue?.OnLaneTrafficLightRemoved(lane);
+                newValue?.OnLaneTrafficLightAdded(lane);
+            }
+
             //Fire dependency events
             oldValue?.FireDependencyEvent(oldValue, prop.Parent, PropertyNames.SegmentOfSection);
             newValue?.FireDependencyEvent(newValue, prop.Parent, PropertyNames.SegmentOfSection);

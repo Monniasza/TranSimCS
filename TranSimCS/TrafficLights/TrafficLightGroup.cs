@@ -38,10 +38,10 @@ namespace TranSimCS.TrafficLights {
         }
 
         //Half-lanes controlled by this group, derived from the controlled road sections.
-        //A half-lane is controlled by this group when it directly leads into one of the controlled sections.
+        //A half-lane is controlled by this group when it leads into one of the controlled sections AND
+        //opted in via HalfLane.HasTrafficLight (not every half-lane needs a light).
         public IEnumerable<HalfLane> ControlledHalfLanes =>
-            _controlledSections.SelectMany(section => section.Nodes)
-                .SelectMany(node => node.OppositeHalf.GetLaneList());
+            _controlledSections.SelectMany(section => section.LanesWithTrafficLights);
 
         //Simulation properties
         public float Time;
@@ -166,10 +166,7 @@ namespace TranSimCS.TrafficLights {
         }
 
 
-        public void Demolish() {
-            var section = lane.GetAssignedRoadSection();
-            if (section != null && section.TrafficLightGroup == TrafficLightGroup) section.TrafficLightGroup = null;
-        }
+        public void Demolish() => lane.HasTrafficLight = false;
 
         public override bool Equals(object? obj) {
             return obj is TrafficLight light && Equals(light);

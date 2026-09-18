@@ -32,12 +32,31 @@ namespace TranSimCS.Roads.Node {
         }
 
         //Traffic lights. Attached to the road section this lane leads into (see GetAssignedRoadSection), not to the lane itself.
-        public TrafficLightGroup? TrafficLight => GetAssignedRoadSection()?.TrafficLightGroup;
+        public TrafficLightGroup? TrafficLight => HasTrafficLight ? GetAssignedRoadSection()?.TrafficLightGroup : null;
 
         /// <summary>
         /// Gets the road section that a car in this lane is about to enter, and which this lane's traffic light (if any) belongs to.
         /// </summary>
         public RoadSection? GetAssignedRoadSection() => OppositeHalf.HalfNode.ConnectedSection.Value;
+
+        //Whether this half-lane should be given a traffic light when its assigned road section has a traffic light group.
+        //Not every half-lane needs a light, so this is an opt-in toggle.
+        //Bidirectional association: toggling this keeps HalfLane.HasTrafficLight and RoadSection.LanesWithTrafficLights in sync.
+        public Property<bool> HasTrafficLightProp { get; private set; }
+        public bool HasTrafficLight {
+            get => HasTrafficLightProp.Value;
+            set => HasTrafficLightProp.Value = value;
+        }
+
+        private void HasTrafficLightProp_ValueChanged(IProperty<bool> property, bool oldValue, bool newValue) {
+            var section = GetAssignedRoadSection();
+            if (newValue) section?.OnLaneTrafficLightAdded(this);
+            else section?.OnLaneTrafficLightRemoved(this);
+
+            //Invalidate the traffic light group's generated geometry, if any
+            var group = section?.TrafficLightGroup;
+            group?.FireDependencyEvent(group, Lane, PropertyNames.TrafficLightToggleOfLaneSuffix);
+        }
 
         public bool IsPassingAllowed() {
             var lights = TrafficLight;
@@ -54,6 +73,8 @@ namespace TranSimCS.Roads.Node {
             DefinitionProp = end.GetConditional(lane.InverseDefinitionProp, lane.DefinitionProp);
             _connectedLaneStrips = new();
             ConnectedLaneStrips = new(_connectedLaneStrips);
+            HasTrafficLightProp = new(false, Guid + PropertyNames.TrafficLightToggleOfLaneSuffix, null);
+            HasTrafficLightProp.ValueChanged += HasTrafficLightProp_ValueChanged;
         }
 
         //Derived properties

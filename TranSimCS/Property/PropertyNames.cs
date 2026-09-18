@@ -14,5 +14,6 @@
         public const string SectionsOfTrafficLight = "lightSections";
         public const string SectionOfTrafficLight = "lightSection";
         public const string TrafficLightOfSectionSuffix = "sectionLight";
+        public const string TrafficLightToggleOfLaneSuffix = "laneLightToggle";
     }
 }

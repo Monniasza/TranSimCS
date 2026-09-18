@@ -167,7 +167,12 @@ namespace TranSimCS.Roads.Node {
             var connections = lane.Connections.ToArray();
             foreach (var connection in connections) 
                 connection.Destroy();
-            
+
+            //Deregister the lane's halves from any traffic light group they opted into
+            var frontSection = lane.FrontHalf.HasTrafficLight ? lane.FrontHalf.GetAssignedRoadSection() : null;
+            var rearSection = lane.RearHalf.HasTrafficLight ? lane.RearHalf.GetAssignedRoadSection() : null;
+            frontSection?.OnLaneTrafficLightRemoved(lane.FrontHalf);
+            rearSection?.OnLaneTrafficLightRemoved(lane.RearHalf);
 
             lanesSet.Remove(lane.Guid);
             lanesDict.Remove(lane);
