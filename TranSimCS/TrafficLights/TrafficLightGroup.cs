@@ -119,7 +119,6 @@ namespace TranSimCS.TrafficLights {
                 var nodeTransform = lane.HalfNode.Cache.ReferenceFrame;
                 nodeTransform.O += nodeTransform.X * lane.MiddlePosition;
                 nodeTransform.O += nodeTransform.Y * height;
-                nodeTransform = nodeTransform.Around();
                 var transform = nodeTransform.ToQuaternion();
                 var instance = new MeshDrawInstance(model, transform, TrafficLightMeshes.Texture, 12);
                 output[j++] = new(lane, this, instance);

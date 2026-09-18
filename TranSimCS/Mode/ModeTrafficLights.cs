@@ -46,8 +46,7 @@ namespace TranSimCS.Mode {
                     ImGui.Text("[RMB] to quit editing traffic lights");
                     ImGui.Text("[Q] previous phase, [E] next phase");
 
-                    if (ImGui.Button("Add phase"))
-                        SelectedGroup.Phases.Add(new TrafficLightPhase(30, ImmutableHashSet<HalfLane>.Empty));
+                    if (ImGui.Button("Add phase")) AddPhase();
                     ImGui.SameLine();
                     if (SelectedGroup.Phases.Count > 0 && ImGui.Button("Remove current phase")) {
                         SelectedGroup.Phases.RemoveAt(SelectedGroup.PhaseId);
@@ -97,6 +96,7 @@ namespace TranSimCS.Mode {
                                 group = new TrafficLightGroup();
                                 section.TrafficLightGroup = group;
                             }
+                            game.World.TrafficLights.data.Add(group);
                             SelectedGroup = group;
                         } else if (mouseover?.SelectedObj is TrafficLightGroup existingGroup) {
                             SelectedGroup = existingGroup;
@@ -117,13 +117,16 @@ namespace TranSimCS.Mode {
 
         private void ToggleLight(HalfLane lane) {
             if (SelectedGroup == null) return;
-            if (SelectedGroup.Phases.Count == 0)
-                SelectedGroup.Phases.Add(new TrafficLightPhase(30, ImmutableHashSet<HalfLane>.Empty));
+            if (SelectedGroup.Phases.Count == 0) AddPhase();
 
             var phaseId = SelectedGroup.PhaseId;
             var phase = SelectedGroup.Phases[phaseId];
             var greenLanes = phase.GreenLanes.Contains(lane) ? phase.GreenLanes.Remove(lane) : phase.GreenLanes.Add(lane);
             SelectedGroup.Phases[phaseId] = phase with { GreenLanes = greenLanes };
+        }
+        private void AddPhase() {
+            SelectedGroup.Phases.Add(new TrafficLightPhase(30, ImmutableHashSet<HalfLane>.Empty));
+            if (SelectedGroup.PhaseId == SelectedGroup.Phases.Count - 1) SelectedGroup.PhaseId++;
         }
 
         void IMode.OnKeyPress(Key key) {

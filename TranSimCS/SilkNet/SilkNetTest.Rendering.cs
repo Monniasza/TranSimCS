@@ -24,6 +24,7 @@ namespace TranSimCS.SilkNet {
             meshes.AddRange(World.RoadSections.data);
             meshes.AddRange(World.Buildings.data);
             meshes.AddRange(World.Cars.data);
+            meshes.AddRange(World.TrafficLights.data);
 
             //Draw highlights
             Mesh roadRenderBin = mesh.GetOrCreateRenderBinForced(Materials.Road);
