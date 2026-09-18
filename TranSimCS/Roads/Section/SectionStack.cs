@@ -51,8 +51,7 @@ namespace TranSimCS.Roads.Section {
             });
             if (guid == null) JsonProcessor.Fail(reader, "Missing id property");
             if (list.Count == 0) JsonProcessor.Fail(reader, $"No attached nodes for section {guid}");
-            RoadSection section = new RoadSection();
-            section.Guid = guid.Value;
+            RoadSection section = new RoadSection(guid.Value);
             section.Finish = finish;
             foreach (var node in list) 
                 node.ConnectedSection.Value = section;

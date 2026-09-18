@@ -62,7 +62,7 @@ namespace TranSimCS.Roads.Section {
         public WorkingPlane WorkingPlane => Cache.WorkingPlane;
         public ImmutableArray<HalfNode> SortedNodes => Cache.SortedNodes;
 
-        public RoadSection() {
+        public RoadSection(Guid? guid = null): base(guid) {
             MainSlopeNodes = new(default, "slopeNodes", this);
             FinishProperty = new(RoadFinish.Embankment, "finish", this);
             TrafficLightGroupProp = new(null, Guid + PropertyNames.TrafficLightOfSectionSuffix, this);
