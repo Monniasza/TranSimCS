@@ -35,16 +35,16 @@ namespace TranSimCS.Mode {
                     ImGui.Text("[C] to exclude a lane on the left");
                     ImGui.Text("[,] to exclude a lane on the right");
                     ImGui.Text("[.] to include a lane on the right");
-                    ImGui.Text("[/] to switch to exclusive mode (counts are number of lanes to exclude from the node)");
-                    ImGui.Text("[X] to swap left/right include counts");
+                    ImGui.Text("[X] to switch to exclusive mode (counts are number of lanes to exclude from the node)");
+                    ImGui.Text("[/] to swap left/right include counts");
                 } else {
                     ImGui.Text("Current mode: exclusive");
                     ImGui.Text("[Z] to exclude a lane on the left");
                     ImGui.Text("[C] to include a lane on the left");
                     ImGui.Text("[,] to include a lane on the right");
-                    ImGui.Text("[.] to exclide a lane on the right");
-                    ImGui.Text("[/] to switch to inclusive mode (counts are number of lanes to include on either side of start lane)");
-                    ImGui.Text("[X] to swap left/right include counts");
+                    ImGui.Text("[.] to exclude a lane on the right");
+                    ImGui.Text("[X] to switch to inclusive mode (counts are number of lanes to include on either side of start lane)");
+                    ImGui.Text("[/] to swap left/right include counts");
                 }
                 ImGui.Text("[LAlt] to cycle direction modes");
                 ImGui.Text("[PageUp] to increase the height");
