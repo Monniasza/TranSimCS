@@ -16,9 +16,6 @@ namespace TranSimCS.Mode {
 
         void IMode.DrawUI() {
             if(ImGui.Begin("Move It!")) {
-                var lmbOld = game.MouseStateOld.IsMouseButtonDown(Silk.NET.Input.MouseButton.Left);
-                var rmbOld = game.MouseStateOld.IsMouseButtonDown(Silk.NET.Input.MouseButton.Right);
-                ImGui.Text($"Old mouse button states: [{lmbOld}] [{rmbOld}]");
                 ImGui.Text("Hold [LMB] to drag on X/Y");
                 ImGui.Text("Hold [RMB] to yaw/elevate the object");
                 ImGui.Text("Hold [LMB+RMB] to roll/pitch the object");
