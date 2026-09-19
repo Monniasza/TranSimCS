@@ -116,6 +116,10 @@ namespace TranSimCS.Mode {
                     } else {
                         if (mouseover?.Tag is RoadSection section) {
                             section.TrafficLightGroup = section.TrafficLightGroup == SelectedGroup ? null : SelectedGroup;
+                            if(SelectedGroup.ControlledSections.Count == 0) {
+                                //Removed all road sections. Delete.
+                                SelectedGroup = null;
+                            }
                         } else if (mouseover?.Tag is TrafficLight light && light.TrafficLightGroup == SelectedGroup) {
                             ToggleLight(light.lane);
                         } else if (mouseover?.Tag is LaneStrip strip && GetControlledLane(strip) is HalfLane hl) {
