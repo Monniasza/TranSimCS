@@ -29,11 +29,6 @@ namespace TranSimCS.SilkNet {
                 ImGui.EndMenu();
             }
 
-            if (ImGui.BeginMenu("Edit")) {
-                
-                ImGui.EndMenu();
-            }
-
             if (ImGui.BeginMenu("Tools")) {
                 DearUI.MenuToggle("Stats", ref IsStatsOpen);
                 DearUI.MenuToggle("Enable examples", ref AreExamplesOpen);
