@@ -207,8 +207,22 @@ namespace TranSimCS.SilkNet {
         private readonly List<Mesh> MeshGroupOrder = [];
         private readonly Dictionary<SimpleMaterial, List<MeshDrawInstance>> MaterialGroupScratch = [];
         private readonly List<SimpleMaterial> MaterialGroupOrder = [];
-        private TransformQ[] PositionScratch = [];
+        private TransformQ[] InstanceStaging = [];
         private nuint InstanceCapacity;
+        private readonly List<DrawGroup> DrawGroups = [];
+
+        private struct DrawGroup {
+            public Mesh Mesh;
+            public SimpleMaterial Material;
+            public int InstanceBase;
+            public int InstanceCount;
+            public DrawGroup(Mesh mesh, SimpleMaterial material, int instanceBase, int instanceCount) {
+                Mesh = mesh;
+                Material = material;
+                InstanceBase = instanceBase;
+                InstanceCount = instanceCount;
+            }
+        }
 
         private List<MeshDrawInstance> RentList() {
             if(GroupListPoolIndex >= GroupListPool.Count) GroupListPool.Add([]);
@@ -225,7 +239,7 @@ namespace TranSimCS.SilkNet {
             //Orphan the instance buffer once per pass so in-flight draws keep the previous storage
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, _instanceBuffer);
             if(InstanceCapacity > 0) {
-                unsafe { gl.BufferData(BufferTargetARB.ArrayBuffer, InstanceCapacity, null, BufferUsageARB.DynamicDraw); }
+                unsafe { gl.BufferData(BufferTargetARB.ArrayBuffer, InstanceCapacity, null, BufferUsageARB.StreamDraw); }
             }
 
             //Group meshes by mesh
@@ -240,15 +254,14 @@ namespace TranSimCS.SilkNet {
                 }
                 meshList.Add(instance);
             }
+            //Stage all instance data of this pass contiguously, recording draw ranges
+            DrawGroups.Clear();
+            int cursor = 0;
+            int instanceStride = Unsafe.SizeOf<TransformQ>();
             foreach (var mesh in MeshGroupOrder) {
                 stats.ModelCount++;
                 var instances = MeshGroupScratch[mesh];
                 if (instances.Count == 0 || mesh.Vertices.Count == 0 || mesh.Indices.Count == 0) continue;
-
-                //Bind the mesh
-                var meshGPU = GetCachedMesh(mesh);
-                gl.BindVertexArray(meshGPU._vertexArray);
-                CheckError("BindVertexArray");
 
                 //For each material
                 MaterialGroupScratch.Clear();
@@ -267,46 +280,59 @@ namespace TranSimCS.SilkNet {
 
                     if (materialInstances.Count == 0) continue;
                     int count = materialInstances.Count;
-                    if(PositionScratch.Length < count) PositionScratch = new TransformQ[GrowCapacity(PositionScratch.Length, count)];
-                    var positionValues = PositionScratch;
-                    for(int i = 0; i < count; i++) positionValues[i] = materialInstances[i].Transform;
-
-                    //Bind uniforms
-                    ShaderUniformData sud = default;
-                    sud.AlphaCutoff = alphaCutoff;
-                    sud.AmbientColor = AmbientColor.Value;
-                    sud.WorldViewProjection = WorldViewProjection;
-                    sud.EmissiveIsMask = material.EmissiveIsMask;
-                    gl.BindBuffer(BufferTargetARB.UniformBuffer, _uniformBuffer);
-                    gl.BufferSubData(BufferTargetARB.UniformBuffer, 0, [sud]);
-                    if (material.CullBack) {
-                        gl.Enable(EnableCap.CullFace);
-                    } else {
-                        gl.Disable(EnableCap.CullFace);
-                    }
-
-                    //Bind textures. For now, black and car.
-                    gl.ActiveTexture(TextureUnit.Texture0);
-                    gl.BindTexture(TextureTarget.Texture2D, GetCachedTexture(material.Texture).GetHandle());
-                    gl.ActiveTexture(TextureUnit.Texture1);
-                    gl.BindTexture(TextureTarget.Texture2D, GetCachedTexture(material.Emissive).GetHandle());
-
-                    //Upload instance data
-                    gl.BindBuffer(BufferTargetARB.ArrayBuffer, _instanceBuffer);
-                    nuint instanceBytes = (nuint)(count * Unsafe.SizeOf<TransformQ>());
-                    if(instanceBytes > InstanceCapacity) {
-                        InstanceCapacity = (nuint)GrowCapacity((int)InstanceCapacity, (int)instanceBytes);
-                        unsafe { gl.BufferData(BufferTargetARB.ArrayBuffer, InstanceCapacity, null, BufferUsageARB.DynamicDraw); }
-                    }
-                    gl.BufferSubData(BufferTargetARB.ArrayBuffer, 0, positionValues.AsSpan(0, count));
-
-                    stats.DrawCount++;
-                    unsafe {
-                        gl.DrawElementsInstanced(PrimitiveType.Triangles, (uint)(mesh.Indices.Count), DrawElementsType.UnsignedShort, null, (uint)count);
-                    }
-                    CheckError("DrawElementsInstanced");
-                    //throw new Exception($"Got to the drawcall. Index count: {mesh.Indices.Count}, Vertex count: {mesh.Vertices.Count}, Instance count: {instances.Count}");
+                    if(InstanceStaging.Length < cursor + count) InstanceStaging = new TransformQ[GrowCapacity(InstanceStaging.Length, cursor + count)];
+                    for(int i = 0; i < count; i++) InstanceStaging[cursor + i] = materialInstances[i].Transform;
+                    DrawGroups.Add(new DrawGroup(mesh, material, cursor, count));
+                    cursor += count;
                 }
+            }
+
+            //Upload all instance data of this pass in one call
+            if(cursor > 0) {
+                gl.BindBuffer(BufferTargetARB.ArrayBuffer, _instanceBuffer);
+                nuint neededBytes = (nuint)(cursor * instanceStride);
+                if(neededBytes > InstanceCapacity) {
+                    InstanceCapacity = (nuint)GrowCapacity((int)InstanceCapacity, (int)neededBytes);
+                    unsafe { gl.BufferData(BufferTargetARB.ArrayBuffer, InstanceCapacity, null, BufferUsageARB.StreamDraw); }
+                }
+                gl.BufferSubData(BufferTargetARB.ArrayBuffer, 0, InstanceStaging.AsSpan(0, cursor));
+            }
+
+            foreach (var group in DrawGroups) {
+                var mesh = group.Mesh;
+                var material = group.Material;
+
+                //Bind the mesh
+                var meshGPU = GetCachedMesh(mesh);
+                gl.BindVertexArray(meshGPU._vertexArray);
+                CheckError("BindVertexArray");
+                meshGPU.BindInstanceRange((nuint)(group.InstanceBase * instanceStride));
+
+                //Bind uniforms
+                ShaderUniformData sud = default;
+                sud.AlphaCutoff = alphaCutoff;
+                sud.AmbientColor = AmbientColor.Value;
+                sud.WorldViewProjection = WorldViewProjection;
+                sud.EmissiveIsMask = material.EmissiveIsMask;
+                gl.BindBuffer(BufferTargetARB.UniformBuffer, _uniformBuffer);
+                gl.BufferSubData(BufferTargetARB.UniformBuffer, 0, [sud]);
+                if (material.CullBack) {
+                    gl.Enable(EnableCap.CullFace);
+                } else {
+                    gl.Disable(EnableCap.CullFace);
+                }
+
+                //Bind textures. For now, black and car.
+                gl.ActiveTexture(TextureUnit.Texture0);
+                gl.BindTexture(TextureTarget.Texture2D, GetCachedTexture(material.Texture).GetHandle());
+                gl.ActiveTexture(TextureUnit.Texture1);
+                gl.BindTexture(TextureTarget.Texture2D, GetCachedTexture(material.Emissive).GetHandle());
+
+                stats.DrawCount++;
+                unsafe {
+                    gl.DrawElementsInstanced(PrimitiveType.Triangles, (uint)(mesh.Indices.Count), DrawElementsType.UnsignedShort, null, (uint)group.InstanceCount);
+                }
+                CheckError("DrawElementsInstanced");
             }
         }
 

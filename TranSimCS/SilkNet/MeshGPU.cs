@@ -60,6 +60,15 @@ namespace TranSimCS.SilkNet {
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
             gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, 0);
         }
+        public unsafe void BindInstanceRange(nuint byteOffset) {
+            //Repoints the instanced attributes at a range of the shared instance buffer.
+            //Requires this VAO to be bound.
+            var gl = rm.window.OpenGL;
+            var instanceStride = (uint)Unsafe.SizeOf<TransformQ>();
+            gl.BindBuffer(BufferTargetARB.ArrayBuffer, rm._instanceBuffer);
+            gl.VertexAttribPointer(5, 3, VertexAttribPointerType.Float, false, instanceStride, (void*)byteOffset);
+            gl.VertexAttribPointer(6, 4, VertexAttribPointerType.Float, false, instanceStride, (void*)(byteOffset + 12));
+        }
         public void Dispose() {
             var gl = rm.window.OpenGL;
             gl.DeleteBuffer(_vertexBuffer);
