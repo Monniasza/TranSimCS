@@ -8,6 +8,7 @@ using TranSimCS.SilkNet;
 namespace TranSimCS.Model {
     public static class MeshUtil {
         const bool allowBVH = true;
+        internal static readonly Logger DiagLog = LogManager.GetCurrentClassLogger();
 
         public static void Stats(this Mesh mesh, Logger log) {
             log.Info($"Mesh stats: verts {mesh.Vertices.Count}, indices {mesh.Indices.Count}");
@@ -98,6 +99,7 @@ namespace TranSimCS.Model {
             var direction = normal / MathF.Sqrt(lengthSquared);
             var targetBvh = target.GetAccelerationStructure();
             var projectedVertices = new List<Vertex>(projection.Vertices.Count);
+            var missedVertices = 0;
 
             //Accept hits with signed distance in [minDistance, maxDistance] of each vertex, measured along the direction.
             //The ray origin is nudged behind the vertex, so vertices coplanar with the target hit at t > 0.
@@ -106,7 +108,10 @@ namespace TranSimCS.Model {
 
             foreach (var vertex in projection.Vertices) {
                 var ray = new Ray3(vertex.Position + originOffset * direction, direction);
-                if (targetBvh.RayIntersect(ray, 0, maxRayDistance, out _, out var distance)) {
+                //Wide edge and bounds tolerance: marking vertices may sit a fraction of the polygon sagitta
+                //outside the target's chord edges and bounds (eg. rim markings on an arc). Hit position comes
+                //from the ray, so the tolerances only widen acceptance, never displace a hit.
+                if (targetBvh.RayIntersect(ray, 0, maxRayDistance, out _, out var distance, edgeEpsilon: 1e-2f, boundsSlack: 1e-2f)) {
                     projectedVertices.Add(new Vertex(
                         ray.GetPoint(distance),
                         vertex.Color,
@@ -114,9 +119,13 @@ namespace TranSimCS.Model {
                         vertex.Material,
                         vertex.Emissive));
                 } else {
+                    missedVertices++;
+                    if (missedVertices <= 3)
+                        DiagLog.Debug($"ProjectOnto MISS #{missedVertices}: vertex={vertex.Position} rayOrigin={ray.Origin}");
                     projectedVertices.Add(vertex);
                 }
             }
+            DiagLog.Debug($"ProjectOnto: {projection.Vertices.Count - missedVertices}/{projection.Vertices.Count} hit");
 
             return new Mesh(null, projectedVertices, projection.Indices, projection.Tags);
         }

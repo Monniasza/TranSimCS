@@ -39,9 +39,12 @@ namespace TranSimCS.Geometry {
             return !(left == right);
         }
 
-        public float? Intersects(AABB box, float min = 0, float max = float.PositiveInfinity) {
+        public float? Intersects(AABB box, float min = 0, float max = float.PositiveInfinity, float slack = 0) {
             float tmin = min;
             float tmax = max;
+            var boxSlack = new Vector3(slack);
+            var boxMin = box.Min - boxSlack;
+            var boxMax = box.Max + boxSlack;
 
             //X intersection
             var invX = 1 / Direction.X;
@@ -49,20 +52,20 @@ namespace TranSimCS.Geometry {
             var invZ = 1 / Direction.Z;
 
             if(MathF.Abs(Direction.X) >= 0.0000001) {
-                float x1 = (box.Min.X - Origin.X) * invX;
-                float x2 = (box.Max.X - Origin.X) * invX;
+                float x1 = (boxMin.X - Origin.X) * invX;
+                float x2 = (boxMax.X - Origin.X) * invX;
                 tmin = MathF.Max(tmin, MathF.Min(x1, x2));
                 tmax = MathF.Min(tmax, MathF.Max(x1, x2));
             }
             if (MathF.Abs(Direction.Y) >= 0.0000001) {
-                float y1 = (box.Min.Y - Origin.Y) * invY;
-                float y2 = (box.Max.Y - Origin.Y) * invY;
+                float y1 = (boxMin.Y - Origin.Y) * invY;
+                float y2 = (boxMax.Y - Origin.Y) * invY;
                 tmin = MathF.Max(tmin, MathF.Min(y1, y2));
                 tmax = MathF.Min(tmax, MathF.Max(y1, y2));
             }
             if (MathF.Abs(Direction.Z) >= 0.0000001) {
-                float z1 = (box.Min.Z - Origin.Z) * invZ;
-                float z2 = (box.Max.Z - Origin.Z) * invZ;
+                float z1 = (boxMin.Z - Origin.Z) * invZ;
+                float z2 = (boxMax.Z - Origin.Z) * invZ;
                 tmin = MathF.Max(tmin, MathF.Min(z1, z2));
                 tmax = MathF.Min(tmax, MathF.Max(z1, z2));
             }

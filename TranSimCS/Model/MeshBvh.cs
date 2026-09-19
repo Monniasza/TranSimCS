@@ -103,7 +103,7 @@ namespace TranSimCS.Model {
         public bool RayIntersect(Ray3 ray, float maxDistance, out int triangleId, out float distance) =>
             RayIntersect(ray, 0, maxDistance, out triangleId, out distance);
 
-        public bool RayIntersect(Ray3 ray, float minDistance, float maxDistance, out int triangleId, out float distance) {
+        public bool RayIntersect(Ray3 ray, float minDistance, float maxDistance, out int triangleId, out float distance, float edgeEpsilon = 1e-4f, float boundsSlack = 0) {
             if (minDistance < 0)
                 throw new ArgumentOutOfRangeException(nameof(minDistance), "Minimum distance must be non-negative.");
             if (maxDistance < minDistance)
@@ -123,7 +123,7 @@ namespace TranSimCS.Model {
                 var indices = mesh.Indices;
                 while (stackSize > 0) {
                     var node = nodes[stack[--stackSize]];
-                    var hit = ray.Intersects(node.Bounds);
+                    var hit = ray.Intersects(node.Bounds, slack: boundsSlack);
                     if (!hit.HasValue || hit.Value > distance) continue;
                     if (node.IsLeaf) {
                         for (int i = 0; i < node.Count; i++) {
@@ -132,7 +132,7 @@ namespace TranSimCS.Model {
                                 verts[indices[tri.BaseIndex]].Position,
                                 verts[indices[tri.BaseIndex + 1]].Position,
                                 verts[indices[tri.BaseIndex + 2]].Position,
-                                out float triDist, minDistance, distance) && triDist < distance) {
+                                out float triDist, minDistance, distance, edgeEpsilon) && triDist < distance) {
                                 distance = triDist;
                                 triangleId = tri.Id;
                             }

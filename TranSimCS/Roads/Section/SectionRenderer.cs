@@ -164,6 +164,22 @@ namespace TranSimCS.Roads.Section {
             var accuracy = Settings.RoadAccuracy;
 
             var surfaceMesh = new Mesh();
+            var endsPair = roadSection.MainSlopeNodes.Value;
+            var hasSlope = endsPair.Start != null
+                && endsPair.End != null
+                && endsPair.Start != endsPair.End
+                && roadSection.Nodes.Contains(endsPair.Start)
+                && roadSection.Nodes.Contains(endsPair.End);
+
+            if (hasSlope) {
+                GenerateSectionBySlope(surfaceMesh, roadSection, endsPair.Start, endsPair.End, accuracy);
+            } else if (roadSection.Nodes.Count > 2) {
+                GenerateSectionWithoutSlope(surfaceMesh, roadSection, accuracy);
+            } else if (roadSection.Nodes.Count == 2) {
+                GenerateIntersectionStrip(surfaceMesh, roadSection.SortedNodes[0], roadSection.SortedNodes[1], accuracy);
+            } else {
+                GenerateSectionWithoutSlope(surfaceMesh, roadSection, accuracy);
+            }
 
             //Find qualifying road strips
             var qualifyingRoadStrips = roadSection.ContainedSegments;
@@ -223,6 +239,10 @@ namespace TranSimCS.Roads.Section {
             ConvertProjectionToMesh(asphaltLines, meshedAsphalt);
 
             float reach = surfaceMesh.BoundingBox().Extent();
+            {
+                var b = surfaceMesh.BoundingBox();
+                MeshUtil.DiagLog.Debug($"SurfaceMesh: tris={surfaceMesh.Indices.Count / 3} verts={surfaceMesh.Vertices.Count} min=({b.Min.X:F2},{b.Min.Y:F2},{b.Min.Z:F2}) max=({b.Max.X:F2},{b.Max.Y:F2},{b.Max.Z:F2}) reach={reach:F2} normal={roadSection.Normal}");
+            }
 
             meshedWhite.ReverseWinding();
             meshedAsphalt.ReverseWinding();
