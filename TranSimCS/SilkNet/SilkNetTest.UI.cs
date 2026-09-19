@@ -17,15 +17,14 @@ namespace TranSimCS.SilkNet {
             ImGui.BeginMainMenuBar();
             if (ImGui.BeginMenu("File")) {
                 if (ImGui.MenuItem("Load")) {
-                    CurrentlyOpenModal = LoadModal;
-                    Reload();
+                    SaveGuard(LoadDialog);
                 }
                 if (ImGui.MenuItem("Save")) {
                     CurrentlyOpenModal = SaveModal;
                     Reload();
                 }
                 if (ImGui.MenuItem("New world")) {
-                    World = new TSWorld();
+                    SaveGuard(() => World = new TSWorld());
                 }
                 ImGui.EndMenu();
             }
@@ -107,6 +106,18 @@ namespace TranSimCS.SilkNet {
                 ImGui.ShowDemoWindow();
             }
             if (Sticky != null) ShowObjectWindow(Sticky.Value);
+        }
+
+        private void SaveGuard(Action accepted) {
+            var message = new Message("Unsaved changes", "Do you want to load in a new world? Any unasaved changes will be lost.", [
+                new MessageAction("OK", accepted),
+                new MessageAction("Cancel", () => CurrentlyOpenModal = null)
+            ]);
+            CurrentlyOpenModal = message.ShowMessage;
+        }
+        private void LoadDialog() {
+            CurrentlyOpenModal = LoadModal;
+            Reload();
         }
 
         public bool ShowCompass;
