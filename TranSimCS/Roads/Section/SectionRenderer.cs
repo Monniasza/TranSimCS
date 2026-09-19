@@ -368,7 +368,7 @@ namespace TranSimCS.Roads.Section {
                 //Unproject the rim to 3D with the same function as the rest of the geometry, then snap it
                 //onto the surface mesh, so the skirt follows the surface elevation exactly
                 var rimMesh = new Mesh(null, ring.Take(count).Select(CreateMeshingFunction(plane, Colors.White, Vector3.Zero)));
-                var snapped = rimMesh.ProjectOnto(surfaceMesh, normal, float.PositiveInfinity, -reach, 0.05f);
+                var snapped = rimMesh.ProjectOnto(surfaceMesh, normal, float.PositiveInfinity, -reach);
                 var top = snapped.Vertices.Select(v => v.Position).ToArray();
 
                 var bottom = new Vector3[top.Length];
