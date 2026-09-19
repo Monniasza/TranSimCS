@@ -130,7 +130,7 @@ namespace TranSimCS.Geometry{
             return results.ToArray();
         }
 
-        public static bool RayIntersectsTriangle(Ray3 ray, Vector3 v0, Vector3 v1, Vector3 v2, out float intersectionDistance, float minT = 1e-6f, float maxT = float.PositiveInfinity) {
+        public static bool RayIntersectsTriangle(Ray3 ray, Vector3 v0, Vector3 v1, Vector3 v2, out float intersectionDistance, float minT = 1e-6f, float maxT = float.PositiveInfinity, float edgeEpsilon = 1e-4f) {
             Vector3 edge1 = v1 - v0;
             Vector3 edge2 = v2 - v0;
             Vector3 h = Vector3.Cross(ray.Direction, edge2);
@@ -141,11 +141,11 @@ namespace TranSimCS.Geometry{
             float f = 1.0f / a;
             Vector3 s = ray.Origin - v0;
             float u = f * Vector3.Dot(s, h);
-            if (u < 0.0f || u > 1.0f) // Check if the intersection is outside the triangle
+            if (u < -edgeEpsilon || u > 1.0f + edgeEpsilon) // Check if the intersection is outside the triangle
                 return false; // No intersection
             Vector3 q = Vector3.Cross(s, edge1);
             float v = f * Vector3.Dot(ray.Direction, q);
-            if (v < 0.0f || u + v > 1.0f) // Check if the intersection is outside the triangle
+            if (v < -edgeEpsilon || u + v > 1.0f + edgeEpsilon) // Check if the intersection is outside the triangle
             {
                 return false; // No intersection
             }

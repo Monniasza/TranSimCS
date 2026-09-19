@@ -80,6 +80,11 @@ namespace TranSimCS.Model {
             return false;
         }
 
+        /// <summary>
+        /// Projects a mesh onto a target surface along <paramref name="normal"/>.
+        /// Every vertex is cast along the direction; hits with signed distance in [<paramref name="minDistance"/>, <paramref name="maxDistance"/>] of the vertex are accepted.
+        /// Vertices which miss the target are kept at their original positions.
+        /// </summary>
         public static Mesh ProjectOnto(this Mesh projection, Mesh target, Vector3 normal, float maxDistance = float.PositiveInfinity, float minDistance = 0) {
             ArgumentNullException.ThrowIfNull(projection);
             ArgumentNullException.ThrowIfNull(target);
@@ -87,31 +92,47 @@ namespace TranSimCS.Model {
             var lengthSquared = normal.LengthSquared();
             if (lengthSquared <= 1e-12f)
                 throw new ArgumentException("Projection normal must be non-zero.", nameof(normal));
+            if (maxDistance < minDistance)
+                throw new ArgumentException("Maximum distance must be greater than or equal to the minimum distance.", nameof(maxDistance));
 
             var direction = normal / MathF.Sqrt(lengthSquared);
             var targetBvh = target.GetAccelerationStructure();
             var projectedVertices = new List<Vertex>(projection.Vertices.Count);
-            var missedVertices = 0;
+
+            //Accept hits with signed distance in [minDistance, maxDistance] of each vertex, measured along the direction.
+            //The ray origin is nudged behind the vertex, so vertices coplanar with the target hit at t > 0.
+            var originOffset = minDistance - MeshBvh.ProjectionEpsilon;
+            var maxRayDistance = (maxDistance - minDistance) + 2 * MeshBvh.ProjectionEpsilon;
 
             foreach (var vertex in projection.Vertices) {
-                var ray = new Ray3(vertex.Position + minDistance * direction, direction);
-                if (targetBvh.RayIntersect(ray, 0, maxDistance, out _, out var distance)) {
+                var ray = new Ray3(vertex.Position + originOffset * direction, direction);
+                if (targetBvh.RayIntersect(ray, 0, maxRayDistance, out _, out var distance)) {
                     projectedVertices.Add(new Vertex(
-                        ray.Origin + ray.Direction * distance,
+                        ray.GetPoint(distance),
                         vertex.Color,
                         vertex.TexCoord,
                         vertex.Material,
                         vertex.Emissive));
                 } else {
-                    missedVertices++;
                     projectedVertices.Add(vertex);
                 }
             }
 
-            if (missedVertices > 0)
-                throw new InvalidOperationException($"Cannot project mesh: {missedVertices} of {projection.Vertices.Count} vertices did not hit the target mesh.");
-
             return new Mesh(null, projectedVertices, projection.Indices, projection.Tags);
+        }
+
+        /// <summary>
+        /// Projects every render bin of a multimesh onto a target surface along <paramref name="normal"/>.
+        /// Vertices which miss the target are kept at their original positions.
+        /// </summary>
+        public static MultiMesh ProjectOnto(this MultiMesh projection, Mesh target, Vector3 normal, float maxDistance = float.PositiveInfinity, float minDistance = 0) {
+            ArgumentNullException.ThrowIfNull(projection);
+            ArgumentNullException.ThrowIfNull(target);
+
+            var result = new MultiMesh();
+            foreach (var bin in projection.RenderBins)
+                result.GetOrCreateRenderBin(bin.Key, null).DrawModel(bin.Value.ProjectOnto(target, normal, maxDistance, minDistance));
+            return result;
         }
 
         public static void ReverseWinding(this Mesh mesh) {

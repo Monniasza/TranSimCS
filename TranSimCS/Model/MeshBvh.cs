@@ -148,14 +148,20 @@ namespace TranSimCS.Model {
             }
         }
 
+        internal const float ProjectionEpsilon = 1e-3f;
+
         public bool TryProjectPoint(Vector3 point, Vector3 direction, out Vector3 projectedPoint, out int triangleId, out float distance, float maxDistance = float.PositiveInfinity, float minDistance = 0) {
             var lengthSquared = direction.LengthSquared();
             if (lengthSquared <= 1e-12f)
                 throw new ArgumentException("Projection direction must be non-zero.", nameof(direction));
 
             direction /= MathF.Sqrt(lengthSquared);
-            if (RayIntersect(new Ray3(point, direction), minDistance, maxDistance, out triangleId, out distance)) {
-                projectedPoint = point + direction * distance;
+            //Nudge the origin against the direction, so points lying on the target surface hit at t > 0,
+            //and re-express the [minDistance, maxDistance] range measured from the original point.
+            var ray = new Ray3(point - direction * ProjectionEpsilon, direction);
+            var halfEpsilon = ProjectionEpsilon / 2;
+            if (RayIntersect(ray, minDistance + ProjectionEpsilon - halfEpsilon, maxDistance + ProjectionEpsilon + halfEpsilon, out triangleId, out distance)) {
+                projectedPoint = ray.GetPoint(distance);
                 return true;
             }
 

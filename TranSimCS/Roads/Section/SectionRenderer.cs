@@ -229,12 +229,9 @@ namespace TranSimCS.Roads.Section {
             meshedDashes.ReverseWinding();
 
             //Project meshes
-            //var projectedWhite = meshedWhite.ProjectOnto(surfaceMesh, roadSection.Normal, float.PositiveInfinity, -reach);
-            //var projectedAsphalt = meshedAsphalt.ProjectOnto(surfaceMesh, roadSection.Normal, float.PositiveInfinity, -reach);
-            //var projectedDashes = meshedDashes.ProjectOnto(surfaceMesh, roadSection.Normal, float.PositiveInfinity, -reach);
-            var projectedWhite = meshedWhite;
-            var projectedAsphalt = meshedAsphalt;
-            var projectedDashes = meshedDashes;
+            var projectedWhite = meshedWhite.ProjectOnto(surfaceMesh, roadSection.Normal, float.PositiveInfinity, -reach);
+            var projectedAsphalt = meshedAsphalt.ProjectOnto(surfaceMesh, roadSection.Normal, float.PositiveInfinity, -reach);
+            var projectedDashes = meshedDashes.ProjectOnto(surfaceMesh, roadSection.Normal, float.PositiveInfinity, -reach);
 
             var asphaltMesh = multimesh.GetOrCreateRenderBinForced(Materials.Asphalt);
             var whiteMesh = multimesh.GetOrCreateRenderBinForced(Materials.EmissiveWhite);
