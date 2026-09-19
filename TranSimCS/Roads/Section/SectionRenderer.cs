@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -47,35 +47,29 @@ namespace TranSimCS.Roads.Section {
         /// <param name="end">end node</param>
         /// <param name="discriminant">determines the sidea</param>
         /// <returns></returns>
-        public static Bezier3 GenerateRoadEdge(HalfNode start, HalfNode end, int discriminant, Vector3 center) {
+        public static Bezier3 GenerateRoadEdge(HalfNode start, HalfNode end, int discriminant) {
             LineEnd startPos = calcBoundingLineEndFaced(start, discriminant);
             LineEnd endPos = calcBoundingLineEndFaced(end, -discriminant);
-            //Tangents must point away from the section centre: opposite nodes of a dual carriageway have
-            //opposite Z axes, and an unflipped join spline dips through the section instead of wrapping around it
-            var startTangent = startPos.Tangential;
-            if (Vector3.Dot(startTangent, startPos.Position - center) < 0) startTangent = -startTangent;
-            var endTangent = endPos.Tangential;
-            if (Vector3.Dot(endTangent, endPos.Position - center) < 0) endTangent = -endTangent;
             //A join across a road mouth (chord perpendicular to both road tangents) must run straight across -
-            //matching the road's own end edge - otherwise the spline bulges through the junction or across the road
+            //matching the road's own end edge - otherwise the spline bulges through the junction or across the road.
+            //Otherwise the original node tangents are kept: the finish lateral (cross of normal and tangent)
+            //depends on their orientation, and flipping them here would stand the embankment walls on their head
             var chord = endPos.Position - startPos.Position;
             var chordLength = chord.Length();
             if (chordLength > 1e-6f) {
                 var chordDir = chord / chordLength;
-                if (MathF.Abs(Vector3.Dot(chordDir, startTangent.Normalized())) < 0.25f
-                    && MathF.Abs(Vector3.Dot(chordDir, endTangent.Normalized())) < 0.25f) {
-                    startTangent = chordDir;
-                    endTangent = chordDir;
-                }
+                if (MathF.Abs(Vector3.Dot(chordDir, startPos.Tangential.Normalized())) < 0.25f
+                    && MathF.Abs(Vector3.Dot(chordDir, endPos.Tangential.Normalized())) < 0.25f)
+                    return GenerateJoinSpline(startPos.Position, endPos.Position, chordDir, chordDir);
             }
-            return GenerateJoinSpline(startPos.Position, endPos.Position, startTangent, endTangent);
+            return GenerateJoinSpline(startPos.Ray, endPos.Ray);
         }
 
-        public static void GenerateSubrangeVerts(Mesh mesh, HalfNode[] nodes, int discriminant, int accuracy = 17, Vector3 center = default) {
+        public static void GenerateSubrangeVerts(Mesh mesh, HalfNode[] nodes, int discriminant, int accuracy = 17) {
             var lbound = 1;
             var ubound = nodes.Length - 2;
 
-            var prevSpline = GenerateRoadEdge(nodes[0], nodes[^1], -1, center).Inverse();
+            var prevSpline = GenerateRoadEdge(nodes[0], nodes[^1], -1).Inverse();
 
             while (lbound <= ubound) {
                 var preNode = nodes[lbound - 1];
@@ -84,8 +78,8 @@ namespace TranSimCS.Roads.Section {
                 var nextNode = nodes[ubound + 1];
                 var color = Colors.White;
 
-                var preToStartSpline = GenerateRoadEdge(preNode, startNode, -1, center);
-                var nextToEndSpline = GenerateRoadEdge(nextNode, endNode, 1, center);
+                var preToStartSpline = GenerateRoadEdge(preNode, startNode, -1);
+                var nextToEndSpline = GenerateRoadEdge(nextNode, endNode, 1);
 
                 ISpline<Vector3> bottomSpline;
                 var leftSpline = preToStartSpline;
@@ -98,8 +92,8 @@ namespace TranSimCS.Roads.Section {
                     var rpos = calcLineEnd(startNode, bounds.Max).Position;
                     bottomSpline = new LineSegment(rpos, lpos);
                 } else { //More nodes remaining
-                    var innerSpline = GenerateRoadEdge(startNode, endNode, -1, center);
-                    var outerSpline = GenerateRoadEdge(startNode, endNode, 1, center);
+                    var innerSpline = GenerateRoadEdge(startNode, endNode, -1);
+                    var outerSpline = GenerateRoadEdge(startNode, endNode, 1);
 
                     //Calculations for the fill patch
                     bottomSpline = outerSpline;
@@ -132,9 +126,9 @@ namespace TranSimCS.Roads.Section {
             //Generate the main strip with vertical offset to prevent Z-fighting
             GenerateIntersectionStrip(surfaceMesh, start, end, accuracy);
             //Generate other vertices on the right
-            GenerateSubrangeVerts(surfaceMesh, rightNodes.ToArray(), 1, accuracy, roadSection.Center);
+            GenerateSubrangeVerts(surfaceMesh, rightNodes.ToArray(), 1, accuracy);
             //Generate other vertices on the left
-            GenerateSubrangeVerts(surfaceMesh, leftNodes.ToArray(), -1, accuracy, roadSection.Center);
+            GenerateSubrangeVerts(surfaceMesh, leftNodes.ToArray(), -1, accuracy);
         }
 
         private static void GenerateSectionWithoutSlope(Mesh surfaceMesh, RoadSection roadSection, int accuracy = 17) {
@@ -279,10 +273,9 @@ namespace TranSimCS.Roads.Section {
             var asphaltMesh = multimesh.GetOrCreateRenderBinForced(Materials.Asphalt);
             var whiteMesh = multimesh.GetOrCreateRenderBinForced(Materials.EmissiveWhite);
             var dashedMesh = multimesh.GetOrCreateRenderBinForced(Materials.LineDash);
-            //multimesh.AddAll(projectedAsphalt);
-            //whiteMesh.DrawModel(projectedWhite);
-            //multimesh.AddAll(projectedDashes);
-            asphaltMesh.DrawModel(surfaceMesh);
+            multimesh.AddAll(projectedAsphalt);
+            whiteMesh.DrawModel(projectedWhite);
+            multimesh.AddAll(projectedDashes);
 
             GenerateSectionFinish(roadSection, multimesh, accuracy);
 
@@ -336,7 +329,7 @@ namespace TranSimCS.Roads.Section {
                 var prev = roadSection.SortedNodes[i];
                 var next = roadSection.SortedNodes[h];
 
-                var topSpline = GenerateRoadEdge(next, prev, 1, roadSection.Center);
+                var topSpline = GenerateRoadEdge(next, prev, 1);
                 var topPoints = GeometryUtils.GenerateSplinePoints(topSpline, accuracy);
 
                 //Generate bottom points
