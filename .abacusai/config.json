@@ -10,7 +10,49 @@
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff HEAD -- TranSimCS/Roads/Node/HalfLane.cs TranSimCS/Mode/ModeTrafficLights.cs)",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && Get-ChildItem -Recurse -Include *.json -File | Where-Object {$_.FullName -notmatch \"\\\\bin\\\\|\\\\obj\\\\|node_modules\"} | Select-Object -First 30 FullName)",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCS/TranSimCS.csproj -v quiet 2>&1 | Select-String -Pattern \"error CS|Liczba b\")",
-      "Bash(dotnet build TranSimCS\\TranSimCS.csproj -v q --nologo 2>&1 | Select-Object -Last 15)"
+      "Bash(dotnet build TranSimCS\\TranSimCS.csproj -v q --nologo 2>&1 | Select-Object -Last 15)",
+
+	  "Bash(Get-ChildItem *)",
+	  "Bash(Get-Content *)",
+	  "Bash(Select-String *)",
+	  "Bash(Where-Object *)",
+      "Bash(Select-Object *)",
+      "Bash(Sort-Object *)",
+      "Bash(Measure-Object *)",
+      "Bash(Test-Path *)",
+      "Bash(Get-Item *)",
+      "Bash(Resolve-Path *)",
+      "Bash(Get-Location *)",
+      "Bash(Set-Location *)",
+      "Bash(Push-Location *)",
+      "Bash(Pop-Location *)",
+	  
+	  "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch *)",
+      "Bash(git rev-parse *)",
+      "Bash(git ls-files *)",
+	  
+	  "Bash(dotnet build *)",
+      "Bash(dotnet test *)",
+      "Bash(dotnet run *)",
+      "Bash(dotnet restore *)",
+      "Bash(dotnet clean *)",
+      "Bash(dotnet format *)",
+      "Bash(dotnet list *)",
+      "Bash(dotnet --info *)",
+      "Bash(dotnet --version *)",
+	]
+	
+	"deny": [
+      "Bash(rm -rf *)",
+      "Bash(del /s *)",
+      "Bash(format *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean -fd *)",
+      "Bash(git clean -fdx *)"
     ]
   }
 }
