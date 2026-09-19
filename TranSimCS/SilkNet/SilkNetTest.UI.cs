@@ -24,6 +24,9 @@ namespace TranSimCS.SilkNet {
                     CurrentlyOpenModal = SaveModal;
                     Reload();
                 }
+                if (ImGui.MenuItem("New world")) {
+                    World = new TSWorld();
+                }
                 ImGui.EndMenu();
             }
 
