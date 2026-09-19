@@ -89,10 +89,14 @@ namespace TranSimCS.Geometry {
 
         public bool Intersects(Plane plane) => Intersect(plane) != Intersection.Disjoint;
         public bool Intersects(AABB aabb){
-            bool intersectsX = Max.X >= aabb.Min.X || Min.X <= aabb.Max.X;
-            bool intersectsY = Max.Y >= aabb.Min.Y || Min.Y <= aabb.Max.Y;
-            bool intersectsZ = Max.Z >= aabb.Min.Z || Min.Z <= aabb.Max.Z;
+            bool intersectsX = IntervalIntersects(Min.X, Max.X, aabb.Min.X, aabb.Max.X);
+            bool intersectsY = IntervalIntersects(Min.Y, Max.Y, aabb.Min.Y, aabb.Max.Y);
+            bool intersectsZ = IntervalIntersects(Min.Z, Max.Z, aabb.Min.Z, aabb.Max.Z);
+
             return intersectsX && intersectsY && intersectsZ;
+        }
+        public static bool IntervalIntersects(float x1, float x2, float y1, float y2) {
+            return float.Max(x1, y1) <= float.Min(x2, y2);
         }
 
         public static AABB CreateMerged(AABB a, AABB b) {

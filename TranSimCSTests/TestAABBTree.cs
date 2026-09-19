@@ -1,9 +1,10 @@
-using System.Linq;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using System.Numerics;
+using TranSimCS;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.ModelOld;
 using TranSimCS.SceneGraph;
+using TranSimCS.SilkNet;
 using TranSimCS.Spatial;
 using TranSimCS.Worlds;
 
@@ -13,8 +14,8 @@ namespace TranSimCSTests {
         public event Action<MultiMesh>? OnMeshGenerated;
         public event MeshInvalidationCallback GeometryChanged;
 
-        private BoundingBox _bounds;
-        public BoundingBox Bounds {
+        private AABB _bounds;
+        public AABB Bounds {
             get => _bounds;  set {
                 if (_bounds == value) return;
                 _bounds = value;
@@ -22,14 +23,14 @@ namespace TranSimCSTests {
             }
         }
 
-        public TestMesh(BoundingBox box) {
+        public TestMesh(AABB box) {
             Bounds = box;
         }
 
-        public BoundingBox GetBounds() => Bounds;
+        public AABB GetBounds() => Bounds;
 
-        public bool ComputeIntersection(Ray ray, out float distance, out object? tag) {
-            var hit = Bounds.Intersects(ray);
+        public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) {
+            var hit = ray.Intersects(Bounds);
             if (hit.HasValue) {
                 distance = hit.Value;
                 tag = null;
@@ -42,7 +43,7 @@ namespace TranSimCSTests {
         }
 
         public void Move(Vector3 delta) {
-            Bounds = new BoundingBox(Bounds.Min + delta, Bounds.Max + delta);
+            Bounds = new AABB(Bounds.Min + delta, Bounds.Max + delta);
         }
 
         private MultiMesh mesh;
@@ -55,7 +56,9 @@ namespace TranSimCSTests {
             };
             mesh = new MultiMesh();
             var renderBin = mesh.GetOrCreateRenderBinForced(material);
-            var verts = Bounds.GetCorners().Select(x => new VertexPositionColorTexture(x, Color.White, new())).ToArray();
+            var verts0 = new Vector3[8];
+            Bounds.Vertices(verts0);
+            var verts = verts0.Select(x => new Vertex(x, Colors.White, new())).ToArray();
             var indices = new ushort[] {
                 0, 1, 2, 1, 2, 3,
                 4, 5, 6, 5, 6, 7,
@@ -78,7 +81,7 @@ namespace TranSimCSTests {
             var tree = new AABBTree<TestMesh>();
 
             var meshes = Enumerable.Range(0, 50)
-                .Select(i => new TestMesh(new BoundingBox(
+                .Select(i => new TestMesh(new AABB(
                     new Vector3(i),
                     new Vector3(i + 0.5f))))
                 .ToArray();
@@ -120,7 +123,7 @@ namespace TranSimCSTests {
             var tree = new AABBTree<TestMesh>();
 
             var meshes = Enumerable.Range(0, 30)
-                .Select(i => new TestMesh(new BoundingBox(
+                .Select(i => new TestMesh(new AABB(
                     new Vector3(i),
                     new Vector3(i + 0.2f))))
                 .ToList();
@@ -128,7 +131,7 @@ namespace TranSimCSTests {
             foreach (var m in meshes)
                 tree.Add(m);
 
-            var ray = new Ray(new Vector3(-10, 0, 0), Vector3.UnitX);
+            var ray = new Ray3(new Vector3(-10, 0, 0), Vector3.UnitX);
 
             tree.Find(ray, out var treeHit, out var treeDist, out _);
 
@@ -150,13 +153,13 @@ namespace TranSimCSTests {
         public void Moving_Object_Triggers_New_Result() {
             var tree = new AABBTree<TestMesh>();
 
-            var a = new TestMesh(new BoundingBox(new Vector3(0, -10, -10), new Vector3(1, 10, 10)));
-            var b = new TestMesh(new BoundingBox(new Vector3(5, -10, -10), new Vector3(6, 10, 10)));
+            var a = new TestMesh(new AABB(new Vector3(0, -10, -10), new Vector3(1, 10, 10)));
+            var b = new TestMesh(new AABB(new Vector3(5, -10, -10), new Vector3(6, 10, 10)));
 
             tree.Add(a);
             tree.Add(b);
 
-            var ray = new Ray(new Vector3(-100, 0, 0), Vector3.UnitX);
+            var ray = new Ray3(new Vector3(-100, 0, 0), Vector3.UnitX);
 
             tree.Find(ray, out var first, out _, out _);
             Assert.Equal(a, first);
@@ -171,7 +174,7 @@ namespace TranSimCSTests {
             var tree = new AABBTree<TestMesh>();
 
             var items = Enumerable.Range(0, 10)
-                .Select(i => new TestMesh(new BoundingBox(
+                .Select(i => new TestMesh(new AABB(
                     new Vector3(i),
                     new Vector3(i + 0.1f))))
                 .ToList();
@@ -181,7 +184,7 @@ namespace TranSimCSTests {
 
             tree.Remove(items[5]);
 
-            var ray = new Ray(new Vector3(-10, 0, 0), Vector3.UnitX);
+            var ray = new Ray3(new Vector3(-10, 0, 0), Vector3.UnitX);
 
             tree.Find(ray, out var hit, out _, out _);
 
@@ -195,7 +198,7 @@ namespace TranSimCSTests {
             var items = new List<TestMesh>();
 
             for (int i = 0; i < 200; i++) {
-                var m = new TestMesh(new BoundingBox(
+                var m = new TestMesh(new AABB(
                     new Vector3(rand.Next(100)),
                     new Vector3(rand.Next(100) + 0.5f)));
 
@@ -224,13 +227,13 @@ namespace TranSimCSTests {
         public void Query_Box_Returns_Only_Intersecting() {
             var tree = new AABBTree<TestMesh>();
 
-            var inside = new TestMesh(new BoundingBox(new Vector3(0), new Vector3(1)));
-            var outside = new TestMesh(new BoundingBox(new Vector3(100), new Vector3(101)));
+            var inside = new TestMesh(new AABB(new Vector3(0), new Vector3(1)));
+            var outside = new TestMesh(new AABB(new Vector3(100), new Vector3(101)));
 
             tree.Add(inside);
             tree.Add(outside);
 
-            var box = new BoundingBox(new Vector3(-1), new Vector3(2));
+            var box = new AABB(new Vector3(-1), new Vector3(2));
 
             var result = tree.Query(box).ToList();
 
@@ -244,7 +247,7 @@ namespace TranSimCSTests {
             var items = new List<TestMesh>();
 
             for (int i = 0; i < 100; i++) {
-                var m = new TestMesh(new BoundingBox(Vector3.Zero, Vector3.One));
+                var m = new TestMesh(new AABB(Vector3.Zero, Vector3.One));
                 items.Add(m);
                 tree.Add(m);
             }
