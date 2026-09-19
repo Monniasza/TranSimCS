@@ -30,6 +30,8 @@ namespace TranSimCS.SilkNet {
             var motionSpeed = camera.Distance;
             MouseOver = Selection.CalculateSelection(World.RootIndex, MouseRay);
 
+            if (ImGui.GetIO().WantTextInput) return;
+
             //Handle movement
             Vector2 xz = Vector2.Zero;
             Vector2 yawPitch = Vector2.Zero;
@@ -61,11 +63,11 @@ namespace TranSimCS.SilkNet {
         }
 
         private void KeyDown(IKeyboard keyboard, Key key, int keyCode) {
-            if (ImGui.IsAnyItemFocused()) return;
+            if (ImGui.GetIO().WantTextInput) return;
             Mode.OnKeyPress(key);
         }
         private void KeyUp(IKeyboard keyboard, Key key, int keyCode) {
-            if (ImGui.IsAnyItemFocused()) return;
+            if (ImGui.GetIO().WantTextInput) return;
             Mode.OnKeyRelease(key);
         }
         private void KeyChar(IKeyboard keyboard, char character) {
@@ -82,7 +84,6 @@ namespace TranSimCS.SilkNet {
             
         }
         private void MouseUp(IMouse mouse, MouseButton button) {
-            if (IsMouseOverUI) return;
             MouseState = MouseState.SetButton(button, false);
             Mode.OnMouseRelease(button);
         }

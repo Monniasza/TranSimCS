@@ -200,7 +200,7 @@ namespace TranSimCS.SilkNet {
             World.TempSelectors.Active.Value = true;
 
             //Handle picking
-            IsMouseOverUI = ImGui.IsWindowHovered(ImGuiHoveredFlags.AnyWindow);
+            IsMouseOverUI = ImGui.IsWindowHovered(ImGuiHoveredFlags.AnyWindow) || ImGui.GetIO().WantCaptureMouse;
             if (!IsMouseOverUI) HandleInputs(dT);
             //Track object positions
             if(TrackPosition != null) {

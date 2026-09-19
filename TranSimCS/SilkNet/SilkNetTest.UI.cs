@@ -104,7 +104,7 @@ namespace TranSimCS.SilkNet {
         }
 
         private void SaveGuard(Action accepted) {
-            var message = new Message("Unsaved changes", "Do you want to load in a new world? Any unasaved changes will be lost.", [
+            var message = new Message("Unsaved changes", "Do you want to continue? Any unsaved changes will be lost.", [
                 new MessageAction("OK", accepted),
                 new MessageAction("Cancel", () => CurrentlyOpenModal = null)
             ]);
@@ -113,6 +113,13 @@ namespace TranSimCS.SilkNet {
         private void LoadDialog() {
             CurrentlyOpenModal = LoadModal;
             Reload();
+        }
+
+        private const string SaveFileExtension = ".transim";
+
+        private void ShowSaveError(string text) {
+            Message error = new("Invalid file name", text, [new MessageAction("OK", () => CurrentlyOpenModal = SaveModal)]);
+            CurrentlyOpenModal = error.ShowMessage;
         }
 
         public bool ShowCompass;
@@ -220,14 +227,23 @@ namespace TranSimCS.SilkNet {
                 ImGui.InputText("File name", ref SaveTitle, 99);
                 ImGui.SameLine();
                 if (ImGui.Button("Save")) {
-                    var worldPath = Path.Combine(Program.SaveRoot, SaveTitle);
-                    bool fileExists = File.Exists(worldPath);
-                    if (fileExists) {
-                        //Warn the user that a world will be overwritten
-                        CurrentlyOpenModal = DuplicateSaveModal;
+                    SaveTitle = SaveTitle.Trim();
+                    if (string.IsNullOrWhiteSpace(SaveTitle)) {
+                        ShowSaveError("The file name cannot be empty.");
+                    } else if (SaveTitle.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0) {
+                        ShowSaveError("The file name contains invalid characters (like \\ / : * ? \" < > |).");
                     } else {
-                        //Save the world
-                        SaveTheWorld();
+                        if(!SaveTitle.EndsWith(SaveFileExtension, StringComparison.OrdinalIgnoreCase))
+                            SaveTitle += SaveFileExtension;
+                        var worldPath = Path.Combine(Program.SaveRoot, SaveTitle);
+                        bool fileExists = File.Exists(worldPath);
+                        if (fileExists) {
+                            //Warn the user that a world will be overwritten
+                            CurrentlyOpenModal = DuplicateSaveModal;
+                        } else {
+                            //Save the world
+                            SaveTheWorld();
+                        }
                     }
                 }
                 ImGui.SameLine();
