@@ -63,9 +63,13 @@ public static class Harness {
         MultiMesh smm;
         try { smm = section.Mesh.GetMesh(); } catch (Exception ex) { Console.WriteLine($"section EXCEPTION: {ex.Message}"); return; }
         var sectionTris = new List<(Vector2 a, Vector2 b, Vector2 c, float ya, float yb, float yc)>();
+        int binIndex = 0;
+        var binColors = new[] { "#ff0000", "#00ff00", "#0000ff", "#ff00ff", "#00ffff", "#ff8000" };
         foreach (var bin in smm.RenderBins) {
             CollectXZTris(bin.Value, sectionTris);
-            AppendMesh(svg, bin.Value, y => HeightColor(y), 1f);
+            var opacity = binIndex == 0 ? 0.9f : 0.75f;
+            AppendMesh(svg, bin.Value, _ => binColors[binIndex % binColors.Length], opacity);
+            binIndex++;
         }
 
         //All sections: stretched triangles
@@ -95,6 +99,29 @@ public static class Harness {
             }
         }
 
+        //Crease detection per bin: adjacent triangles whose normals disagree - the ridges the user sees
+        int bidx = 0;
+        foreach (var bin in smm.RenderBins) {
+            if (bin.Value.Indices.Count == 0) continue;
+            Console.WriteLine($"bin verts={bin.Value.Vertices.Count} tris={bin.Value.Indices.Count / 3} tex={bin.Key.Texture}");
+            ReportCreases(bin.Value, c0);
+            if (bidx == 0) {
+                //dump every triangle touching the west-mouth lane edge (z≈±1.5, x≈221)
+                var vss = bin.Value.Vertices;
+                var ixs = bin.Value.Indices;
+                for (int t = 0; t <= ixs.Count - 3; t += 3) {
+                    var a = vss[ixs[t]].Position;
+                    var b = vss[ixs[t + 1]].Position;
+                    var c = vss[ixs[t + 2]].Position;
+                    var mx = (a.X + b.X + c.X) / 3;
+                    var mz = (a.Z + b.Z + c.Z) / 3;
+                    if (MathF.Abs(mx - (c0.X + 0.4f)) < 1.2f && MathF.Abs(MathF.Abs(mz - c0.Z) - 1.53f) < 0.3f)
+                        Console.WriteLine($"  tri@({mx:F2},{mz:F2}): A=({a.X:F2},{a.Y:F2},{a.Z:F2}) B=({b.X:F2},{b.Y:F2},{b.Z:F2}) C=({c.X:F2},{c.Y:F2},{c.Z:F2})");
+                }
+            }
+            bidx++;
+        }
+
         //Grid sweep: section surface vs road surface height around the section centre
         int hover = 0, fight = 0, gaps = 0;
         for (float gx = c0.X - 30; gx <= c0.X + 30; gx += 0.5f) {
@@ -116,6 +143,50 @@ public static class Harness {
         Console.WriteLine("SVG WRITTEN");
         Console.WriteLine("HARNESS DONE");
     }
+
+    //Finds adjacent triangles whose normals disagree - the ridges the user sees in-game
+    private static void ReportCreases(Mesh bin, Vector3 center) {
+        var idx = bin.Indices;
+        var vs = bin.Vertices;
+
+        //map "edge" (sorted position pair quantised) -> list of triangle normals
+        var edges = new Dictionary<(long, long, long, long), List<Vector3>>();
+        for (int t = 0; t <= idx.Count - 3; t += 3) {
+            var a = vs[idx[t]].Position;
+            var b = vs[idx[t + 1]].Position;
+            var c = vs[idx[t + 2]].Position;
+            var n = Vector3.Cross(b - a, c - a);
+            if (n.LengthSquared() < 1e-12f) continue;
+            n = Vector3.Normalize(n);
+            foreach (var (p, q) in new[] { (a, b), (b, c), (c, a) }) {
+                var k = (Quant(p.X), Quant(p.Z), Quant(q.X), Quant(q.Z));
+                if (k.Item1 > k.Item3 || (k.Item1 == k.Item3 && k.Item2 > k.Item4))
+                    k = (Quant(q.X), Quant(q.Z), Quant(p.X), Quant(p.Z));
+                if (!edges.TryGetValue(k, out var list)) { list = new(); edges[k] = list; }
+                list.Add(n);
+            }
+        }
+
+        //interior edges shared by 2 triangles: measure normal flip (upward normals expected)
+        int creases = 0;
+        var worst = new List<(float angle, Vector3 mid)>();
+        foreach (var kv in edges) {
+            if (kv.Value.Count != 2) continue;
+            var dot = Vector3.Dot(kv.Value[0], kv.Value[1]);
+            var angle = MathF.Acos(Math.Clamp(dot, -1, 1)) * 180 / MathF.PI;
+            if (angle > 20) {
+                creases++;
+                var mid = new Vector3((Unquant(kv.Key.Item1) + Unquant(kv.Key.Item3)) / 2, 0, (Unquant(kv.Key.Item2) + Unquant(kv.Key.Item4)) / 2);
+                worst.Add((angle, mid));
+            }
+        }
+        Console.WriteLine($"  {creases} creases >20deg among {edges.Count(e => e.Value.Count == 2)} interior edges");
+        foreach (var w in worst.OrderByDescending(w => w.angle).Take(8))
+            Console.WriteLine($"  crease {w.angle:F0}deg at ({w.mid.X:F2},{w.mid.Z:F2}) rel=({w.mid.X - center.X:F2},{w.mid.Z - center.Z:F2})");
+    }
+
+    private static long Quant(float v) => (long)MathF.Round(v * 50f);
+    private static float Unquant(long v) => v / 50f;
 
     private static string HeightColor(float y) {
         var t = Math.Clamp((y + 10f) / 17f, 0f, 1f);
