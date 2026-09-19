@@ -26,6 +26,7 @@
       "Bash(Set-Location *)",
       "Bash(Push-Location *)",
       "Bash(Pop-Location *)",
+      "Bash(Set-Location *)",
 	  
 	  "Bash(git status *)",
       "Bash(git diff *)",

@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using LanguageExt.Pipes;
 using Silk.NET.OpenGL;
 using TranSimCS.Collections;
+using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.ModelOld;
 using TranSimCS.Property;
@@ -200,18 +201,49 @@ namespace TranSimCS.SilkNet {
             Stats = stats;
         }
 
+        private readonly List<List<MeshDrawInstance>> GroupListPool = [];
+        private int GroupListPoolIndex;
+        private readonly Dictionary<Mesh, List<MeshDrawInstance>> MeshGroupScratch = [];
+        private readonly List<Mesh> MeshGroupOrder = [];
+        private readonly Dictionary<SimpleMaterial, List<MeshDrawInstance>> MaterialGroupScratch = [];
+        private readonly List<SimpleMaterial> MaterialGroupOrder = [];
+        private TransformQ[] PositionScratch = [];
+        private nuint InstanceCapacity;
+
+        private List<MeshDrawInstance> RentList() {
+            if(GroupListPoolIndex >= GroupListPool.Count) GroupListPool.Add([]);
+            var list = GroupListPool[GroupListPoolIndex++];
+            list.Clear();
+            return list;
+        }
+
         private void RenderPass(List<MeshDrawInstance>? meshes, float alphaCutoff, ref RenderStats stats) {
             if(meshes == null) return;
 
             var gl = window.OpenGL;
 
+            //Orphan the instance buffer once per pass so in-flight draws keep the previous storage
+            gl.BindBuffer(BufferTargetARB.ArrayBuffer, _instanceBuffer);
+            if(InstanceCapacity > 0) {
+                unsafe { gl.BufferData(BufferTargetARB.ArrayBuffer, InstanceCapacity, null, BufferUsageARB.DynamicDraw); }
+            }
+
             //Group meshes by mesh
-            var groupedMeshes = meshes.GroupBy(x => x.Mesh);
-            foreach (var meshGroup in groupedMeshes) {
+            GroupListPoolIndex = 0;
+            MeshGroupScratch.Clear();
+            MeshGroupOrder.Clear();
+            foreach (var instance in meshes) {
+                if (!MeshGroupScratch.TryGetValue(instance.Mesh, out var meshList)) {
+                    meshList = RentList();
+                    MeshGroupScratch[instance.Mesh] = meshList;
+                    MeshGroupOrder.Add(instance.Mesh);
+                }
+                meshList.Add(instance);
+            }
+            foreach (var mesh in MeshGroupOrder) {
                 stats.ModelCount++;
-                var mesh = meshGroup.Key;
-                var instances = meshGroup.ToArray();
-                if (instances.Length == 0 || mesh.Vertices.Count == 0 || mesh.Indices.Count == 0) continue;
+                var instances = MeshGroupScratch[mesh];
+                if (instances.Count == 0 || mesh.Vertices.Count == 0 || mesh.Indices.Count == 0) continue;
 
                 //Bind the mesh
                 var meshGPU = GetCachedMesh(mesh);
@@ -219,14 +251,25 @@ namespace TranSimCS.SilkNet {
                 CheckError("BindVertexArray");
 
                 //For each material
-                var groupedByMaterial = instances.GroupBy(x => x.Material);
-                foreach (var materialGroup in groupedByMaterial) {
+                MaterialGroupScratch.Clear();
+                MaterialGroupOrder.Clear();
+                foreach (var instance in instances) {
+                    if (!MaterialGroupScratch.TryGetValue(instance.Material, out var materialList)) {
+                        materialList = RentList();
+                        MaterialGroupScratch[instance.Material] = materialList;
+                        MaterialGroupOrder.Add(instance.Material);
+                    }
+                    materialList.Add(instance);
+                }
+                foreach (var material in MaterialGroupOrder) {
                     stats.MaterialCount++;
-                    var material = materialGroup.Key;
-                    var materialInstances = materialGroup.ToArray();
+                    var materialInstances = MaterialGroupScratch[material];
 
-                    if (materialInstances.Length == 0) continue;
-                    var positionValues = materialInstances.Select(x => x.Transform).ToArray();
+                    if (materialInstances.Count == 0) continue;
+                    int count = materialInstances.Count;
+                    if(PositionScratch.Length < count) PositionScratch = new TransformQ[GrowCapacity(PositionScratch.Length, count)];
+                    var positionValues = PositionScratch;
+                    for(int i = 0; i < count; i++) positionValues[i] = materialInstances[i].Transform;
 
                     //Bind uniforms
                     ShaderUniformData sud = default;
@@ -250,12 +293,16 @@ namespace TranSimCS.SilkNet {
 
                     //Upload instance data
                     gl.BindBuffer(BufferTargetARB.ArrayBuffer, _instanceBuffer);
-                    gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(positionValues.Length * 28), positionValues, BufferUsageARB.DynamicDraw);
+                    nuint instanceBytes = (nuint)(count * Unsafe.SizeOf<TransformQ>());
+                    if(instanceBytes > InstanceCapacity) {
+                        InstanceCapacity = (nuint)GrowCapacity((int)InstanceCapacity, (int)instanceBytes);
+                        unsafe { gl.BufferData(BufferTargetARB.ArrayBuffer, InstanceCapacity, null, BufferUsageARB.DynamicDraw); }
+                    }
+                    gl.BufferSubData(BufferTargetARB.ArrayBuffer, 0, positionValues.AsSpan(0, count));
 
                     stats.DrawCount++;
                     unsafe {
-                        //Suddenly this got slower. Maybe a lot of models?
-                        gl.DrawElementsInstanced(PrimitiveType.Triangles, (uint)(mesh.Indices.Count), DrawElementsType.UnsignedShort, null, (uint)(materialInstances.Length));
+                        gl.DrawElementsInstanced(PrimitiveType.Triangles, (uint)(mesh.Indices.Count), DrawElementsType.UnsignedShort, null, (uint)count);
                     }
                     CheckError("DrawElementsInstanced");
                     //throw new Exception($"Got to the drawcall. Index count: {mesh.Indices.Count}, Vertex count: {mesh.Vertices.Count}, Instance count: {instances.Count}");
