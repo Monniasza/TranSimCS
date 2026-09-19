@@ -59,6 +59,33 @@ public static class Harness {
             AppendMesh(svg, bin.Value, color, 1f);
         }
 
+        //All sections: stretched triangles and big lateral vertex moves
+        int si = 0;
+        var sectionIt2 = world.RoadSections.data.GetEnumerator();
+        while (sectionIt2.MoveNext()) {
+            si++;
+            var sec = (RoadSection)sectionIt2.Current;
+            MultiMesh mm;
+            try { mm = sec.Mesh.GetMesh(); } catch { continue; }
+            foreach (var bin in mm.RenderBins) {
+                var idx = bin.Value.Indices;
+                var vs = bin.Value.Vertices;
+                int stretched = 0;
+                for (int t = 0; t <= idx.Count - 3; t += 3) {
+                    var a = vs[idx[t]].Position;
+                    var b = vs[idx[t + 1]].Position;
+                    var c = vs[idx[t + 2]].Position;
+                    var spread = MathF.Max(MathF.Abs(a.Y - b.Y), MathF.Max(MathF.Abs(b.Y - c.Y), MathF.Abs(a.Y - c.Y)));
+                    var xzSpread = MathF.Max(MathF.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Z - b.Z) * (a.Z - b.Z)), MathF.Max(MathF.Sqrt((b.X - c.X) * (b.X - c.X) + (b.Z - c.Z) * (b.Z - c.Z)), MathF.Sqrt((a.X - c.X) * (a.X - c.X) + (a.Z - c.Z) * (a.Z - c.Z))));
+                    if (spread > 0.5f && xzSpread < spread) {
+                        stretched++;
+                        if (stretched <= 2) Console.WriteLine($"section {si} STRETCHED [{bin.Key.Texture}]: A=({a.X:F2},{a.Y:F2},{a.Z:F2}) B=({b.X:F2},{b.Y:F2},{b.Z:F2}) C=({c.X:F2},{c.Y:F2},{c.Z:F2})");
+                    }
+                }
+                if (stretched > 0) Console.WriteLine($"section {si} bin[{bin.Key.Texture}]: {stretched} stretched triangles");
+            }
+        }
+
         //Grid sweep: compare section-draped surface height vs road lane surface height per cell
         var roadTris = new List<(Vector2 a, Vector2 b, Vector2 c, float ya, float yb, float yc)>();
         foreach (var road in world.RoadSegments.data) {
