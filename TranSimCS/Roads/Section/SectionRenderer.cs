@@ -120,7 +120,7 @@ namespace TranSimCS.Roads.Section {
 
         private static void GenerateSectionBySlope(Mesh surfaceMesh, RoadSection roadSection, HalfNode start, HalfNode end, int accuracy = 17) {
             //Rotate the list so the 1st main end lies on the index 0
-            var circularList = DLNode<HalfNode>.CreateCircular(roadSection.Nodes);
+            var circularList = DLNode<HalfNode>.CreateCircular(roadSection.SortedNodes);
             var startNode = circularList;
             while (startNode.val != start) startNode = startNode.Next;
             var endNode = circularList;
@@ -347,7 +347,7 @@ namespace TranSimCS.Roads.Section {
         }
 
         private static Vector3[] GenerateSectionPerimeter(RoadSection roadSection, int accuracy = 17) {
-            var nodes = roadSection.Nodes.Rev().ToArray();
+            var nodes = roadSection.SortedNodes.Rev().ToArray();
             var perimeter = new List<Vector3>();
 
             //The rim is the polygon through the physical road-edge endpoints: each node's bounds are the
