@@ -148,6 +148,29 @@ namespace TranSimCSTests {
         }
 
         [Fact]
+        public void SurfaceOffsetIsReappliedAfterProjection() {
+            var target = FlatQuadTarget();
+            var projection = new Mesh(null, [
+                new Vertex(new(0.5f, 0, 0.5f), Colors.White, new(0.5f, 0.5f)),
+            ], [0, 0, 0]);
+            var result = projection.ProjectOnto(target, Vector3.UnitY, float.PositiveInfinity, -10, 0.05f);
+            Assert.True(MathF.Abs(result.Vertices[0].Position.Y - 0.05f) < 1e-5f);
+        }
+
+        [Fact]
+        public void RimMissSnapsToClosestSurfacePoint() {
+            var target = FlatQuadTarget();
+            //0.5 past the x=1 rim - outside the AABB, no ray hit possible
+            var projection = new Mesh(null, [
+                new Vertex(new(1.5f, 0.05f, 0.5f), Colors.White, new(1.5f, 0.5f)),
+            ], [0, 0, 0]);
+            var result = projection.ProjectOnto(target, Vector3.UnitY, float.PositiveInfinity, -10, 0.05f);
+            var p = result.Vertices[0].Position;
+            Assert.True(MathF.Abs(p.X - 1) < 1e-5f, $"X {p.X} did not snap to the rim");
+            Assert.True(MathF.Abs(p.Y - 0.05f) < 1e-5f, $"Y {p.Y} did not drape");
+        }
+
+        [Fact]
         public void TryProjectPointHandlesCoplanarPoint() {
             var target = FlatQuadTarget();
             var hit = target.TryProjectPoint(new Vector3(0.5f, 0, 0.5f), Vector3.UnitY, out var projected, out _, out _);

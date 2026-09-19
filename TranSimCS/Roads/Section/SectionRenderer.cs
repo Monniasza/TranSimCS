@@ -206,52 +206,57 @@ namespace TranSimCS.Roads.Section {
             var mergedDrives = (drivingLines ?? []).Select(x => new Polygon(x.path, FillRule.EvenOdd)).AggregateOrDefault(new Polygon(), (x, y) => x | y);
 
             //Execute gometry operations
-            var whiteResult = mergedWhites - mergedDrives;
-            var asphaltResult = mergedAsphalt;
+            //Clip everything to the section perimeter: marking paths may extend past the section surface
+            //(through-roads, unclipped dashes). Past the rim the projection rays would hit unrelated world geometry.
+            var perimeterPath = new PathD(GenerateSectionPerimeter(roadSection, accuracy).Select(p => {
+                var c = roadSection.WorkingPlane.Project(p);
+                return new PointD(c.X, c.Y);
+            }));
+            var sectionArea = new Polygon(perimeterPath, FillRule.NonZero);
+            var whiteResult = (mergedWhites - mergedDrives).Intersect(sectionArea);
+            var asphaltResult = mergedAsphalt.Intersect(sectionArea);
 
             //Triangulate meshes
             var triangulatedWhite = PathsDTriangulation.Triangulate(whiteResult);
             var triangulatedAsphalt = PathsDTriangulation.Triangulate(asphaltResult);
 
             //Generate meshes for projection
+            //Marking vertices are generated without elevation - the offset above the surface is re-applied
+            //after the projection, otherwise it would be discarded when vertices snap onto the surface
             var projectionPlane = roadSection.WorkingPlane;
             var meshedWhite = new Mesh(null,
-                triangulatedWhite.points.Select(CreateMeshingFunction(projectionPlane, Colors.White, roadSection.Normal * 0.05f)),
+                triangulatedWhite.points.Select(CreateMeshingFunction(projectionPlane, Colors.White, Vector3.Zero)),
                 triangulatedWhite.triangles.Select(x => (ushort)x)
             );
             var meshedAsphalt = new MultiMesh();
             var rawDashes = roadSplineComponents[(int)RoadSplineComponentType.UnclippedMarking];
             var meshedDashes = new MultiMesh();
 
-            void ConvertProjectionToMesh(List<SectionTriangulationRow>? list, MultiMesh mesh, float offset = 0) {
+            void ConvertProjectionToMesh(List<SectionTriangulationRow>? list, MultiMesh mesh) {
                 if (list == null) return;
                 foreach (var meshElement in list) {
                     if(meshElement.material == null) continue;
-                    var polygon = new Polygon(meshElement.path, FillRule.EvenOdd);
+                    var polygon = new Polygon(meshElement.path, FillRule.EvenOdd).Intersect(sectionArea);
                     var triagulation = PathsDTriangulation.Triangulate(polygon);
-                    var points = triagulation.points.Select(CreateMeshingFunction(projectionPlane, meshElement.color, roadSection.Normal * offset));
+                    var points = triagulation.points.Select(CreateMeshingFunction(projectionPlane, meshElement.color, Vector3.Zero));
                     var bin = mesh.GetOrCreateRenderBinForced(meshElement.material.Value);
                     bin.DrawModel(points.ToArray(), triagulation.triangles.Select(x => (ushort)x).ToArray());
                 }
             }
 
-            ConvertProjectionToMesh(rawDashes, meshedDashes, 0.05f);
+            ConvertProjectionToMesh(rawDashes, meshedDashes);
             ConvertProjectionToMesh(asphaltLines, meshedAsphalt);
 
             float reach = surfaceMesh.BoundingBox().Extent();
-            {
-                var b = surfaceMesh.BoundingBox();
-                MeshUtil.DiagLog.Debug($"SurfaceMesh: tris={surfaceMesh.Indices.Count / 3} verts={surfaceMesh.Vertices.Count} min=({b.Min.X:F2},{b.Min.Y:F2},{b.Min.Z:F2}) max=({b.Max.X:F2},{b.Max.Y:F2},{b.Max.Z:F2}) reach={reach:F2} normal={roadSection.Normal}");
-            }
 
             meshedWhite.ReverseWinding();
             meshedAsphalt.ReverseWinding();
             meshedDashes.ReverseWinding();
 
             //Project meshes
-            var projectedWhite = meshedWhite.ProjectOnto(surfaceMesh, roadSection.Normal, float.PositiveInfinity, -reach);
+            var projectedWhite = meshedWhite.ProjectOnto(surfaceMesh, roadSection.Normal, float.PositiveInfinity, -reach, 0.05f);
             var projectedAsphalt = meshedAsphalt.ProjectOnto(surfaceMesh, roadSection.Normal, float.PositiveInfinity, -reach);
-            var projectedDashes = meshedDashes.ProjectOnto(surfaceMesh, roadSection.Normal, float.PositiveInfinity, -reach);
+            var projectedDashes = meshedDashes.ProjectOnto(surfaceMesh, roadSection.Normal, float.PositiveInfinity, -reach, 0.05f);
 
             var asphaltMesh = multimesh.GetOrCreateRenderBinForced(Materials.Asphalt);
             var whiteMesh = multimesh.GetOrCreateRenderBinForced(Materials.EmissiveWhite);
@@ -366,7 +371,13 @@ namespace TranSimCS.Roads.Section {
                 var nextframe = next.Cache.ReferenceFrame;
                 var prevpos = prevframe.O + prevframe.X * prev.Bounds.Max;
                 var nextpos = nextframe.O + nextframe.X * next.Bounds.Min;
-                var spline = GeometryUtils.GenerateJoinSpline(prevpos, nextpos, prevframe.Z, nextframe.Z);
+                //Tangents must point away from the section centre: opposite nodes of a dual carriageway have
+                //opposite Z axes, and an unflipped join spline dips through the section instead of wrapping around it
+                var prevTangent = prevframe.Z;
+                if (Vector3.Dot(prevTangent, prevpos - roadSection.Center) < 0) prevTangent = -prevTangent;
+                var nextTangent = nextframe.Z;
+                if (Vector3.Dot(nextTangent, nextpos - roadSection.Center) < 0) nextTangent = -nextTangent;
+                var spline = GeometryUtils.GenerateJoinSpline(prevpos, nextpos, prevTangent, nextTangent);
                 var points = GenerateSplinePoints(spline, accuracy);
                 for (int j = 1; j < points.Length; j++)
                     perimeter.Add(points[j]);

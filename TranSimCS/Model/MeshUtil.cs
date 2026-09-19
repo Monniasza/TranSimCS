@@ -84,9 +84,10 @@ namespace TranSimCS.Model {
         /// <summary>
         /// Projects a mesh onto a target surface along <paramref name="normal"/>.
         /// Every vertex is cast along the direction; hits with signed distance in [<paramref name="minDistance"/>, <paramref name="maxDistance"/>] of the vertex are accepted.
-        /// Vertices which miss the target are kept at their original positions.
+        /// Vertices which miss the target (eg. slightly past its rim) snap to the closest point on the target within the same distance window.
+        /// <paramref name="surfaceOffset"/> is re-applied along the normal after projecting, so layered geometry (markings above asphalt) keeps its separation.
         /// </summary>
-        public static Mesh ProjectOnto(this Mesh projection, Mesh target, Vector3 normal, float maxDistance = float.PositiveInfinity, float minDistance = 0) {
+        public static Mesh ProjectOnto(this Mesh projection, Mesh target, Vector3 normal, float maxDistance = float.PositiveInfinity, float minDistance = 0, float surfaceOffset = 0) {
             ArgumentNullException.ThrowIfNull(projection);
             ArgumentNullException.ThrowIfNull(target);
 
@@ -101,47 +102,122 @@ namespace TranSimCS.Model {
             var projectedVertices = new List<Vertex>(projection.Vertices.Count);
             var missedVertices = 0;
 
-            //Accept hits with signed distance in [minDistance, maxDistance] of each vertex, measured along the direction.
-            //The ray origin is nudged behind the vertex, so vertices coplanar with the target hit at t > 0.
-            var originOffset = minDistance - MeshBvh.ProjectionEpsilon;
-            var maxRayDistance = (maxDistance - minDistance) + 2 * MeshBvh.ProjectionEpsilon;
+            //Accept the hit closest to each vertex in either direction, with signed distance in [minDistance, maxDistance]
+            //measured along the direction. The vertex may sit above or below the target surface (the target sags
+            //away from the working plane), and other geometry may exist far beneath it - so both directions are
+            //cast and the nearest hit wins.
+            var epsilon = MeshBvh.ProjectionEpsilon;
 
             foreach (var vertex in projection.Vertices) {
-                var ray = new Ray3(vertex.Position + originOffset * direction, direction);
                 //Wide edge and bounds tolerance: marking vertices may sit a fraction of the polygon sagitta
                 //outside the target's chord edges and bounds (eg. rim markings on an arc). Hit position comes
                 //from the ray, so the tolerances only widen acceptance, never displace a hit.
-                if (targetBvh.RayIntersect(ray, 0, maxRayDistance, out _, out var distance, edgeEpsilon: 1e-2f, boundsSlack: 1e-2f)) {
-                    projectedVertices.Add(new Vertex(
-                        ray.GetPoint(distance),
-                        vertex.Color,
-                        vertex.TexCoord,
-                        vertex.Material,
-                        vertex.Emissive));
+                var upRay = new Ray3(vertex.Position - direction * epsilon, direction);
+                var downRay = new Ray3(vertex.Position + direction * epsilon, -direction);
+
+                bool hitUp = targetBvh.RayIntersect(upRay, MathF.Max(0, minDistance + epsilon), maxDistance + epsilon, out _, out var upDistance, edgeEpsilon: 1e-2f, boundsSlack: 1e-2f);
+                bool hitDown = targetBvh.RayIntersect(downRay, MathF.Max(0, -maxDistance + epsilon), -minDistance + epsilon, out _, out var downDistance, edgeEpsilon: 1e-2f, boundsSlack: 1e-2f);
+                float upSigned = upDistance - epsilon;
+                float downSigned = -(downDistance - epsilon);
+
+                Vector3 hitPoint;
+                if (hitUp && (!hitDown || MathF.Abs(upSigned) <= MathF.Abs(downSigned))) {
+                    hitPoint = upRay.GetPoint(upDistance) + direction * surfaceOffset;
+                } else if (hitDown) {
+                    hitPoint = downRay.GetPoint(downDistance) + direction * surfaceOffset;
                 } else {
                     missedVertices++;
-                    if (missedVertices <= 3)
-                        DiagLog.Debug($"ProjectOnto MISS #{missedVertices}: vertex={vertex.Position} rayOrigin={ray.Origin}");
-                    projectedVertices.Add(vertex);
+                    var fallback = ClosestPointOnMesh(target, vertex.Position);
+                    var delta = Vector3.Dot(fallback - vertex.Position, direction);
+                    if (delta >= minDistance && delta <= maxDistance)
+                        fallback += direction * surfaceOffset;
+                    else
+                        fallback = vertex.Position;
+                    hitPoint = fallback;
                 }
+                projectedVertices.Add(new Vertex(
+                    hitPoint,
+                    vertex.Color,
+                    vertex.TexCoord,
+                    vertex.Material,
+                    vertex.Emissive));
             }
-            DiagLog.Debug($"ProjectOnto: {projection.Vertices.Count - missedVertices}/{projection.Vertices.Count} hit");
 
             return new Mesh(null, projectedVertices, projection.Indices, projection.Tags);
         }
 
         /// <summary>
         /// Projects every render bin of a multimesh onto a target surface along <paramref name="normal"/>.
-        /// Vertices which miss the target are kept at their original positions.
+        /// Vertices which miss the target snap to the closest point on the target.
         /// </summary>
-        public static MultiMesh ProjectOnto(this MultiMesh projection, Mesh target, Vector3 normal, float maxDistance = float.PositiveInfinity, float minDistance = 0) {
+        public static MultiMesh ProjectOnto(this MultiMesh projection, Mesh target, Vector3 normal, float maxDistance = float.PositiveInfinity, float minDistance = 0, float surfaceOffset = 0) {
             ArgumentNullException.ThrowIfNull(projection);
             ArgumentNullException.ThrowIfNull(target);
 
             var result = new MultiMesh();
             foreach (var bin in projection.RenderBins)
-                result.GetOrCreateRenderBin(bin.Key, null).DrawModel(bin.Value.ProjectOnto(target, normal, maxDistance, minDistance));
+                result.GetOrCreateRenderBin(bin.Key, null).DrawModel(bin.Value.ProjectOnto(target, normal, maxDistance, minDistance, surfaceOffset));
             return result;
+        }
+
+        /// <summary>Closest point on the surface of a triangle to <paramref name="point"/> (Ericson, Real-Time Collision Detection).</summary>
+        public static Vector3 ClosestPointOnTriangle(Vector3 point, Vector3 a, Vector3 b, Vector3 c) {
+            var ab = b - a;
+            var ac = c - a;
+            var ap = point - a;
+            var d1 = Vector3.Dot(ab, ap);
+            var d2 = Vector3.Dot(ac, ap);
+            if (d1 <= 0 && d2 <= 0) return a;
+
+            var bp = point - b;
+            var d3 = Vector3.Dot(ab, bp);
+            var d4 = Vector3.Dot(ac, bp);
+            if (d3 >= 0 && d4 <= d3) return b;
+
+            var vc = d1 * d4 - d3 * d2;
+            if (vc <= 0 && d1 >= 0 && d3 <= 0) {
+                var v = d1 / (d1 - d3);
+                return a + ab * v;
+            }
+
+            var cp = point - c;
+            var d5 = Vector3.Dot(ab, cp);
+            var d6 = Vector3.Dot(ac, cp);
+            if (d6 >= 0 && d5 <= d6) return c;
+
+            var vb = d5 * d2 - d1 * d6;
+            if (vb <= 0 && d2 >= 0 && d6 <= 0) {
+                var w = d2 / (d2 - d6);
+                return a + ac * w;
+            }
+
+            var va = d3 * d6 - d5 * d4;
+            if (va <= 0 && (d4 - d3) >= 0 && (d5 - d6) >= 0) {
+                var w = (d4 - d3) / ((d4 - d3) + (d5 - d6));
+                return b + (c - b) * w;
+            }
+
+            var denom = 1 / (va + vb + vc);
+            return a + ab * (vb * denom) + ac * (vc * denom);
+        }
+
+        private static Vector3 ClosestPointOnMesh(Mesh mesh, Vector3 point) {
+            var verts = mesh.Vertices;
+            var indices = mesh.Indices;
+            var best = point;
+            var bestDistance = float.MaxValue;
+            for (int i = 0; i <= indices.Count - 3; i += 3) {
+                var candidate = ClosestPointOnTriangle(point,
+                    verts[indices[i]].Position,
+                    verts[indices[i + 1]].Position,
+                    verts[indices[i + 2]].Position);
+                var d = Vector3.DistanceSquared(point, candidate);
+                if (d < bestDistance) {
+                    bestDistance = d;
+                    best = candidate;
+                }
+            }
+            return best;
         }
 
         public static void ReverseWinding(this Mesh mesh) {
