@@ -51,7 +51,7 @@ namespace TranSimCS.SilkNet {
         public TSWorld World {
             get => _world;
             set {
-                World = value;
+                _world = value;
                 foreach (var tool in AvailableModes) tool.WorldChanged(value);
                 TrackPosition = null;
                 MouseOver = null;
@@ -76,7 +76,7 @@ namespace TranSimCS.SilkNet {
             //Find world files
             var dirInfo = new DirectoryInfo(Program.SaveRoot);
             Worlds.Clear();
-            Worlds.AddRange(dirInfo.GetFiles().Select(x => x.FullName));
+            Worlds.AddRange(dirInfo.GetFiles().Select(x => Path.GetFileName(x.FullName)));
         }
 
         //Input attributes
@@ -87,7 +87,6 @@ namespace TranSimCS.SilkNet {
         public Ray3 MouseRayOld;
 
         public SilkNetTest() {
-            World = new TSWorld();
             var pickMode = new PickMode(this);
             //Create modes
             AvailableModes = [
@@ -98,6 +97,7 @@ namespace TranSimCS.SilkNet {
             ];
             _mode = pickMode;
             snappingGrid = new();
+            World = new TSWorld();
             SegmentPresets.RoadMode = RoadModes[2];
         }
         public void Start() {

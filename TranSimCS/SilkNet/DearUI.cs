@@ -62,7 +62,7 @@ namespace TranSimCS.SilkNet {
         }
         public static bool InputInt(string title, Property<int> value, float vel = 0.05f, int min = 0, int max = 100) {
             var tmp = value.Value;
-            bool changed = ImGui.DragInt(title, ref tmp, min, max);
+            bool changed = ImGui.DragInt(title, ref tmp, vel, min, max);
             if (changed) value.Value = tmp;
             return changed;
         }
