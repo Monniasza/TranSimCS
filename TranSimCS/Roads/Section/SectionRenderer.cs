@@ -279,9 +279,10 @@ namespace TranSimCS.Roads.Section {
             var asphaltMesh = multimesh.GetOrCreateRenderBinForced(Materials.Asphalt);
             var whiteMesh = multimesh.GetOrCreateRenderBinForced(Materials.EmissiveWhite);
             var dashedMesh = multimesh.GetOrCreateRenderBinForced(Materials.LineDash);
-            multimesh.AddAll(projectedAsphalt);
-            whiteMesh.DrawModel(projectedWhite);
-            multimesh.AddAll(projectedDashes);
+            //multimesh.AddAll(projectedAsphalt);
+            //whiteMesh.DrawModel(projectedWhite);
+            //multimesh.AddAll(projectedDashes);
+            asphaltMesh.DrawModel(surfaceMesh);
 
             GenerateSectionFinish(roadSection, multimesh, accuracy);
 
