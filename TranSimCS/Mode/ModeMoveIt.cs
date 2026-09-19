@@ -107,7 +107,8 @@ namespace TranSimCS.Mode {
                 ObjToDrag = null;
             }
         }
-
-        
+        void IMode.WorldChanged(TSWorld world) {
+            ObjToDrag = null;
+        }
     }
 }

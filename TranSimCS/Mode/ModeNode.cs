@@ -153,5 +153,10 @@ namespace TranSimCS.Mode {
                 PrePosition = pp;
             }
         }
+
+        void IMode.WorldChanged(TSWorld world) {
+            NewlyCreatedNode = null;
+            Reference = null;
+        }
     }
 }

@@ -7,6 +7,7 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Section;
 using TranSimCS.Select;
 using TranSimCS.SilkNet;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.Mode {
     internal class ModeSection: IMode {
@@ -134,6 +135,10 @@ namespace TranSimCS.Mode {
                         break;
                 }
             }
+        }
+
+        void IMode.WorldChanged(TSWorld world) {
+            Section = null;
         }
     }
 }

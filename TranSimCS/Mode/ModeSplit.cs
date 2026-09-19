@@ -113,5 +113,9 @@ namespace TranSimCS.Mode {
                 Menu.MouseOver = null;
             }
         }
+
+        void IMode.WorldChanged(TSWorld world) {
+            RoadPosition = null;
+        }
     }
 }

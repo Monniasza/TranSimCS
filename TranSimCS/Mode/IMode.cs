@@ -39,6 +39,11 @@ namespace TranSimCS.Mode {
         /// </summary>
         public void OnClose() { }
         /// <summary>
+        /// Called when a world is changed
+        /// </summary>
+        /// <param name="world"></param>
+        public void WorldChanged(TSWorld world) { }
+        /// <summary>
         /// Called when a mouse button is pressed
         /// </summary>
         public void OnMousePress(MouseButton button) { }

@@ -8,6 +8,7 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Select;
 using TranSimCS.SilkNet;
 using TranSimCS.SilkNet.RoadConstruction;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.Mode {
     public class ModeSpline(SilkNetTest menu) : IMode {
@@ -176,6 +177,11 @@ namespace TranSimCS.Mode {
                 renderBin.DrawLine(centerspline.a + offset1, centerspline.b + offset1, startNormal, Colors.White);
                 renderBin.DrawLine(centerspline.d + offset2, centerspline.c + offset2, endNormal, Colors.White);
             }
+        }
+
+        void IMode.WorldChanged(TSWorld world) {
+            CurrentStrip = null;
+            DragState = null;
         }
     }
 }

@@ -9,6 +9,7 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Select;
 using TranSimCS.SilkNet;
 using TranSimCS.TrafficLights;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.Mode {
     /// <summary>
@@ -160,6 +161,10 @@ namespace TranSimCS.Mode {
             if (SelectedGroup == null || SelectedGroup.Phases.Count == 0) return;
             if (key == Key.Q) SelectedGroup.PhaseId = Math.Max(0, SelectedGroup.PhaseId - 1);
             if (key == Key.E) SelectedGroup.PhaseId = Math.Min(SelectedGroup.Phases.Count - 1, SelectedGroup.PhaseId + 1);
+        }
+
+        void IMode.WorldChanged(TSWorld world) {
+            SelectedGroup = null;
         }
     }
 }

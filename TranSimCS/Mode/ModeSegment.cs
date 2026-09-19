@@ -216,5 +216,10 @@ namespace TranSimCS.Mode {
         void IMode.AddSelectors(MultiMesh invisible, MultiMesh visible) {
             SelectionUtils.AddAddLaneSelectors(visible, Menu);
         }
+
+        void IMode.WorldChanged(TSWorld world) {
+            State = null;
+            LaneMappings = null;
+        }
     }
 }

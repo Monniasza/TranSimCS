@@ -151,5 +151,11 @@ namespace TranSimCS.Mode {
                 }
             }
         }
+
+        void IMode.WorldChanged(TSWorld world) {
+            SourceNode = null;
+            DestNode = null;
+            LaneStrip = null;
+        }
     }
 }

@@ -46,7 +46,18 @@ namespace TranSimCS.SilkNet {
         
         //World contents
         public Camera camera;
-        public TSWorld World { get; private set; }
+
+        private TSWorld _world;
+        public TSWorld World {
+            get => _world;
+            set {
+                World = value;
+                foreach (var tool in AvailableModes) tool.WorldChanged(value);
+                TrackPosition = null;
+                MouseOver = null;
+                Sticky = null;
+            }
+        }
         public float SimulationSpeed = 1;
 
         //UI contents
