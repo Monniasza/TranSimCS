@@ -14,9 +14,11 @@ using static TranSimCS.Model.MeshUnroll;
 
 namespace TranSimCS.SilkNet {
     public partial class SilkNetTest {
+        private MultiMesh mesh = new();
+
         private void Render3D(RenderTarget target) {
             List<IObjMesh> meshes = [];
-            MultiMesh mesh = new MultiMesh();
+            mesh.ShallowClear();
 
             //Add world contents
             meshes.AddRange(World.Nodes.data);

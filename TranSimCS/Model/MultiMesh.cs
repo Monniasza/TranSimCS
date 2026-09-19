@@ -55,6 +55,10 @@ namespace TranSimCS.Model {
             _renderBins.Clear();
             meshInstances.Clear();
         }
+        public void ShallowClear() {
+            foreach(var bin  in _renderBins) bin.Value.Clear();
+            meshInstances.Clear();
+        }
         public Mesh GetOrCreateRenderBin(SimpleMaterial texture, Action<Mesh>? action) {
             if (!_renderBins.TryGetValue(texture, out var renderBin)) {
                 renderBin = new Mesh();
