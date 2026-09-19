@@ -41,6 +41,10 @@ namespace TranSimCS.Cars {
             }
 
             foreach(var car in data) {
+                //Trim route elements whose lane strip died (deleted/reversed) before indexing them
+                car.TrimUntilDead();
+                if (car.RouteElementCount == 0) continue;
+
                 const float lookahead = 10;
                 var firstStrip = car.FindIndexFromDistance(car.RoutePositionFromStart);
                 var lastStrip = car.FindIndexFromDistance(car.RoutePositionFromStart + lookahead);
