@@ -224,9 +224,9 @@ namespace TranSimCS.SilkNet {
         private void SaveModal() {
             if (DearUI.Modal("Save a world")) {
                 ImGui.SameLine();
-                ImGui.InputText("File name", ref SaveTitle, 99);
+                bool confirmed = ImGui.InputText("File name", ref SaveTitle, 99, ImGuiInputTextFlags.EnterReturnsTrue);
                 ImGui.SameLine();
-                if (ImGui.Button("Save")) {
+                if (confirmed | ImGui.Button("Save")) {
                     SaveTitle = SaveTitle.Trim();
                     if (string.IsNullOrWhiteSpace(SaveTitle)) {
                         ShowSaveError("The file name cannot be empty.");
