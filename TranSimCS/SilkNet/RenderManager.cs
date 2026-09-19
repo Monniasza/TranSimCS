@@ -255,7 +255,7 @@ namespace TranSimCS.SilkNet {
                     stats.DrawCount++;
                     unsafe {
                         //Suddenly this got slower. Maybe a lot of models?
-                        gl.DrawElementsInstanced(PrimitiveType.Triangles, (uint)(mesh.Indices.Count), DrawElementsType.UnsignedShort, null, (uint)(instances.Length));
+                        gl.DrawElementsInstanced(PrimitiveType.Triangles, (uint)(mesh.Indices.Count), DrawElementsType.UnsignedShort, null, (uint)(materialInstances.Length));
                     }
                     CheckError("DrawElementsInstanced");
                     //throw new Exception($"Got to the drawcall. Index count: {mesh.Indices.Count}, Vertex count: {mesh.Vertices.Count}, Instance count: {instances.Count}");
@@ -263,6 +263,7 @@ namespace TranSimCS.SilkNet {
             }
         }
 
+        [Conditional("DEBUG")]
         private void CheckError(string component) {
             var error = window.OpenGL.GetError();
             if (error != GLEnum.NoError)
