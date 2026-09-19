@@ -2,7 +2,9 @@
   "permissions": {
     "strictness": "strict",
     "allow": [
-      "Bash(git diff --stat)"
+      "Bash(git diff --stat)",
+      "Bash(dotnet build \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\TranSimCS.csproj\" -v q --nologo 2>&1 | Select-Object -Last 15)",
+      "Bash(dotnet build \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\TranSimCS.csproj\" -v q --nologo 2>&1 | Select-Object -Last 4)"
     ]
   }
 }

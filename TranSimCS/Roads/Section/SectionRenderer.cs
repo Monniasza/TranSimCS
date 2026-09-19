@@ -323,24 +323,41 @@ namespace TranSimCS.Roads.Section {
             var height = finish.depth;
             var breadth = finish.depth * MathF.Tan(finish.angle);
 
-            var sideLen = new Vector2(height, breadth).Length();
             var finishMesh = multimesh.GetOrCreateRenderBinForced(texture.Value);
 
-            //Build the skirt from the same perimeter ring the surface fan uses, so the top edge matches the
-            //surface rim exactly. Per-node-pair splines joined the opposite ends of the node spans and swung
-            //wide across the corners, ridging the section ends.
+            //Evaluate the outermost boundary: the closed ring through the physical road-edge endpoints,
+            //the same ring the surface fan uses, so the top edge matches the surface rim exactly
             var ring = GenerateSectionPerimeter(roadSection, accuracy);
+
+            //Project the ring onto the working plane and generate tangents there - the ring is planar in
+            //that plane, so 2D neighbour differences are well defined where 3D ones would degenerate
+            var plane = roadSection.WorkingPlane;
+            var projected = new Vector2[ring.Length];
+            for(int j = 0; j < ring.Length; j++) projected[j] = plane.Project(ring[j]);
+            var projectedCenter = plane.Project(roadSection.Center);
+
+            var outward = new Vector2[ring.Length];
+            for(int j = 0; j < ring.Length; j++) {
+                var prev = projected[(j - 1 + ring.Length) % ring.Length];
+                var next = projected[(j + 1) % ring.Length];
+                var radial = projected[j] - projectedCenter;
+                var tangent = next - prev;
+                //The wall direction is the in-plane perpendicular of the tangent, signed away from the
+                //section centre. The radial fallback keeps degenerate spans (coincident ring points) sane
+                var perp = new Vector2(-tangent.Y, tangent.X);
+                if(perp.LengthSquared() < 1e-12f || Vector2.Dot(perp, radial) <= 0) perp = radial;
+                if(perp.LengthSquared() < 1e-12f) perp = new(1, 0);
+                outward[j] = perp / perp.Length();
+            }
+
             var top = new Vector3[ring.Length + 1];
             var bottom = new Vector3[ring.Length + 1];
             for (int j = 0; j < top.Length; j++) {
-                var p = ring[j % ring.Length];
-                //The wall must go outward from the section and down, regardless of node tangent orientation -
-                //a tangent-derived lateral flips whenever two adjacent nodes disagree about the tangent sign
-                var outward = p - roadSection.Center;
-                outward -= normal * Vector3.Dot(outward, normal);
-                outward = outward.Normalized();
-                top[j] = p;
-                bottom[j] = p + (outward * breadth) - (normal * height);
+                var i = j % ring.Length;
+                //Unproject the 2D direction back onto the section plane via its orthonormal axes
+                var outward3 = plane.X * outward[i].X + plane.Y * outward[i].Y;
+                top[j] = ring[i];
+                bottom[j] = ring[i] + outward3 * breadth - normal * height;
             }
             var generatedSplines = UniformTexturing.UniformTexturedTwin(top, bottom, UniformTexturing.GenerateLaneStripVertexGen(Colors.White));
             finishMesh.DrawStrip(generatedSplines);
