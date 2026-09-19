@@ -60,6 +60,8 @@ namespace TranSimCS.Mode {
             var rmbOld = game.MouseStateOld.IsMouseButtonDown(Silk.NET.Input.MouseButton.Right);
             var plane = new Plane(0, 1, 0, 0);
             var gs = GeometryUtils.IntersectRayPlane(game.MouseRay, plane);
+            if (!gs.IsFinite()) return;
+
             if (lmb | rmb) {
                 if (!lmbOld & lmb | !rmbOld & rmb) {
                     //Object newly clicked
