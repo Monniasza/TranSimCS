@@ -127,14 +127,6 @@ namespace TranSimCS.SilkNet {
             var sunRenderBin = mesh.GetOrCreateRenderBinForced(Materials.Sun);
             sunRenderBin.DrawParallelogram(startingPoint + RenderManager.Camera.Position.ToX0Z(), tangent, lateral, Colors.White);
 
-            //Test draw traffic lights
-            var time = World.DayTime;
-            var isGreen = time % 2 < 1;
-            var tlightModel = isGreen ? TrafficLightMeshes.Green : TrafficLightMeshes.Red;
-            var tlightPosition = new TransformQ(new(0, 50, 0), Quaternion.Identity);
-            MeshDrawInstance stoplightMDI = new(tlightModel, tlightPosition, TrafficLightMeshes.Texture, 12);
-            target(stoplightMDI);
-
             //Push meshes
             foreach (var element in meshes) element.GenerateGeometry(target);
             target.Draw(mesh);
