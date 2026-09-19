@@ -284,7 +284,7 @@ namespace TranSimCS.Roads.Section {
             whiteMesh.DrawModel(projectedWhite);
             multimesh.AddAll(projectedDashes);
 
-            GenerateSectionFinish(roadSection, multimesh, accuracy);
+            GenerateSectionFinish(roadSection, multimesh, asphaltResult, surfaceMesh, accuracy);
 
             //Add tags to all
             multimesh.AddTagsToAll(roadSection);
@@ -311,7 +311,7 @@ namespace TranSimCS.Roads.Section {
             return result;
         }
 
-        private static void GenerateSectionFinish(RoadSection roadSection, MultiMesh multimesh, int accuracy = 17) {
+        private static void GenerateSectionFinish(RoadSection roadSection, MultiMesh multimesh, Polygon asphaltPolygon, Mesh surfaceMesh, int accuracy = 17) {
             var finish = roadSection.Finish;
             var texture = finish.subsurface.GetTexture();
             if (texture == null || finish.depth <= 0) return;
@@ -325,42 +325,61 @@ namespace TranSimCS.Roads.Section {
 
             var finishMesh = multimesh.GetOrCreateRenderBinForced(texture.Value);
 
-            //Evaluate the outermost boundary: the closed ring through the physical road-edge endpoints,
-            //the same ring the surface fan uses, so the top edge matches the surface rim exactly
-            var ring = GenerateSectionPerimeter(roadSection, accuracy);
-
-            //Project the ring onto the working plane and generate tangents there - the ring is planar in
-            //that plane, so 2D neighbour differences are well defined where 3D ones would degenerate
+            //Evaluate the outermost boundary: the outer edge of the asphalt polygon - the exact outline
+            //the rendered surface ends at, so the skirt hugs it tightly. Holes (grassy islands) are
+            //skipped; sections without asphalt fall back to the perimeter ring
             var plane = roadSection.WorkingPlane;
-            var projected = new Vector2[ring.Length];
-            for(int j = 0; j < ring.Length; j++) projected[j] = plane.Project(ring[j]);
-            var projectedCenter = plane.Project(roadSection.Center);
-
-            var outward = new Vector2[ring.Length];
-            for(int j = 0; j < ring.Length; j++) {
-                var prev = projected[(j - 1 + ring.Length) % ring.Length];
-                var next = projected[(j + 1) % ring.Length];
-                var radial = projected[j] - projectedCenter;
-                var tangent = next - prev;
-                //The wall direction is the in-plane perpendicular of the tangent, signed away from the
-                //section centre. The radial fallback keeps degenerate spans (coincident ring points) sane
-                var perp = new Vector2(-tangent.Y, tangent.X);
-                if(perp.LengthSquared() < 1e-12f || Vector2.Dot(perp, radial) <= 0) perp = radial;
-                if(perp.LengthSquared() < 1e-12f) perp = new(1, 0);
-                outward[j] = perp / perp.Length();
+            var rings = asphaltPolygon.path.Where(p => p.Count >= 3 && Clipper.Area(p) > 0).ToArray();
+            if(rings.Length == 0) {
+                var perimeter = new PathD(GenerateSectionPerimeter(roadSection, accuracy).Select(p => {
+                    var c = plane.Project(p);
+                    return new PointD(c.X, c.Y);
+                }));
+                rings = [perimeter];
             }
 
-            var top = new Vector3[ring.Length + 1];
-            var bottom = new Vector3[ring.Length + 1];
-            for (int j = 0; j < top.Length; j++) {
-                var i = j % ring.Length;
-                //Unproject the 2D direction back onto the section plane via its orthonormal axes
-                var outward3 = plane.X * outward[i].X + plane.Y * outward[i].Y;
-                top[j] = ring[i];
-                bottom[j] = ring[i] + outward3 * breadth - normal * height;
+            var reach = surfaceMesh.BoundingBox().Extent();
+            foreach(var ring in rings) {
+                var count = ring.Count;
+                if(count > 1 && ring[0] == ring[count - 1]) count--; //drop the duplicated closing vertex
+                if(count < 3) continue;
+
+                //Ring winding decides which side of each edge is the outside (right of travel when CCW)
+                double winding = 0;
+                for(int j = 0; j < count; j++) {
+                    var a = ring[j];
+                    var b = ring[(j + 1) % count];
+                    winding += a.x * b.y - b.x * a.y;
+                }
+
+                var outward = new Vector2[count];
+                for(int j = 0; j < count; j++) {
+                    var prev = ring[(j - 1 + count) % count];
+                    var next = ring[(j + 1) % count];
+                    var tangent = new Vector2((float)(next.x - prev.x), (float)(next.y - prev.y));
+                    //The wall direction is the in-plane perpendicular of the tangent, signed by the ring
+                    //winding so it always points away from the asphalt polygon interior
+                    var perp = new Vector2(tangent.Y, -tangent.X);
+                    if(perp.LengthSquared() < 1e-12f) perp = new(1, 0);
+                    if(winding < 0) perp = -perp;
+                    outward[j] = perp / perp.Length();
+                }
+
+                //Unproject the rim to 3D with the same function as the rest of the geometry, then snap it
+                //onto the surface mesh, so the skirt follows the surface elevation exactly
+                var rimMesh = new Mesh(null, ring.Take(count).Select(CreateMeshingFunction(plane, Colors.White, Vector3.Zero)));
+                var snapped = rimMesh.ProjectOnto(surfaceMesh, normal, float.PositiveInfinity, -reach, 0.05f);
+                var top = snapped.Vertices.Select(v => v.Position).ToArray();
+
+                var bottom = new Vector3[top.Length];
+                for(int j = 0; j < top.Length; j++) {
+                    //Unproject the 2D direction back onto the section plane via its orthonormal axes
+                    var outward3 = plane.X * outward[j].X + plane.Y * outward[j].Y;
+                    bottom[j] = top[j] + outward3 * breadth - normal * height;
+                }
+                var generatedSplines = UniformTexturing.UniformTexturedTwin(top, bottom, UniformTexturing.GenerateLaneStripVertexGen(Colors.White));
+                finishMesh.DrawStrip(generatedSplines);
             }
-            var generatedSplines = UniformTexturing.UniformTexturedTwin(top, bottom, UniformTexturing.GenerateLaneStripVertexGen(Colors.White));
-            finishMesh.DrawStrip(generatedSplines);
         }
 
         private static Vector3[] GenerateSectionPerimeter(RoadSection roadSection, int accuracy = 17) {
