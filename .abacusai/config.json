@@ -7,6 +7,18 @@
       "Bash(dotnet build \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\TranSimCS.csproj\" -v q --nologo 2>&1 | Select-Object -Last 4)",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && Get-ChildItem -Path \"TranSimCS\\Files\\textures\" -Force 2>$null | Select-Object Name)",
       "Bash(Get-ChildItem -Path \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\Files\\textures\" -Recurse -File | ForEach-Object { $_.FullName.Replace(\"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\Files\\textures\\\",\"\") })"
+      "Bash(dotnet build \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\TranSimCS.csproj\" -v q --nologo 2>&1 | Select-Object -Last 4)",
+      "Bash(dotnet build TranSimCS/TranSimCS.csproj -v q 2>&1 | Select-Object -Last 30)",
+      "Bash(dotnet build TranSimCS/TranSimCS.csproj -v q 2>&1 | Select-String \"error|Błąd|errorów|Liczba\" | Select-Object -First 20)",
+      "Bash(dotnet build TranSimCS/TranSimCS.csproj -v q 2>&1 | Select-String \"error|Błąd|Liczba\" | Select-Object -First 15)",
+      "Bash(dotnet test TranSimCSTests/TranSimCSTests.csproj -v q --filter \"FullyQualifiedName~TestNodeSpecAlignment\" 2>&1 | Select-Object -Last 15)",
+      "Bash(dotnet test TranSimCSTests/TranSimCSTests.csproj -v q --filter \"FullyQualifiedName~TestNodeSpecAlignment\" 2>&1 | Select-String \"error|Passed|Failed|Przeszło|Niepowodzenie|zakończono\" | Select-Object -First 15)",
+      "Bash(dotnet test TranSimCSTests/TranSimCSTests.csproj -v n --filter \"FullyQualifiedName~TestNodeSpecAlignment\" 2>&1 | Select-String -Pattern \"Failed|X]|Assert\" | Select-Object -First 30)",
+      "Bash(dotnet test TranSimCSTests/TranSimCSTests.csproj -v n --filter \"FullyQualifiedName~TestNodeSpecAlignment\" 2>&1 | Select-String -Pattern \"Failed \" | Select-Object -First 10)",
+      "Bash(dotnet test TranSimCSTests/TranSimCSTests.csproj --filter \"FullyQualifiedName~TestNodeSpecAlignment\" 2>&1 | Select-String -Pattern \"\\[FAIL\\]|\\[PASS\\]|X \" | Select-Object -First 15)",
+      "Bash(dotnet test TranSimCSTests/TranSimCSTests.csproj --filter \"FullyQualifiedName~TestNodeSpecAlignment\" 2>&1 | Select-String -Pattern \"\\[FAIL\\]|niepowodzenie|powodzenie:\" | Select-Object -First 10)",
+      "Bash(dotnet test TranSimCSTests/TranSimCSTests.csproj 2>&1 | Select-String -Pattern \"\\[FAIL\\]|niepowodzenie|powodzenie:\" | Select-Object -First 10)",
+      "Bash(dotnet build TranSimCS.sln 2>&1 | Select-String -Pattern \"error|Błąd|Liczba błędów|ostrzeżeń|Podsumowanie|Succeeded|Failed\" | Select-Object -First 10)"
     ]
   }
 }
