@@ -16,6 +16,13 @@ namespace TranSimCS.Mode.RoadBuilder {
     /// unambiguous.
     /// </para>
     /// <para>
+    /// The hit refers to the node end through a <see cref="HalfNode"/>, never a
+    /// <see cref="RoadNodeEnd"/>. <see cref="RoadNodeEnd"/> is not order-corrected - it does not mirror
+    /// indices for the <c>Backward</c> end - and using it directly has been the source of several past
+    /// bugs. <see cref="HalfNode"/> and <see cref="HalfLane"/> are the order-corrected views, so all
+    /// indexing here goes through them.
+    /// </para>
+    /// <para>
     /// Instances are attached to the preview's triangles with <c>Mesh.AddTagsToLastTriangles</c> and come
     /// back out of the picker as <c>Selection.Tag</c>.
     /// </para>
@@ -39,8 +46,11 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// </summary>
         public readonly float Offset;
 
-        /// <summary>The node end the preview is drawn at, so the tool knows which end is being edited.</summary>
-        public readonly RoadNodeEnd NodeEnd;
+        /// <summary>
+        /// The order-corrected half-node the preview is drawn at, so the tool knows which end is being
+        /// edited and can index lanes without mirroring mistakes.
+        /// </summary>
+        public readonly HalfNode HalfNode;
 
         /// <summary>
         /// True when the cursor is over the gap between two lanes rather than over a lane itself. An
@@ -48,19 +58,20 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// </summary>
         public readonly bool IsInsertion;
 
-        public LaneHit(LaneId id, int index, float offset, RoadNodeEnd nodeEnd, bool isInsertion = false) {
+        public LaneHit(LaneId id, int index, float offset, HalfNode halfNode, bool isInsertion = false) {
+            ArgumentNullException.ThrowIfNull(halfNode, nameof(halfNode));
             Id = id;
             Index = index;
             Offset = offset;
-            NodeEnd = nodeEnd;
+            HalfNode = halfNode;
             IsInsertion = isInsertion;
         }
 
         /// <summary>
         /// A hit on the gap at <paramref name="index"/>, where a new lane would be inserted.
         /// </summary>
-        public static LaneHit Insertion(int index, float offset, RoadNodeEnd nodeEnd)
-            => new(default, index, offset, nodeEnd, isInsertion: true);
+        public static LaneHit Insertion(int index, float offset, HalfNode halfNode)
+            => new(default, index, offset, halfNode, isInsertion: true);
 
         /// <summary>
         /// The cross-section extent a lane of the given width would occupy if inserted at this hit.
@@ -71,14 +82,14 @@ namespace TranSimCS.Mode.RoadBuilder {
         public Guid Guid => throw new NotSupportedException(
             "A LaneHit is a transient pick result, not a world object, so it has no Guid.");
 
-        public int ZDiscriminant() => NodeEnd.ZDiscriminant();
+        public int ZDiscriminant() => HalfNode.End.Discriminant();
         public int XDiscriminant() => 0;
         public LaneStrip? GetLaneStrip() => null;
         public RoadStrip? GetRoadStrip() => null;
-        public RoadNode GetRoadNode() => NodeEnd.Node;
+        public RoadNode GetRoadNode() => HalfNode.RoadNode;
         public Lane? GetLane() => null;
         public HalfLane? GetLaneEnd() => null;
-        public RoadNodeEnd GetNodeEnd() => NodeEnd;
+        public RoadNodeEnd GetNodeEnd() => HalfNode.RoadNodeEnd;
         public int? GetIndexInHalfNode() => Index;
 
         public override string ToString()

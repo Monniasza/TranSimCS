@@ -26,7 +26,7 @@ namespace TranSimCSTests {
             var state = new RoadBuilderState();
 
             Assert.Equal(RoadBuilderPhase.Idle, state.Phase);
-            Assert.Null(state.SourceEnd);
+            Assert.Null(state.SourceHalfNode);
             Assert.Null(state.Draft);
             Assert.False(state.HasDraft);
         }
@@ -36,10 +36,10 @@ namespace TranSimCSTests {
             var node = MakeNode(-1.5f, 1.5f);
             var state = new RoadBuilderState();
 
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
 
             Assert.Equal(RoadBuilderPhase.SourcePicked, state.Phase);
-            Assert.Equal(node.FrontEnd, state.SourceEnd);
+            Assert.Equal(node.FrontHalf, state.SourceHalfNode);
             Assert.NotNull(state.Draft);
             Assert.Equal(2, state.Draft!.Count);
             Assert.True(state.HasDraft);
@@ -50,7 +50,7 @@ namespace TranSimCSTests {
             var node = MakeNode(-1.5f, 1.5f);
             var state = new RoadBuilderState();
 
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
 
             //The draft is a copy, so editing it must not disturb the source snapshot.
             Assert.NotNull(state.SourceDraft);
@@ -70,20 +70,20 @@ namespace TranSimCSTests {
         public void StepBackFromSourcePickedResetsToIdle() {
             var node = MakeNode(-1.5f, 1.5f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
 
             state.StepBack();
 
             Assert.Equal(RoadBuilderPhase.Idle, state.Phase);
             Assert.Null(state.Draft);
-            Assert.Null(state.SourceEnd);
+            Assert.Null(state.SourceHalfNode);
         }
 
         [Fact]
         public void StepBackWalksTheChainOneStepAtATime() {
             var node = MakeNode(-1.5f, 1.5f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
 
             state.Phase = RoadBuilderPhase.Dragging;
             state.StepBack();
@@ -109,7 +109,7 @@ namespace TranSimCSTests {
         public void ResetClearsEverything() {
             var node = MakeNode(-1.5f, 1.5f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
             state.Phase = RoadBuilderPhase.Connecting;
             state.HoveredLane = state.Draft![0].Id;
             state.Mirror = true;
@@ -117,7 +117,7 @@ namespace TranSimCSTests {
             state.Reset();
 
             Assert.Equal(RoadBuilderPhase.Idle, state.Phase);
-            Assert.Null(state.SourceEnd);
+            Assert.Null(state.SourceHalfNode);
             Assert.Null(state.Draft);
             Assert.Null(state.SourceDraft);
             Assert.Null(state.Mapping);
@@ -131,7 +131,7 @@ namespace TranSimCSTests {
         public void RefreshMappingDerivesAgainstTheSourceSnapshot() {
             var node = MakeNode(-1.5f, 1.5f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
 
             state.RefreshMapping();
 
@@ -151,7 +151,7 @@ namespace TranSimCSTests {
         public void RefreshMappingReflectsEditsToTheDraft() {
             var node = MakeNode(-1.5f, 1.5f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
             state.RefreshMapping();
             Assert.Equal(2, state.Mapping!.Matched.Count);
 
@@ -167,7 +167,7 @@ namespace TranSimCSTests {
         public void RefreshMappingUsesTheSnapshotNotTheEditedDraft() {
             var node = MakeNode(-1.5f, 1.5f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
 
             //Editing the draft must not change what the mapping is derived against.
             state.Draft!.Add(Spec(2f, VehicleTypes.Bicycle));
@@ -184,23 +184,23 @@ namespace TranSimCSTests {
         public void LaneHitCarriesTheLaneIdentityAndIndex() {
             var node = MakeNode(-1.5f, 1.5f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
             var id = state.Draft![1].Id;
 
-            var hit = new LaneHit(id, 1, 1.5f, node.FrontEnd);
+            var hit = new LaneHit(id, 1, 1.5f, node.FrontHalf);
 
             Assert.Equal(id, hit.Id);
             Assert.Equal(1, hit.Index);
             Assert.Equal(1.5f, hit.Offset);
             Assert.False(hit.IsInsertion);
-            Assert.Equal(node.FrontEnd, hit.NodeEnd);
+            Assert.Equal(node.FrontHalf, hit.HalfNode);
         }
 
         [Fact]
         public void InsertionHitHasNoLaneIdentity() {
             var node = MakeNode(-1.5f, 1.5f);
 
-            var hit = LaneHit.Insertion(1, 0f, node.FrontEnd);
+            var hit = LaneHit.Insertion(1, 0f, node.FrontHalf);
 
             Assert.True(hit.IsInsertion);
             Assert.Equal(1, hit.Index);
@@ -210,7 +210,7 @@ namespace TranSimCSTests {
         [Fact]
         public void LaneHitComputesTheOffsetsANewLaneWouldOccupy() {
             var node = MakeNode(-1.5f, 1.5f);
-            var hit = LaneHit.Insertion(1, 0f, node.FrontEnd);
+            var hit = LaneHit.Insertion(1, 0f, node.FrontHalf);
 
             var offsets = hit.CalculateOffsets(3f);
 
@@ -220,19 +220,25 @@ namespace TranSimCSTests {
         }
 
         [Fact]
-        public void LaneHitReportsTheNodeEndItBelongsTo() {
+        public void LaneHitReportsTheHalfNodeItBelongsTo() {
             var node = MakeNode(-1.5f, 1.5f);
-            var hit = LaneHit.Insertion(0, 0f, node.RearEnd);
+            var hit = LaneHit.Insertion(0, 0f, node.RearHalf);
 
             Assert.Equal(node, hit.GetRoadNode());
-            Assert.Equal(node.RearEnd, hit.GetNodeEnd());
+            Assert.Equal(node.RearHalf, hit.HalfNode);
+            Assert.Equal(node.RearHalf.RoadNodeEnd, hit.GetNodeEnd());
             Assert.Equal(0, hit.GetIndexInHalfNode());
+        }
+
+        [Fact]
+        public void LaneHitRejectsANullHalfNode() {
+            Assert.Throws<ArgumentNullException>(() => LaneHit.Insertion(0, 0f, null!));
         }
 
         [Fact]
         public void LaneHitHasNoGuidBecauseItIsNotAWorldObject() {
             var node = MakeNode(-1.5f, 1.5f);
-            var hit = LaneHit.Insertion(0, 0f, node.FrontEnd);
+            var hit = LaneHit.Insertion(0, 0f, node.FrontHalf);
 
             //A LaneHit is a transient pick result; asking for a Guid is a programming error.
             Assert.Throws<NotSupportedException>(() => hit.Guid);
@@ -241,7 +247,7 @@ namespace TranSimCSTests {
         [Fact]
         public void LaneHitIsNotALaneOrStrip() {
             var node = MakeNode(-1.5f, 1.5f);
-            var hit = LaneHit.Insertion(0, 0f, node.FrontEnd);
+            var hit = LaneHit.Insertion(0, 0f, node.FrontHalf);
 
             Assert.Null(hit.GetLane());
             Assert.Null(hit.GetLaneEnd());
@@ -256,7 +262,7 @@ namespace TranSimCSTests {
             var node = MakeNode(-3f, 0f, 3f);
             var state = new RoadBuilderState();
 
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
 
             Assert.Equal(3, state.Draft!.Count);
             var offsets = state.Draft.ComputeOffsets();
@@ -270,7 +276,7 @@ namespace TranSimCSTests {
             node.AddLane(new LaneNode(Spec(3f, VehicleTypes.Bus), 1.5f));
 
             var state = new RoadBuilderState();
-            state.BeginFrom(node.RearEnd);
+            state.BeginFrom(node.RearHalf);
 
             //The rear half's own left-to-right order runs opposite to the node's.
             Assert.Equal(VehicleTypes.Bus, state.Draft![0].Spec.VehicleTypes);
@@ -284,7 +290,7 @@ namespace TranSimCSTests {
             node.AddLane(new LaneNode(Spec(3f, VehicleTypes.Bus), 1.5f));
 
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
             var first = state.Draft![0].Id;
 
             state.Draft.Mirror();

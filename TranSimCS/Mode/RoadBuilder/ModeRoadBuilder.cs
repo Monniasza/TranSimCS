@@ -32,9 +32,14 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// <summary>The preview renderer, which owns the cached throwaway node.</summary>
         public RoadBuilderRenderer Renderer { get; private set; }
 
+        /// <summary>The lane currently selected for per-lane editing.</summary>
+        public LaneId? SelectedLane { get; private set; }
+
         public ModeRoadBuilder(SilkNetTest menu) {
             Menu = menu;
             Renderer = new RoadBuilderRenderer(menu);
+            //Any edit invalidates the cached preview node, so the preview always matches the draft.
+            State.Edited += Renderer.Invalidate;
         }
 
         string IMode.Title() => "Road Builder";
@@ -46,16 +51,43 @@ namespace TranSimCS.Mode.RoadBuilder {
             }
 
             ImGui.Text($"Phase: {State.Phase}");
-            if (State.SourceEnd != null)
-                ImGui.Text($"Source: {State.SourceEnd.Node.Name} ({State.SourceEnd.End})");
+            if (State.SourceHalfNode != null)
+                ImGui.Text($"Source: {State.SourceHalfNode.RoadNode.Name} ({State.SourceHalfNode.End})");
             if (State.Draft != null) {
                 ImGui.Text($"Lanes: {State.Draft.Count}");
                 ImGui.Text($"Width: {State.Draft.TotalWidth:0.##} m");
             }
-            if (State.HoveredLane is LaneId hovered)
-                ImGui.Text($"Hovered: {hovered}");
             if (State.Mapping != null)
                 ImGui.Text($"Mapping: {State.Mapping}");
+
+            ImGui.Separator();
+
+            //The cross-section strip is the primary editing surface.
+            if (State.Draft != null) {
+                var clicked = RoadBuilderUI.DrawStrip(State, SelectedLane, out var insertAt);
+                if (clicked is LaneId lane) SelectedLane = lane;
+                if (insertAt is int index) {
+                    //Insert a lane the same width as the one under the cursor, or a default.
+                    var width = SelectedLane is LaneId sel && State.Draft.Contains(sel)
+                        ? State.Draft.Get(sel).Spec.Width
+                        : 3f;
+                    var spec = SelectedLane is LaneId s2 && State.Draft.Contains(s2)
+                        ? State.Draft.Get(s2).Spec
+                        : new LaneSpec(Colors.Gray, VehicleTypes.Car, width, 50);
+                    spec.Width = width;
+                    SelectedLane = State.InsertLane(index, spec);
+                }
+
+                ImGui.Separator();
+                RoadBuilderUI.DrawLaneInspector(State, SelectedLane);
+
+                ImGui.Separator();
+                if (ImGui.Button("Add lane at left")) SelectedLane = State.InsertLane(0, DefaultSpec());
+                ImGui.SameLine();
+                if (ImGui.Button("Add lane at right")) SelectedLane = State.InsertLane(State.Draft.Count, DefaultSpec());
+                ImGui.SameLine();
+                if (ImGui.Button("Mirror")) State.MirrorDraft();
+            }
 
             ImGui.Separator();
             switch (State.Phase) {
@@ -87,6 +119,10 @@ namespace TranSimCS.Mode.RoadBuilder {
             ImGui.End();
         }
 
+        /// <summary>A default lane spec for a newly added lane.</summary>
+        private static LaneSpec DefaultSpec()
+            => new(Colors.Gray, VehicleTypes.Car, 3f, 50);
+
         void IMode.OnKeyPress(Key key) {
             switch (key) {
                 case Key.Escape:
@@ -94,12 +130,26 @@ namespace TranSimCS.Mode.RoadBuilder {
                     Renderer.Invalidate();
                     break;
                 case Key.M:
-                    State.Draft?.Mirror();
-                    State.Mirror ^= true;
-                    Renderer.Invalidate();
+                    if (State.HasDraft) State.MirrorDraft();
                     break;
                 case Key.B:
                     State.ApplyToBothEnds ^= true;
+                    break;
+                case Key.R:
+                    //Toggle the selected lane's direction (§5.4).
+                    if (SelectedLane is LaneId r && State.HasDraft && State.Draft!.Contains(r))
+                        State.ToggleDirection(r);
+                    break;
+                case Key.E:
+                    //Exit the selected lane to the right (§5.5).
+                    if (SelectedLane is LaneId e && State.HasDraft && State.Draft!.Contains(e))
+                        SelectedLane = State.ExitLane(e, 1);
+                    break;
+                case Key.Delete:
+                    if (SelectedLane is LaneId d && State.HasDraft && State.Draft!.Contains(d)) {
+                        State.RemoveLane(d);
+                        SelectedLane = null;
+                    }
                     break;
             }
         }
@@ -143,9 +193,12 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// from it.
         /// </summary>
         private void PickSource() {
-            var picked = Menu.MouseOver?.As<HalfLane>()?.HalfNode?.RoadNodeEnd;
+            //Pick through HalfLane, never RoadNodeEnd: RoadNodeEnd is not order-corrected, so indexing
+            //lanes through it silently mirrors for the Backward end.
+            var picked = Menu.MouseOver?.As<HalfLane>()?.HalfNode;
             if (picked == null) return;
             State.BeginFrom(picked);
+            SelectedLane = null;
             Renderer.Invalidate();
         }
 

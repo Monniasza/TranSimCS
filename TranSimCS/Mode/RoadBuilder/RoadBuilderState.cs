@@ -1,4 +1,5 @@
 using System;
+using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 
 namespace TranSimCS.Mode.RoadBuilder {
@@ -39,8 +40,16 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// <summary>The step of the interaction.</summary>
         public RoadBuilderPhase Phase { get; set; } = RoadBuilderPhase.Idle;
 
-        /// <summary>The node end the draft is being built from. Null while <see cref="RoadBuilderPhase.Idle"/>.</summary>
-        public RoadNodeEnd? SourceEnd { get; set; }
+        /// <summary>
+        /// The order-corrected half-node the draft is being built from. Null while
+        /// <see cref="RoadBuilderPhase.Idle"/>.
+        /// <para>
+        /// This is a <see cref="HalfNode"/> rather than a <see cref="RoadNodeEnd"/> on purpose:
+        /// <see cref="RoadNodeEnd"/> is not order-corrected, so indexing lanes through it silently
+        /// mirrors for the <c>Backward</c> end. <see cref="HalfNode"/> is the order-corrected view.
+        /// </para>
+        /// </summary>
+        public HalfNode? SourceHalfNode { get; set; }
 
         /// <summary>The spec being built. Null while <see cref="RoadBuilderPhase.Idle"/>.</summary>
         public NodeSpecDraft? Draft { get; set; }
@@ -75,13 +84,13 @@ namespace TranSimCS.Mode.RoadBuilder {
         public bool HasDraft => Draft != null;
 
         /// <summary>
-        /// Starts a new draft from a source node end, copying that end's lanes. This is the
-        /// <c>Idle → SourcePicked</c> transition.
+        /// Starts a new draft from a source half-node, copying that end's lanes in its own left-to-right
+        /// order. This is the <c>Idle → SourcePicked</c> transition.
         /// </summary>
-        public void BeginFrom(RoadNodeEnd sourceEnd) {
-            ArgumentNullException.ThrowIfNull(sourceEnd, nameof(sourceEnd));
-            SourceEnd = sourceEnd;
-            SourceDraft = NodeSpecDraft.FromHalfNode(sourceEnd.HalfNode);
+        public void BeginFrom(HalfNode sourceHalfNode) {
+            ArgumentNullException.ThrowIfNull(sourceHalfNode, nameof(sourceHalfNode));
+            SourceHalfNode = sourceHalfNode;
+            SourceDraft = NodeSpecDraft.FromHalfNode(sourceHalfNode);
             Draft = SourceDraft.Clone();
             Mapping = null;
             HoveredLane = null;
@@ -123,10 +132,96 @@ namespace TranSimCS.Mode.RoadBuilder {
             }
         }
 
+        //Editing. Every operation goes through here so that the renderer is invalidated and the mapping
+        //refreshed in one place, rather than at each call site.
+
+        /// <summary>
+        /// Raised after any edit, so the renderer can invalidate its cached preview node.
+        /// </summary>
+        public event Action? Edited;
+
+        /// <summary>Notifies listeners that the draft changed.</summary>
+        private void FireEdited() {
+            Edited?.Invoke();
+            if (Phase == RoadBuilderPhase.Connecting) RefreshMapping();
+        }
+
+        /// <summary>Inserts a lane at <paramref name="index"/>, 0 being leftmost.</summary>
+        public LaneId InsertLane(int index, LaneSpec spec) {
+            var id = RequireDraft().Insert(index, spec);
+            FireEdited();
+            return id;
+        }
+
+        /// <summary>Removes a lane.</summary>
+        public bool RemoveLane(LaneId id) {
+            var removed = RequireDraft().Remove(id);
+            if (removed) FireEdited();
+            return removed;
+        }
+
+        /// <summary>Moves a lane to a new index, reordering the cross-section.</summary>
+        public void MoveLane(LaneId id, int newIndex) {
+            RequireDraft().Move(id, newIndex);
+            FireEdited();
+        }
+
+        /// <summary>Replaces a lane's specification.</summary>
+        public void SetLaneSpec(LaneId id, LaneSpec spec) {
+            RequireDraft().SetSpec(id, spec);
+            FireEdited();
+        }
+
+        /// <summary>Widens or narrows a lane, pushing its neighbours outward.</summary>
+        public void SetLaneWidth(LaneId id, float width) {
+            var draft = RequireDraft();
+            var spec = draft.Get(id).Spec;
+            spec.Width = width;
+            draft.SetSpec(id, spec);
+            FireEdited();
+        }
+
+        /// <summary>Flips a lane's direction (§5.4).</summary>
+        public void ToggleDirection(LaneId id) {
+            RequireDraft().ToggleDirection(id);
+            FireEdited();
+        }
+
+        /// <summary>Inserts a copy of a lane beside it without moving the original (§5.5).</summary>
+        public LaneId ExitLane(LaneId id, int side) {
+            var result = RequireDraft().Exit(id, side);
+            FireEdited();
+            return result;
+        }
+
+        /// <summary>Merges the lane at <paramref name="index"/> with the one to its right (§5.2).</summary>
+        public LaneId MergeLanes(int index) {
+            var result = RequireDraft().Merge(index);
+            FireEdited();
+            return result;
+        }
+
+        /// <summary>Splits the lane at <paramref name="index"/> into two (§5.3).</summary>
+        public (LaneId Left, LaneId Right) SplitLane(int index, float fraction = 0.5f) {
+            var result = RequireDraft().Split(index, fraction);
+            FireEdited();
+            return result;
+        }
+
+        /// <summary>Reverses the left-to-right order of the lanes.</summary>
+        public void MirrorDraft() {
+            RequireDraft().Mirror();
+            Mirror = !Mirror;
+            FireEdited();
+        }
+
+        private NodeSpecDraft RequireDraft()
+            => Draft ?? throw new InvalidOperationException("There is no draft to edit; pick a source node end first.");
+
         /// <summary>Discards the draft and returns to <see cref="RoadBuilderPhase.Idle"/>.</summary>
         public void Reset() {
             Phase = RoadBuilderPhase.Idle;
-            SourceEnd = null;
+            SourceHalfNode = null;
             Draft = null;
             SourceDraft = null;
             Mapping = null;

@@ -49,10 +49,10 @@ namespace TranSimCSTests {
         public void PreviewNodeIsBuiltFromTheDraft() {
             var node = MakeNode(-3f, 0f, 3f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
 
-            var preview = renderer.GetPreviewNode(state.Draft, state.SourceEnd);
+            var preview = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
 
             Assert.NotNull(preview);
             Assert.Equal(3, preview!.Lanes.Count);
@@ -62,10 +62,10 @@ namespace TranSimCSTests {
         public void PreviewNodeIsDetachedFromTheWorld() {
             var node = MakeNode(-3f, 0f, 3f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
 
-            var preview = renderer.GetPreviewNode(state.Draft, state.SourceEnd);
+            var preview = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
 
             //The preview must never be the source node itself, or editing the draft would edit the world.
             Assert.NotSame(node, preview);
@@ -76,11 +76,11 @@ namespace TranSimCSTests {
         public void PreviewNodeIsCachedUntilInvalidated() {
             var node = MakeNode(-3f, 0f, 3f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
 
-            var first = renderer.GetPreviewNode(state.Draft, state.SourceEnd);
-            var second = renderer.GetPreviewNode(state.Draft, state.SourceEnd);
+            var first = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
+            var second = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
 
             //Rebuilding every frame would be wasteful, so the node is cached.
             Assert.Same(first, second);
@@ -90,12 +90,12 @@ namespace TranSimCSTests {
         public void InvalidatingRebuildsThePreviewNode() {
             var node = MakeNode(-3f, 0f, 3f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
 
-            var first = renderer.GetPreviewNode(state.Draft, state.SourceEnd);
+            var first = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
             renderer.Invalidate();
-            var second = renderer.GetPreviewNode(state.Draft, state.SourceEnd);
+            var second = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
 
             Assert.NotSame(first, second);
         }
@@ -104,15 +104,15 @@ namespace TranSimCSTests {
         public void PreviewNodeReflectsDraftEditsAfterInvalidation() {
             var node = MakeNode(-3f, 0f, 3f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
 
-            var before = renderer.GetPreviewNode(state.Draft, state.SourceEnd);
+            var before = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
             Assert.Equal(3, before!.Lanes.Count);
 
             state.Draft!.Add(Spec(2f, VehicleTypes.Bicycle));
             renderer.Invalidate();
-            var after = renderer.GetPreviewNode(state.Draft, state.SourceEnd);
+            var after = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
 
             Assert.Equal(4, after!.Lanes.Count);
         }
@@ -127,23 +127,23 @@ namespace TranSimCSTests {
         public void PreviewNodeIsNullForAnEmptyDraft() {
             var node = MakeNode(-3f, 0f, 3f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
             state.Draft!.Remove(state.Draft[0].Id);
             state.Draft.Remove(state.Draft[0].Id);
             state.Draft.Remove(state.Draft[0].Id);
             var renderer = MakeRenderer();
 
-            Assert.Null(renderer.GetPreviewNode(state.Draft, state.SourceEnd));
+            Assert.Null(renderer.GetPreviewNode(state.Draft, state.SourceHalfNode));
         }
 
         [Fact]
         public void PreviewNodeIsPositionedAtTheSourceEnd() {
             var node = MakeNode(-3f, 0f, 3f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
 
-            var preview = renderer.GetPreviewNode(state.Draft, state.SourceEnd);
+            var preview = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
 
             Assert.Equal(node.PositionProp.Value, preview!.PositionProp.Value);
         }
@@ -154,7 +154,7 @@ namespace TranSimCSTests {
         public void SelectorsCoverEveryLaneAndEveryGap() {
             var node = MakeNode(-3f, 0f, 3f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
             var visible = new MultiMesh();
 
@@ -171,7 +171,7 @@ namespace TranSimCSTests {
         public void LaneSelectorsCarryTheDraftLaneIdentities() {
             var node = MakeNode(-3f, 0f, 3f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
             var visible = new MultiMesh();
 
@@ -186,7 +186,7 @@ namespace TranSimCSTests {
         public void InsertionSelectorsCoverEveryIndex() {
             var node = MakeNode(-3f, 0f, 3f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
             var visible = new MultiMesh();
 
@@ -200,7 +200,7 @@ namespace TranSimCSTests {
         public void InsertionSelectorsAreOrderedLeftToRight() {
             var node = MakeNode(-3f, 0f, 3f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
             var visible = new MultiMesh();
 
@@ -216,7 +216,7 @@ namespace TranSimCSTests {
         public void LaneSelectorsAreOrderedLeftToRight() {
             var node = MakeNode(-3f, 0f, 3f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
             var visible = new MultiMesh();
 
@@ -243,14 +243,14 @@ namespace TranSimCSTests {
         public void SelectorsTagTheSourceNodeEnd() {
             var node = MakeNode(-3f, 0f, 3f);
             var state = new RoadBuilderState();
-            state.BeginFrom(node.FrontEnd);
+            state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
             var visible = new MultiMesh();
 
             renderer.AddSelectors(state, visible);
 
             foreach (var tag in CollectTags(visible))
-                Assert.Equal(node.FrontEnd, tag.NodeEnd);
+                Assert.Equal(node.FrontHalf, tag.HalfNode);
         }
 
         /// <summary>

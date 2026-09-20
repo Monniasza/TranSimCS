@@ -54,7 +54,7 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// The throwaway node for the given draft, rebuilt if the draft has changed since the last call.
         /// Returns <see langword="null"/> when there is nothing to preview.
         /// </summary>
-        public RoadNode? GetPreviewNode(NodeSpecDraft? draft, RoadNodeEnd? atEnd) {
+        public RoadNode? GetPreviewNode(NodeSpecDraft? draft, HalfNode? atEnd) {
             if (draft == null || atEnd == null || draft.Count == 0) return null;
 
             if (previewNode == null || !ReferenceEquals(previewSource, draft) || previewVersion != GeometryVersion) {
@@ -69,8 +69,8 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// Builds a detached <see cref="RoadNode"/> from the draft, positioned at the source end's
         /// reference frame. The node is not added to any world.
         /// </summary>
-        private static RoadNode BuildPreviewNode(NodeSpecDraft draft, RoadNodeEnd atEnd) {
-            var position = atEnd.Node.PositionProp.Value;
+        private static RoadNode BuildPreviewNode(NodeSpecDraft draft, HalfNode atEnd) {
+            var position = atEnd.RoadNode.PositionProp.Value;
             var node = new RoadNode("Road Builder preview", position);
             foreach (var laneNode in draft.ToNodeSpec().Lanes)
                 node.AddLane(laneNode);
@@ -85,7 +85,7 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// <param name="renderMeshPool">Render target for dynamically generated geometry.</param>
         public void Draw(RoadBuilderState state, RenderTarget target, MultiMesh renderMeshPool) {
             var draft = state.Draft;
-            var atEnd = state.SourceEnd;
+            var atEnd = state.SourceHalfNode;
             if (draft == null || atEnd == null) return;
 
             var node = GetPreviewNode(draft, atEnd);
@@ -110,10 +110,10 @@ namespace TranSimCS.Mode.RoadBuilder {
             var mapping = state.Mapping!;
             var sourceDraft = state.SourceDraft;
             var draft = state.Draft;
-            var atEnd = state.SourceEnd;
+            var atEnd = state.SourceHalfNode;
             if (sourceDraft == null || draft == null || atEnd == null) return;
 
-            var refframe = atEnd.Node.ReferenceFrame;
+            var refframe = atEnd.RoadNode.ReferenceFrame;
             var bin = renderMeshPool.GetOrCreateRenderBinForced(Materials.Arrow);
 
             var sourceOffsets = sourceDraft.ComputeOffsets();
@@ -139,7 +139,7 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// <param name="visible">The visible selector target.</param>
         public void AddSelectors(RoadBuilderState state, MultiMesh visible) {
             var draft = state.Draft;
-            var atEnd = state.SourceEnd;
+            var atEnd = state.SourceHalfNode;
             if (draft == null || atEnd == null || draft.Count == 0) return;
 
             var node = GetPreviewNode(draft, atEnd);
@@ -147,7 +147,7 @@ namespace TranSimCS.Mode.RoadBuilder {
 
             var bin = visible.GetOrCreateRenderBinForced(SelectorMaterial);
             var bounds = draft.ComputeBounds();
-            var refframe = atEnd.Node.ReferenceFrame;
+            var refframe = atEnd.RoadNode.ReferenceFrame;
 
             //One pickable quad per lane.
             for (int i = 0; i < draft.Count; i++) {
