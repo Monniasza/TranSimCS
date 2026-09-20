@@ -80,8 +80,8 @@ namespace TranSimCS.SilkNet.RoadConstruction {
                 throw new LaneValidationException("Left lane merges into the left edge");
             
             //Validate adjacency rules
-            for (int i = 0; i < laneMappings.Count; i++) {
-                var a = laneMappings[i-1];
+            for (int i = 1; i < laneMappings.Count; i++) {
+                var a = laneMappings[i - 1];
                 var b = laneMappings[i];
 
                 if (a.LeftAmount.IsMerge & b.LeftAmount.IsMerge)

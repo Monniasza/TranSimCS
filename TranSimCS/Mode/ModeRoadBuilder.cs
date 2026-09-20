@@ -568,7 +568,7 @@ namespace TranSimCS.Mode {
 
             //Per-lane strips along the alignment transitions
             var steps = NodeSpecAlignment.Align(startSide.AlignmentLanes, endSide.AlignmentLanes);
-            var laneBin = renderMeshPool.GetOrCreateRenderBinForced(Materials.WhiteTransparent);
+            var arrowBin = renderMeshPool.GetOrCreateRenderBinForced(Materials.Arrow);
             foreach (var step in steps) {
                 if (step.Kind == LaneAlignmentKind.Terminated || step.Kind == LaneAlignmentKind.Spawned) continue;
                 int[] sources = step.Kind == LaneAlignmentKind.Merge
@@ -577,12 +577,23 @@ namespace TranSimCS.Mode {
                     ? [step.EndIndex, step.EndIndex2] : [step.EndIndex];
                 foreach (var s in sources) {
                     foreach (var e in targets) {
-                        var color = startSide.Spec(s).Color;
-                        var tint = new Color(color.R, color.G, color.B, 140);
+                        var spec = startSide.Spec(s);
+                        var surface = spec.Surface.GetTexture() ?? Materials.Road;
+                        var tint = new Color(spec.Color.R, spec.Color.G, spec.Color.B, 180);
+                        var left = Curve(startSide.Bounds(s).Min, endSide.Bounds(e).Max, 0.04f);
+                        var right = Curve(startSide.Bounds(s).Max, endSide.Bounds(e).Min, 0.04f);
+                        var laneBin = renderMeshPool.GetOrCreateRenderBinForced(surface);
                         laneBin.DrawStrip(UniformTexturing.UniformTexturedTwin(
-                            Curve(startSide.Bounds(s).Min, endSide.Bounds(e).Max, 0.04f),
-                            Curve(startSide.Bounds(s).Max, endSide.Bounds(e).Min, 0.04f),
-                            UniformTexturing.GenerateLaneStripVertexGen(tint)));
+                            left, right, UniformTexturing.GenerateLaneStripVertexGen(tint)));
+
+                        var center = (startSide.Bounds(s).Min + startSide.Bounds(s).Max
+                            + endSide.Bounds(e).Min + endSide.Bounds(e).Max) / 4;
+                        var arrowStart = basis.SamplePosition(0.52f, new Vector3(center, 0.08f, 0),
+                            new Vector3(center, 0.08f, 0) * new Vector3(-1, 1, -1));
+                        var arrowEnd = basis.SamplePosition(0.72f, new Vector3(center, 0.08f, 0),
+                            new Vector3(center, 0.08f, 0) * new Vector3(-1, 1, -1));
+                        arrowBin.DrawLine(arrowStart, arrowEnd, startSide.AttachFrame.Y,
+                            spec.Color, MathF.Min(spec.Width * 0.55f, 1.1f));
                     }
                 }
             }

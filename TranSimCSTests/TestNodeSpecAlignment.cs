@@ -74,6 +74,17 @@ namespace TranSimCSTests {
         }
 
         [Fact]
+        public void ExpansionBeyondTwoLeavesRightmostLaneUnconnected() {
+            var start = Pack(Car());
+            var end = Pack(Car(), Car(), Car());
+            var steps = NodeSpecAlignment.Align(start, end);
+            var mappings = NodeSpecAlignment.ToLaneMappings(steps, start, end);
+            Assert.Single(steps, step => step.Kind == LaneAlignmentKind.Expand);
+            Assert.Contains(steps, step => step.Kind == LaneAlignmentKind.Spawned && step.EndIndex == 2);
+            Assert.DoesNotContain(mappings, mapping => mapping.EndIndex == 2);
+        }
+
+        [Fact]
         public void IncompatibleLanesTerminateAndSpawn() {
             var start = Pack(Car());
             var end = Pack(Tram());

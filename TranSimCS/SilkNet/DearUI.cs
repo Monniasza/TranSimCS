@@ -108,6 +108,31 @@ namespace TranSimCS.SilkNet {
             if(result) pea.PositionData = tmp;
             return result;
         }
+        private static bool IconToggle(string title, string texture, ref bool enabled) {
+            var icon = texture switch {
+                "ui/car" => "C",
+                "ui/truck" => "T",
+                "ui/bus" => "B",
+                "ui/train" => "R",
+                "ui/check" => "✓",
+                "signs/stop" => "S",
+                "signs/yield" => "Y",
+                "signs/parking" => "P",
+                "signs/mergeleft" => "←",
+                "signs/mergeright" => "→",
+                "signs/noleft" => "L",
+                "signs/noright" => "R",
+                "signs/merge" => "↕",
+                _ => "·"
+            };
+            ImGui.PushStyleColor(ImGuiCol.Button, enabled ? new Vector4(0.2f, 0.45f, 0.2f, 1) : new Vector4(0.2f, 0.2f, 0.2f, 1));
+            var changed = ImGui.SmallButton($"{icon}##{title}");
+            ImGui.PopStyleColor();
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip(title);
+            if (changed) enabled = !enabled;
+            return changed;
+        }
+
         public static bool InputLaneSpec(string title, ref LaneSpec laneSpec) {
             ImGui.Text(title);
 
@@ -169,21 +194,24 @@ namespace TranSimCS.SilkNet {
                 ("Everything", VehicleTypes.All)
             ];
 
-            foreach (var vehicleType in vehicleTypes) {
-                bool enabled = laneSpec.VehicleTypes.HasFlags(vehicleType.Flag);
-                bool changed = MenuToggle($"Vehicle type flag: {vehicleType.Title}", ref enabled);
-                if (changed) {
-                    result = true;
-                    laneSpec.VehicleTypes ^= vehicleType.Flag;
+            if (ImGui.BeginTable("LaneSpecFlags", 5)) {
+                foreach (var vehicleType in vehicleTypes) {
+                    ImGui.TableNextColumn();
+                    bool enabled = laneSpec.VehicleTypes.HasFlags(vehicleType.Flag);
+                    if (IconToggle(vehicleType.Title, vehicleType.CheckTexture, ref enabled)) {
+                        result = true;
+                        laneSpec.VehicleTypes ^= vehicleType.Flag;
+                    }
                 }
-            }
-            foreach (var flag in flags) {
-                bool enabled = laneSpec.Flags.HasFlags(flag.Flag);
-                bool changed = MenuToggle($"Lane flag: {flag.Title}", ref enabled);
-                if (changed) {
-                    result = true;
-                    laneSpec.Flags ^= flag.Flag;
+                foreach (var flag in flags) {
+                    ImGui.TableNextColumn();
+                    bool enabled = laneSpec.Flags.HasFlags(flag.Flag);
+                    if (IconToggle(flag.Title, flag.CheckTexture, ref enabled)) {
+                        result = true;
+                        laneSpec.Flags ^= flag.Flag;
+                    }
                 }
+                ImGui.EndTable();
             }
             if (ImGui.BeginMenu("Pick vehicle/lane spec presets")) {
                 foreach(var specPreset in specPresets) {
@@ -215,24 +243,28 @@ namespace TranSimCS.SilkNet {
         }
 
         public static bool InputRoadFinish(string title, ref RoadFinish roadFinish) {
-            bool changed = ImGui.DragFloat("Height [m]", ref roadFinish.depth, 0.05f, 0, 20, "%.3f");
-            float degrees = float.RadiansToDegrees(roadFinish.angle);
             ImGui.Text(title);
-            if(ImGui.DragFloat("Angle [degs]", ref degrees)) {
-                roadFinish.angle = float.DegreesToRadians(degrees);
-                changed = true;
-            }
-            var surfaces = Enum.GetValues<Surface>();
-            if (ImGui.BeginMenu("Surface")) {
-                foreach (var surface in surfaces) {
-                    var name = Enum.GetName(surface);
-                    bool srfChanged = ImGui.MenuItem(name, "", roadFinish.subsurface == surface, true);
-                    if(srfChanged) {
-                        changed = true;
-                        roadFinish.subsurface = surface;
-                    }
+            bool changed = false;
+            float degrees = float.RadiansToDegrees(roadFinish.angle);
+            if (ImGui.BeginTable("RoadFinish", 3)) {
+                ImGui.TableNextColumn();
+                changed |= ImGui.DragFloat("Height [m]##finish", ref roadFinish.depth, 0.05f, 0, 20, "%.2f");
+                ImGui.TableNextColumn();
+                if (ImGui.DragFloat("Angle [degs]##finish", ref degrees, 0.5f, -180, 180, "%.1f")) {
+                    roadFinish.angle = float.DegreesToRadians(degrees);
+                    changed = true;
                 }
-                ImGui.EndMenu();
+                ImGui.TableNextColumn();
+                if (ImGui.BeginCombo("Surface##finish", roadFinish.subsurface.ToString())) {
+                    foreach (var surface in Enum.GetValues<Surface>()) {
+                        if (ImGui.Selectable(surface.ToString(), roadFinish.subsurface == surface)) {
+                            roadFinish.subsurface = surface;
+                            changed = true;
+                        }
+                    }
+                    ImGui.EndCombo();
+                }
+                ImGui.EndTable();
             }
             return changed;
         }
