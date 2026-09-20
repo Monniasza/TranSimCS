@@ -237,6 +237,11 @@ namespace TranSimCSTests {
             Assert.Equal(2, draft.IndexOf(exit));
             Assert.Equal(4, draft.Count);
 
+            //The neighbours keep their identities and their order around the new lane.
+            Assert.Equal(0, draft.IndexOf(left));
+            Assert.Equal(3, draft.IndexOf(right));
+            Assert.Equal(new[] { left, original, exit, right }, draft.Select(x => x.Id).ToArray());
+
             //The original lane's own offset is unchanged.
             var after = draft.ComputeOffsets();
             Assert.Equal(originalOffsetBefore, after[draft.IndexOf(original)]);
@@ -257,6 +262,10 @@ namespace TranSimCSTests {
             Assert.Equal(0, draft.IndexOf(exit));
             Assert.Equal(1, draft.IndexOf(original));
             Assert.Equal(originalOffsetBefore, draft.ComputeOffsets()[1]);
+
+            //The lane to the right keeps its identity and stays to the right of the original.
+            Assert.Equal(2, draft.IndexOf(right));
+            Assert.Equal(new[] { exit, original, right }, draft.Select(x => x.Id).ToArray());
         }
 
         [Fact]
@@ -267,8 +276,11 @@ namespace TranSimCSTests {
             var c = draft.Add(Spec(3f));
 
             var before = draft.ComputeOffsets();
-            draft.Exit(b, side: 1);
+            var exit = draft.Exit(b, side: 1);
             var after = draft.ComputeOffsets();
+
+            //The lanes keep their identities, with the new lane spliced in after b.
+            Assert.Equal(new[] { a, b, exit, c }, draft.Select(x => x.Id).ToArray());
 
             //Lanes before the insertion point keep their offsets exactly.
             Assert.Equal(before[0], after[0]);
@@ -311,6 +323,11 @@ namespace TranSimCSTests {
             Assert.Equal(VehicleTypes.Car | VehicleTypes.LRT, draft[0].Spec.VehicleTypes);
             Assert.Equal(3.5f, draft[0].Spec.Width);
             Assert.Equal(50f, draft[0].Spec.SpeedLimit);
+
+            //The merged lane takes the left lane's identity, and both source lanes are gone.
+            Assert.Equal(car, merged);
+            Assert.False(draft.Contains(tram));
+            Assert.Equal(new[] { car }, draft.Select(x => x.Id).ToArray());
         }
 
         [Fact]
@@ -469,6 +486,10 @@ namespace TranSimCSTests {
             Assert.Equal(VehicleTypes.Car, roundTripped[0].Spec.VehicleTypes);
             Assert.Equal(VehicleTypes.Bus, roundTripped[1].Spec.VehicleTypes);
             Assert.Equal(VehicleTypes.LRT, roundTripped[2].Spec.VehicleTypes);
+
+            //The source lanes are still in their original order, and the round trip did not disturb them.
+            Assert.Equal(new[] { first, second, third }, draft.Select(x => x.Id).ToArray());
+            Assert.Equal(3, roundTripped.Count);
         }
 
         // --- Clone and mirror ----------------------------------------------------------------------
