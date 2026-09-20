@@ -103,6 +103,26 @@ namespace TranSimCS.SilkNet {
             if (Sticky != null) ShowObjectWindow(Sticky.Value);
         }
 
+        /// <summary>
+        /// Shows an error to the user in a modal message box. Use this to report a problem that the user
+        /// can act on, such as an invalid lane mapping, rather than letting the exception escape.
+        /// </summary>
+        /// <param name="title">Short heading, e.g. "Invalid lane mapping".</param>
+        /// <param name="text">The problem, in terms the user can act on.</param>
+        /// <param name="details">Optional technical detail, shown collapsed.</param>
+        public void ShowError(string title, string text, string? details = null) {
+            var message = details is null
+                ? new Message(title, text, [new MessageAction("OK", () => CurrentlyOpenModal = null)])
+                : new Message(title, text, details, this);
+            CurrentlyOpenModal = message.ShowMessage;
+        }
+
+        /// <summary>
+        /// Shows an error to the user in a modal message box, taking the text from the exception.
+        /// </summary>
+        public void ShowError(string title, Exception exception)
+            => ShowError(title, exception.Message, exception.ToString());
+
         private void SaveGuard(Action accepted) {
             var message = new Message("Unsaved changes", "Do you want to continue? Any unsaved changes will be lost.", [
                 new MessageAction("OK", accepted),

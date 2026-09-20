@@ -42,6 +42,13 @@ namespace TranSimCS.Mode.RoadBuilder {
     /// is whichever choice keeps the pairing longest and in order. The remaining lanes are then
     /// classified by which side they are on.
     /// </para>
+    /// <para>
+    /// <b>Disjoint specs.</b> When the two drafts have no lane in common the LCS is empty, so there is no
+    /// matched lane for a destination-only lane to anchor on. The derived mapping is then deliberately
+    /// left invalid - <see cref="LaneMapping.Validate"/> rejects it - because a mapping with no matched
+    /// lane has no geometry to build from. The user resolves this by linking at least one lane by hand
+    /// with <see cref="LaneMapping.AddMatch"/>, after which the rest can be re-derived or linked too.
+    /// </para>
     /// </summary>
     public static class LaneMappingDeriver {
         /// <summary>
@@ -154,8 +161,10 @@ namespace TranSimCS.Mode.RoadBuilder {
                 }
             }
 
-            //Nothing matched at all: anchor on the outermost source lane so the lane still has a home.
-            if (source.Count > 0) return (source[0].Id, InsertionSide.Right);
+            //Nothing matched at all. There is no matched lane to anchor on, so the lane cannot be placed
+            //relative to the source cross-section; the caller records no insertion and Validate rejects
+            //the mapping. This is the correct outcome: a mapping with no matched lane has no geometry to
+            //build from, and the user has to link at least one lane by hand.
             return (null, InsertionSide.Right);
         }
 

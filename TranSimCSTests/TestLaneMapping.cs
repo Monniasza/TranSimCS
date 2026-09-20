@@ -113,25 +113,54 @@ namespace TranSimCSTests {
         }
 
         [Fact]
-        public void DisjointSpecsStillGiveEveryDestLaneAnInsertionPoint() {
-            var (source, s) = Make(Car(), Bus());
+        public void DisjointSpecsLeaveEveryDestLaneUnplaceable() {
+            var (source, _) = Make(Car(), Bus());
             var (dest, d) = Make(Tram(), Bike());
 
             var mapping = LaneMapping.Derive(source, dest);
 
-            //Every destination-only lane must have a home, even when nothing matched.
+            //With no matched lane there is nothing to anchor on, so no destination lane can be placed.
             foreach (var lane in mapping.DestOnly)
-                Assert.NotNull(mapping.InsertionFor(lane));
+                Assert.Null(mapping.InsertionFor(lane));
+            Assert.Equal(new[] { d[0], d[1] }, mapping.FindUnplaceableLanes());
         }
 
         [Fact]
-        public void DisjointSpecsValidate() {
+        public void DisjointSpecsDoNotValidate() {
             var (source, _) = Make(Car(), Bus());
             var (dest, _) = Make(Tram(), Bike());
 
             var mapping = LaneMapping.Derive(source, dest);
 
+            //A mapping with no matched lane has no geometry to build from, so it is rejected rather than
+            //silently producing a destination with no lanes.
+            var ex = Assert.Throws<LaneMappingException>(() => mapping.Validate(source, dest));
+            Assert.Contains("no insertion point", ex.Message);
+        }
+
+        [Fact]
+        public void DisjointSpecsBecomeValidOnceOneLaneIsLinkedByHand() {
+            var (source, s) = Make(Car(), Bus());
+            var (dest, d) = Make(Tram(), Bike());
+
+            var mapping = LaneMapping.Derive(source, dest);
+
+            //The user links one lane by hand, giving the rest something to anchor on.
+            mapping.AddMatch(s[0], d[0]);
+            mapping.AddInsertion(s[0], InsertionSide.Right, d[1]);
+
             mapping.Validate(source, dest);
+            Assert.Empty(mapping.FindUnplaceableLanes());
+        }
+
+        [Fact]
+        public void DisjointSpecsWithAnEmptySourceDoNotValidate() {
+            var source = new NodeSpecDraft();
+            var (dest, _) = Make(Car(), Bus());
+
+            var mapping = LaneMapping.Derive(source, dest);
+
+            Assert.Throws<LaneMappingException>(() => mapping.Validate(source, dest));
         }
 
         // --- Partial overlap -----------------------------------------------------------------------
@@ -473,7 +502,106 @@ namespace TranSimCSTests {
             mapping.AddDestOnly(d[1]);
             //No insertion recorded: the diverging lane has nowhere to go.
 
-            Assert.Throws<InvalidOperationException>(() => mapping.Validate(source, dest));
+            Assert.Throws<LaneMappingException>(() => mapping.Validate(source, dest));
+        }
+
+        [Fact]
+        public void ExitAnchoredOnAnUnmatchedLaneDoesNotValidate() {
+            var (source, s) = Make(Car(), Bus());
+            var (dest, d) = Make(Car(), Tram());
+
+            var mapping = new LaneMapping();
+            mapping.AddMatch(s[0], d[0]);
+            mapping.AddSourceOnly(s[1]);
+            mapping.AddDestOnly(d[1]);
+            //The anchor is a source-only lane, so its destination partner cannot be resolved.
+            mapping.AddInsertion(s[1], InsertionSide.Right, d[1]);
+
+            var ex = Assert.Throws<LaneMappingException>(() => mapping.Validate(source, dest));
+            Assert.Contains("not a matched lane", ex.Message);
+        }
+
+        [Fact]
+        public void ExitAnchoredOnAnUnmatchedLaneIsReportedAsUnplaceable() {
+            var (source, s) = Make(Car(), Bus());
+            var (dest, d) = Make(Car(), Tram());
+
+            var mapping = new LaneMapping();
+            mapping.AddMatch(s[0], d[0]);
+            mapping.AddSourceOnly(s[1]);
+            mapping.AddDestOnly(d[1]);
+            mapping.AddInsertion(s[1], InsertionSide.Right, d[1]);
+
+            Assert.Equal(new[] { d[1] }, mapping.FindUnplaceableLanes());
+        }
+
+        [Fact]
+        public void FindUnplaceableLanesIsEmptyForAValidMapping() {
+            var (source, _) = Make(Car(), Bus(), Tram(), Bike());
+            var (dest, _) = Make(Car(), Tram(), Bike(), Foot());
+
+            var mapping = LaneMapping.Derive(source, dest);
+
+            Assert.Empty(mapping.FindUnplaceableLanes());
+        }
+
+        [Fact]
+        public void FindUnplaceableLanesReportsALaneWithNoInsertion() {
+            var (source, s) = Make(Car());
+            var (dest, d) = Make(Car(), Car());
+
+            var mapping = new LaneMapping();
+            mapping.AddMatch(s[0], d[0]);
+            mapping.AddDestOnly(d[1]);
+
+            Assert.Equal(new[] { d[1] }, mapping.FindUnplaceableLanes());
+        }
+
+        [Fact]
+        public void TryValidateReportsTheProblemInsteadOfThrowing() {
+            var (source, s) = Make(Car());
+            var (dest, d) = Make(Car(), Car());
+
+            var mapping = new LaneMapping();
+            mapping.AddMatch(s[0], d[0]);
+            mapping.AddDestOnly(d[1]);
+
+            Assert.False(mapping.TryValidate(source, dest, out var error));
+            Assert.NotNull(error);
+            Assert.Contains("no insertion point", error);
+        }
+
+        [Fact]
+        public void TryValidateSucceedsForAValidMapping() {
+            var (source, _) = Make(Car(), Bus(), Tram(), Bike());
+            var (dest, _) = Make(Car(), Tram(), Bike(), Foot());
+
+            var mapping = LaneMapping.Derive(source, dest);
+
+            Assert.True(mapping.TryValidate(source, dest, out var error));
+            Assert.Null(error);
+        }
+
+        [Fact]
+        public void ValidateRejectsNullDrafts() {
+            var draft = new NodeSpecDraft();
+            var mapping = new LaneMapping();
+
+            Assert.Throws<ArgumentNullException>(() => mapping.Validate(null!, draft));
+            Assert.Throws<ArgumentNullException>(() => mapping.Validate(draft, null!));
+        }
+
+        [Fact]
+        public void DerivedMappingsNeverContainUnplaceableLanes() {
+            //Every destination-only lane the deriver produces is anchored on a matched lane, so the
+            //deriver can never produce a mapping that fails the new rule.
+            var (source, _) = Make(Car(), Bus(), Tram(), Bike());
+            var (dest, _) = Make(Car(), Tram(), Bike(), Foot());
+
+            var mapping = LaneMapping.Derive(source, dest);
+
+            Assert.Empty(mapping.FindUnplaceableLanes());
+            mapping.Validate(source, dest);
         }
 
         [Fact]
@@ -734,7 +862,7 @@ namespace TranSimCSTests {
             mapping.AddMatch(source[0].Id, dest[0].Id);
             //source[1] and dest[1] are deliberately left unaccounted for.
 
-            Assert.Throws<InvalidOperationException>(() => mapping.Validate(source, dest));
+            Assert.Throws<LaneMappingException>(() => mapping.Validate(source, dest));
         }
 
         [Fact]
@@ -747,7 +875,7 @@ namespace TranSimCSTests {
             mapping.AddDestOnly(d[1]);
             //No insertion recorded for d[1].
 
-            Assert.Throws<InvalidOperationException>(() => mapping.Validate(source, dest));
+            Assert.Throws<LaneMappingException>(() => mapping.Validate(source, dest));
         }
 
         [Fact]
@@ -762,7 +890,7 @@ namespace TranSimCSTests {
             mapping.AddMatch(source[0].Id, dest[0].Id);
             mapping.AddSourceOnly(otherIds[1]);
 
-            Assert.Throws<InvalidOperationException>(() => mapping.Validate(source, dest));
+            Assert.Throws<LaneMappingException>(() => mapping.Validate(source, dest));
         }
 
         [Fact]

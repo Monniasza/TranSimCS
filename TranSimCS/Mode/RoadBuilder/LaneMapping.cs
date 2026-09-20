@@ -341,9 +341,10 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// <para>
         /// Every <see cref="DestOnly"/> lane is placed beside its anchor, which is what makes an
         /// <b>exit</b> land in the right part of the cross-section rather than at the edge. A
-        /// destination-only lane whose anchor is not in <see cref="Matched"/> is skipped, since its
-        /// position cannot be resolved; <see cref="Validate"/> does not reject that case, so callers that
-        /// need every lane placed should check the result against <see cref="DestOnly"/>.
+        /// destination-only lane whose anchor is not in <see cref="Matched"/> cannot be placed, because
+        /// its position cannot be resolved; <see cref="Validate"/> rejects that state, so a mapping that
+        /// passes validation always places every destination lane. Call
+        /// <see cref="FindUnplaceableLanes"/> to find such lanes without throwing.
         /// </para>
         /// </summary>
         public IReadOnlyList<LaneId> BuildDestinationOrder() {
@@ -365,12 +366,16 @@ namespace TranSimCS.Mode.RoadBuilder {
 
         /// <summary>
         /// Validates that the mapping is internally consistent: every lane appears exactly once across
-        /// the three lists, and every destination-only lane has an insertion point.
+        /// the three lists, every destination-only lane has an insertion point, and every insertion point
+        /// is anchored on a matched lane.
         /// <para>
-        /// The insertion-point rule is what keeps an <b>exit</b> well formed: a diverging lane that is
-        /// not anchored anywhere could not be placed in the destination cross-section. A <b>merge</b>
-        /// needs no equivalent rule, because a converging lane is simply absent from the destination and
-        /// so has nothing to place.
+        /// The insertion-point rules are what keep an <b>exit</b> well formed. A diverging lane with no
+        /// insertion point could not be placed in the destination cross-section at all, and one anchored
+        /// on a lane that is not in <see cref="Matched"/> could not be placed either, because the splice
+        /// position is resolved through the anchor's destination partner. Both are rejected here rather
+        /// than silently skipped by <see cref="BuildDestinationOrder"/>. A <b>merge</b> needs no
+        /// equivalent rule, because a converging lane is simply absent from the destination and so has
+        /// nothing to place.
         /// </para>
         /// <para>
         /// This checks membership only, not provenance: <see cref="LaneId"/> values are unique within a
@@ -378,45 +383,106 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// cannot be detected.
         /// </para>
         /// </summary>
-        /// <exception cref="InvalidOperationException">The mapping is inconsistent.</exception>
+        /// <exception cref="LaneMappingException">The mapping is inconsistent.</exception>
         public void Validate(NodeSpecDraft source, NodeSpecDraft dest) {
+            ArgumentNullException.ThrowIfNull(source, nameof(source));
+            ArgumentNullException.ThrowIfNull(dest, nameof(dest));
+
             var seenSource = new HashSet<LaneId>();
             var seenDest = new HashSet<LaneId>();
 
             foreach (var pair in matched) {
                 if (!source.Contains(pair.Source))
-                    throw new InvalidOperationException($"Matched source lane {pair.Source} is not in the source draft.");
+                    throw new LaneMappingException($"Matched source lane {pair.Source} is not in the source draft.");
                 if (!dest.Contains(pair.Dest))
-                    throw new InvalidOperationException($"Matched destination lane {pair.Dest} is not in the destination draft.");
+                    throw new LaneMappingException($"Matched destination lane {pair.Dest} is not in the destination draft.");
                 if (!seenSource.Add(pair.Source))
-                    throw new InvalidOperationException($"Source lane {pair.Source} appears more than once.");
+                    throw new LaneMappingException($"Source lane {pair.Source} appears more than once.");
                 if (!seenDest.Add(pair.Dest))
-                    throw new InvalidOperationException($"Destination lane {pair.Dest} appears more than once.");
+                    throw new LaneMappingException($"Destination lane {pair.Dest} appears more than once.");
             }
 
             foreach (var lane in sourceOnly) {
                 if (!source.Contains(lane))
-                    throw new InvalidOperationException($"Source-only lane {lane} is not in the source draft.");
+                    throw new LaneMappingException($"Source-only lane {lane} is not in the source draft.");
                 if (!seenSource.Add(lane))
-                    throw new InvalidOperationException($"Source lane {lane} appears more than once.");
+                    throw new LaneMappingException($"Source lane {lane} appears more than once.");
             }
 
             foreach (var lane in destOnly) {
                 if (!dest.Contains(lane))
-                    throw new InvalidOperationException($"Destination-only lane {lane} is not in the destination draft.");
+                    throw new LaneMappingException($"Destination-only lane {lane} is not in the destination draft.");
                 if (!seenDest.Add(lane))
-                    throw new InvalidOperationException($"Destination lane {lane} appears more than once.");
-                if (InsertionFor(lane) is null)
-                    throw new InvalidOperationException($"Destination-only lane {lane} has no insertion point.");
+                    throw new LaneMappingException($"Destination lane {lane} appears more than once.");
+
+                var insertion = InsertionFor(lane);
+                if (insertion is null)
+                    throw new LaneMappingException(
+                        $"Destination-only lane {lane} has no insertion point, so it cannot be placed in the destination cross-section.");
+                if (DestFor(insertion.Value.Anchor) is null)
+                    throw new LaneMappingException(
+                        $"Destination-only lane {lane} is anchored on {insertion.Value.Anchor}, which is not a matched lane, so its position cannot be resolved.");
             }
 
             //Every lane on each side must be accounted for.
             foreach (var lane in source)
                 if (!seenSource.Contains(lane.Id))
-                    throw new InvalidOperationException($"Source lane {lane.Id} is not accounted for by the mapping.");
+                    throw new LaneMappingException($"Source lane {lane.Id} is not accounted for by the mapping.");
             foreach (var lane in dest)
                 if (!seenDest.Contains(lane.Id))
-                    throw new InvalidOperationException($"Destination lane {lane.Id} is not accounted for by the mapping.");
+                    throw new LaneMappingException($"Destination lane {lane.Id} is not accounted for by the mapping.");
+        }
+
+        /// <summary>
+        /// Validates the mapping and reports the problem instead of throwing, for callers that need to
+        /// show the error in the UI rather than abort.
+        /// </summary>
+        /// <param name="error">The problem, or <see langword="null"/> when the mapping is valid.</param>
+        /// <returns><see langword="true"/> when the mapping is valid.</returns>
+        public bool TryValidate(NodeSpecDraft source, NodeSpecDraft dest, out string? error) {
+            try {
+                Validate(source, dest);
+                error = null;
+                return true;
+            } catch (LaneMappingException ex) {
+                error = ex.Message;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// The destination-only lanes that cannot be placed in the destination cross-section, because
+        /// their insertion point is missing or is anchored on a lane that is not in
+        /// <see cref="Matched"/>. Empty when the mapping is valid.
+        /// <para>
+        /// This is the non-throwing counterpart to the corresponding rule in <see cref="Validate"/>, for
+        /// highlighting the offending lanes in the UI.
+        /// </para>
+        /// </summary>
+        public IReadOnlyList<LaneId> FindUnplaceableLanes() {
+            var result = new List<LaneId>();
+            foreach (var lane in destOnly) {
+                var insertion = InsertionFor(lane);
+                if (insertion is null || DestFor(insertion.Value.Anchor) is null)
+                    result.Add(lane);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Validates the mapping and, if it is invalid, reports the problem to the user in a modal
+        /// message box instead of throwing. This is the guard the Road Builder calls before committing a
+        /// mapping to the world.
+        /// </summary>
+        /// <param name="source">The source draft the mapping was derived against.</param>
+        /// <param name="dest">The destination draft the mapping was derived against.</param>
+        /// <param name="window">The window to show the error in.</param>
+        /// <returns><see langword="true"/> when the mapping is valid and may be committed.</returns>
+        public bool ValidateOrReport(NodeSpecDraft source, NodeSpecDraft dest, SilkNet.SilkNetTest window) {
+            ArgumentNullException.ThrowIfNull(window, nameof(window));
+            if (TryValidate(source, dest, out var error)) return true;
+            window.ShowError("Invalid lane mapping", error!);
+            return false;
         }
 
         /// <summary>
