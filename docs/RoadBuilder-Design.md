@@ -28,7 +28,9 @@ The model is already far more flexible than the tool that drives it:
 - **`RoadNode`** (`Roads/Node/RoadNode.cs`) owns a flat set of `Lane`s (`Lanes`, `LaneXRef`), each with a
   `LaneNode` definition (`LaneSpec` + `CenterPos`). `SortedLanes` orders them by `CenterPos`.
 - **`HalfNode`** (`Roads/Node/HalfNode.cs`) is one end of a node. `GetLaneByIndex(i)` returns the i-th lane
-  **from the left**, mirrored for the `Backward` end. `AddLane` / `Delete` are the mutation primitives.
+  **from the left**; for the `Backward` end it mirrors the index (`index = LaneCount - index - 1`) so that
+  index 0 is the leftmost lane as seen looking along that end's own forward direction. `AddLane` / `Delete`
+  are the mutation primitives.
 - **`LaneSpec`** (`Roads/LaneSpec.cs`) is a value struct: `Color`, `VehicleTypes`, `LaneFlags`, `Width`,
   `SpeedLimit`, `LineWidth`, `Surface`. `VehicleTypes` is a `[Flags]` enum covering car/truck/bus/bike/ped/horse/
   LRT/train/plane/rocket — i.e. **the "rail-tram-pedestrian-bike-car-pier-canal road" is already expressible**.
@@ -128,8 +130,40 @@ public sealed class LaneMapping {
 ```
 
 `LaneMapping` is now **derivable** rather than authored: given a source `NodeSpecDraft` and a destination
-`NodeSpecDraft`, `LaneMapping.Derive(source, dest)` produces it by a longest-common-subsequence match on
-`LaneSpec` equality, with `LaneId` carried through where the user has explicitly linked lanes.
+`NodeSpecDraft`, `LaneMapping.Derive(source, dest)` produces it by a **longest common subsequence (LCS)**
+match on `LaneSpec` equality, with `LaneId` carried through where the user has explicitly linked lanes.
+
+**What LCS means here.** LCS is the standard dynamic-programming algorithm for finding the longest sequence
+of elements that appears in *both* input sequences **in the same relative order**, without requiring the
+elements to be contiguous. Applied to two lane lists:
+
+- The two sequences are the source lanes and the destination lanes, each in left→right order.
+- Two lanes "match" when their `LaneSpec`s are equal (`LaneSpec.Equals`, which compares `Color`,
+  `VehicleTypes`, `Flags`, `SpeedLimit`, `LineWidth` and `Width`).
+- The LCS is the largest set of lanes that can be paired up while preserving left→right order on both
+  sides. Those pairs become `Matched`.
+- Source lanes not in the LCS become `SourceOnly`; destination lanes not in the LCS become `DestOnly`.
+- Each `DestOnly` lane is spliced into the source ordering next to its nearest LCS neighbour, which is
+  what `Insertions` records.
+
+The DP table is `O(n·m)` in time and space for `n` source and `m` destination lanes — trivial at road
+widths (a handful of lanes), so no optimisation is needed. Order preservation is the property that makes
+LCS the right tool: it will never pair the leftmost source lane with the rightmost destination lane, so
+the resulting mapping is always geometrically sane and never produces crossing connectors.
+
+Worked example — source `[car, bus, tram, bike]`, destination `[car, tram, bike, footpath]`:
+
+```
+        ""   car  tram  bike  footpath
+  ""     0    0    0     0      0
+  car    0    1    1     1      1
+  bus    0    1    1     1      1
+  tram   0    1    2     2      2
+  bike   0    1    2     3      3
+```
+
+LCS = `[car, tram, bike]` → `Matched = {(car,car), (tram,tram), (bike,bike)}`,
+`SourceOnly = [bus]`, `DestOnly = [footpath]`, `Insertions = [(bike, right, footpath)]`.
 
 This is the piece that makes "connect from and to any node" work: the mapping is computed, shown to the
 user as coloured connectors, and editable — but it is never the *source of truth* for the geometry.
@@ -146,7 +180,7 @@ Mode/RoadBuilder/
     NodeSpecDraft.cs          // the editable document
     LaneId.cs
     LaneMapping.cs            // replaces LaneMappingInputs/LaneMappingOutput
-    LaneMappingDeriver.cs     // LCS-based derivation
+    LaneMappingDeriver.cs     // longest-common-subsequence derivation
     RoadBuilderState.cs       // tool state machine
     RoadBuilderClipboard.cs   // copy/paste, TextCopy-backed
     RoadBuilderLibrary.cs     // named saved node specs/lane specs/road finishes
@@ -194,9 +228,12 @@ public sealed class RoadBuilderState {
 | Scroll while dragging | Change the number of lanes (add/remove at the hovered position) |
 | `[` / `]` | Shift the centreline left/right |
 | `M` | Mirror the draft |
+| `R` | Toggle the selected lane's direction (§5.4) |
+| `Shift+R` / `Ctrl+R` | Reverse all lanes / the selected lane's side |
+| `E` / `Shift+E` | Exit a lane to the right / left (§5.5) |
 | `Tab` | Cycle the hovered lane |
 | Left-click a lane in the preview | Select it for per-lane editing |
-| Right-click a lane | Context menu: duplicate, delete, reverse, set spec, copy |
+| Right-click a lane | Context menu: duplicate, exit, delete, reverse, set spec, copy |
 | `Ctrl+C` / `Ctrl+V` | Copy/paste the selected lane(s) or the whole spec |
 | `Ctrl+Shift+V` | Paste as a new preset into the library |
 | `Esc` | Cancel the current step |
@@ -316,7 +353,81 @@ The inverse: split lane *i* at the cursor offset into two lanes, each inheriting
 widths proportional to the split point. This is what makes "expand by any amount" work for a lane that
 carries two vehicle types.
 
-### 5.4 Any amount, any position
+### 5.4 Toggle lane direction
+
+Lane direction is already modelled, but only implicitly: `LaneFlags` carries `LongitudinalReverse`, and
+`LaneSpec.Reverse()` (`Roads/LaneSpec.cs:73`) flips it. `LaneReconcillation.GenerateLaneConnections`
+currently *guesses* direction with `LaneMappings.IsReverseLaneHeuristic` and then applies
+`LongitudinalReverse` based on the build direction and the node end — the user has no direct control.
+
+The Road Builder must expose direction as a first-class, per-lane toggle:
+
+```csharp
+// NodeSpecDraft
+public void ToggleDirection(LaneId id) {
+    var lane = Get(id);
+    lane.Spec = lane.Spec.Reverse();   // flips LaneFlags.LongitudinalReverse
+}
+```
+
+- **UI**: a direction arrow button on each lane in the cross-section strip, and a `R` shortcut for the
+  selected lane. The arrow points along the segment's forward direction, or against it when reversed.
+- **Visualisation**: the 3D preview draws the lane's direction arrow using `signs/forward.png` /
+  `signs/backward.png` / `signs/bidirectional.png`, so a reversed lane is unmistakable before placement.
+- **Bulk**: `Shift+R` reverses every lane in the draft; `Ctrl+R` reverses only the selected lane's side
+  of the centreline.
+- **Interaction with the heuristic**: the heuristic stays as the *initial* value when a draft is created
+  from a source node, but once the user toggles a lane the draft records it as explicit and the heuristic
+  no longer overrides it. This is the same "derived until touched" pattern used for `LaneMapping`.
+
+Note that direction is a property of the **lane strip** (the connection), not of the node — a lane can
+enter a node from one side and leave in the opposite direction. `LaneStrip.LaneSpec` already carries the
+per-strip spec, so the toggle writes to the draft's lane spec and the strip inherits it at commit time.
+
+### 5.5 Exit a lane
+
+A new operation, distinct from split and from duplicate: **exit** inserts a copy of a lane *beside* it
+without moving or resizing the original. This is how you build a slip road, a lay-by, a parking bay, or a
+second lane that peels off — the original lane keeps its exact position and width, and the new lane is
+placed immediately to its left or right.
+
+```csharp
+// NodeSpecDraft
+/// <summary>
+/// Inserts a copy of <paramref name="id"/> on the given side without moving the original.
+/// </summary>
+public LaneId Exit(LaneId id, int side, LaneSpec? overrideSpec = null) {
+    var index = IndexOf(id);
+    var insertAt = side < 0 ? index : index + 1;   // left of, or right of, the original
+    var spec = overrideSpec ?? Get(id).Spec;       // copy by default
+    return Insert(insertAt, spec);
+}
+```
+
+Key properties that distinguish `Exit` from the other operations:
+
+| Operation | Original lane | New lane | Offsets |
+|---|---|---|---|
+| `Insert` | unchanged | new spec | everything outside shifts outward |
+| `Split` | **removed** | two lanes, widths sum to the original | original's footprint is divided |
+| `Duplicate` | unchanged | copy | copy is appended at the outside |
+| **`Exit`** | **unchanged, does not move** | copy, or a caller-supplied spec | only lanes *outside* the insertion point shift |
+
+The "does not move" guarantee is what makes it an *exit* rather than an insert: the original lane's
+`CenterPos` is preserved exactly, so a lane that already lines up with something on the other side of the
+node stays lined up. Because offsets are derived from the ordered list (§5.1), this falls out
+automatically — `Exit` is just `Insert` at `index` or `index + 1`, and the original lane's own offset is
+unaffected because only the lanes beyond the insertion point are pushed.
+
+- **UI**: `E` exits to the right, `Shift+E` exits to the left. Both are also buttons in the lane
+  inspector, drawn with `signs/expand.png` (right) and a mirrored variant (left).
+- **Drag gesture**: dragging a lane sideways past its neighbour's edge and releasing offers "exit here"
+  as the default action, with "move" and "merge" as alternatives in a small radial menu.
+- **Default spec**: the copy inherits the parent's `LaneSpec` verbatim, including direction. A common
+  follow-up is to toggle the new lane's direction (§5.4) to make it a two-way pair, so the exit button
+  and the direction button sit next to each other in the inspector.
+
+### 5.6 Any amount, any position
 
 Because the draft is an ordered list with `LaneId`s and offsets are *derived*, all of these are the same
 code path:
@@ -327,6 +438,8 @@ code path:
 - remove from the middle — **new**
 - reorder lanes by dragging — **new**
 - widen/narrow any lane — **new**
+- exit a lane beside itself without moving it (§5.5) — **new**
+- toggle any lane's direction (§5.4) — **new**
 
 ---
 
@@ -336,11 +449,50 @@ code path:
 
 Selecting a lane in the preview opens the lane inspector. `DearUI.InputLaneSpec` already exists and
 already handles `VehicleTypes`, `LaneFlags`, colour, width, speed, line width and surface — it just needs
-to be reachable from the 3D preview rather than only from a menu.
+to be reachable from the 3D preview rather than only from a menu. The inspector also carries the two new
+per-lane actions: the direction toggle (§5.4) and the exit button (§5.5).
 
 ### 6.2 Per-strip
 
 A `LaneStrip` connects two lane ends. Per-strip configuration (direction, surface, markings) belongs in a second inspector that appears when a strip is selected. `ModeConnection` already has the `Reverse` / `Edit` / `Delete` actions (`Mode/ModeConnection.cs:87-113`); those should be folded into the Road Builder's strip inspector rather than living in a separate mode.
+
+### 6.3 Per-strip road finish (elevated sections)
+
+Elevated sections are already supported by the model: `RoadStrip` implements `IRoadFinish` and carries a
+`Property<RoadFinish> FinishProperty` (`Roads/Strip/RoadStrip.cs:65-67`), defaulting to
+`RoadFinish.Embankment`. `RoadFinish` (`Roads/RoadFinish.cs:37-52`) is a three-field struct:
+
+```csharp
+public struct RoadFinish {
+    public Surface subsurface;   // what the deck/embankment is made of
+    public float angle;          // slope angle, radians
+    public float depth;          // how far it extends below the road
+}
+```
+
+with four presets already defined:
+
+| Preset | `subsurface` | `angle` | `depth` | Meaning |
+|---|---|---|---|---|
+| `None` | `Surface.None` | 0 | 0 | no finish geometry |
+| `Embankment` | `Surface.Dirt` | π/4 | 10 | sloped earth embankment (the default) |
+| `Deck` | `Surface.Concrete` | π/2 | 1 | **square concrete deck, shallow depth** — the elevated section |
+| `Wall` | `Surface.Concrete` | π/2 | 10 | vertical retaining wall |
+
+`SegmentRenderer.GenerateEndCap` (`Roads/Strip/SegmentRenderer.cs`) is what turns the finish into
+geometry, and `DearUI.InputRoadFinish` already provides an editor for it, reachable today via
+`Menu.ShowFinishSettings()` (`Mode/ModeSegment.cs:63`).
+
+The Road Builder should make the finish a **per-strip property edited in the strip inspector**, not a
+global tool setting:
+
+- The strip inspector gets a finish section with the four presets as icon buttons plus the three raw
+  fields (`subsurface` as a surface picker, `angle` and `depth` as drag floats).
+- The finish is stored on the draft's strip, so a single segment can be embankment at one end and deck at
+  the other — which is what a road climbing onto a bridge actually looks like.
+- The 3D preview renders the finish through the same `GenerateEndCap` path, so the deck is visible before
+  placement.
+- `RoadFinish` is already serialised by `Save2/RoadFinishConverter.cs`, so no save-format change is needed.
 
 ---
 
@@ -377,6 +529,9 @@ needed for:
 | LRT (distinct from train) | `ui/lrt.png` |
 | Surface: asphalt / pavement / rail / gravel | `ui/surface-asphalt.png`, `ui/surface-pavement.png`, `ui/surface-rail.png`, `ui/surface-gravel.png` |
 | Lane flags: parking, crosswalk, stop, yield, priority | reuse `signs/parking.png`, `ui/crosswalk.png`, `signs/stop.png`, `signs/yield.png`, `signs/priority.png` |
+| Lane direction: forward / backward / both | reuse `signs/forward.png`, `signs/backward.png`, `signs/bidirectional.png` |
+| Exit lane: right / left | reuse `signs/expand.png`; add `signs/expandleft.png` (mirror) |
+| Road finish: none / embankment / deck / wall | `ui/finish-none.png`, `ui/finish-embankment.png`, `ui/finish-deck.png`, `ui/finish-wall.png` |
 
 ### 7.3 Icon atlas
 
@@ -387,6 +542,8 @@ public static class LaneIconAtlas {
     public static TextureData Surface(Surface s);
     public static TextureData Flag(LaneFlags f);
     public static TextureData Line(LineStyle s);
+    public static TextureData Direction(LaneFlags f);    // forward / backward / bidirectional
+    public static TextureData Finish(RoadFinish f);      // none / embankment / deck / wall
 }
 ```
 
@@ -410,8 +567,21 @@ Replace the current nested-menu `InputLaneSpec` with a **cross-section strip edi
 │  Vehicles:  [🚗][🚚][🚌][🚲][🚶][🐴][🚊][🚆][✈][🚀]          │
 │  Flags:     [🅿][🚦][🛑][⚠][⬆]                                │
 │  Surface:   [asphalt][pavement][rail][gravel]                 │
+│  Direction: [→][←][↔]                                         │
 │  Width  [ 3.5 ]  Speed [ 80 ]  Line [ 0.2 ]  Colour [ █ ]     │
-│  [Duplicate] [Delete] [Merge ◀] [Merge ▶] [Split] [Copy]     │
+│  [Duplicate] [Exit ◀] [Exit ▶] [Delete] [Merge ◀] [Merge ▶]  │
+│  [Split] [Reverse] [Copy]                                     │
+└──────────────────────────────────────────────────────────────┘
+```
+
+The strip inspector (§6.2, §6.3) sits below this and carries the per-strip spec plus the road finish:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  Strip:  node A → node B          Length 42.7 m              │
+│  Finish:  [none][embankment][deck][wall]                      │
+│  Subsurface [concrete ▾]  Angle [ 1.571 ]  Depth [ 1.0 ]      │
+│  [Reverse strip] [Edit] [Delete]                              │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -492,7 +662,7 @@ Ordered so that each step is independently testable and the old tool keeps worki
    insert/remove at every index.
 
 ### Phase 1 — Mapping
-4. `LaneMapping` + `LaneMappingDeriver` (LCS on `LaneSpec`). <!-- Unclear symbol: LCS --->
+4. `LaneMapping` + `LaneMappingDeriver` (longest common subsequence on `LaneSpec`, see §2.2).
 5. Tests: identical specs → all matched; disjoint specs → all source-only/dest-only; partial overlap.
 6. Retire `LaneMappingInputs` / `LaneMappingOutput` once `LaneReconcillation` is ported.
 
@@ -505,22 +675,26 @@ Ordered so that each step is independently testable and the old tool keeps worki
 10. Cross-section strip widget (`RoadBuilderUI`), lane selection, resize by dragging edges.
 11. Insert / remove / reorder / merge / split, all via `LaneId`.
 12. Per-lane inspector wired to `DearUI.InputLaneSpec`.
+13. Direction toggle (§5.4): `NodeSpecDraft.ToggleDirection`, `R` shortcut, direction arrows in the
+    preview, and the "explicit beats heuristic" rule.
+14. Exit operation (§5.5): `NodeSpecDraft.Exit`, `E` / `Shift+E`, exit buttons in the inspector.
 
 ### Phase 4 — Clipboard and library
-13. `RoadBuilderClipboard` (TextCopy + text format).
-14. `RoadBuilderLibrary` with thumbnail strip/lane/finish, persisted with the `TSWorld`.
+15. `RoadBuilderClipboard` (TextCopy + text format).
+16. `RoadBuilderLibrary` with thumbnail strip/lane/finish, persisted with the `TSWorld`.
 
 ### Phase 5 — Icons
-15. `LaneIconAtlas` + the missing icons from §7.2.
-16. Replace the nested-menu lane editor with the icon strip editor.
+17. `LaneIconAtlas` + the missing icons from §7.2.
+18. Replace the nested-menu lane editor with the icon strip editor.
 
-### Phase 6 — Connection
-17. `Connecting` state, mapping visualisation, mapping editing.
-18. Fold `ModeConnection`'s strip actions into the strip inspector.
+### Phase 6 — Connection and finish
+19. `Connecting` state, mapping visualisation, mapping editing.
+20. Fold `ModeConnection`'s strip actions into the strip inspector.
+21. Per-strip road finish editor (§6.3), replacing the global `Menu.ShowFinishSettings()`.
 
 ### Phase 7 — Parity and retirement
-19. `ModeSegment` becomes a preset loader for the Road Builder.
-20. Remove `LaneMappingInputs`, `LaneMappingOutput`, `LaneReconcillation`, `LaneCreationState`,
+22. `ModeSegment` becomes a preset loader for the Road Builder.
+23. Remove `LaneMappingInputs`, `LaneMappingOutput`, `LaneReconcillation`, `LaneCreationState`,
     `AddLaneSelection` once nothing references them.
 
 ---
@@ -549,5 +723,11 @@ Ordered so that each step is independently testable and the old tool keeps worki
 4. **Preview = a real `RoadNode`** — guarantees accurate visualisation.
 5. **Cross-section strip editor with icons** — replaces the nested-menu lane editor and is the primary
    surface for per-lane and per-strip configuration.
+6. **Direction is a first-class per-lane toggle** (§5.4) — `LaneSpec.Reverse()` already exists; the tool
+   just has to expose it instead of leaving direction to `IsReverseLaneHeuristic`.
+7. **`Exit` is a new primitive** (§5.5) — insert a copy beside a lane without moving the original, which
+   is what slip roads, lay-bys and parking bays need.
+8. **Road finish is per-strip** (§6.3) — `RoadFinish.Deck` already gives the square concrete deck for
+   elevated sections; it just needs to be editable per strip rather than globally.
 6. **`HalfNodeLanesList.Insert` must actually insert** — a one-line-shaped fix with outsized consequences.
 7. **Added lane specs and road finishes** to libraries - a key feature
