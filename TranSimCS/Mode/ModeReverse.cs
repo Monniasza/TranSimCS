@@ -29,9 +29,8 @@ namespace TranSimCS.Mode {
                     ImGui.TextColored(red, "The selected object is not reversible");
                 else
                     ImGui.TextColored(maroon, "No object selected");
-                
-                ImGui.End();
             }
+            ImGui.End();
         }
 
         void IMode.OnMousePress(MouseButton button) {

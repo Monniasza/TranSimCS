@@ -38,8 +38,8 @@ namespace TranSimCS.Mode {
                     : (red, "The selected component can't be demolished");
                 ImGui.TextColored(objInfo.Item1, objInfo.Item2);
                 ImGui.TextColored(componentInfo.Item1, componentInfo.Item2);
-                ImGui.End();
             }
+            ImGui.End();
         }
         void IMode.OnMousePress(MouseButton button) {
             IDemolish? demolishable = null;

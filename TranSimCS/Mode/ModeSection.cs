@@ -76,8 +76,8 @@ namespace TranSimCS.Mode {
                 }
 
                 Menu.ShowFinishSettings();
-                ImGui.End();
             }
+            ImGui.End();
         }
 
         void IMode.OnMousePress(MouseButton button) {

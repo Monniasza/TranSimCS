@@ -30,8 +30,8 @@ namespace TranSimCS.Mode {
                 ImGui.Text(_description);
                 menu.ShowLaneCreator();
                 menu.ShowFinishSettings();
-                ImGui.End();
             }
+            ImGui.End();
         }
 
         //Cached state

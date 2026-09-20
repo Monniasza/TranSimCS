@@ -62,10 +62,9 @@ namespace TranSimCS.Mode {
                 Menu.ShowSegmentPresets();
                 Menu.ShowFinishSettings();
                 Menu.ShowLaneCreator();
-
-                ImGui.End();
             }
-            
+            ImGui.End();
+
         }
             
 

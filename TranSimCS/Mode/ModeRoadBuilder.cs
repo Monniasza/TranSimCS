@@ -14,6 +14,7 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Select;
 using TranSimCS.Setting;
 using TranSimCS.SilkNet;
+using TranSimCS.Spline;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Mode {
@@ -314,7 +315,7 @@ namespace TranSimCS.Mode {
 
         //BUILDING
 
-        /// <summary>Lanes used for alignment: packed for floating sides, as captured for existing ones.</summary>
+        /// <summary>Lanes used by the mapping preview: packed for floating sides, as captured for existing ones.</summary>
         private List<LaneNode> EffectiveLanes(RoadBuilderSide side) =>
             side.IsFloating ? PackLanes(side.Lanes) : side.Lanes.ToList();
 
@@ -341,6 +342,96 @@ namespace TranSimCS.Mode {
             return halfLanes;
         }
 
+        /// <summary>
+        /// Per-side data resolved from a <see cref="RoadBuilderSide"/>, shared by <see cref="Build"/>
+        /// and the preview. Lane bounds are kept in the attaching half's frame (the convention of the
+        /// road strip geometry), while <see cref="AlignmentLanes"/> carries world-frame lane proxies
+        /// for the alignment, so both ends live in one common lateral frame.
+        /// </summary>
+        private class ResolvedSide {
+            public bool IsExisting;
+            public HalfNode AttachHalf;
+            public Transform3 AttachFrame;
+            public PositionEulerAngles NodeEuler;
+            /// <summary>Half-lanes whose <see cref="LaneStrip"/> endpoints the strip attaches to, world L→R.</summary>
+            public List<HalfLane> StripLanes = new();
+            /// <summary>Floating ends only: the lanes packed in the frame of the half they are created on.</summary>
+            public List<LaneNode> PackedLanes = new();
+            public List<LaneNode> AlignmentLanes = new();
+            /// <summary>Per-lane bounds in the attaching half's frame (the road strip geometry convention).</summary>
+            public List<Interval<float>> LaneBounds = new();
+            public Interval<float> Extent;
+
+            public LaneSpec Spec(int index) =>
+                IsExisting ? StripLanes[index].LaneNode.LaneSpec : PackedLanes[index].LaneSpec;
+            public Interval<float> Bounds(int index) => LaneBounds[index];
+        }
+
+        /// <summary>
+        /// Resolves one end into <see cref="ResolvedSide"/>: the attaching half-node (for existing ends
+        /// the picked half itself, for floating ends the half synthesized the same way Build creates it),
+        /// its frame, and the lane list ordered left to right in the world lateral frame.
+        /// </summary>
+        private bool ResolveSide(RoadBuilderSide side, bool isStart, Vector3 dir, Vector3 worldLateral,
+            Vector3? overrideFloatingPos, ResolvedSide resolved) {
+            resolved.IsExisting = false;
+            resolved.StripLanes.Clear();
+            resolved.PackedLanes.Clear();
+            resolved.AlignmentLanes.Clear();
+            resolved.LaneBounds.Clear();
+            resolved.Extent = default;
+
+            if (side.IsFloating) {
+                var pos = overrideFloatingPos ?? side.FloatingPosition.Position;
+                if (!pos.IsFinite()) return false;
+                resolved.NodeEuler = PositionEulerAngles.FromPosTangentLateral(pos, dir, worldLateral);
+                var nodeFrame = resolved.NodeEuler.CalcReferenceFrame();
+                //The strip attaches to the front half at the start, and to the opposite (backward)
+                //half at the end, whose frame mirrors the lane packing.
+                resolved.AttachFrame = isStart ? nodeFrame : nodeFrame.Around();
+                resolved.PackedLanes.AddRange(PackLanes(side.Lanes));
+                for (int i = 0; i < resolved.PackedLanes.Count; i++) {
+                    var lane = resolved.PackedLanes[i];
+                    //Packed coordinates live in the node (front half) frame
+                    var attachBounds = isStart ? lane.Bounds : new Interval<float>(-lane.Bounds.Max, -lane.Bounds.Min);
+                    var worldPos = Vector3.Dot(nodeFrame.X, worldLateral) * lane.CenterPos;
+                    resolved.AlignmentLanes.Add(new LaneNode(lane.LaneSpec, worldPos, lane.ID));
+                    resolved.LaneBounds.Add(attachBounds);
+                    resolved.Extent = i == 0 ? attachBounds : resolved.Extent.Union(attachBounds);
+                }
+            } else {
+                if (side.Picked == null) return false;
+                var attachHalf = side.Picked.HalfNode;
+                if (attachHalf == null) return false;
+                resolved.IsExisting = true;
+                resolved.AttachHalf = attachHalf;
+                resolved.AttachFrame = attachHalf.Cache.ReferenceFrame;
+                resolved.NodeEuler = side.Picked.PositionProp.Value;
+                foreach (var halfLane in OrderedHalfLanes(side.Picked, worldLateral)) {
+                    resolved.StripLanes.Add(halfLane);
+                    var worldPos = Vector3.Dot(resolved.AttachFrame.X, worldLateral) * halfLane.MiddlePosition;
+                    resolved.AlignmentLanes.Add(new LaneNode(halfLane.LaneNode.LaneSpec, worldPos, halfLane.LaneNode.ID));
+                    resolved.LaneBounds.Add(halfLane.Bounds);
+                    resolved.Extent = resolved.LaneBounds.Count == 1
+                        ? halfLane.Bounds : resolved.Extent.Union(halfLane.Bounds);
+                }
+            }
+            return resolved.AlignmentLanes.Count > 0;
+        }
+
+        private bool ResolveFrames(Vector3? hoverEnd, ResolvedSide startSide, ResolvedSide endSide) {
+            if (!ResolvePosition(Start, false, out var startPos)) return false;
+            if (!ResolvePosition(End, hoverEnd != null, out var endPos)) return false;
+            var delta = endPos - startPos;
+            if (delta.LengthSquared() < 1e-6f || !delta.IsFinite()) return false;
+            var dir = Vector3.Normalize(delta);
+            var worldLateral = Vector3.Normalize(Vector3.Cross(Vector3.UnitY, dir));
+            if (!worldLateral.IsFinite()) worldLateral = Vector3.UnitX;
+            if (!ResolveSide(Start, true, dir, worldLateral, null, startSide)) return false;
+            if (!ResolveSide(End, false, dir, worldLateral, hoverEnd, endSide)) return false;
+            return true;
+        }
+
         private void Build() {
             if (Start.Lanes.Count == 0 || End.Lanes.Count == 0) {
                 Message = "Both ends need at least one lane";
@@ -348,69 +439,49 @@ namespace TranSimCS.Mode {
             }
             var world = Menu.World;
 
-            //Resolve the positions and the segment direction
-            var startPos = Start.IsFloating ? Start.FloatingPosition.Position : Start.Picked.CalcReferenceFrame().O;
-            var endPos = End.IsFloating ? End.FloatingPosition.Position : End.Picked.CalcReferenceFrame().O;
-            var delta = endPos - startPos;
-            if (delta.LengthSquared() < 1e-6f || !delta.IsFinite()) {
+            var startSide = new ResolvedSide();
+            var endSide = new ResolvedSide();
+            if (!ResolveFrames(null, startSide, endSide)) {
                 Message = "The two ends coincide or are invalid";
                 return;
             }
-            var dir = Vector3.Normalize(delta);
-            var lateral = Vector3.Normalize(Vector3.Cross(Vector3.UnitY, dir));
-            if (!lateral.IsFinite()) lateral = Vector3.UnitX;
 
-            //Resolve the start half-node (the half the strip attaches to)
-            HalfNode startNode;
-            if (Start.IsFloating) {
-                var nodePosition = PositionEulerAngles.FromPosTangentLateral(Start.FloatingPosition.Position, dir, lateral);
-                var node = new RoadNode("", nodePosition);
-                startNode = node.FrontHalf;
-                foreach (var lane in PackLanes(Start.Lanes)) startNode.AddLane(lane);
+            //Create the floating nodes. Floating ends keep their lanes on the front half;
+            //the start strip attaches to it directly and the end strip to the opposite half.
+            if (!startSide.IsExisting) {
+                var node = new RoadNode("", startSide.NodeEuler);
+                var attach = node.FrontHalf;
+                foreach (var laneNode in startSide.PackedLanes) attach.AddLane(laneNode);
                 world.Nodes.data.Add(node);
-            } else startNode = Start.Picked.HalfNode;
-
-            //Resolve the end half-node. For floating ends, lanes are built on the front half
-            //(aligned with the segment direction) and the strip attaches to the opposite half.
-            HalfNode endLanesHalf;
-            if (End.IsFloating) {
-                var nodePosition = PositionEulerAngles.FromPosTangentLateral(End.FloatingPosition.Position, dir, lateral);
-                var node = new RoadNode("", nodePosition);
-                endLanesHalf = node.FrontHalf;
-                foreach (var lane in PackLanes(End.Lanes)) endLanesHalf.AddLane(lane);
+                startSide.AttachHalf = attach;
+                startSide.StripLanes.AddRange(attach.GetLaneList().OrderBy(x => x.MiddlePosition));
+            }
+            if (!endSide.IsExisting) {
+                var node = new RoadNode("", endSide.NodeEuler);
+                var lanesHalf = node.FrontHalf;
+                foreach (var laneNode in endSide.PackedLanes) lanesHalf.AddLane(laneNode);
                 world.Nodes.data.Add(node);
-            } else endLanesHalf = End.Picked.HalfNode;
-
-            //Ordered lane lists in a common lateral frame
-            var startHalfLanes = Start.IsFloating
-                ? startNode.GetLaneList().OrderBy(x => x.MiddlePosition).ToList()
-                : OrderedHalfLanes(Start.Picked, lateral);
-            var startLanes = startHalfLanes.Select(x => x.LaneNode).ToList();
-            List<HalfLane> endHalfLanes;
-            List<LaneNode> endLanes;
-            if (End.IsFloating) {
-                endHalfLanes = endLanesHalf.GetLaneList().OrderBy(x => x.MiddlePosition).ToList();
-                endLanes = PackLanes(End.Lanes);
-            } else {
-                endHalfLanes = OrderedHalfLanes(End.Picked, lateral);
-                endLanes = endHalfLanes.Select(x => x.LaneNode).ToList();
+                endSide.AttachHalf = lanesHalf.OppositeHalf;
+                endSide.StripLanes.AddRange(lanesHalf.GetLaneList().OrderBy(x => x.MiddlePosition));
             }
 
-            //Align the specs and convert to lane mappings
-            var steps = NodeSpecAlignment.Align(startLanes, endLanes);
-            var mappings = NodeSpecAlignment.ToLaneMappings(steps, startLanes, endLanes);
+            //Align the specs and convert to lane mappings, in the world lateral frame
+            var startAlign = startSide.AlignmentLanes;
+            var endAlign = endSide.AlignmentLanes;
+            var steps = NodeSpecAlignment.Align(startAlign, endAlign);
+            var mappings = NodeSpecAlignment.ToLaneMappings(steps, startAlign, endAlign);
             if (mappings.Count == 0) {
                 Message = "No lane transitions between these specs";
                 return;
             }
 
-            //Build the road strip. For floating ends the strip attaches to the opposite half.
-            var endFacing = End.IsFloating ? endLanesHalf.OppositeHalf : endLanesHalf;
-            var road = world.GetOrMakeRoadStrip(startNode, endFacing, Menu.RoadFinish);
-            var endBackward = endFacing.OppositeHalf.End == NodeEnd.Backward;
+            //Build the road strip
+            var road = world.GetOrMakeRoadStrip(startSide.AttachHalf, endSide.AttachHalf, Menu.RoadFinish);
+            var endBackward = endSide.AttachHalf.OppositeHalf.End == NodeEnd.Backward;
             foreach (var mapping in mappings) {
-                var startLane = startHalfLanes[mapping.StartIndex];
-                var endLane = End.IsFloating ? endHalfLanes[mapping.EndIndex].OppositeHalf : endHalfLanes[mapping.EndIndex];
+                var startLane = startSide.StripLanes[mapping.StartIndex];
+                var endLane = endSide.StripLanes[mapping.EndIndex];
+                if (!endSide.IsExisting) endLane = endLane.OppositeHalf;
 
                 var isBackwardsToBuildDirection = Menu.SegmentPresets.DirectionChoice switch {
                     DirectionChoice.Auto => LaneMappings.IsReverseLaneHeuristic(startLane.Lane) ^ endBackward,
@@ -427,7 +498,7 @@ namespace TranSimCS.Mode {
             world.RoadSegments.data.Add(road);
 
             //Continue building from the built end
-            var continueFrom = End.IsFloating ? endLanesHalf.RoadNode.GetEnd(NodeEnd.Forward) : End.Picked;
+            var continueFrom = endSide.IsExisting ? End.Picked : endSide.AttachHalf.OppositeHalf.RoadNode.GetEnd(NodeEnd.Forward);
             Start = new RoadBuilderSide();
             if (continueFrom != null) {
                 Start.Picked = continueFrom;
@@ -441,55 +512,63 @@ namespace TranSimCS.Mode {
 
         //PREVIEW
 
+        private bool ResolvePreview(ResolvedSide startSide, ResolvedSide endSide) {
+            var hoveringEnd = Phase == RoadBuilderPhase.PickEnd;
+            if (!ResolvePosition(Start, false, out var startPos)) return false;
+            if (!ResolvePosition(End, hoveringEnd, out var endPos)) return false;
+            return ResolveFrames(hoveringEnd ? endPos : null, startSide, endSide);
+        }
+
         void IMode.Draw3D(RenderTarget target, MultiMesh renderMeshPool) {
             if (Phase == RoadBuilderPhase.PickStart) return;
             var pickingEnd = Phase == RoadBuilderPhase.PickEnd;
 
-            if (!ResolvePosition(Start, false, out var startPos)) return;
-            if (!ResolvePosition(End, pickingEnd, out var endPos)) return;
-            var delta = endPos - startPos;
-            if (delta.LengthSquared() < 1e-6f || !delta.IsFinite()) return;
-            var dir = Vector3.Normalize(delta);
-            var worldLateral = Vector3.Normalize(Vector3.Cross(Vector3.UnitY, dir));
-            if (!worldLateral.IsFinite()) worldLateral = Vector3.UnitX;
-
-            if (!ResolveSide(Start, worldLateral, out var startLateral, out var startLanes)) return;
-            if (!ResolveSide(End, worldLateral, out var endLateral, out var endLanes)) return;
-
-            var accuracy = Math.Min(Settings.RoadAccuracy, 16);
-            var up = Vector3.UnitY * 0.05f;
-
-            //Asphalt preview band between the spec ranges
-            var asphaltBin = renderMeshPool.GetOrCreateRenderBinForced(Materials.Asphalt);
-            var previewColor = new Color(64, 64, 64, 128);
-            var startRange = LaneBounds(startLanes);
-            var endRange = LaneBounds(endLanes);
-            var left = new Vector3[accuracy];
-            var right = new Vector3[accuracy];
-            for (int i = 0; i < accuracy; i++) {
-                var t = i / (accuracy - 1f);
-                var p = Vector3.Lerp(startPos, endPos, t) + Vector3.UnitY * 0.02f;
-                var lateral = Vector3.Normalize(Vector3.Lerp(startLateral, endLateral, t) + worldLateral * 0.001f);
-                var min = startRange.Min + (endRange.Min - startRange.Min) * t;
-                var max = startRange.Max + (endRange.Max - startRange.Max) * t;
-                left[i] = p + lateral * min;
-                right[i] = p + lateral * max;
+            var startSide = new ResolvedSide();
+            var endSide = new ResolvedSide();
+            try {
+                if (!ResolvePreview(startSide, endSide)) return;
+                DrawPreview(renderMeshPool, startSide, endSide, pickingEnd);
+            } catch (Exception e) when (e is ArgumentException or InvalidOperationException) {
+                //Degenerate geometry (e.g. hovering at the start point) - skip this preview frame
+                Message = e.Message;
             }
-            asphaltBin.DrawStrip(UniformTexturing.UniformTexturedTwin(left, right,
-                UniformTexturing.GenerateLaneStripVertexGen(previewColor)));
+        }
 
-            //Lane bars at both ends
-            DrawLaneBars(renderMeshPool, startPos, startLateral, startLanes, up);
-            DrawLaneBars(renderMeshPool, endPos, endLateral, endLanes, up);
+        private void DrawPreview(MultiMesh renderMeshPool, ResolvedSide startSide, ResolvedSide endSide, bool pickingEnd) {
 
-            //Node direction markers
-            DrawNodeMarker(renderMeshPool, startPos, Start, dir, up);
-            if (!pickingEnd) DrawNodeMarker(renderMeshPool, endPos, End, -dir, up);
+            //Replicate the road strip geometry: anisotropic center spline between the attaching
+            //halves, then orthodistant offset curves for the band edges (as RoadStrip does).
+            var accuracy = Settings.RoadAccuracy;
+            var startMiddle = (startSide.Extent.Min + startSide.Extent.Max) / 2;
+            var endMiddle = (endSide.Extent.Min + endSide.Extent.Max) / 2;
+            var indexStrip = SplineAlgorithms.GenerateSegmentSplinedUsingAlg(
+                startSide.AttachFrame, endSide.AttachFrame, new(startMiddle, endMiddle),
+                SplineAlgorithms.AnisotropicSpline);
+            var basis = indexStrip.ToOrthodistantBasis(startSide.NodeEuler, endSide.NodeEuler);
 
-            //Lane transition connectors
+            Vector3[] Curve(float startT, float endT, float y) {
+                var result = new Vector3[accuracy];
+                float step = 1 / (accuracy - 1.0f);
+                for (int i = 0; i < accuracy; i++) {
+                    var t = i * step;
+                    result[i] = basis.SamplePosition(t,
+                        new Vector3(startT, y, 0), new Vector3(endT, y, 0) * new Vector3(-1, 1, -1));
+                }
+                return result;
+            }
+
+            //Asphalt band over the full spec extent
+            var asphaltBin = renderMeshPool.GetOrCreateRenderBinForced(Materials.Asphalt);
+            asphaltBin.DrawStrip(UniformTexturing.UniformTexturedTwin(
+                Curve(startSide.Extent.Min, endSide.Extent.Max, 0.02f),
+                Curve(startSide.Extent.Max, endSide.Extent.Min, 0.02f),
+                UniformTexturing.GenerateLaneStripVertexGen(new Color(64, 64, 64, 128))));
+
             if (pickingEnd) return;
-            var steps = NodeSpecAlignment.Align(startLanes, endLanes);
-            var connectorBin = renderMeshPool.GetOrCreateRenderBinForced(Materials.Arrow);
+
+            //Per-lane strips along the alignment transitions
+            var steps = NodeSpecAlignment.Align(startSide.AlignmentLanes, endSide.AlignmentLanes);
+            var laneBin = renderMeshPool.GetOrCreateRenderBinForced(Materials.WhiteTransparent);
             foreach (var step in steps) {
                 if (step.Kind == LaneAlignmentKind.Terminated || step.Kind == LaneAlignmentKind.Spawned) continue;
                 int[] sources = step.Kind == LaneAlignmentKind.Merge
@@ -498,28 +577,38 @@ namespace TranSimCS.Mode {
                     ? [step.EndIndex, step.EndIndex2] : [step.EndIndex];
                 foreach (var s in sources) {
                     foreach (var e in targets) {
-                        var a = startPos + startLateral * startLanes[s].CenterPos + Vector3.UnitY * 0.08f;
-                        var b = endPos + endLateral * endLanes[e].CenterPos + Vector3.UnitY * 0.08f;
-                        connectorBin.DrawLine(a, b, Vector3.UnitY, endLanes[e].LaneSpec.Color, 0.25f);
+                        var color = startSide.Spec(s).Color;
+                        var tint = new Color(color.R, color.G, color.B, 140);
+                        laneBin.DrawStrip(UniformTexturing.UniformTexturedTwin(
+                            Curve(startSide.Bounds(s).Min, endSide.Bounds(e).Max, 0.04f),
+                            Curve(startSide.Bounds(s).Max, endSide.Bounds(e).Min, 0.04f),
+                            UniformTexturing.GenerateLaneStripVertexGen(tint)));
                     }
                 }
             }
+
+            //Lane bars and direction markers at both ends
+            DrawLaneBars(renderMeshPool, startSide);
+            DrawLaneBars(renderMeshPool, endSide);
+            DrawNodeMarker(renderMeshPool, startSide);
+            DrawNodeMarker(renderMeshPool, endSide);
         }
 
-        private void DrawLaneBars(MultiMesh renderMeshPool, Vector3 pos, Vector3 lateral, List<LaneNode> lanes, Vector3 up) {
+        private void DrawLaneBars(MultiMesh renderMeshPool, ResolvedSide side) {
             var bin = renderMeshPool.GetOrCreateRenderBinForced(Materials.Road);
-            foreach (var lane in lanes) {
-                var a = pos + lateral * lane.Bounds.Min + up;
-                var b = pos + lateral * lane.Bounds.Max + up;
-                bin.DrawLine(a, b, Vector3.UnitY, lane.LaneSpec.Color, 0.4f);
+            for (int i = 0; i < side.AlignmentLanes.Count; i++) {
+                var frame = side.AttachFrame;
+                var a = frame.O + frame.X * side.Bounds(i).Min + frame.Y * 0.05f;
+                var b = frame.O + frame.X * side.Bounds(i).Max + frame.Y * 0.05f;
+                bin.DrawLine(a, b, frame.Y, side.Spec(i).Color, 0.4f);
             }
         }
 
-        private void DrawNodeMarker(MultiMesh renderMeshPool, Vector3 pos, RoadBuilderSide side, Vector3 dir, Vector3 up) {
+        private void DrawNodeMarker(MultiMesh renderMeshPool, ResolvedSide side) {
             var bin = renderMeshPool.GetOrCreateRenderBinForced(Materials.Road);
-            var tangent = side.IsFloating ? dir : side.Picked.CalcReferenceFrame().Z;
-            bin.DrawLine(pos, pos + tangent * 2, Vector3.UnitY, Colors.Red, 0.1f);
-            bin.DrawLine(pos, pos - tangent * 2, Vector3.UnitY, Colors.Maroon, 0.1f);
+            var frame = side.AttachFrame;
+            bin.DrawLine(frame.O, frame.O + frame.Z * 2, frame.Y, Colors.Red, 0.1f);
+            bin.DrawLine(frame.O, frame.O - frame.Z * 2, frame.Y, Colors.Maroon, 0.1f);
         }
 
         private bool ResolvePosition(RoadBuilderSide side, bool useHover, out Vector3 pos) {
@@ -533,37 +622,6 @@ namespace TranSimCS.Mode {
             }
             pos = side.Picked.CalcReferenceFrame().O;
             return pos.IsFinite();
-        }
-
-        /// <summary>
-        /// Resolves the lateral direction and effective lanes of one end, aligned with the
-        /// world lateral direction of the segment. Existing ends keep their own lane frame,
-        /// with the lane order and lateral flipped when it points against the segment lateral.
-        /// </summary>
-        private bool ResolveSide(RoadBuilderSide side, Vector3 worldLateral, out Vector3 lateral, out List<LaneNode> lanes) {
-            lateral = Vector3.UnitX;
-            lanes = new List<LaneNode>();
-            if (side.IsFloating) {
-                lateral = worldLateral;
-            } else {
-                if (side.Picked == null) return false;
-                var frame = side.Picked.CalcReferenceFrame();
-                lateral = frame.X;
-                if (Vector3.Dot(lateral, worldLateral) < 0) lateral = -lateral;
-            }
-            lanes = EffectiveLanes(side);
-            if (lanes.Count == 0) return false;
-            //Mirror the lane order for anti-aligned existing ends, so that the alignment
-            //and the preview stay consistent with the order used when building
-            if (!side.IsFloating && Vector3.Dot(side.Picked.CalcReferenceFrame().X, worldLateral) < 0)
-                lanes.Reverse();
-            return true;
-        }
-
-        private static Interval<float> LaneBounds(List<LaneNode> lanes) {
-            var range = new Interval<float>(0, 0);
-            foreach (var lane in lanes) range = range.Union(lane.Bounds);
-            return range;
         }
     }
 }

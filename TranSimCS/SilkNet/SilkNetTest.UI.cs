@@ -65,8 +65,8 @@ namespace TranSimCS.SilkNet {
                         if (ImGui.MenuItem(mode.Title(), "", mode == Mode)) Mode = mode;
                     ImGui.EndMenuBar();
                 }
-                ImGui.End();
             }
+            ImGui.End();
 
             if (ImGui.BeginMenu("Settings")) {
                 DearUI.InputFloat("Car spawn rate", Settings.CarSpawnRateProp);
@@ -191,9 +191,8 @@ namespace TranSimCS.SilkNet {
                 if(obj is Car car) {
                     ImGui.DragFloat("Speed [m/s]", ref car.Speed, 0.05f, 0, 100, "%.2f");
                 }
-
-                ImGui.End();
             }
+            ImGui.End();
         }
 
         private void LoadModal() {

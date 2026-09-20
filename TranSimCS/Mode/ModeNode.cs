@@ -57,9 +57,9 @@ namespace TranSimCS.Mode {
                 menu.ShowNodeCreator();
                 menu.ShowLaneCreator();
                 menu.ShowSnappingSettings();
-                ImGui.End();
             }
-            
+            ImGui.End();
+
         }
         void IMode.OnKeyPress(Key key) {
         switch(key) {

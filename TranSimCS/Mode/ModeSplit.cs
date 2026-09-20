@@ -68,8 +68,8 @@ namespace TranSimCS.Mode {
                 else
                     ImGui.TextColored(maroon, "No object selected");
                 ImGui.DragFloat("Split length (around the center) [m]", ref SplitLength, 0.05f, 1, 100);
-                ImGui.End();
             }
+            ImGui.End();
         }
         void IMode.Draw3D(RenderTarget target, MultiMesh renderMeshPool) {
             float yoffset = 0.4f;

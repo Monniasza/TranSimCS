@@ -57,8 +57,8 @@ namespace TranSimCS.Mode {
                     else
                         ImGui.TextColored(maroon, "No object selected");
                 }
-                ImGui.End();
             }
+            ImGui.End();
         }
         void IMode.OnMousePress(MouseButton button) {
             var selectedRoadStrip = Menu.MouseOver?.As<RoadStrip>();

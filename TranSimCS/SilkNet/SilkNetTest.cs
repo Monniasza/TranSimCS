@@ -184,6 +184,15 @@ namespace TranSimCS.SilkNet {
             ImGuiController.Update((float)dt);
             ImGuiController.MakeCurrent();
 
+            //Feed the accumulated scroll to ImGui, so its windows can scroll their content.
+            //The controller polls the scroll state itself, which misses the actual deltas.
+            if(ScrollOffset.X != 0 || ScrollOffset.Y != 0) {
+                var io = ImGui.GetIO();
+                io.MouseWheel = ScrollOffset.Y;
+                io.MouseWheelH = ScrollOffset.X;
+                ScrollOffset = Vector2.Zero;
+            }
+
             //Create the pick ray
             if (SilkWindow.Size.X > 0 && SilkWindow.Size.Y > 0) {
                 MouseRayOld = MouseRay;
