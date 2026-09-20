@@ -196,6 +196,7 @@ namespace TranSimCS.Mode.RoadBuilder {
                 position.Position = GeometryUtils.IntersectRayPlane(mouseRay, groundPlane);
             }
             State.DestinationPosition = position;
+            Renderer.Invalidate();
             if (State.Phase == RoadBuilderPhase.Connecting) State.RefreshMapping();
         }
 
