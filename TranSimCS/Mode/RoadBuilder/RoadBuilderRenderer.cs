@@ -71,7 +71,7 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// reference frame. The node is not added to any world.
         /// </summary>
         private static RoadNode BuildPreviewNode(NodeSpecDraft draft, HalfNode atEnd) {
-            var position = atEnd.RoadNode.PositionProp.Value;
+            var position = atEnd.RoadNode.PositionProp.Value; //the position comes from the start node
             var node = new RoadNode("Road Builder preview", position);
             foreach (var laneNode in draft.ToNodeSpec().Lanes)
                 node.AddLane(laneNode);
@@ -118,6 +118,8 @@ namespace TranSimCS.Mode.RoadBuilder {
 
             var srcFrame = atEnd.Cache.ReferenceFrame;
             var destFrame = destNode.Cache.ReferenceFrame;
+            //srcFrame == destFrame somehow
+
             var bin = renderMeshPool.GetOrCreateRenderBinForced(Materials.Arrow);
 
             var sourceOffsets = sourceDraft.ComputeOffsets();

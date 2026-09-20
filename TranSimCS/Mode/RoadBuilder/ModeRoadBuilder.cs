@@ -183,7 +183,7 @@ namespace TranSimCS.Mode.RoadBuilder {
             if (State.Phase != RoadBuilderPhase.Dragging) return;
 
             //Released over an existing node end means connecting; over empty space means placing.
-            var overNodeEnd = Menu.MouseOver?.As<RoadNodeEnd>();
+            var overNodeEnd = Menu.MouseOver?.As<HalfLane>();
             State.Phase = overNodeEnd != null ? RoadBuilderPhase.Connecting : RoadBuilderPhase.Placing;
             if (State.Phase == RoadBuilderPhase.Connecting) State.RefreshMapping();
         }

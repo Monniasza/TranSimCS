@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 
@@ -82,6 +83,11 @@ namespace TranSimCS.Mode.RoadBuilder {
 
         /// <summary>True when a draft exists and can be edited.</summary>
         public bool HasDraft => Draft != null;
+
+        /// <summary>
+        /// The destination coordinates
+        /// </summary>
+        public Vector3 DestinationPosition { get; set; }
 
         /// <summary>
         /// Starts a new draft from a source half-node, copying that end's lanes in its own left-to-right
