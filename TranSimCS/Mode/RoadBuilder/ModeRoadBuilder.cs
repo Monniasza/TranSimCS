@@ -143,7 +143,7 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// from it.
         /// </summary>
         private void PickSource() {
-            var picked = Menu.MouseOver?.As<RoadNodeEnd>();
+            var picked = Menu.MouseOver?.As<HalfLane>()?.HalfNode?.RoadNodeEnd;
             if (picked == null) return;
             State.BeginFrom(picked);
             Renderer.Invalidate();
