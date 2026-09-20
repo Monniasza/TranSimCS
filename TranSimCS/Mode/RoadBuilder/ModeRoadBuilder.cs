@@ -185,6 +185,17 @@ namespace TranSimCS.Mode.RoadBuilder {
             //Released over an existing node end means connecting; over empty space means placing.
             var overNodeEnd = Menu.MouseOver?.As<HalfLane>();
             State.Phase = overNodeEnd != null ? RoadBuilderPhase.Connecting : RoadBuilderPhase.Placing;
+            var position = new PositionEulerAngles();
+            if (overNodeEnd != null) {
+                position = overNodeEnd.HalfNode.PositionData;
+                var refframe = overNodeEnd.HalfNode.Cache.ReferenceFrame;
+                position.Position += refframe.X * overNodeEnd.MiddlePosition;
+            } else {
+                var groundPlane = Menu.snappingGrid.CreateSnappingPlane();
+                var mouseRay = Menu.MouseRay;
+                position.Position = GeometryUtils.IntersectRayPlane(mouseRay, groundPlane);
+            }
+            State.DestinationPosition = position;
             if (State.Phase == RoadBuilderPhase.Connecting) State.RefreshMapping();
         }
 

@@ -52,7 +52,7 @@ namespace TranSimCSTests {
             state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
 
-            var preview = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
+            var preview = renderer.GetPreviewNode(state);
 
             Assert.NotNull(preview);
             Assert.Equal(3, preview!.Lanes.Count);
@@ -65,7 +65,7 @@ namespace TranSimCSTests {
             state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
 
-            var preview = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
+            var preview = renderer.GetPreviewNode(state);
 
             //The preview must never be the source node itself, or editing the draft would edit the world.
             Assert.NotSame(node, preview);
@@ -79,8 +79,8 @@ namespace TranSimCSTests {
             state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
 
-            var first = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
-            var second = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
+            var first = renderer.GetPreviewNode(state);
+            var second = renderer.GetPreviewNode(state);
 
             //Rebuilding every frame would be wasteful, so the node is cached.
             Assert.Same(first, second);
@@ -93,9 +93,9 @@ namespace TranSimCSTests {
             state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
 
-            var first = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
+            var first = renderer.GetPreviewNode(state);
             renderer.Invalidate();
-            var second = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
+            var second = renderer.GetPreviewNode(state);
 
             Assert.NotSame(first, second);
         }
@@ -107,12 +107,12 @@ namespace TranSimCSTests {
             state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
 
-            var before = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
+            var before = renderer.GetPreviewNode(state);
             Assert.Equal(3, before!.Lanes.Count);
 
             state.Draft!.Add(Spec(2f, VehicleTypes.Bicycle));
             renderer.Invalidate();
-            var after = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
+            var after = renderer.GetPreviewNode(state);
 
             Assert.Equal(4, after!.Lanes.Count);
         }
@@ -120,7 +120,7 @@ namespace TranSimCSTests {
         [Fact]
         public void PreviewNodeIsNullWithoutADraft() {
             var renderer = MakeRenderer();
-            Assert.Null(renderer.GetPreviewNode(null, null));
+            Assert.Null(renderer.GetPreviewNode(null));
         }
 
         [Fact]
@@ -133,7 +133,7 @@ namespace TranSimCSTests {
             state.Draft.Remove(state.Draft[0].Id);
             var renderer = MakeRenderer();
 
-            Assert.Null(renderer.GetPreviewNode(state.Draft, state.SourceHalfNode));
+            Assert.Null(renderer.GetPreviewNode(state));
         }
 
         [Fact]
@@ -143,7 +143,7 @@ namespace TranSimCSTests {
             state.BeginFrom(node.FrontHalf);
             var renderer = MakeRenderer();
 
-            var preview = renderer.GetPreviewNode(state.Draft, state.SourceHalfNode);
+            var preview = renderer.GetPreviewNode(state);
 
             Assert.Equal(node.PositionProp.Value, preview!.PositionProp.Value);
         }

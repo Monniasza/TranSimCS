@@ -2,6 +2,7 @@ using System;
 using System.Numerics;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
+using TranSimCS.Worlds;
 
 namespace TranSimCS.Mode.RoadBuilder {
     /// <summary>
@@ -87,7 +88,7 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// <summary>
         /// The destination coordinates
         /// </summary>
-        public Vector3 DestinationPosition { get; set; }
+        public PositionEulerAngles DestinationPosition { get; set; }
 
         /// <summary>
         /// Starts a new draft from a source half-node, copying that end's lanes in its own left-to-right

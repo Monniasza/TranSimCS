@@ -55,11 +55,14 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// The throwaway node for the given draft, rebuilt if the draft has changed since the last call.
         /// Returns <see langword="null"/> when there is nothing to preview.
         /// </summary>
-        public RoadNode? GetPreviewNode(NodeSpecDraft? draft, HalfNode? atEnd) {
+        public RoadNode? GetPreviewNode(RoadBuilderState? state) {
+            if (state == null) return null;
+            var draft = state.Draft;
+            var atEnd = state.SourceHalfNode;
             if (draft == null || atEnd == null || draft.Count == 0) return null;
 
             if (previewNode == null || !ReferenceEquals(previewSource, draft) || previewVersion != GeometryVersion) {
-                previewNode = BuildPreviewNode(draft, atEnd);
+                previewNode = BuildPreviewNode(state.DestinationPosition, draft, atEnd);
                 previewSource = draft;
                 previewVersion = GeometryVersion;
             }
@@ -70,8 +73,7 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// Builds a detached <see cref="RoadNode"/> from the draft, positioned at the source end's
         /// reference frame. The node is not added to any world.
         /// </summary>
-        private static RoadNode BuildPreviewNode(NodeSpecDraft draft, HalfNode atEnd) {
-            var position = atEnd.RoadNode.PositionProp.Value; //the position comes from the start node
+        private static RoadNode BuildPreviewNode(PositionEulerAngles position, NodeSpecDraft draft, HalfNode atEnd) {
             var node = new RoadNode("Road Builder preview", position);
             foreach (var laneNode in draft.ToNodeSpec().Lanes)
                 node.AddLane(laneNode);
@@ -89,7 +91,7 @@ namespace TranSimCS.Mode.RoadBuilder {
             var atEnd = state.SourceHalfNode;
             if (draft == null || atEnd == null) return;
 
-            var node = GetPreviewNode(draft, atEnd);
+            var node = GetPreviewNode(state);
             if (node == null) return;
 
             //Draw the draft's lanes through the production renderer, so the preview matches the result.
@@ -112,7 +114,7 @@ namespace TranSimCS.Mode.RoadBuilder {
             var sourceDraft = state.SourceDraft;
             var draft = state.Draft;
             var atEnd = state.SourceHalfNode;
-            var destNode = GetPreviewNode(draft, atEnd);
+            var destNode = GetPreviewNode(state);
             if (sourceDraft == null || draft == null || atEnd == null) return;
             Debug.Assert(destNode != null, "destNode not set");
 
@@ -148,7 +150,7 @@ namespace TranSimCS.Mode.RoadBuilder {
             var atEnd = state.SourceHalfNode;
             if (draft == null || atEnd == null || draft.Count == 0) return;
 
-            var node = GetPreviewNode(draft, atEnd);
+            var node = GetPreviewNode(state);
             if (node == null) return;
 
             var bin = visible.GetOrCreateRenderBinForced(SelectorMaterial);
