@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using TranSimCS.Geometry;
 using TranSimCS.Model;
@@ -98,7 +99,7 @@ namespace TranSimCS.Mode.RoadBuilder {
             NodeRenderer.GenerateRoadNodeSelectionMesh(node, bin, null);
 
             //Draw the mapping connectors while connecting.
-            if (state.Phase == RoadBuilderPhase.Connecting && state.Mapping != null)
+            if (state.Phase == RoadBuilderPhase.Connecting && state.Mapping != null) //Phase Connecting not set
                 DrawMappingConnectors(state, renderMeshPool);
         }
 
@@ -111,9 +112,12 @@ namespace TranSimCS.Mode.RoadBuilder {
             var sourceDraft = state.SourceDraft;
             var draft = state.Draft;
             var atEnd = state.SourceHalfNode;
+            var destNode = GetPreviewNode(draft, atEnd);
             if (sourceDraft == null || draft == null || atEnd == null) return;
+            Debug.Assert(destNode != null, "destNode not set");
 
-            var refframe = atEnd.RoadNode.ReferenceFrame;
+            var srcFrame = atEnd.Cache.ReferenceFrame;
+            var destFrame = destNode.Cache.ReferenceFrame;
             var bin = renderMeshPool.GetOrCreateRenderBinForced(Materials.Arrow);
 
             var sourceOffsets = sourceDraft.ComputeOffsets();
@@ -124,10 +128,10 @@ namespace TranSimCS.Mode.RoadBuilder {
                 var destIndex = draft.IndexOf(pair.Dest);
                 if (sourceIndex < 0 || destIndex < 0) continue;
 
-                var sourcePos = refframe.O + refframe.X * sourceOffsets[sourceIndex];
-                var destPos = refframe.O + refframe.X * destOffsets[destIndex];
+                var sourcePos = srcFrame.O + srcFrame.X * sourceOffsets[sourceIndex];
+                var destPos = destFrame.O + destFrame.X * destOffsets[destIndex];
                 var color = draft[destIndex].Spec.Color;
-                bin.DrawLine(sourcePos, destPos, refframe.Y, color, 0.2f);
+                bin.DrawLine(sourcePos, destPos, destFrame.Y, color, 0.2f);
             }
         }
 
