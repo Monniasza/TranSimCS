@@ -28,7 +28,7 @@ The model is already far more flexible than the tool that drives it:
 - **`RoadNode`** (`Roads/Node/RoadNode.cs`) owns a flat set of `Lane`s (`Lanes`, `LaneXRef`), each with a
   `LaneNode` definition (`LaneSpec` + `CenterPos`). `SortedLanes` orders them by `CenterPos`.
 - **`HalfNode`** (`Roads/Node/HalfNode.cs`) is one end of a node. `GetLaneByIndex(i)` returns the i-th lane
-  **from the outside in**, mirrored for the `Backward` end. `AddLane` / `Delete` are the mutation primitives.
+  **from the left**, mirrored for the `Backward` end. `AddLane` / `Delete` are the mutation primitives.
 - **`LaneSpec`** (`Roads/LaneSpec.cs`) is a value struct: `Color`, `VehicleTypes`, `LaneFlags`, `Width`,
   `SpeedLimit`, `LineWidth`, `Surface`. `VehicleTypes` is a `[Flags]` enum covering car/truck/bus/bike/ped/horse/
   LRT/train/plane/rocket — i.e. **the "rail-tram-pedestrian-bike-car-pier-canal road" is already expressible**.
@@ -70,7 +70,9 @@ NodeSpec  =  ordered list of LaneSpec, ordered left → right, with a centreline
 - A **node** is a `NodeSpec` plus the strips that connect it to its neighbours.
 - A **preset** is a saved `NodeSpec`.
 - The **clipboard** holds a `NodeSpec` (or a slice of one).
-- The **library** is a list of named `NodeSpec`s.
+- The **node library** is a list of named `NodeSpec`s.
+- The **lane library** is a list of named `LaneSpec`s.
+- The **finish library** is a list of named `RoadFinish`es.
 
 The tool never mutates the world directly. It mutates a **draft `NodeSpec`**, renders it, and commits on
 click. This is what gives "modify before placement" and "instant feedback" for free.
@@ -147,7 +149,7 @@ Mode/RoadBuilder/
     LaneMappingDeriver.cs     // LCS-based derivation
     RoadBuilderState.cs       // tool state machine
     RoadBuilderClipboard.cs   // copy/paste, TextCopy-backed
-    RoadBuilderLibrary.cs     // named saved specs
+    RoadBuilderLibrary.cs     // named saved node specs/lane specs/road finishes
     RoadBuilderRenderer.cs    // 3D preview + drag ghosts
     RoadBuilderUI.cs          // ImGui panels
     LaneIconAtlas.cs          // icon lookup for the lane spec editor
@@ -227,10 +229,7 @@ OS clipboard is unavailable (headless / CI).
 
 ### 4.2 Library
 
-`RoadBuilderLibrary` is a named list of `NodeSpec`s persisted next to the world file. The UI is a
-horizontal strip of **lane-stack thumbnails** — each entry renders a miniature cross-section using the
-same lane colours, so a "tram + 2 car + bike + footpath" preset is recognisable at a glance.
-
+`RoadBuilderLibrary` is a named list of `NodeSpec`s, `LaneSpec`s and `RoadFinish`es persisted next to the world file. The UI is a horizontal strip of **lane-stack thumbnails** — each entry renders a miniature cross-section using the same lane colours, so a "tram + 2 car + bike + footpath" preset is recognisable at a glance.
 Drag from the library strip onto the 3D preview to insert that spec's lanes at the drop position.
 Drag from the preview back onto the library strip to save.
 
@@ -341,10 +340,7 @@ to be reachable from the 3D preview rather than only from a menu.
 
 ### 6.2 Per-strip
 
-A `LaneStrip` connects two lane ends. Per-strip configuration (direction, surface, markings, whether it
-is a bridge/tunnel) belongs in a second inspector that appears when a strip is selected. `ModeConnection`
-already has the `Reverse` / `Edit` / `Delete` actions (`Mode/ModeConnection.cs:87-113`); those should be
-folded into the Road Builder's strip inspector rather than living in a separate mode.
+A `LaneStrip` connects two lane ends. Per-strip configuration (direction, surface, markings) belongs in a second inspector that appears when a strip is selected. `ModeConnection` already has the `Reverse` / `Edit` / `Delete` actions (`Mode/ModeConnection.cs:87-113`); those should be folded into the Road Builder's strip inspector rather than living in a separate mode.
 
 ---
 
@@ -496,7 +492,7 @@ Ordered so that each step is independently testable and the old tool keeps worki
    insert/remove at every index.
 
 ### Phase 1 — Mapping
-4. `LaneMapping` + `LaneMappingDeriver` (LCS on `LaneSpec`).
+4. `LaneMapping` + `LaneMappingDeriver` (LCS on `LaneSpec`). <!-- Unclear symbol: LCS --->
 5. Tests: identical specs → all matched; disjoint specs → all source-only/dest-only; partial overlap.
 6. Retire `LaneMappingInputs` / `LaneMappingOutput` once `LaneReconcillation` is ported.
 
@@ -512,7 +508,7 @@ Ordered so that each step is independently testable and the old tool keeps worki
 
 ### Phase 4 — Clipboard and library
 13. `RoadBuilderClipboard` (TextCopy + text format).
-14. `RoadBuilderLibrary` with thumbnail strip, persisted with the world.
+14. `RoadBuilderLibrary` with thumbnail strip/lane/finish, persisted with the `TSWorld`.
 
 ### Phase 5 — Icons
 15. `LaneIconAtlas` + the missing icons from §7.2.
@@ -554,3 +550,4 @@ Ordered so that each step is independently testable and the old tool keeps worki
 5. **Cross-section strip editor with icons** — replaces the nested-menu lane editor and is the primary
    surface for per-lane and per-strip configuration.
 6. **`HalfNodeLanesList.Insert` must actually insert** — a one-line-shaped fix with outsized consequences.
+7. **Added lane specs and road finishes** to libraries - a key feature
