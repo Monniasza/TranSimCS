@@ -224,6 +224,272 @@ namespace TranSimCSTests {
             Assert.Empty(mapping.DestOnly);
         }
 
+        // --- Merges --------------------------------------------------------------------------------
+        // A merge is a collection of lane strips with a shared end lane and disjoint start lanes.
+
+        [Fact]
+        public void MergeIsOneMatchPlusSourceOnlyLanes() {
+            //Two car lanes converge onto one car lane.
+            var (source, s) = Make(Car(), Car());
+            var (dest, d) = Make(Car());
+
+            var mapping = LaneMapping.Derive(source, dest);
+
+            Assert.Single(mapping.Matched);
+            Assert.Single(mapping.SourceOnly);
+            Assert.Empty(mapping.DestOnly);
+
+            //The destination lane is paired with exactly one of the converging lanes.
+            Assert.Equal(d[0], mapping.Matched[0].Dest);
+            Assert.Contains(mapping.Matched[0].Source, new[] { s[0], s[1] });
+
+            //The other converging lane terminates at the node.
+            var converging = mapping.Matched[0].Source == s[0] ? s[1] : s[0];
+            Assert.Equal(new[] { converging }, mapping.SourceOnly);
+        }
+
+        [Fact]
+        public void MergeNeverProducesADestOnlyLane() {
+            var (source, _) = Make(Car(), Car(), Car());
+            var (dest, _) = Make(Car());
+
+            var mapping = LaneMapping.Derive(source, dest);
+
+            //A merge converges, so nothing diverges: no destination-only lanes.
+            Assert.Empty(mapping.DestOnly);
+            Assert.Empty(mapping.Insertions);
+            Assert.Equal(2, mapping.SourceOnly.Count);
+        }
+
+        [Fact]
+        public void MergeCollapsesToTheSingleLaneInTheDestinationOrder() {
+            var (source, _) = Make(Car(), Car());
+            var (dest, d) = Make(Car());
+
+            var mapping = LaneMapping.Derive(source, dest);
+            var order = mapping.BuildDestinationOrder();
+
+            //The converging lanes are absent, leaving the one lane they merged into.
+            Assert.Equal(new[] { d[0] }, order);
+        }
+
+        [Fact]
+        public void MergeOfDifferentSpecsStillConverges() {
+            //A car lane and a bus lane converge onto a lane carrying both.
+            var (source, s) = Make(Car(), Bus());
+            var (dest, d) = Make(Car());
+
+            var mapping = LaneMapping.Derive(source, dest);
+
+            Assert.Single(mapping.Matched);
+            Assert.Equal(s[0], mapping.Matched[0].Source);
+            Assert.Equal(d[0], mapping.Matched[0].Dest);
+            Assert.Equal(new[] { s[1] }, mapping.SourceOnly);
+        }
+
+        [Fact]
+        public void MergeValidates() {
+            var (source, _) = Make(Car(), Car(), Car());
+            var (dest, _) = Make(Car());
+
+            var mapping = LaneMapping.Derive(source, dest);
+
+            mapping.Validate(source, dest);
+        }
+
+        // --- Exits ---------------------------------------------------------------------------------
+        // An exit is a collection of lane strips with a shared start lane and disjoint end lanes.
+
+        [Fact]
+        public void ExitIsOneMatchPlusDestOnlyLanes() {
+            //One car lane diverges into two car lanes.
+            var (source, s) = Make(Car());
+            var (dest, d) = Make(Car(), Car());
+
+            var mapping = LaneMapping.Derive(source, dest);
+
+            Assert.Single(mapping.Matched);
+            Assert.Single(mapping.DestOnly);
+            Assert.Empty(mapping.SourceOnly);
+
+            //The source lane is paired with exactly one of the diverging lanes.
+            Assert.Equal(s[0], mapping.Matched[0].Source);
+            Assert.Contains(mapping.Matched[0].Dest, new[] { d[0], d[1] });
+
+            //The other diverging lane begins at the node.
+            var diverging = mapping.Matched[0].Dest == d[0] ? d[1] : d[0];
+            Assert.Equal(new[] { diverging }, mapping.DestOnly);
+        }
+
+        [Fact]
+        public void ExitNeverProducesASourceOnlyLane() {
+            var (source, _) = Make(Car());
+            var (dest, _) = Make(Car(), Car(), Car());
+
+            var mapping = LaneMapping.Derive(source, dest);
+
+            //An exit diverges, so nothing converges: no source-only lanes.
+            Assert.Empty(mapping.SourceOnly);
+            Assert.Equal(2, mapping.DestOnly.Count);
+        }
+
+        [Fact]
+        public void ExitAnchorsEveryDivergingLaneOnTheSharedStartLane() {
+            var (source, s) = Make(Car());
+            var (dest, d) = Make(Car(), Car(), Car());
+
+            var mapping = LaneMapping.Derive(source, dest);
+
+            //Every diverging lane is anchored on the one source lane the exit diverges from.
+            foreach (var lane in mapping.DestOnly) {
+                var insertion = mapping.InsertionFor(lane);
+                Assert.NotNull(insertion);
+                Assert.Equal(s[0], insertion!.Value.Anchor);
+            }
+        }
+
+        [Fact]
+        public void ExitPlacesEveryDivergingLaneInTheDestinationOrder() {
+            var (source, _) = Make(Car());
+            var (dest, d) = Make(Car(), Car(), Car());
+
+            var mapping = LaneMapping.Derive(source, dest);
+            var order = mapping.BuildDestinationOrder();
+
+            //All three destination lanes are placed, and each appears once.
+            Assert.Equal(dest.Count, order.Count);
+            Assert.Equal(order.Count, order.Distinct().Count());
+            foreach (var lane in d) Assert.Contains(lane, order);
+        }
+
+        [Fact]
+        public void ExitValidates() {
+            var (source, _) = Make(Car());
+            var (dest, _) = Make(Car(), Car(), Car());
+
+            var mapping = LaneMapping.Derive(source, dest);
+
+            mapping.Validate(source, dest);
+        }
+
+        [Fact]
+        public void ExitOfDifferentSpecsStillDiverges() {
+            //A lane carrying cars and buses diverges into a car lane and a bus lane.
+            var (source, s) = Make(Car());
+            var (dest, d) = Make(Car(), Bus());
+
+            var mapping = LaneMapping.Derive(source, dest);
+
+            Assert.Single(mapping.Matched);
+            Assert.Equal(s[0], mapping.Matched[0].Source);
+            Assert.Equal(d[0], mapping.Matched[0].Dest);
+            Assert.Equal(new[] { d[1] }, mapping.DestOnly);
+        }
+
+        // --- Merge and exit together ---------------------------------------------------------------
+
+        [Fact]
+        public void AMappingCanMergeAndExitAtOnce() {
+            //Two car lanes converge onto one, which then diverges into a car lane and a bus lane.
+            var (source, s) = Make(Car(), Car());
+            var (dest, d) = Make(Car(), Bus());
+
+            var mapping = LaneMapping.Derive(source, dest);
+
+            Assert.Single(mapping.Matched);
+            Assert.Single(mapping.SourceOnly);
+            Assert.Single(mapping.DestOnly);
+
+            Assert.Equal(s[0], mapping.Matched[0].Source);
+            Assert.Equal(d[0], mapping.Matched[0].Dest);
+            Assert.Equal(new[] { s[1] }, mapping.SourceOnly);
+            Assert.Equal(new[] { d[1] }, mapping.DestOnly);
+        }
+
+        [Fact]
+        public void MergeAndExitTogetherValidate() {
+            var (source, _) = Make(Car(), Car());
+            var (dest, _) = Make(Car(), Bus());
+
+            var mapping = LaneMapping.Derive(source, dest);
+
+            mapping.Validate(source, dest);
+        }
+
+        [Fact]
+        public void MergeAndExitTogetherPlaceEveryDestinationLane() {
+            var (source, _) = Make(Car(), Car());
+            var (dest, d) = Make(Car(), Bus());
+
+            var mapping = LaneMapping.Derive(source, dest);
+            var order = mapping.BuildDestinationOrder();
+
+            Assert.Equal(dest.Count, order.Count);
+            foreach (var lane in d) Assert.Contains(lane, order);
+        }
+
+        [Fact]
+        public void HandAuthoredMergeMatchesTheDerivedShape() {
+            //A merge built by hand: pair the shared lane, then mark the other converging lane.
+            var (source, s) = Make(Car(), Car());
+            var (dest, d) = Make(Car());
+
+            var mapping = new LaneMapping();
+            mapping.AddMatch(s[0], d[0]);
+            mapping.AddSourceOnly(s[1]);
+
+            mapping.Validate(source, dest);
+
+            Assert.Single(mapping.Matched);
+            Assert.Equal(new[] { s[1] }, mapping.SourceOnly);
+            Assert.Empty(mapping.DestOnly);
+        }
+
+        [Fact]
+        public void HandAuthoredExitMatchesTheDerivedShape() {
+            //An exit built by hand: pair the shared lane, then mark and anchor the other diverging lane.
+            var (source, s) = Make(Car());
+            var (dest, d) = Make(Car(), Car());
+
+            var mapping = new LaneMapping();
+            mapping.AddMatch(s[0], d[0]);
+            mapping.AddDestOnly(d[1]);
+            mapping.AddInsertion(s[0], InsertionSide.Right, d[1]);
+
+            mapping.Validate(source, dest);
+
+            Assert.Single(mapping.Matched);
+            Assert.Equal(new[] { d[1] }, mapping.DestOnly);
+            Assert.Empty(mapping.SourceOnly);
+        }
+
+        [Fact]
+        public void HandAuthoredExitWithoutAnInsertionDoesNotValidate() {
+            var (source, s) = Make(Car());
+            var (dest, d) = Make(Car(), Car());
+
+            var mapping = new LaneMapping();
+            mapping.AddMatch(s[0], d[0]);
+            mapping.AddDestOnly(d[1]);
+            //No insertion recorded: the diverging lane has nowhere to go.
+
+            Assert.Throws<InvalidOperationException>(() => mapping.Validate(source, dest));
+        }
+
+        [Fact]
+        public void HandAuthoredMergeNeedsNoInsertion() {
+            var (source, s) = Make(Car(), Car());
+            var (dest, d) = Make(Car());
+
+            var mapping = new LaneMapping();
+            mapping.AddMatch(s[0], d[0]);
+            mapping.AddSourceOnly(s[1]);
+
+            //A converging lane is absent from the destination, so it needs no insertion point.
+            mapping.Validate(source, dest);
+            Assert.Empty(mapping.Insertions);
+        }
+
         // --- Order preservation --------------------------------------------------------------------
 
         [Fact]

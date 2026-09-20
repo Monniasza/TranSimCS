@@ -21,10 +21,35 @@ namespace TranSimCS.Mode.RoadBuilder {
     /// The DP table is <c>O(n·m)</c> in time and space for <c>n</c> source and <c>m</c> destination
     /// lanes, which is trivial at road widths (a handful of lanes), so no optimisation is needed.
     /// </para>
+    /// <para>
+    /// <b>Merges and exits.</b> The LCS pairs each lane with at most one lane on the other side, so a
+    /// many-to-one or one-to-many shape is expressed by leaving the surplus lanes unpaired:
+    /// </para>
+    /// <list type="bullet">
+    /// <item>
+    /// A <b>merge</b> - several source lanes converging onto one destination lane - is derived as one
+    /// <see cref="LaneMapping.Matched"/> pair plus a <see cref="LaneMapping.SourceOnly"/> entry for each
+    /// of the other converging lanes. Those lanes terminate at the node.
+    /// </item>
+    /// <item>
+    /// An <b>exit</b> - one source lane diverging into several destination lanes - is derived as one
+    /// <see cref="LaneMapping.Matched"/> pair plus a <see cref="LaneMapping.DestOnly"/> entry for each of
+    /// the other diverging lanes, each with an insertion point anchored on the shared source lane.
+    /// </item>
+    /// </list>
+    /// <para>
+    /// Which lane of a merge or exit ends up paired is decided by the LCS, not by any explicit rule: it
+    /// is whichever choice keeps the pairing longest and in order. The remaining lanes are then
+    /// classified by which side they are on.
+    /// </para>
     /// </summary>
     public static class LaneMappingDeriver {
         /// <summary>
         /// Derives a mapping between two drafts, matching lanes whose <see cref="LaneSpec"/>s are equal.
+        /// <para>
+        /// Lanes that match on neither side become <see cref="LaneMapping.SourceOnly"/> (the converging
+        /// strips of a merge) or <see cref="LaneMapping.DestOnly"/> (the diverging strips of an exit).
+        /// </para>
         /// </summary>
         public static LaneMapping Derive(NodeSpecDraft source, NodeSpecDraft dest)
             => Derive(source, dest, static (a, b) => a.Equals(b));
@@ -32,6 +57,11 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// <summary>
         /// Derives a mapping between two drafts, treating lanes whose specs match under
         /// <paramref name="specComparer"/> as equal.
+        /// <para>
+        /// The comparer decides what counts as "the same lane" and therefore which lanes are left over as
+        /// <see cref="LaneMapping.SourceOnly"/> or <see cref="LaneMapping.DestOnly"/>. A looser comparer
+        /// (for example one that ignores width) pairs more lanes and so derives fewer merges and exits.
+        /// </para>
         /// </summary>
         public static LaneMapping Derive(NodeSpecDraft source, NodeSpecDraft dest, Func<LaneSpec, LaneSpec, bool> specComparer) {
             ArgumentNullException.ThrowIfNull(source, nameof(source));
@@ -93,6 +123,15 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// <summary>
         /// Finds where a destination-only lane at index <paramref name="destIndex"/> should be spliced
         /// into the source ordering: next to the nearest matched lane, on the side it sits on.
+        /// <para>
+        /// This is what places the diverging lanes of an <b>exit</b>. When several destination lanes
+        /// diverge from one source lane, they all resolve to that same source lane as their anchor, so
+        /// they are spliced in beside it rather than appended at the edge of the cross-section.
+        /// </para>
+        /// <para>
+        /// Returns a <see langword="null"/> anchor only when the source draft is empty, in which case
+        /// there is no lane to anchor on and the caller records no insertion.
+        /// </para>
         /// </summary>
         private static (LaneId? Anchor, InsertionSide Side) FindInsertionPoint(
             NodeSpecDraft source, NodeSpecDraft dest,
@@ -124,7 +163,14 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// Finds the source lane that the matched destination lane at <paramref name="destIndex"/> is
         /// paired with. The pairing is monotonic, so the n-th matched destination lane corresponds to
         /// the n-th matched source lane.
+        /// <para>
+        /// This is the step that turns a matched destination lane back into the source lane an
+        /// <b>exit</b> diverges from, which is then used as the anchor for the exit's other lanes.
+        /// </para>
         /// </summary>
+        /// <returns>
+        /// The paired source lane, or <see langword="null"/> if the destination lane is not matched.
+        /// </returns>
         private static LaneId? FindSourcePartner(
             NodeSpecDraft source, NodeSpecDraft dest,
             bool[] matchedSource, bool[] matchedDest, int destIndex) {

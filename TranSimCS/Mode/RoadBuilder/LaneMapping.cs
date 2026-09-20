@@ -333,8 +333,17 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// recorded insertion points. This is the ordering the destination cross-section is built from.
         /// <para>
         /// Source-only lanes do not appear: they terminate at the node and have no destination
-        /// counterpart. Insertion anchors are source lanes, so they are resolved to their destination
-        /// partners before the splice position is looked up.
+        /// counterpart. This is what makes a <b>merge</b> collapse correctly - the converging lanes are
+        /// simply absent from the result, leaving the single lane they merged into. Insertion anchors are
+        /// source lanes, so they are resolved to their destination partners before the splice position is
+        /// looked up.
+        /// </para>
+        /// <para>
+        /// Every <see cref="DestOnly"/> lane is placed beside its anchor, which is what makes an
+        /// <b>exit</b> land in the right part of the cross-section rather than at the edge. A
+        /// destination-only lane whose anchor is not in <see cref="Matched"/> is skipped, since its
+        /// position cannot be resolved; <see cref="Validate"/> does not reject that case, so callers that
+        /// need every lane placed should check the result against <see cref="DestOnly"/>.
         /// </para>
         /// </summary>
         public IReadOnlyList<LaneId> BuildDestinationOrder() {
@@ -357,7 +366,19 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// <summary>
         /// Validates that the mapping is internally consistent: every lane appears exactly once across
         /// the three lists, and every destination-only lane has an insertion point.
+        /// <para>
+        /// The insertion-point rule is what keeps an <b>exit</b> well formed: a diverging lane that is
+        /// not anchored anywhere could not be placed in the destination cross-section. A <b>merge</b>
+        /// needs no equivalent rule, because a converging lane is simply absent from the destination and
+        /// so has nothing to place.
+        /// </para>
+        /// <para>
+        /// This checks membership only, not provenance: <see cref="LaneId"/> values are unique within a
+        /// draft but not across drafts, so a lane from a different draft that happens to share an id
+        /// cannot be detected.
+        /// </para>
         /// </summary>
+        /// <exception cref="InvalidOperationException">The mapping is inconsistent.</exception>
         public void Validate(NodeSpecDraft source, NodeSpecDraft dest) {
             var seenSource = new HashSet<LaneId>();
             var seenDest = new HashSet<LaneId>();
@@ -398,6 +419,11 @@ namespace TranSimCS.Mode.RoadBuilder {
                     throw new InvalidOperationException($"Destination lane {lane.Id} is not accounted for by the mapping.");
         }
 
+        /// <summary>
+        /// A summary of the mapping. The source-only count is the number of converging strips beyond the
+        /// first of each <b>merge</b>, and the destination-only count is the number of diverging strips
+        /// beyond the first of each <b>exit</b>.
+        /// </summary>
         public override string ToString()
             => $"LaneMapping(matched: {matched.Count}, source-only: {sourceOnly.Count}, dest-only: {destOnly.Count})";
     }
