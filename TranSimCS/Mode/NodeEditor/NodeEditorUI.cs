@@ -27,8 +27,9 @@ namespace TranSimCS.Mode.NodeEditor {
         /// Draws the cross-section strip. Returns the lane the user clicked, or <see langword="null"/>.
         /// </summary>
         /// <param name="selected">The currently selected lane, or <see langword="null"/>.</param>
+        /// <param name="clipboard">Stores the menu's copied lane spec</param>
         /// <param name="node">The currently edited road node</param>
-        public static void ShowNodeEditor(HalfNode node, ref HalfLane selected) {
+        public static void ShowNodeEditor(HalfNode node, ref HalfLane selected, ref LaneSpec clipboard) {
             ImGui.Text("Road Node Editor");
 
             var totalWidth = node.Bounds.Width();
@@ -76,7 +77,7 @@ namespace TranSimCS.Mode.NodeEditor {
                 }
             }
 
-            DrawLaneInspector(node, selected);
+            DrawLaneInspector(node, selected, ref clipboard);
         }
 
         
@@ -114,7 +115,7 @@ namespace TranSimCS.Mode.NodeEditor {
         /// Draws the per-lane inspector for the selected lane, wired to
         /// <see cref="DearUI.InputLaneSpec"/>. Returns <see langword="true"/> if anything changed.
         /// </summary>
-        public static bool DrawLaneInspector(HalfNode node, HalfLane? lane) {
+        public static bool DrawLaneInspector(HalfNode node, HalfLane? lane, ref LaneSpec clipboard) {
             if (lane == null || lane.HalfNode != node) {
                 ImGui.TextDisabled("Select a lane to edit it.");
                 return false;
@@ -150,6 +151,11 @@ namespace TranSimCS.Mode.NodeEditor {
             ImGui.BeginDisabled(index + 1 >= draft.Count);
             if (ImGui.Button("Move right")) state.MoveLane(id, index + 1);
             ImGui.EndDisabled();*/
+
+            if (ImGui.Button("Copy")) clipboard = lane.LaneSpec;
+
+            ImGui.SameLine();
+            if (ImGui.Button("Paste")) lane.LaneSpec = clipboard;
 
             ImGui.SameLine();
             if (ImGui.Button("Delete")) node.Delete(lane);

@@ -197,7 +197,7 @@ namespace TranSimCS.SilkNet {
                     ImGui.EndTabItem();
                 }
                 if(obj is RoadNode node && ImGui.BeginTabItem("Road node editor")) {
-                    NodeEditorUI.ShowNodeEditor(node.FrontHalf, ref RoadNodeEditorHalfLane);
+                    NodeEditorUI.ShowNodeEditor(node.FrontHalf, ref RoadNodeEditorHalfLane, ref LaneSpec);
                     ImGui.EndTabItem();
                 }
                 ImGui.EndTabBar();
