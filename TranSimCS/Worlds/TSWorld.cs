@@ -105,6 +105,11 @@ namespace TranSimCS.Worlds
         public void Update(float deltaTime){
             OnUpdate?.Invoke(deltaTime);
 
+            //Safety net for a segment being deleted from under a car without the car being notified.
+            //Any path whose attachment points have died is orphaned here, so that it stops being offered
+            //to new traffic while remaining resolvable for traffic already on it.
+            Paths.OrphanDeadPaths();
+
             // Update logic for the world can be added here
             var dday = (60 / Settings.DayTimeLength) * deltaTime;
             if(float.IsFinite(dday)) DayTime += dday;

@@ -15,6 +15,7 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Range;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
+using TranSimCS.Worlds.Paths;
 
 namespace TranSimCS.Roads.Strip {
     public class LaneStrip : IEquatable<LaneStrip?>, IDraggableObj, IRoadElement, IExtent, ILaneSpec, IDemolish {
@@ -56,11 +57,139 @@ namespace TranSimCS.Roads.Strip {
             StartLane = startLane;
             EndLane = endLane;
             LaneSpecProp = new(spec ?? LaneSpec.Default, "spec", null);
-            LaneSpecProp.ValueChanged += (s, o, n) => Road?.FirePropertyEvent(Road, new(Guid + PropertyNames.NodeSpecSuffix));
+            LaneSpecProp.ValueChanged += (s, o, n) => {
+                //The lane geometry changed, so the path this strip owns is no longer valid.
+                if (_path != null) {
+                    _path.Spec = n;
+                    _path.MarkDirty();
+                }
+                Road?.FirePropertyEvent(Road, new(Guid + PropertyNames.NodeSpecSuffix));
+            };
         }
+
+        //Path ownership
+        private SplinePath? _path;
+        private HalfLaneAttachment? _startAttachment;
+        private HalfLaneAttachment? _endAttachment;
+
+        /// <summary>
+        /// The <see cref="SplinePath"/> owned by this lane strip.
+        /// <para>
+        /// The path is created on first access and is anchored to this strip's two half lanes. It is
+        /// owned by the strip: when the strip is removed from its road, the path is orphaned rather than
+        /// deleted, so that traffic already on it can leave.
+        /// </para>
+        /// <para>
+        /// Returns <see langword="null"/> when the strip is not part of a world yet, because a path
+        /// cannot be registered without a world to register it in.
+        /// </para>
+        /// </summary>
+        public SplinePath? Path {
+            get {
+                if (_path == null) CreatePath();
+                return _path;
+            }
+        }
+
+        /// <summary>
+        /// The attachment point at the start of this strip's path.
+        /// </summary>
+        public IPathAttachment? StartAttachment => _startAttachment;
+
+        /// <summary>
+        /// The attachment point at the end of this strip's path.
+        /// </summary>
+        public IPathAttachment? EndAttachment => _endAttachment;
+
+        /// <summary>
+        /// Creates the path owned by this lane strip and registers it with the world.
+        /// <para>
+        /// Does nothing when the strip is not part of a world, or when it already owns a path.
+        /// </para>
+        /// </summary>
+        private void CreatePath() => CreatePath(null);
+
+        /// <summary>
+        /// Creates the path owned by this lane strip and registers it with the world, using the given
+        /// GUID.
+        /// <para>
+        /// Does nothing when the strip is not part of a world, or when it already owns a path.
+        /// </para>
+        /// </summary>
+        /// <param name="guid">
+        /// The GUID to give the path, or <see langword="null"/> to generate a new one. A saved GUID is
+        /// passed here when loading a world, so that the same path is reused rather than a duplicate
+        /// being created.
+        /// </param>
+        private void CreatePath(Guid? guid) {
+            var world = Road?.World;
+            if (world == null) return;
+            if (_path != null) return;
+
+            _startAttachment = new HalfLaneAttachment(StartLane);
+            _endAttachment = new HalfLaneAttachment(EndLane);
+
+            var claim = new LaneStripPathClaim(this, _startAttachment, _endAttachment);
+            _path = new SplinePath(claim, guid, _startAttachment, _endAttachment);
+            _path.Spec = LaneSpec;
+            world.Paths.AddPath(_path);
+        }
+
+        /// <summary>
+        /// Gets the path owned by this lane strip, creating it with the given GUID if it does not exist
+        /// yet.
+        /// <para>
+        /// This is the entry point used when loading a world. The GUID has to be supplied at creation
+        /// time because <see cref="Obj.Guid"/> is set-once, so a path that already exists keeps its own
+        /// GUID and the supplied one is ignored.
+        /// </para>
+        /// </summary>
+        /// <param name="guid">The GUID to give the path if it has to be created.</param>
+        /// <returns>The existing or newly created path, or <see langword="null"/> when the strip is not
+        /// part of a world.</returns>
+        public SplinePath? GetOrCreatePath(Guid guid) {
+            if (_path == null) CreatePath(guid);
+            return _path;
+        }
+
+        /// <summary>
+        /// Orphans the path owned by this lane strip.
+        /// <para>
+        /// Called when the strip is removed from its road. The path is not deleted: it becomes
+        /// <see cref="PathState.Orphaned"/>, which keeps it resolvable by GUID and by direct reference so
+        /// that traffic already on it can leave, while removing it from the spatial index so that no new
+        /// traffic is routed onto it.
+        /// </para>
+        /// <para>
+        /// This is safe to call more than once and safe to call when no path has been created.
+        /// </para>
+        /// </summary>
+        internal void OrphanPath() {
+            if (_path == null) return;
+            if (_path.CurrentState != PathState.Active) return;
+            _path.Displace(null);
+        }
+
+        /// <summary>
+        /// The path owned by this lane strip, or <see langword="null"/> if none has been created.
+        /// <para>
+        /// Unlike <see cref="Path"/>, this does not create the path as a side effect.
+        /// </para>
+        /// </summary>
+        public SplinePath? ExistingPath => _path;
 
         //Cache
         internal readonly LaneStripCache _cache;
+
+        /// <summary>
+        /// The centre line lookup table of this lane strip.
+        /// <para>
+        /// For a strip that has been removed from its road, the centre line cannot be regenerated, so
+        /// the last generated lookup table is returned instead. This keeps the property non-null for
+        /// callers that are still draining traffic off a deleted strip, and avoids a
+        /// <see cref="NullReferenceException"/> when a segment is deleted from under a car.
+        /// </para>
+        /// </summary>
         public OrthodistantLUT SplineLUT => _cache.CenterLUT;
         public GridMesh<Vector3, RoadSplineComponent> AllStrips => _cache.AllStrips;
         public MultiMesh GetMesh() => _cache.Mesh;
@@ -134,6 +263,7 @@ namespace TranSimCS.Roads.Strip {
         }
 
         public void Destroy() {
+            OrphanPath();
             Road?.RemoveLaneStrip(this);
             InvalidateMesh();
         }
@@ -197,6 +327,9 @@ namespace TranSimCS.Roads.Strip {
 
         public bool IsReverse() => StartLane.HalfNode == Road?.EndNode && EndLane != StartLane;
 
-        public void Demolish() => Road.RemoveLaneStrip(this);
+        public void Demolish() {
+            OrphanPath();
+            Road.RemoveLaneStrip(this);
+        }
     }
 }

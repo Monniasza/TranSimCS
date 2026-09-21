@@ -4,6 +4,7 @@ using System.Text.Json;
 using TranSimCS.Cars;
 using TranSimCS.Roads;
 using TranSimCS.Save2;
+using TranSimCS.Worlds.Paths;
 
 namespace TranSimCS.Worlds {
     public partial class TSWorld {
@@ -29,6 +30,7 @@ namespace TranSimCS.Worlds {
             options.Converters.Add(new Save2.ObjPosConverter());
             options.Converters.Add(new Save2.LaneSpecConverter());
             options.Converters.Add(new Save2.LaneConverter());
+            options.Converters.Add(new Save2.SplinePathConverter(this));
             options.Converters.Add(new Save2.TSWorldConverter());
             options.Converters.Add(new Save2.Vector3iConverter());
 
@@ -82,6 +84,18 @@ namespace TranSimCS.Worlds {
                     case "trafficlights":
                         TrafficLights.data.Clear();
                         TrafficLights.ReadFromJson(ref reader0, options);
+                        break;
+                    case "paths":
+                        //Paths are restored after the road network, because a path references the lane
+                        //strip that owns it. Each entry carries the path GUID, which is what makes the
+                        //same path reusable after loading rather than a duplicate being created.
+                        var pathConverter = new Save2.SplinePathConverter(this);
+                        reader0.Read();
+                        if (reader0.TokenType != JsonTokenType.StartArray)
+                            JsonProcessor.FailTokenTypes(ref reader0, JsonTokenType.StartArray);
+                        while (reader0.Read() && reader0.TokenType != JsonTokenType.EndArray) {
+                            pathConverter.Read(ref reader0, typeof(SplinePath), options);
+                        }
                         break;
                 }
             }, true);

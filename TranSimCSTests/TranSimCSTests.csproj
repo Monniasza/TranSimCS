@@ -24,4 +24,13 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <!--
+    Test worlds are embedded into the test assembly rather than read from disk, so that the tests do
+    not depend on the working directory or on files being copied to the output folder.
+    Regenerate them with the TestWorldGen tool in the tools folder.
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="TestWorlds\**\*.json" />
+  </ItemGroup>
+
 </Project>

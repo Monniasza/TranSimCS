@@ -1,0 +1,155 @@
+{
+  "nodes": [
+    {
+      "id": "a830cf11-2cc7-4a93-8b7e-0a6ce950a3ba",
+      "pos": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "azimuth": 0,
+        "inclination": 0,
+        "tilt": 0
+      },
+      "lanes": [
+        {
+          "left": -3.25,
+          "right": -0.25,
+          "spec": {
+            "color": "#808080FF",
+            "vehicleTypes": 143,
+            "flags": 0,
+            "width": 3,
+            "speedLimit": 50
+          },
+          "guid": "5e074626-e8fe-4552-8eb9-8f4853a5c22d",
+          "frontLight": false,
+          "rearLight": false
+        },
+        {
+          "left": 0.25,
+          "right": 3.25,
+          "spec": {
+            "color": "#808080FF",
+            "vehicleTypes": 143,
+            "flags": 0,
+            "width": 3,
+            "speedLimit": 50
+          },
+          "guid": "55724d6c-119c-42b8-af67-e86a3da4c522",
+          "frontLight": false,
+          "rearLight": false
+        }
+      ],
+      "name": "A"
+    },
+    {
+      "id": "865e0219-81c8-4f3a-b32b-4c0749ce144f",
+      "pos": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 100
+        },
+        "azimuth": 0,
+        "inclination": 0,
+        "tilt": 0
+      },
+      "lanes": [
+        {
+          "left": -3.25,
+          "right": -0.25,
+          "spec": {
+            "color": "#808080FF",
+            "vehicleTypes": 143,
+            "flags": 0,
+            "width": 3,
+            "speedLimit": 50
+          },
+          "guid": "94654272-6211-48c8-bef5-bda6f81545d7",
+          "frontLight": false,
+          "rearLight": false
+        },
+        {
+          "left": 0.25,
+          "right": 3.25,
+          "spec": {
+            "color": "#808080FF",
+            "vehicleTypes": 143,
+            "flags": 0,
+            "width": 3,
+            "speedLimit": 50
+          },
+          "guid": "23211e40-a892-457b-9366-0d7c69c1b80b",
+          "frontLight": false,
+          "rearLight": false
+        }
+      ],
+      "name": "B"
+    }
+  ],
+  "segments": [
+    {
+      "guid": "138648e1-804a-4e80-86ce-f1f33cb63ae2",
+      "start": [
+        "a830cf11-2cc7-4a93-8b7e-0a6ce950a3ba",
+        0
+      ],
+      "end": [
+        "865e0219-81c8-4f3a-b32b-4c0749ce144f",
+        1
+      ],
+      "lanes": [
+        {
+          "start": "\u002B5e074626-e8fe-4552-8eb9-8f4853a5c22d",
+          "end": "-23211e40-a892-457b-9366-0d7c69c1b80b",
+          "spec": {
+            "color": "#808080FF",
+            "vehicleTypes": 143,
+            "flags": 0,
+            "width": 3,
+            "speedLimit": 50
+          }
+        },
+        {
+          "start": "-94654272-6211-48c8-bef5-bda6f81545d7",
+          "end": "\u002B55724d6c-119c-42b8-af67-e86a3da4c522",
+          "spec": {
+            "color": "#808080FF",
+            "vehicleTypes": 143,
+            "flags": 0,
+            "width": 3,
+            "speedLimit": 50
+          }
+        }
+      ],
+      "finish": {
+        "surface": 2,
+        "angle": 0.7853982,
+        "depth": 10
+      }
+    }
+  ],
+  "sections": [],
+  "buildings": [],
+  "cars": [],
+  "trafficLights": [],
+  "paths": [
+    {
+      "guid": "38d0c5f6-6ca8-47f3-a90e-5b403188e066",
+      "strip": [
+        "\u002B5e074626-e8fe-4552-8eb9-8f4853a5c22d",
+        "-23211e40-a892-457b-9366-0d7c69c1b80b"
+      ]
+    },
+    {
+      "guid": "13b5f2c2-f8a1-428c-8518-3fa320c9395d",
+      "strip": [
+        "-94654272-6211-48c8-bef5-bda6f81545d7",
+        "\u002B55724d6c-119c-42b8-af67-e86a3da4c522"
+      ]
+    }
+  ],
+  "daytime": 0
+}

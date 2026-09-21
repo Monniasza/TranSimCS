@@ -119,6 +119,12 @@ namespace TranSimCS.Worlds {
                 return;
             }
             var laneStrip = e.lane;
+
+            //Orphan the path owned by this strip before its connections are torn down. The path is not
+            //deleted: it stays resolvable by GUID and by direct reference so that traffic already on it
+            //can leave, but it leaves the spatial index so no new traffic is routed onto it.
+            laneStrip.OrphanPath();
+
             laneStrip.StartLane._connectedLaneStrips.Remove(new(laneStrip, SegmentHalf.Start));
             laneStrip.EndLane._connectedLaneStrips.Remove(new(laneStrip, SegmentHalf.End));
             laneStrip.StartLane.Lane.connections.Remove(laneStrip);

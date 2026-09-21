@@ -28,6 +28,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <Optimize>True</Optimize>
   </PropertyGroup>
+  <!--
+    The test project exercises internal members such as Car.Update and PathSystem.RunGC, which are the
+    entry points the simulation itself uses.
+  -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="TranSimCSTests" />
+  </ItemGroup>
 	<ItemGroup>
 		<Content Include="Files\**">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>

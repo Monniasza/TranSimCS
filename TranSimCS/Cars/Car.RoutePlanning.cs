@@ -182,10 +182,25 @@ namespace TranSimCS.Cars {
             return obstacle;
         }
 
+        /// <summary>
+        /// Computes the world-space reference frame of this car at its current position along its route.
+        /// <para>
+        /// This is robust against a segment being deleted from under the car without the car being
+        /// notified: a route element whose strip has died is skipped rather than dereferenced. If no
+        /// live element can be found, the car's last known frame is returned instead of throwing, so
+        /// that a deletion can never crash the simulation.
+        /// </para>
+        /// </summary>
+        /// <returns>The reference frame of the car.</returns>
         public Transform3 GetPositionFrame(){
             var distance = RoutePositionFromStart;
             for (int i = 0; i < RouteElementCount; i++) {
                 var road = GetRouteElement(i);
+
+                //The strip may have been deleted from under us. Skip it instead of dereferencing a
+                //dead strip, which would throw a NullReferenceException.
+                if (road.road == null || road.road.IsDead) continue;
+
                 var newDistance = distance - road.road.SplineLUT.Length;
                 if (newDistance >= 0) {
                     distance = newDistance;
@@ -208,8 +223,11 @@ namespace TranSimCS.Cars {
                 return resample;
             }
 
-            Debug.Fail("Car is beyond the end, but not removed");
-            throw null;
+            //No live route element could be found. This happens when the whole route was deleted from
+            //under the car. Fall back to the last known frame rather than throwing, so that the car
+            //survives until the next update trims or removes it.
+            log.Warn($"The car {Guid} has no live route element to position against. Keeping the last known frame.");
+            return new Transform3(meshInstance.Transform.ToMatrix());
         }
     }
 }

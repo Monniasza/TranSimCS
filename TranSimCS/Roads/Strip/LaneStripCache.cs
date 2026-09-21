@@ -44,11 +44,36 @@ namespace TranSimCS.Roads.Strip {
 
 
         //Generation methods
+        /// <summary>
+        /// Generates the centre line lookup table for the lane strip.
+        /// <para>
+        /// The centre line is normally derived from the road's spline. When the strip has been removed
+        /// from its road, the road spline is no longer available, so the strip's own
+        /// <see cref="SplinePath"/> is used instead. That path is orphaned rather than deleted when the
+        /// strip is removed, so it still serves its last generated spline and traffic already on the
+        /// strip can finish leaving it without a <see cref="NullReferenceException"/>.
+        /// </para>
+        /// </summary>
+        /// <returns>The centre line lookup table.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when the strip has no road and no path to fall back to.
+        /// </exception>
         private OrthodistantLUT GenerateCenterLineLUT() {
             var startT = LaneStrip.StartLane.MiddlePosition;
             var endT = LaneStrip.EndLane.MiddlePosition;
             if (LaneStrip.IsReverse()) DataUtil.Swap(ref startT, ref endT);
-            var points = LaneStrip.Road.OrthodistantBasis.Offset(startT, -endT);
+
+            var road = LaneStrip.Road;
+            if (road == null) {
+                //The strip was removed from its road. Fall back to the strip's own path, which is
+                //orphaned rather than deleted and therefore still serves its last generated spline.
+                var path = LaneStrip.ExistingPath;
+                if (path == null)
+                    throw new InvalidOperationException("Cannot generate a centre line for a lane strip with no road and no path");
+                return path.GetSpline();
+            }
+
+            var points = road.OrthodistantBasis.Offset(startT, -endT);
             return new OrthodistantLUT(points);
         }
         private GridMesh<Vector3, RoadSplineComponent> GenerateStripList() {
