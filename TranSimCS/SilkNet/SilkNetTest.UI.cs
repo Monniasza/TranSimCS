@@ -156,31 +156,39 @@ namespace TranSimCS.SilkNet {
             if(ImGui.Begin($"Selected object: {obj.GetType()} {obj.Guid}###selection")) {
                 ImGui.Text($"Picked coordinates: {selection.Coordinates.X}  {selection.Coordinates.Y}  {selection.Coordinates.Z}");
                 ImGui.Text($"Picked tag: {tag}");
-                if(obj is IPosition positionable) {
+
+
+
+                ImGui.BeginTabBar("object-tabs");
+                if (obj is IPosition positionable && ImGui.BeginTabItem("Position")) {
                     DearUI.InputObjPos("Position/Rotation", positionable);
                     if(ImGui.Button("Track this object")) {
                         TrackPosition = positionable;
                     }
+                    ImGui.EndTabItem();
                 }
-                if (tag is ILaneSpec lanespeccable) {
+                if (tag is ILaneSpec lanespeccable && ImGui.BeginTabItem("Lane spec")) {
                     DearUI.InputLaneSpec("Lane spec", lanespeccable);
                     if (ImGui.Button("Copy lane spec")) LaneSpec = lanespeccable.LaneSpec;
                     ImGui.SameLine();
                     if (ImGui.Button("Paste lane spec")) lanespeccable.LaneSpec = LaneSpec;
+                    ImGui.EndTabItem();
                 }
-                if(obj is IRoadFinish roadFinishable) {
+                if(obj is IRoadFinish roadFinishable && ImGui.BeginTabItem("Road finish")) {
                     DearUI.InputRoadFinish("Road finish", roadFinishable.FinishProperty);
                     if (ImGui.Button("Copy road finish")) RoadFinish = roadFinishable.FinishProperty.Value;
                     ImGui.SameLine();
                     if (ImGui.Button("Paste road finish")) roadFinishable.FinishProperty.Value = RoadFinish;
+                    ImGui.EndTabItem();
                 }
-                if(tag is LaneStrip strip) {
+                if(tag is LaneStrip strip && ImGui.BeginTabItem("Lane strip")) {
                     ImGui.DragFloat("Spawn car speed [m/s]", ref SpawnCarVelocity, 0.05f, 0, 100, "%.2f");
                     if(ImGui.Button("Spawn a car")) {
                         Car.LaunchCar(World, strip, SpawnCarVelocity);
                     }
+                    ImGui.EndTabItem();
                 }
-                if(tag is HalfLane lane) {
+                if(tag is HalfLane lane && ImGui.BeginTabItem("Lane editor")) {
                     float lpos = lane.Bounds.Min;
                     float cpos = lane.MiddlePosition;
                     float rpos = lane.Bounds.Max;
@@ -208,14 +216,17 @@ namespace TranSimCS.SilkNet {
                     if (dimensionsChanged) {
                         lane.Bounds = new(lpos, rpos);
                     }
+                    ImGui.EndTabItem();
                 }
-                if(obj is Car car) {
+                if(obj is Car car && ImGui.BeginTabItem("Car")) {
                     ImGui.DragFloat("Speed [m/s]", ref car.Speed, 0.05f, 0, 100, "%.2f");
+                    ImGui.EndTabItem();
                 }
-                if(obj is RoadNode node) {
+                if(obj is RoadNode node && ImGui.BeginTabItem("Road node editor")) {
                     NodeEditorUI.ShowNodeEditor(node.FrontHalf, ref RoadNodeEditorHalfLane);
+                    ImGui.EndTabItem();
                 }
-
+                ImGui.EndTabBar();
                 ImGui.End();
             }
         }
