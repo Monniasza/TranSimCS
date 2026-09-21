@@ -11,6 +11,8 @@ using TranSimCS.Property;
 using TranSimCS.Setting;
 using TranSimCS.Worlds.Paths;
 using TranSimCS.Cars;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace TranSimCS.Worlds
 {
@@ -126,6 +128,11 @@ namespace TranSimCS.Worlds
             Nodes.data.Clear();
             Buildings.data.Clear();
             Cars.data.Clear();
+            TrafficLights.data.Clear();
         }
+
+        //Centralized object indexing
+        internal Dictionary<Guid, Obj> _objects = [];
+        public ReadOnlyDictionary<Guid, Obj> ObjectsById => new(_objects);
     }
 }

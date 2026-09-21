@@ -51,12 +51,14 @@ namespace TranSimCS.Worlds.Stack {
         private void ElementAdded(TObj obj) {
             obj.World = World;
             obj.PropertyChanged += ElementChanged;
+            World._objects.Add(obj.Guid, obj);
             FireAdded(obj);
         }
 
         private void ElementRemoved(TObj obj) {
             obj.World = null;
             obj.PropertyChanged -= ElementChanged;
+            World._objects.Remove(obj.Guid);
             FireRemoved(obj);
         }
         private void ElementChanged(object sender, PropertyChangedEventArgs e) {
