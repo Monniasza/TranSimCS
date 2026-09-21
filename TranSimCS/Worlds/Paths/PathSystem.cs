@@ -34,6 +34,7 @@ namespace TranSimCS.Worlds.Paths {
                 //Add a path to the spatial index
                 _pathsSpatial.Add(path);
             }
+            Owner._objects.Add(path.Guid, path);
             _paths.Add(path.Guid, path);
         }
 
@@ -50,6 +51,7 @@ namespace TranSimCS.Worlds.Paths {
                     path.Collect();
                     _pathsSpatial.Remove(path);
                     _paths.Remove(path.Guid);
+                    Owner._objects.Remove(path.Guid);
                 }
             }
         }
