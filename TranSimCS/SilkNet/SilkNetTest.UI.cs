@@ -3,6 +3,7 @@ using System.IO;
 using System.Numerics;
 using ImGuiNET;
 using TranSimCS.Cars;
+using TranSimCS.Mode.NodeEditor;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
@@ -210,6 +211,9 @@ namespace TranSimCS.SilkNet {
                 }
                 if(obj is Car car) {
                     ImGui.DragFloat("Speed [m/s]", ref car.Speed, 0.05f, 0, 100, "%.2f");
+                }
+                if(obj is RoadNode node) {
+                    NodeEditorUI.ShowNodeEditor(node.FrontHalf, ref RoadNodeEditorHalfLane);
                 }
 
                 ImGui.End();

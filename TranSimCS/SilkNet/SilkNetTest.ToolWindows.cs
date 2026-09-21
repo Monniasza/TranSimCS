@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ImGuiNET;
 using TranSimCS.Mode.RoadConstruction;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
 using TranSimCS.SilkNet.RoadConstruction;
 using TranSimCS.Snapping;
 
@@ -97,8 +98,10 @@ namespace TranSimCS.SilkNet {
                 bool isActive = SegmentPresets.DirectionChoice == options[i];
                 if(ImGui.Checkbox("Direction: " + names[i], ref isActive)) SegmentPresets.DirectionChoice = options[i];
             }
-
-            
         }
+
+        //Road node editor
+        public RoadNode RoadNodeClipboard = new("", default);
+        public HalfLane RoadNodeEditorHalfLane;
     }
 }

@@ -1,0 +1,173 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Text;
+using System.Threading.Tasks;
+using ImGuiNET;
+using LanguageExt;
+using TranSimCS.Geometry;
+using TranSimCS.Mode.RoadBuilder;
+using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
+using TranSimCS.SilkNet;
+
+namespace TranSimCS.Mode.NodeEditor {
+    public static class NodeEditorUI {
+        /// <summary>Pixels per metre in the strip widget.</summary>
+        private const float PixelsPerMeter = 24f;
+
+        /// <summary>Height of the strip widget in pixels.</summary>
+        private const float StripHeight = 64f;
+
+        /// <summary>Width of the clickable gap between lanes, in pixels.</summary>
+        private const float GapWidth = 8f;
+
+        /// <summary>
+        /// Draws the cross-section strip. Returns the lane the user clicked, or <see langword="null"/>.
+        /// </summary>
+        /// <param name="selected">The currently selected lane, or <see langword="null"/>.</param>
+        /// <param name="node">The currently edited road node</param>
+        public static void ShowNodeEditor(HalfNode node, ref HalfLane selected) {
+            ImGui.Text("Road Node Editor");
+
+            var totalWidth = node.Bounds.Width();
+            var stripWidth = MathF.Max(totalWidth * PixelsPerMeter, 64f);
+            var drawList = ImGui.GetForegroundDrawList();
+            var origin = ImGui.GetCursorScreenPos();
+            var clicked = ImGui.InvisibleButton("##cross-section", new Vector2(stripWidth, StripHeight));
+            var hovered = ImGui.IsItemHovered();
+            var mouse = ImGui.GetIO().MousePos;
+
+            bool InRectangle(Vector2 min, Vector2 max) =>
+                mouse.X >= min.X && mouse.X <= max.X &&
+                mouse.Y >= min.Y && mouse.Y <= max.Y;
+
+            //Map a cross-section coordinate to a pixel offset within the strip.
+            float ToPixel(float offset) => (offset - node.Bounds.Min) * PixelsPerMeter;
+
+
+            for (int i = 0; i < node.LaneCount; i++) {
+                var lane = node.GetLaneByIndex(i);
+                var isSelected = lane == selected;
+                var left = origin.X + ToPixel(lane.Bounds.Min);
+                var right = origin.X + ToPixel(lane.Bounds.Max);
+                var borderColor = isSelected ? new Vector4(1, 1, 0, 1) : new Vector4(0, 0, 0, 0.6f);
+                var min = new Vector2(left, origin.Y);
+                var max = new Vector2(right, origin.Y + StripHeight);
+
+                var color = lane.LaneSpec.Color.ToVector4();
+                var fill = ImGui.GetColorU32(new Vector4(color.X, color.Y, color.Z, 0.85f));
+                drawList.AddRectFilled(min, max, fill);
+                drawList.AddRect(min, max,
+                    ImGui.GetColorU32(borderColor), 0, ImDrawFlags.None, isSelected ? 3f : 1f);
+
+                //Label the lane with its width, when there is room.
+                if (right - left > 28) {
+                    var label = $"{lane.LaneSpec.Width:0.#}";
+                    var size = ImGui.CalcTextSize(label);
+                    drawList.AddText(new Vector2((left + right) / 2 - size.X / 2, origin.Y + 4),
+                        ImGui.GetColorU32(new Vector4(1, 1, 1, 0.9f)), label);
+                }
+
+                if (clicked && InRectangle(min, max)) {
+                    //Lane picked
+                    selected = lane;
+                }
+            }
+        }
+
+        
+
+        /// <summary>
+        /// The cross-section coordinate of the gap at <paramref name="index"/>, matching the pickable
+        /// regions the renderer publishes.
+        /// </summary>
+        private static float GapCenter(Geometry.Interval<float>[] bounds, int index) {
+            if (index == 0) return bounds[0].Min;
+            if (index == bounds.Length) return bounds[^1].Max;
+            return (bounds[index - 1].Max + bounds[index].Min) / 2;
+        }
+
+        /// <summary>
+        /// Draws a small arrow showing which way traffic flows in the lane.
+        /// </summary>
+        private static void DrawDirectionArrow(ImDrawListPtr drawList, float left, float right, float y, bool reversed) {
+            var center = (left + right) / 2;
+            var half = MathF.Min((right - left) / 4, 8f);
+            if (half < 3) return;
+
+            var color = ImGui.GetColorU32(new Vector4(1, 1, 1, 0.9f));
+            var tip = reversed ? center - half : center + half;
+            var tail = reversed ? center + half : center - half;
+            drawList.AddLine(new Vector2(tail, y), new Vector2(tip, y), color, 2f);
+            drawList.AddTriangleFilled(
+                new Vector2(tip, y),
+                new Vector2(tip + (reversed ? half / 2 : -half / 2), y - half / 2),
+                new Vector2(tip + (reversed ? half / 2 : -half / 2), y + half / 2),
+                color);
+        }
+
+        /// <summary>
+        /// Draws the per-lane inspector for the selected lane, wired to
+        /// <see cref="DearUI.InputLaneSpec"/>. Returns <see langword="true"/> if anything changed.
+        /// </summary>
+        public static bool DrawLaneInspector(RoadBuilderState state, LaneId? selected) {
+            if (selected is not LaneId id || state.Draft == null || !state.Draft.Contains(id)) {
+                ImGui.TextDisabled("Select a lane to edit it.");
+                return false;
+            }
+
+            var draft = state.Draft;
+            var index = draft.IndexOf(id);
+            var spec = draft.Get(id).Spec;
+            var changed = false;
+
+            ImGui.Text($"Lane {index + 1} of {draft.Count}");
+
+            //The spec editor already handles colour, width, speed, line width, vehicle types and flags.
+            if (DearUI.InputLaneSpec("Lane specification", ref spec)) {
+                state.SetLaneSpec(id, spec);
+                changed = true;
+            }
+
+            ImGui.Separator();
+
+            //Direction toggle (§5.4).
+            var reversed = spec.Flags.HasFlag(LaneFlags.IsMerge);
+            if (ImGui.Button(reversed ? "Direction: reversed" : "Direction: forward"))
+                state.ToggleDirection(id);
+
+            //Exit (§5.5): insert a copy beside this lane without moving it.
+            if (ImGui.Button("Exit left")) state.ExitLane(id, -1);
+            ImGui.SameLine();
+            if (ImGui.Button("Exit right")) state.ExitLane(id, 1);
+
+            //Merge with the lane to the right (§5.2).
+            if (index + 1 < draft.Count) {
+                if (ImGui.Button("Merge with right")) state.MergeLanes(index);
+            } else {
+                ImGui.BeginDisabled();
+                ImGui.Button("Merge with right");
+                ImGui.EndDisabled();
+            }
+
+            ImGui.SameLine();
+            if (ImGui.Button("Split")) state.SplitLane(index);
+
+            //Reorder.
+            ImGui.BeginDisabled(index == 0);
+            if (ImGui.Button("Move left")) state.MoveLane(id, index - 1);
+            ImGui.EndDisabled();
+            ImGui.SameLine();
+            ImGui.BeginDisabled(index + 1 >= draft.Count);
+            if (ImGui.Button("Move right")) state.MoveLane(id, index + 1);
+            ImGui.EndDisabled();
+
+            ImGui.SameLine();
+            if (ImGui.Button("Delete")) state.RemoveLane(id);
+
+            return changed;
+        }
+    }
+}
