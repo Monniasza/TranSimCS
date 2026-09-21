@@ -78,7 +78,8 @@ namespace TranSimCS.Mode.NodeEditor {
                 }
             }
 
-            DrawLaneInspector(node, selected, ref clipboard);
+            DrawLaneInspector(node, ref selected, ref clipboard);
+            if (selected == null) return;
 
             ImGui.SeparatorText("Lane spec clipboard");
             if (ImGui.BeginChild("###laneeditorclip")) {
@@ -122,7 +123,7 @@ namespace TranSimCS.Mode.NodeEditor {
         /// Draws the per-lane inspector for the selected lane, wired to
         /// <see cref="DearUI.InputLaneSpec"/>. Returns <see langword="true"/> if anything changed.
         /// </summary>
-        public static bool DrawLaneInspector(HalfNode node, HalfLane? lane, ref LaneSpec clipboard) {
+        public static bool DrawLaneInspector(HalfNode node, ref HalfLane? lane, ref LaneSpec clipboard) {
             if (lane == null || lane.HalfNode != node) {
                 ImGui.TextDisabled("Select a lane to edit it.");
                 return false;
@@ -148,7 +149,11 @@ namespace TranSimCS.Mode.NodeEditor {
             if (ImGui.Button("Paste")) lane.LaneSpec = clipboard;
 
             ImGui.SameLine();
-            if (ImGui.Button("Delete")) node.Delete(lane);
+            if (ImGui.Button("Delete")) {
+                node.Delete(lane);
+                lane = null;
+                return true;
+            }
 
             ImGui.SameLine();
             if (ImGui.Button("Insert a lane on the left")) HalfNodeMethods.InsertOnLeft(lane, clipboard);
