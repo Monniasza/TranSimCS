@@ -142,25 +142,6 @@ namespace TranSimCS.Mode.NodeEditor {
 
             ImGui.Separator();
 
-            /*//Exit (§5.5): insert a copy beside this lane without moving it.
-            if (ImGui.Button("Exit left")) state.ExitLane(id, -1);
-            ImGui.SameLine();
-            if (ImGui.Button("Exit right")) state.ExitLane(id, 1);
-
-            ImGui.SameLine();
-            if (ImGui.Button("Split")) state.SplitLane(index);
-
-            //Reorder.
-            ImGui.BeginDisabled(index == 0);
-            if (ImGui.Button("Move left")) state.MoveLane(id, index - 1);
-            ImGui.EndDisabled();
-            ImGui.SameLine();
-            ImGui.BeginDisabled(index + 1 >= draft.Count);
-            if (ImGui.Button("Move right")) state.MoveLane(id, index + 1);
-            ImGui.EndDisabled();*/
-
-
-
             if (ImGui.Button("Copy")) clipboard = lane.LaneSpec;
 
             ImGui.SameLine();
@@ -170,60 +151,27 @@ namespace TranSimCS.Mode.NodeEditor {
             if (ImGui.Button("Delete")) node.Delete(lane);
 
             ImGui.SameLine();
-            if (ImGui.Button("Insert a lane on the left")) InsertOnLeft(lane, clipboard);
+            if (ImGui.Button("Insert a lane on the left")) HalfNodeMethods.InsertOnLeft(lane, clipboard);
 
             ImGui.SameLine();
-            if (ImGui.Button("Insert a lane on the right")) InsertOnRight(lane, clipboard);
+            if (ImGui.Button("Insert a lane on the right")) HalfNodeMethods.InsertOnRight(lane, clipboard);
+
+            ImGui.SameLine();
+            if (ImGui.Button("Insert a space on the left")) HalfNodeMethods.InsertSpaceOnLeft(lane, clipboard.Width);
+
+            ImGui.SameLine();
+            if (ImGui.Button("Insert a space on the right")) HalfNodeMethods.InsertSpaceOnRight(lane, clipboard.Width);
+
+            ImGui.SameLine();
+            if (ImGui.Button("Pull lanes on the left towards the selection")) HalfNodeMethods.InsertSpaceOnLeft(lane, clipboard.Width);
+
+            ImGui.SameLine();
+            if (ImGui.Button("Pull lanes on the right towards the selection")) HalfNodeMethods.InsertSpaceOnRight(lane, clipboard.Width);
 
             EditHalfLaneBorders(lane);
 
             
             return changed;
-        }
-
-        private static ScratchArray<HalfLane> _insertLanesScratch = new();
-
-        /// <summary>
-        /// Insert a specified lane directly to the right of the anchor, moving other lanes if needed.
-        /// </summary>
-        /// <param name="anchor">the lane on whose right side a new lane will be inserted and other lanes shifted to make space</param>
-        /// <param name="spec">the lane spec for a new lane</param>
-        public static HalfLane InsertOnRight(HalfLane anchor, LaneSpec spec) {
-            ArgumentNullException.ThrowIfNull(anchor, nameof(anchor));
-            if(spec.Width < 0) throw new ArgumentException("width < 0");
-
-            int startingIndex = anchor.Index;
-            int affectedLaneCount = anchor.RoadNode.Lanes.Count - startingIndex - 1;
-            var affectedLanes = _insertLanesScratch.GetArray(affectedLaneCount);
-            for(int i = 0; i < affectedLaneCount; i++)
-                affectedLanes[i] = anchor.HalfNode.GetLaneByIndex(i + startingIndex + 1);
-            for (int i = 0; i < affectedLaneCount; i++)
-                affectedLanes[i].MiddlePosition += spec.Width;
-
-            float newPosition = anchor.MiddlePosition + (spec.Width + anchor.Width) / 2;
-            HalfLane result = anchor.HalfNode.AddLane(new LaneDefinition(newPosition, spec));
-            return result;
-        }
-        /// <summary>
-        /// Insert a specified lane directly to the left of the anchor, moving other lanes if needed.
-        /// </summary>
-        /// <param name="anchor">the lane on whose left side a new lane will be inserted and other lanes shifted to make space</param>
-        /// <param name="spec">the lane spec for a new lane</param>
-        public static HalfLane InsertOnLeft(HalfLane anchor, LaneSpec spec) {
-            ArgumentNullException.ThrowIfNull(anchor, nameof(anchor));
-            if (spec.Width < 0) throw new ArgumentException("width < 0");
-
-            int startingIndex = anchor.Index;
-            int affectedLaneCount = startingIndex;
-            var affectedLanes = _insertLanesScratch.GetArray(affectedLaneCount);
-            for (int i = 0; i < affectedLaneCount; i++)
-                affectedLanes[i] = anchor.HalfNode.GetLaneByIndex(i);
-            for (int i = 0; i < affectedLaneCount; i++)
-                affectedLanes[i].MiddlePosition -= spec.Width;
-
-            float newPosition = anchor.MiddlePosition - (spec.Width + anchor.Width) / 2;
-            HalfLane result = anchor.HalfNode.AddLane(new LaneDefinition(newPosition, spec));
-            return result;
         }
 
         public static void EditHalfLaneBorders(HalfLane lane) {

@@ -5,10 +5,72 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TranSimCS.Collections;
 
 namespace TranSimCS.Roads.Node {
     public static class HalfNodeMethods {
+        private static ScratchArray<HalfLane> _insertLanesScratch = new();
+
         public static IList<HalfLane> GetLaneList(this HalfNode halfNode) => new HalfNodeLanesList(halfNode);
+
+        /// <summary>
+        /// Insert a specified lane directly to the right of the anchor, moving other lanes if needed.
+        /// </summary>
+        /// <param name="anchor">the lane on whose right side a new lane will be inserted and other lanes shifted to make space</param>
+        /// <param name="spec">the lane spec for a new lane</param>
+        public static HalfLane InsertOnRight(this HalfLane anchor, LaneSpec spec) {
+            ArgumentNullException.ThrowIfNull(anchor, nameof(anchor));
+            if (spec.Width < 0) throw new ArgumentException("width < 0");
+
+            InsertSpaceOnRight(anchor, spec.Width);
+
+            float newPosition = anchor.MiddlePosition + (spec.Width + anchor.Width) / 2;
+            HalfLane result = anchor.HalfNode.AddLane(new LaneDefinition(newPosition, spec));
+            return result;
+        }
+        /// <summary>
+        /// Insert a space on the right of a lane. Provide a negative value to reduce the space.
+        /// </summary>
+        /// <param name="anchor">the lane on whose right side other lanes will be shifted to make space</param>
+        /// <param name="width">amount to move lanes in meters</param>
+        public static void InsertSpaceOnRight(this HalfLane anchor, float width) {
+            int startingIndex = anchor.Index;
+            int affectedLaneCount = anchor.RoadNode.Lanes.Count - startingIndex - 1;
+            var affectedLanes = _insertLanesScratch.GetArray(affectedLaneCount);
+            for (int i = 0; i < affectedLaneCount; i++)
+                affectedLanes[i] = anchor.HalfNode.GetLaneByIndex(i + startingIndex + 1);
+            for (int i = 0; i < affectedLaneCount; i++)
+                affectedLanes[i].MiddlePosition += width;
+        }
+        /// <summary>
+        /// Insert a specified lane directly to the left of the anchor, moving other lanes if needed.
+        /// </summary>
+        /// <param name="anchor">the lane on whose left side a new lane will be inserted and other lanes shifted to make space</param>
+        /// <param name="spec">the lane spec for a new lane</param>
+        public static HalfLane InsertOnLeft(this HalfLane anchor, LaneSpec spec) {
+            ArgumentNullException.ThrowIfNull(anchor, nameof(anchor));
+            if (spec.Width < 0) throw new ArgumentException("width < 0");
+
+            InsertSpaceOnLeft(anchor, spec.Width);
+
+            float newPosition = anchor.MiddlePosition - (spec.Width + anchor.Width) / 2;
+            HalfLane result = anchor.HalfNode.AddLane(new LaneDefinition(newPosition, spec));
+            return result;
+        }
+        /// <summary>
+        /// Insert a space on the right of a lane. Provide a negative value to reduce the space.
+        /// </summary>
+        /// <param name="anchor">the lane on whose right side other lanes will be shifted to make space</param>
+        /// <param name="width">amount to move lanes in meters</param>
+        public static void InsertSpaceOnLeft(this HalfLane anchor, float width) {
+            int startingIndex = anchor.Index;
+            int affectedLaneCount = startingIndex;
+            var affectedLanes = _insertLanesScratch.GetArray(affectedLaneCount);
+            for (int i = 0; i < affectedLaneCount; i++)
+                affectedLanes[i] = anchor.HalfNode.GetLaneByIndex(i);
+            for (int i = 0; i < affectedLaneCount; i++)
+                affectedLanes[i].MiddlePosition -= width;
+        }
     }
     internal class HalfNodeLanesList(HalfNode halfNode) : IList<HalfLane> {
         public HalfLane this[int index] { get => halfNode.GetLaneByIndex(index); set => throw new ReadOnlyException(); }
@@ -28,7 +90,7 @@ namespace TranSimCS.Roads.Node {
         public bool Contains(HalfLane item) => item?.HalfNode == halfNode;
 
         public void CopyTo(HalfLane[] array, int arrayIndex) {
-            ArgumentNullException.ThrowIfNull(nameof(array));
+            ArgumentNullException.ThrowIfNull(array, nameof(array));
             if(arrayIndex < 0 || arrayIndex >= array.Length) throw new ArgumentOutOfRangeException(nameof(arrayIndex));
             for(int i = 0; i < Count && i+arrayIndex < array.Length; i++) array[i+arrayIndex] = this[i];
         }
