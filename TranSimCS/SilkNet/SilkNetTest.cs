@@ -94,7 +94,7 @@ namespace TranSimCS.SilkNet {
                 pickMode, new ModeDemolish(this), new ModeNode(this), new ModeSegment(this),
                 new ModeSection(this), new ModeConnection(this), new ModeMoveIt(this),
                 new ModeReverse(this), new ModeSplit(this), new ModeSpline(this),
-                new ModeTrafficLights(this), new ModeRoadBuilder(this),
+                new ModeTrafficLights(this), //new ModeRoadBuilder(this),
             ];
             _mode = pickMode;
             snappingGrid = new();
