@@ -22,7 +22,7 @@ namespace TranSimCS.Cars {
 
             var newBuffer = new RouteInput[newCapacity];
             Array.Copy(_routeBuffer, _routeBufferHead, newBuffer, 0, elementsBeforeEnd); //Copy elements before the end
-            if(elementsAfterEnd > 0) Array.Copy(_routeBuffer, 0, newBuffer, elementsBeforeEnd, elementsAfterEnd); //If needec, copy elements after the end
+            if(elementsAfterEnd > 0) Array.Copy(_routeBuffer, 0, newBuffer, elementsBeforeEnd, elementsAfterEnd); //If needed, copy elements after the end
 
             _routeBufferHead = 0;
             _routeBuffer = newBuffer;
