@@ -77,7 +77,7 @@ namespace TranSimCS.Roads.Node {
 
         public int Count => halfNode.LaneCount;
 
-        public bool IsReadOnly => true;
+        public bool IsReadOnly => false;
 
         public void Add(HalfLane item) => halfNode.AddLane(item.LaneNode);
 

@@ -21,8 +21,9 @@ namespace TranSimCS.Collections {
         /// <param name="length">requested minimum capacity of the array</param>
         public T[] GetArray(int length) {
             if(array.Length < length) {
-                int newCapacity = array.Length;
-                while (newCapacity < length) newCapacity *= 2;
+                int newCapacity = Math.Max(array.Length, 1);
+                while (newCapacity < length)
+                    newCapacity *= 2;
                 array = new T[newCapacity];
             }
             return array;
