@@ -189,33 +189,7 @@ namespace TranSimCS.SilkNet {
                     ImGui.EndTabItem();
                 }
                 if(tag is HalfLane lane && ImGui.BeginTabItem("Lane editor")) {
-                    float lpos = lane.Bounds.Min;
-                    float cpos = lane.MiddlePosition;
-                    float rpos = lane.Bounds.Max;
-                    float width = lane.Width;
-
-                    bool dimensionsChanged = false;
-                    if(ImGui.DragFloat("Move: L", ref lpos, 0.005f, rpos - 10, rpos)){
-                        if (lpos > rpos) lpos = rpos;
-                        cpos = (lpos + rpos) / 2;
-                        width = rpos - lpos;
-                        dimensionsChanged = true;
-                    }
-                    if(ImGui.DragFloat("C", ref cpos, 0.01f, -100, 100)) {
-                        float hwidth = width / 2l;
-                        lpos = cpos - hwidth;
-                        rpos = cpos + hwidth;
-                        dimensionsChanged = true;
-                    }
-                    if(ImGui.DragFloat("R", ref rpos, 0.005f, lpos, lpos + 10)){
-                        if (lpos > rpos) rpos = lpos;
-                        cpos = (lpos + rpos) / 2;
-                        width = rpos - lpos;
-                        dimensionsChanged = true;
-                    }
-                    if (dimensionsChanged) {
-                        lane.Bounds = new(lpos, rpos);
-                    }
+                    NodeEditorUI.EditHalfLaneBorders(lane);
                     ImGui.EndTabItem();
                 }
                 if(obj is Car car && ImGui.BeginTabItem("Car")) {

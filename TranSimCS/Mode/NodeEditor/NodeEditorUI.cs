@@ -75,6 +75,8 @@ namespace TranSimCS.Mode.NodeEditor {
                     selected = lane;
                 }
             }
+
+            DrawLaneInspector(node, selected);
         }
 
         
@@ -112,45 +114,30 @@ namespace TranSimCS.Mode.NodeEditor {
         /// Draws the per-lane inspector for the selected lane, wired to
         /// <see cref="DearUI.InputLaneSpec"/>. Returns <see langword="true"/> if anything changed.
         /// </summary>
-        public static bool DrawLaneInspector(RoadBuilderState state, LaneId? selected) {
-            if (selected is not LaneId id || state.Draft == null || !state.Draft.Contains(id)) {
+        public static bool DrawLaneInspector(HalfNode node, HalfLane? lane) {
+            if (lane == null || lane.HalfNode != node) {
                 ImGui.TextDisabled("Select a lane to edit it.");
                 return false;
             }
 
-            var draft = state.Draft;
-            var index = draft.IndexOf(id);
-            var spec = draft.Get(id).Spec;
+            var spec = lane.LaneSpec;
             var changed = false;
+            var index = lane.Index;
 
-            ImGui.Text($"Lane {index + 1} of {draft.Count}");
+            ImGui.Text($"Lane {index + 1} of {node.LaneCount}");
 
             //The spec editor already handles colour, width, speed, line width, vehicle types and flags.
             if (DearUI.InputLaneSpec("Lane specification", ref spec)) {
-                state.SetLaneSpec(id, spec);
+                lane.LaneSpec = spec;
                 changed = true;
             }
 
             ImGui.Separator();
 
-            //Direction toggle (§5.4).
-            var reversed = spec.Flags.HasFlag(LaneFlags.IsMerge);
-            if (ImGui.Button(reversed ? "Direction: reversed" : "Direction: forward"))
-                state.ToggleDirection(id);
-
-            //Exit (§5.5): insert a copy beside this lane without moving it.
+            /*//Exit (§5.5): insert a copy beside this lane without moving it.
             if (ImGui.Button("Exit left")) state.ExitLane(id, -1);
             ImGui.SameLine();
             if (ImGui.Button("Exit right")) state.ExitLane(id, 1);
-
-            //Merge with the lane to the right (§5.2).
-            if (index + 1 < draft.Count) {
-                if (ImGui.Button("Merge with right")) state.MergeLanes(index);
-            } else {
-                ImGui.BeginDisabled();
-                ImGui.Button("Merge with right");
-                ImGui.EndDisabled();
-            }
 
             ImGui.SameLine();
             if (ImGui.Button("Split")) state.SplitLane(index);
@@ -162,12 +149,44 @@ namespace TranSimCS.Mode.NodeEditor {
             ImGui.SameLine();
             ImGui.BeginDisabled(index + 1 >= draft.Count);
             if (ImGui.Button("Move right")) state.MoveLane(id, index + 1);
-            ImGui.EndDisabled();
+            ImGui.EndDisabled();*/
 
             ImGui.SameLine();
-            if (ImGui.Button("Delete")) state.RemoveLane(id);
+            if (ImGui.Button("Delete")) node.Delete(lane);
+
+            EditHalfLaneBorders(lane);
 
             return changed;
+        }
+
+        public static void EditHalfLaneBorders(HalfLane lane) {
+            float lpos = lane.Bounds.Min;
+            float cpos = lane.MiddlePosition;
+            float rpos = lane.Bounds.Max;
+            float width = lane.Width;
+
+            bool dimensionsChanged = false;
+            if (ImGui.DragFloat("Move: L", ref lpos, 0.005f, rpos - 10, rpos)) {
+                if (lpos > rpos) lpos = rpos;
+                cpos = (lpos + rpos) / 2;
+                width = rpos - lpos;
+                dimensionsChanged = true;
+            }
+            if (ImGui.DragFloat("C", ref cpos, 0.01f, -100, 100)) {
+                float hwidth = width / 2l;
+                lpos = cpos - hwidth;
+                rpos = cpos + hwidth;
+                dimensionsChanged = true;
+            }
+            if (ImGui.DragFloat("R", ref rpos, 0.005f, lpos, lpos + 10)) {
+                if (lpos > rpos) rpos = lpos;
+                cpos = (lpos + rpos) / 2;
+                width = rpos - lpos;
+                dimensionsChanged = true;
+            }
+            if (dimensionsChanged) {
+                lane.Bounds = new(lpos, rpos);
+            }
         }
     }
 }
