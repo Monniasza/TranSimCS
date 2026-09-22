@@ -46,7 +46,7 @@ namespace TranSimCS.Cars {
                     log.Error($"The car {Guid} has an invalid route entry. Stopping route planning.");
                     break;
                 }
-                var candidates = FindNext(element.road, element.isReverse, SegmentHalf.End).ToArray();
+                var candidates = FindNext(element.road, element.isReverse, SegmentHalf.End);
                 if (candidates.Length == 0) {
                     break;
                 }
@@ -56,7 +56,7 @@ namespace TranSimCS.Cars {
             }
         }
 
-        public static IEnumerable<RouteElement> FindNext(SplinePath strip, bool isReverse, SegmentHalf half) {
+        public static RouteElement[] FindNext(SplinePath strip, bool isReverse, SegmentHalf half) {
             static RouteElement FromEnd(LaneStripEnd laneStrip) {
                 var isEntryFromEnd = laneStrip.half == SegmentHalf.End;
                 return new(laneStrip.strip.Path, isEntryFromEnd);
@@ -68,7 +68,8 @@ namespace TranSimCS.Cars {
             if (nextLane == null) return [];
             nextLane = nextLane.OppositeHalf;
             if (nextLane == null) return [];
-            return nextLane.ConnectedLaneStrips.Select(FromEnd);
+            var result = nextLane.ConnectedLaneStrips.Select(FromEnd).ToArray();
+            return result;
         }
 
         public bool Advance(float meters) {

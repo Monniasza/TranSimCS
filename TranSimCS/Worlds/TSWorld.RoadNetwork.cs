@@ -113,6 +113,8 @@ namespace TranSimCS.Worlds {
             laneStrip.EndLane._connectedLaneStrips.Add(new(laneStrip, SegmentHalf.End));
             laneStrip.StartLane.Lane.connections.Add(laneStrip);
             laneStrip.EndLane.Lane.connections.Add(laneStrip);
+            laneStrip.StartLane.Lane.connections.Add(laneStrip);
+            laneStrip.EndLane.Lane.connections.Add(laneStrip);
 
             //Add paths
             var path = laneStrip.Path;
@@ -132,6 +134,8 @@ namespace TranSimCS.Worlds {
 
             laneStrip.StartLane._connectedLaneStrips.Remove(new(laneStrip, SegmentHalf.Start));
             laneStrip.EndLane._connectedLaneStrips.Remove(new(laneStrip, SegmentHalf.End));
+            laneStrip.StartLane.Lane.connections.Remove(laneStrip);
+            laneStrip.EndLane.Lane.connections.Remove(laneStrip);
             laneStrip.StartLane.Lane.connections.Remove(laneStrip);
             laneStrip.EndLane.Lane.connections.Remove(laneStrip);
         }
