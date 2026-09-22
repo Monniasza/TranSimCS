@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -64,14 +65,14 @@ namespace TranSimCS.Cars {
             int elementsAfterEnd = _routeBufferCount - elementsBeforeEnd;
             Array.Copy(_routeBuffer, _routeBufferHead, routeInputs, 0, elementsBeforeEnd); //Copy elements before the end
             if (elementsAfterEnd > 0) Array.Copy(_routeBuffer, 0, routeInputs, elementsBeforeEnd, elementsAfterEnd); //If needec, copy elements after the end
-            return new(new Route(routeInputs), RoutePositionFromStart);
+            return new(routeInputs.ToImmutableArray(), RoutePositionFromStart);
         }
 
         public void SetRoute(RoutePosition route) {
             _routeBufferHead = 0;
-            GrowCapacity(route.Route.LaneStrips.Length);
-            for (int i = 0; i < route.Route.LaneStrips.Length; i++) _routeBuffer[i] = route.Route.LaneStrips[i].ToRouteInput();
-            _routeBufferCount = route.Route.LaneStrips.Length;
+            GrowCapacity(route.Route.Length);
+            for (int i = 0; i < route.Route.Length; i++) _routeBuffer[i] = route.Route[i];
+            _routeBufferCount = route.Route.Length;
             RoutePositionFromStart = route.Position;
         }
     }

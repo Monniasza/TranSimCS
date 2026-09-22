@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -39,7 +40,7 @@ namespace TranSimCS.Cars {
             });
             if (!float.IsFinite(position) || position < 0) JsonProcessor.Fail(reader, $"Expected a valid nonnegative or no float position: {position}");
             if (rows.Count == 0) JsonProcessor.Fail(reader, "No lane strips in this RoutePosition");
-            return new(new(rows), position);
+            return new(rows.ToImmutableArray(), position);
         }
 
         public override void Write(Utf8JsonWriter writer, RoutePosition value, JsonSerializerOptions options) {
@@ -48,7 +49,7 @@ namespace TranSimCS.Cars {
             writer.WriteNumber("position", value.Position);
             writer.WritePropertyName("strips");
             writer.WriteStartArray();
-            foreach(var segment in value.Route.LaneStrips) {
+            foreach(var segment in value.Route) {
                 writer.WriteStartArray();
                 stripSerializer.Write(writer, segment.road, options);
                 writer.WriteBooleanValue(segment.isReverse);

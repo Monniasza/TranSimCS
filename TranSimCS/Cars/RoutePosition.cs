@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -12,10 +13,10 @@ using TranSimCS.Roads.Strip;
 
 namespace TranSimCS.Cars {
     public struct RoutePosition {
-        public Route Route;
+        public ImmutableArray<RouteInput> Route;
         public float Position;
 
-        public RoutePosition(Route route, float position) {
+        public RoutePosition(ImmutableArray<RouteInput> route, float position) {
             Route = route;
             Position = position;
         }
