@@ -15,6 +15,16 @@ namespace TranSimCS.Save2 {
                 return;
             }
 
+            //Paths are written before the road network, because lane strips reference their respective paths that
+            //own them. The path GUID is what allows the same path to be reused after loading.
+            writer.WritePropertyName("paths");
+            writer.WriteStartArray();
+            foreach (var path in value.Paths.Paths.Values) {
+                var pathConverter = new SplinePathConverter(value);
+                pathConverter.Write(writer, path, options);
+            }
+            writer.WriteEndArray();
+
             writer.WriteStartObject();
             
             writer.WritePropertyName("nodes");
@@ -34,16 +44,6 @@ namespace TranSimCS.Save2 {
 
             writer.WritePropertyName("trafficLights");
             value.TrafficLights.SaveToJson(writer, options);
-
-            //Paths are written after the road network, because a path references the lane strip that
-            //owns it. The path GUID is what allows the same path to be reused after loading.
-            writer.WritePropertyName("paths");
-            writer.WriteStartArray();
-            foreach (var path in value.Paths.Paths.Values) {
-                var pathConverter = new SplinePathConverter(value);
-                pathConverter.Write(writer, path, options);
-            }
-            writer.WriteEndArray();
 
             writer.WriteNumber("daytime", value.DayTime);
             

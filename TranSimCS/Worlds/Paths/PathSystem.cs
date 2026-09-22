@@ -63,7 +63,11 @@ namespace TranSimCS.Worlds.Paths {
         /// </summary>
         /// <param name="guid">The GUID of the path to find.</param>
         /// <returns>The path with the given GUID, or <see langword="null"/> if there is none.</returns>
-        public SplinePath? FindPath(Guid guid) => _paths.GetValueOrDefault(guid);
+        public SplinePath? FindPath(Guid guid) {
+            var result = _paths.GetValueOrDefault(guid);
+            Debug.Assert(result?.CurrentState != PathState.Deleted, "Queried a Deleted path");
+            return result;
+        }
 
         /// <summary>
         /// Returns the path with the given GUID, creating and registering it if it does not exist yet.
@@ -75,7 +79,6 @@ namespace TranSimCS.Worlds.Paths {
         /// </summary>
         /// <param name="guid">The GUID of the path.</param>
         /// <param name="claimant">The claim to use if the path has to be created.</param>
-        /// <param name="attachments">The attachment points to use if the path has to be created.</param>
         /// <returns>The existing or newly created path.</returns>
         public SplinePath GetOrMakePath(Guid guid, IPathClaim? claimant) {
             var existing = FindPath(guid);

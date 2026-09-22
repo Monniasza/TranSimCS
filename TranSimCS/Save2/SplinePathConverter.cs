@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Strip;
+using TranSimCS.Spline;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Paths;
 
@@ -54,21 +55,22 @@ namespace TranSimCS.Save2 {
             if (reader.TokenType == JsonTokenType.Null) return null;
 
             Guid? guid = null;
-            LaneStrip? strip = null;
+            OrthodistantBasis spline = OrthodistantBasis.Identity;
 
             var stripRefConverter = new StripRefConverter(_world);
 
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref Utf8JsonReader reader0, string propertyName) => {
-                switch (propertyName.ToLower()) {
-                    case "guid":
-                        reader0.Read();
-                        if (reader0.TokenType != JsonTokenType.String)
-                            JsonProcessor.FailTokenTypes(ref reader0, JsonTokenType.String);
-                        guid = Guid.Parse(reader0.GetString()!);
-                        break;
-                    case "strip":
-                        strip = stripRefConverter.Read(ref reader0, typeof(LaneStrip), options);
-                        break;
+            switch (propertyName.ToLower()) {
+                case "guid":
+                    reader0.Read();
+                    if (reader0.TokenType != JsonTokenType.String)
+                        JsonProcessor.FailTokenTypes(ref reader0, JsonTokenType.String);
+                    guid = Guid.Parse(reader0.GetString()!);
+                    break;
+                case "spline":
+                    var orthodistantConverter = new OrthodistantBasisConverter();
+                    spline = orthodistantConverter.Read(ref reader0, typeof(OrthodistantBasis), options);
+                    break;
                 }
             });
 
@@ -77,15 +79,8 @@ namespace TranSimCS.Save2 {
             //Reuse the existing path when one with this GUID is already registered. This is what makes
             //the same path usable again after loading, instead of a duplicate being created.
             var existing = _world.Paths.FindPath(guid.Value);
-            if (existing != null) return existing;
-
-            if (strip == null) JsonProcessor.Fail(reader, "Missing strip property");
-
-            //No path with this GUID exists yet, so create the strip's path and give it the saved GUID.
-            //The GUID has to be passed at construction time: Obj.Guid is set-once, so assigning it after
-            //the path has been created would be silently ignored and the saved GUID would be lost.
-            var path = strip.GetOrCreatePath(guid.Value);
-            if (path == null) JsonProcessor.Fail(reader, "The referenced lane strip does not belong to a world");
+            var path = new SplinePath(null, guid);
+            path.LUT = new(spline);
             return path;
         }
 
@@ -106,13 +101,9 @@ namespace TranSimCS.Save2 {
 
             writer.WriteString("guid", value.Guid.ToString());
 
-            //Write the owning lane strip as a reference, so the strip itself is not duplicated.
-            var strip = (value.Claimant as LaneStripPathClaim)?.Strip;
-            if (strip != null) {
-                writer.WritePropertyName("strip");
-                var stripRefConverter = new StripRefConverter(_world);
-                stripRefConverter.Write(writer, strip, options);
-            }
+            writer.WritePropertyName("spline");
+            var orthodistantConverter = new OrthodistantBasisConverter();
+            orthodistantConverter.Write(writer, value.LUT.spline, options);
 
             writer.WriteEndObject();
         }

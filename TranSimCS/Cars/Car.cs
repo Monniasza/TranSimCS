@@ -138,10 +138,6 @@ namespace TranSimCS.Cars {
                 return;
             }
 
-            //Keep the car registered on the path of the strip it is currently driving on. This is what
-            //keeps an orphaned path alive while traffic is still draining off it.
-            AcquirePath();
-
             //Plan the route
             const float lookahead = 10;
             var maxDeltaPos = Speed * time;
@@ -170,7 +166,6 @@ namespace TranSimCS.Cars {
         }
 
         public void Demolish() {
-            ReleasePath();
             World.Cars.data.Remove(this);
             return;
         }

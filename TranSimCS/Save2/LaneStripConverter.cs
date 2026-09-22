@@ -5,6 +5,7 @@ using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Worlds;
+using TranSimCS.Worlds.Paths;
 
 namespace TranSimCS.Save2 {
     public class LaneStripConverter : JsonConverter<LaneStrip> {
@@ -18,6 +19,7 @@ namespace TranSimCS.Save2 {
             HalfLane? start = null;
             HalfLane? end = null;
             LaneSpec spec = LaneSpec.Default;
+            SplinePath? path = null;
 
             var laneEndConverter = new LaneEndConverter(_world);
             var laneSpecConverter = new LaneSpecConverter();
@@ -35,6 +37,9 @@ namespace TranSimCS.Save2 {
                         break;
                     case "path":
                         //The path claim
+                        reader0.Read();
+                        var pathGuid = Guid.Parse(reader0.GetString()!);
+                        path = _world.Paths.FindPath(pathGuid);
                         break;
                 }
             });
@@ -44,6 +49,7 @@ namespace TranSimCS.Save2 {
 
             var laneStrip = new LaneStrip(start, end);
             laneStrip.LaneSpec = spec;
+            if(path != null) laneStrip.ClaimPath(path);
             return laneStrip;
         }
 
@@ -65,6 +71,8 @@ namespace TranSimCS.Save2 {
             writer.WritePropertyName("spec");
             var laneSpecConverter = new LaneSpecConverter();
             laneSpecConverter.Write(writer, value.LaneSpec, options);
+
+            writer.WriteString("path", value.Path.Guid.ToString());
 
             writer.WriteEndObject();
         }

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Cars;
@@ -86,59 +88,22 @@ namespace TranSimCS.Roads.Strip {
         /// cannot be registered without a world to register it in.
         /// </para>
         /// </summary>
-        public SplinePath? Path {
+        public SplinePath Path {
             get {
-                if (_path == null) CreatePath();
+                if (_path == null) {
+                    //Create and claim the path
+                    var claim = new LaneStripPathClaim(this);
+                    _path = new SplinePath(claim, null);
+                }
                 return _path;
             }
         }
-
-        /// <summary>
-        /// Creates the path owned by this lane strip and registers it with the world.
-        /// <para>
-        /// Does nothing when the strip is not part of a world, or when it already owns a path.
-        /// </para>
-        /// </summary>
-        private void CreatePath() => CreatePath(null);
-
-        /// <summary>
-        /// Creates the path owned by this lane strip and registers it with the world, using the given
-        /// GUID.
-        /// <para>
-        /// Does nothing when the strip is not part of a world, or when it already owns a path.
-        /// </para>
-        /// </summary>
-        /// <param name="guid">
-        /// The GUID to give the path, or <see langword="null"/> to generate a new one. A saved GUID is
-        /// passed here when loading a world, so that the same path is reused rather than a duplicate
-        /// being created.
-        /// </param>
-        private void CreatePath(Guid? guid) {
-            var world = Road?.World;
-            if (world == null) return;
-            if (_path != null) return;
-
+        internal void ClaimPath(SplinePath path) {
+            Debug.Assert(path != null, "Claiming a null path");
+            Debug.Assert(Path == null, "Claiming a path using a LaneStrip with an existing path claim");
             var claim = new LaneStripPathClaim(this);
-            _path = new SplinePath(claim, guid);
-            _path.Spec = LaneSpec;
-            world.Paths.AddPath(_path);
-        }
-
-        /// <summary>
-        /// Gets the path owned by this lane strip, creating it with the given GUID if it does not exist
-        /// yet.
-        /// <para>
-        /// This is the entry point used when loading a world. The GUID has to be supplied at creation
-        /// time because <see cref="Obj.Guid"/> is set-once, so a path that already exists keeps its own
-        /// GUID and the supplied one is ignored.
-        /// </para>
-        /// </summary>
-        /// <param name="guid">The GUID to give the path if it has to be created.</param>
-        /// <returns>The existing or newly created path, or <see langword="null"/> when the strip is not
-        /// part of a world.</returns>
-        public SplinePath? GetOrCreatePath(Guid guid) {
-            if (_path == null) CreatePath(guid);
-            return _path;
+            path.Claim(claim);
+            _path = path;
         }
 
         /// <summary>
