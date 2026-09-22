@@ -92,5 +92,7 @@ namespace TranSimCS.Worlds.Paths {
         /// Returns a string describing this claim, for diagnostics.
         /// </summary>
         public override string ToString() => $"LaneStripPathClaim({Strip.Guid})";
+
+        public bool IsAlive() => Strip.IsAlive;
     }
 }

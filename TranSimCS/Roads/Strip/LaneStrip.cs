@@ -73,8 +73,6 @@ namespace TranSimCS.Roads.Strip {
 
         //Path ownership
         private SplinePath? _path;
-        private HalfLaneAttachment? _startAttachment;
-        private HalfLaneAttachment? _endAttachment;
 
         /// <summary>
         /// The <see cref="SplinePath"/> owned by this lane strip.
@@ -94,16 +92,6 @@ namespace TranSimCS.Roads.Strip {
                 return _path;
             }
         }
-
-        /// <summary>
-        /// The attachment point at the start of this strip's path.
-        /// </summary>
-        public IPathAttachment? StartAttachment => _startAttachment;
-
-        /// <summary>
-        /// The attachment point at the end of this strip's path.
-        /// </summary>
-        public IPathAttachment? EndAttachment => _endAttachment;
 
         /// <summary>
         /// Creates the path owned by this lane strip and registers it with the world.
@@ -130,11 +118,8 @@ namespace TranSimCS.Roads.Strip {
             if (world == null) return;
             if (_path != null) return;
 
-            _startAttachment = new HalfLaneAttachment(StartLane);
-            _endAttachment = new HalfLaneAttachment(EndLane);
-
             var claim = new LaneStripPathClaim(this);
-            _path = new SplinePath(claim, guid, _startAttachment, _endAttachment);
+            _path = new SplinePath(claim, guid);
             _path.Spec = LaneSpec;
             world.Paths.AddPath(_path);
         }

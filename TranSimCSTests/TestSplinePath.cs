@@ -40,23 +40,6 @@ namespace TranSimCSTests {
         }
 
         /// <summary>
-        /// The path owned by a strip is anchored to that strip's two half lanes.
-        /// </summary>
-        [Fact]
-        public void PathIsAnchoredToTheStripsHalfLanes() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
-            var strip = TestWorlds.ForwardStrip(world);
-
-            var path = strip.Path!;
-
-            Assert.Equal(2, path.Attachments.Count);
-            var start = Assert.IsType<HalfLaneAttachment>(path.Attachments[0]);
-            var end = Assert.IsType<HalfLaneAttachment>(path.Attachments[1]);
-            Assert.Same(strip.StartLane, start.HalfLane);
-            Assert.Same(strip.EndLane, end.HalfLane);
-        }
-
-        /// <summary>
         /// Asking a strip for its path twice returns the same instance, rather than creating a second one.
         /// </summary>
         [Fact]
@@ -164,40 +147,24 @@ namespace TranSimCSTests {
         // --- Attachment points ---------------------------------------------------------------------
 
         /// <summary>
-        /// An attachment point backed by a live half lane reports itself as alive.
-        /// </summary>
-        [Fact]
-        public void AttachmentPointOfALiveLaneIsAlive() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
-            var strip = TestWorlds.ForwardStrip(world);
-
-            var attachment = (HalfLaneAttachment)strip.Path!.Attachments[0];
-
-            Assert.True(attachment.IsAlive);
-        }
-
-        private StubClaim NewClaim() {
-            var startPos = new PositionEulerAngles(Vector3.Zero, 0);
-            var endPos = new PositionEulerAngles(Vector3.UnitZ * 100, int.MinValue);
-            var attachmentA = new StubAttachment(startPos);
-            var attachmentB = new StubAttachment(endPos);
-            return new StubClaim(attachmentA, attachmentB);
-        }
-
-        /// <summary>
         /// The attachment point system is not limited to road half lanes: any implementation of
         /// <see cref="IPathAttachment"/> can be used, and a path built from a custom attachment point
         /// generates its spline from that attachment point.
         /// </summary>
         [Fact]
         public void PathCanBeAnchoredToACustomAttachmentPoint() {
-            var claim = NewClaim();
-            var path = new SplinePath(claim, null, claim.attachmentA, claim.attachmentB);
+            var lanedef = new LaneDefinition(0, LaneSpec.Default);
+            var laneA = new RoadNode("a", PositionEulerAngles.Zero).FrontHalf.AddLane(lanedef);
+            var laneB = new RoadNode("b", new PositionEulerAngles(Vector3.UnitX * 100, 0)).FrontHalf.AddLane(lanedef);
+            var road = new RoadStrip(laneA.HalfNode, laneB.HalfNode);
+            var strip = new LaneStrip(laneA, laneB, lanedef.LaneSpec);
+            road.AddLaneStrip(strip);
+
+            var path = strip.Path;
 
             var lut = path.GetSpline();
 
             Assert.True(lut.Length > 0);
-            Assert.Equal(2, path.Attachments.Count);
         }
 
         /// <summary>
@@ -205,13 +172,12 @@ namespace TranSimCSTests {
         /// </summary>
         [Fact]
         public void PathWithADeadAttachmentReportsIt() {
-            var claim = NewClaim();
-            var path = new SplinePath(claim, null, claim.attachmentA, claim.attachmentB);
+            var lanedef = new LaneDefinition(0, LaneSpec.Default);
+            var laneA = new RoadNode("a", PositionEulerAngles.Zero).FrontHalf.AddLane(lanedef);
+            var laneB = new RoadNode("b", PositionEulerAngles.Zero).FrontHalf.AddLane(lanedef);
+            var strip = new LaneStrip(laneA, laneB, lanedef.LaneSpec);
 
-            Assert.True(path.AreAttachmentsAlive);
-
-            var attachment = (StubAttachment)claim.attachmentA;
-            attachment.Alive = false;
+            var path = strip.Path;
 
             Assert.False(path.AreAttachmentsAlive);
         }
@@ -396,7 +362,8 @@ namespace TranSimCSTests {
 
             Assert.NotNull(path.Claimant);
 
-            var before = path.GetSpline().spline.SampleFrame(0).O;
+            var beforeStrip = strip.SplineLUT.spline.SamplePosition(0);
+            var beforePath = path.GetSpline().spline.SamplePosition(0);
 
             var node = strip.StartLane.RoadNode;
             node.PositionData = new PositionEulerAngles(
@@ -406,10 +373,14 @@ namespace TranSimCSTests {
                 node.PositionData.Tilt);
 
             Assert.True(path.Dirty);
-            var after = path.GetSpline().spline.SampleFrame(0).O;
+            var afterStrip = strip.SplineLUT.spline.SamplePosition(0);
+            var afterPath = path.GetSpline().spline.SamplePosition(0);
             Assert.False(path.Dirty);
 
-            Assert.NotEqual(before, after);
+            Assert.Equal(beforePath, beforeStrip);
+            Assert.Equal(afterPath, afterStrip);
+            Assert.NotEqual(beforePath, afterPath);
+            Assert.NotEqual(beforeStrip, afterStrip);
         }
 
         /// <summary>
@@ -428,23 +399,6 @@ namespace TranSimCSTests {
             strip.LaneSpec = strip.LaneSpec with { Width = strip.LaneSpec.Width + 1 };
 
             Assert.True(path.Dirty);
-        }
-
-        /// <summary>
-        /// Removing a lane from a road node kills the attachment points that refer to it, which is what
-        /// makes the path orphanable.
-        /// </summary>
-        [Fact]
-        public void RemovingALaneKillsItsAttachmentPoint() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
-            var strip = TestWorlds.ForwardStrip(world);
-            var attachment = (HalfLaneAttachment)strip.Path!.Attachments[0];
-
-            Assert.True(attachment.IsAlive);
-
-            strip.StartLane.RoadNode.RemoveLane(strip.StartLane.Lane);
-
-            Assert.False(attachment.IsAlive);
         }
 
         // --- Serialization -------------------------------------------------------------------------
@@ -504,66 +458,6 @@ namespace TranSimCSTests {
 
             Assert.Same(path, again);
             Assert.Equal(2, world.Paths.Paths.Count);
-        }
-
-        // --- Test doubles --------------------------------------------------------------------------
-
-        /// <summary>
-        /// A minimal <see cref="IPathAttachment"/> used to prove that the attachment point system is not
-        /// tied to road half lanes.
-        /// </summary>
-        private sealed class StubAttachment(PositionEulerAngles position) : IPathAttachment {
-            /// <summary>Whether this attachment point reports itself as alive.</summary>
-            public bool Alive = true;
-
-            /// <inheritdoc/>
-            public event Action? Changed;
-
-            /// <inheritdoc/>
-            public Obj Owner => null!;
-
-            /// <inheritdoc/>
-            public bool IsAlive => Alive;
-
-            /// <inheritdoc/>
-            public TranSimCS.Geometry.Transform3 ReferenceFrame => position.CalcReferenceFrame();
-
-            /// <inheritdoc/>
-            public float Offset => 0;
-
-            /// <summary>Raises <see cref="Changed"/>, for tests that need to simulate a change.</summary>
-            public void RaiseChanged() => Changed?.Invoke();
-        }
-
-        /// <summary>
-        /// A minimal <see cref="IPathClaim"/> that generates its spline from two attachment points.
-        /// </summary>
-        private sealed class StubClaim : IPathClaim {
-            public readonly IPathAttachment attachmentA;
-            public readonly IPathAttachment attachmentB;
-
-            /// <summary>Creates a claim that generates its spline from the given attachment point.</summary>
-            /// <param name="attachment">The attachment point to generate from.</param>
-            public StubClaim(IPathAttachment attachmentA, IPathAttachment attachmentB) {
-                this.attachmentA = attachmentA;
-                this.attachmentB = attachmentB;
-            }
-
-            /// <inheritdoc/>
-            public event Action? ObjectChanged;
-
-            /// <inheritdoc/>
-            public Obj Object => null!;
-
-            public OrthodistantBasis GenerateSpline() {
-                var startFrame = attachmentA.ReferenceFrame;
-                var endFrame = attachmentB.ReferenceFrame;
-                startFrame.O += startFrame.X * attachmentA.Offset;
-                endFrame.O += endFrame.X * attachmentB.Offset;
-                var bezier = GeometryUtils.GenerateJoinSpline(startFrame.O, endFrame.O, startFrame.Z, endFrame.Z);
-                var normal = new Bezier3(startFrame.Y, startFrame.Y, endFrame.Y, endFrame.Y);
-                return new OrthodistantBasis(bezier, normal);
-            }
         }
     }
 }

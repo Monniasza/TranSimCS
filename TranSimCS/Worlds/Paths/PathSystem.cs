@@ -77,10 +77,10 @@ namespace TranSimCS.Worlds.Paths {
         /// <param name="claimant">The claim to use if the path has to be created.</param>
         /// <param name="attachments">The attachment points to use if the path has to be created.</param>
         /// <returns>The existing or newly created path.</returns>
-        public SplinePath GetOrMakePath(Guid guid, IPathClaim? claimant, params IPathAttachment[] attachments) {
+        public SplinePath GetOrMakePath(Guid guid, IPathClaim? claimant) {
             var existing = FindPath(guid);
             if (existing != null) return existing;
-            var path = new SplinePath(claimant, guid, attachments);
+            var path = new SplinePath(claimant, guid);
             AddPath(path);
             return path;
         }

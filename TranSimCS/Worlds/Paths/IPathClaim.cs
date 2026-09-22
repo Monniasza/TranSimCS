@@ -22,5 +22,7 @@ namespace TranSimCS.Worlds.Paths {
         /// Gets the associated spline for the object. The spline must be reverse-corrected.
         /// </summary>
         public OrthodistantBasis GenerateSpline();
+        public bool IsAlive();
+        public void Detach();
     }
 }
