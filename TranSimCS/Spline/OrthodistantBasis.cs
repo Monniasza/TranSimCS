@@ -101,5 +101,8 @@ namespace TranSimCS.Spline {
         }
 
         public bool IsFinite() => ReferenceSpline.IsFinite() && NormalSpline.IsFinite();// && !ReferenceSpline.HasCusps();
+        public OrthodistantBasis Reverse() {
+            return new OrthodistantBasis(ReferenceSpline.Inverse(), NormalSpline.Inverse(), new(-StartEndPosition.Y, -StartEndPosition.X));
+        }
     }
 }

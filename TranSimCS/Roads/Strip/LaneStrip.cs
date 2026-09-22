@@ -67,6 +67,10 @@ namespace TranSimCS.Roads.Strip {
             };
         }
 
+        //Events
+        internal void FireChanged() => Changed?.Invoke();
+        public event Action? Changed;
+
         //Path ownership
         private SplinePath? _path;
         private HalfLaneAttachment? _startAttachment;
@@ -129,7 +133,7 @@ namespace TranSimCS.Roads.Strip {
             _startAttachment = new HalfLaneAttachment(StartLane);
             _endAttachment = new HalfLaneAttachment(EndLane);
 
-            var claim = new LaneStripPathClaim(this, _startAttachment, _endAttachment);
+            var claim = new LaneStripPathClaim(this);
             _path = new SplinePath(claim, guid, _startAttachment, _endAttachment);
             _path.Spec = LaneSpec;
             world.Paths.AddPath(_path);

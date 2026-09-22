@@ -93,8 +93,12 @@ namespace TranSimCS.Roads.Strip {
             SplineWeightEndProp.ValidateChanges += PropertyValidationAlgorithms.RequireFinitePositive;
             Mesh = new MeshGenerator<RoadStrip>(this, GenerateMesh);
             Mesh.OnMeshInvalidated += InvalidateMesh0;
+            DependencyChanged += RoadStrip_DependencyChanged;
         }
 
+        private void RoadStrip_DependencyChanged(Obj targetObject, Obj dependencyObject, string? propertyName) {
+            foreach(var lane in Lanes) lane.FireChanged();
+        }
 
         public HalfNode GetHalf(SegmentHalf selectedRoadHalf) => selectedRoadHalf.GetConditional(StartNode, EndNode);
         public bool CheckEnds(HalfNode first, HalfNode second) {

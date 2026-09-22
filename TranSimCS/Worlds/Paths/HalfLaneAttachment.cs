@@ -130,39 +130,6 @@ namespace TranSimCS.Worlds.Paths {
         }
 
         /// <summary>
-        /// Generates the spline for this attachment point.
-        /// <para>
-        /// The generated spline is a straight line along the direction of travel of the half lane,
-        /// starting at the lane centre on the node and running one metre forward. It is used when a
-        /// path has only one attachment point, and as the tangent source when two attachment points
-        /// are joined.
-        /// </para>
-        /// </summary>
-        /// <returns>The generated spline basis.</returns>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown when <see cref="IsAlive"/> is <see langword="false"/>.
-        /// </exception>
-        public OrthodistantBasis GenerateSpline() {
-            if (!IsAlive)
-                throw new InvalidOperationException("The attachment point's lane is no longer part of its road node");
-
-            var frame = ReferenceFrame;
-            var start = frame.O + frame.X * Offset;
-            var end = start + frame.Z;
-
-            var positionSpline = new Bezier3(
-                start,
-                start + frame.Z,
-                end - frame.Z,
-                end
-            );
-
-            var normalSpline = new Bezier3(frame.Y, frame.Y, frame.Y, frame.Y);
-
-            return new OrthodistantBasis(positionSpline, normalSpline, new(Offset, Offset));
-        }
-
-        /// <summary>
         /// Returns a string describing this attachment point, for diagnostics.
         /// </summary>
         public override string ToString() => $"HalfLaneAttachment({Lane.Guid}, {End})";

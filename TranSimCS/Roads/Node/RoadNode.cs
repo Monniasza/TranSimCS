@@ -119,7 +119,9 @@ namespace TranSimCS.Roads.Node {
             FrontHalf._cache = null;
             RearHalf._cache = null;
             SelectionMesh.Invalidate();
-            foreach (var connection in Connections) connection.Mesh.Invalidate();
+            foreach (var connection in Connections) {
+                connection.Mesh.Invalidate();
+            }
             RearEnd.ConnectedSection.Value?.Mesh.Invalidate();
             FrontEnd.ConnectedSection.Value?.Mesh.Invalidate();
             GeometryChanged?.Invoke(this);
@@ -130,6 +132,9 @@ namespace TranSimCS.Roads.Node {
             if (float.IsNaN(pos.X)) throw new ArgumentException("X === NaN");
             if (float.IsNaN(pos.Y)) throw new ArgumentException("Y === NaN");
             if (float.IsNaN(pos.Z)) throw new ArgumentException("Z === NaN");
+            foreach (var connection in Connections) {
+                connection.FireDependencyEvent(connection, this, PositionProp.name);
+            }
         }
 
         //Lane structure

@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Linq;
+using System.Numerics;
 using TranSimCS;
 using TranSimCS.Cars;
+using TranSimCS.Geometry;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
+using TranSimCS.Spline;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Paths;
 
@@ -173,21 +176,12 @@ namespace TranSimCSTests {
             Assert.True(attachment.IsAlive);
         }
 
-        /// <summary>
-        /// An attachment point generates a spline that starts at the lane centre and runs along the
-        /// direction of travel.
-        /// </summary>
-        [Fact]
-        public void AttachmentPointGeneratesASplineAlongTheDirectionOfTravel() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
-            var strip = TestWorlds.ForwardStrip(world);
-            var attachment = (HalfLaneAttachment)strip.Path!.Attachments[0];
-
-            var spline = attachment.GenerateSpline();
-
-            var start = spline.SampleFrame(0).O;
-            var end = spline.SampleFrame(1).O;
-            Assert.True(end.Z > start.Z, "The attachment spline should run along +Z for a forward lane");
+        private StubClaim NewClaim() {
+            var startPos = new PositionEulerAngles(Vector3.Zero, 0);
+            var endPos = new PositionEulerAngles(Vector3.UnitZ * 100, int.MinValue);
+            var attachmentA = new StubAttachment(startPos);
+            var attachmentB = new StubAttachment(endPos);
+            return new StubClaim(attachmentA, attachmentB);
         }
 
         /// <summary>
@@ -197,15 +191,13 @@ namespace TranSimCSTests {
         /// </summary>
         [Fact]
         public void PathCanBeAnchoredToACustomAttachmentPoint() {
-            var attachment = new StubAttachment();
-            var claim = new StubClaim(attachment);
-            var path = new SplinePath(claim, null, attachment);
+            var claim = NewClaim();
+            var path = new SplinePath(claim, null, claim.attachmentA, claim.attachmentB);
 
             var lut = path.GetSpline();
 
             Assert.True(lut.Length > 0);
-            Assert.True(attachment.GenerateSplineCalled);
-            Assert.Single(path.Attachments);
+            Assert.Equal(2, path.Attachments.Count);
         }
 
         /// <summary>
@@ -213,12 +205,12 @@ namespace TranSimCSTests {
         /// </summary>
         [Fact]
         public void PathWithADeadAttachmentReportsIt() {
-            var attachment = new StubAttachment();
-            var claim = new StubClaim(attachment);
-            var path = new SplinePath(claim, null, attachment);
+            var claim = NewClaim();
+            var path = new SplinePath(claim, null, claim.attachmentA, claim.attachmentB);
 
             Assert.True(path.AreAttachmentsAlive);
 
+            var attachment = (StubAttachment)claim.attachmentA;
             attachment.Alive = false;
 
             Assert.False(path.AreAttachmentsAlive);
@@ -402,6 +394,8 @@ namespace TranSimCSTests {
             var strip = TestWorlds.ForwardStrip(world);
             var path = strip.Path!;
 
+            Assert.NotNull(path.Claimant);
+
             var before = path.GetSpline().spline.SampleFrame(0).O;
 
             var node = strip.StartLane.RoadNode;
@@ -411,7 +405,9 @@ namespace TranSimCSTests {
                 node.PositionData.Inclination,
                 node.PositionData.Tilt);
 
+            Assert.True(path.Dirty);
             var after = path.GetSpline().spline.SampleFrame(0).O;
+            Assert.False(path.Dirty);
 
             Assert.NotEqual(before, after);
         }
@@ -449,20 +445,6 @@ namespace TranSimCSTests {
             strip.StartLane.RoadNode.RemoveLane(strip.StartLane.Lane);
 
             Assert.False(attachment.IsAlive);
-        }
-
-        /// <summary>
-        /// Generating a spline from a dead attachment point throws rather than producing a bogus spline.
-        /// </summary>
-        [Fact]
-        public void DeadAttachmentPointRefusesToGenerateASpline() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
-            var strip = TestWorlds.ForwardStrip(world);
-            var attachment = (HalfLaneAttachment)strip.Path!.Attachments[0];
-
-            strip.StartLane.RoadNode.RemoveLane(strip.StartLane.Lane);
-
-            Assert.Throws<InvalidOperationException>(() => attachment.GenerateSpline());
         }
 
         // --- Serialization -------------------------------------------------------------------------
@@ -530,12 +512,9 @@ namespace TranSimCSTests {
         /// A minimal <see cref="IPathAttachment"/> used to prove that the attachment point system is not
         /// tied to road half lanes.
         /// </summary>
-        private sealed class StubAttachment : IPathAttachment {
+        private sealed class StubAttachment(PositionEulerAngles position) : IPathAttachment {
             /// <summary>Whether this attachment point reports itself as alive.</summary>
             public bool Alive = true;
-
-            /// <summary>Whether <see cref="GenerateSpline"/> has been called.</summary>
-            public bool GenerateSplineCalled;
 
             /// <inheritdoc/>
             public event Action? Changed;
@@ -547,37 +526,27 @@ namespace TranSimCSTests {
             public bool IsAlive => Alive;
 
             /// <inheritdoc/>
-            public TranSimCS.Geometry.Transform3 ReferenceFrame => new(
-                System.Numerics.Vector3.UnitX, System.Numerics.Vector3.UnitY, System.Numerics.Vector3.UnitZ, System.Numerics.Vector3.Zero);
+            public TranSimCS.Geometry.Transform3 ReferenceFrame => position.CalcReferenceFrame();
 
             /// <inheritdoc/>
             public float Offset => 0;
 
             /// <summary>Raises <see cref="Changed"/>, for tests that need to simulate a change.</summary>
             public void RaiseChanged() => Changed?.Invoke();
-
-            /// <inheritdoc/>
-            public TranSimCS.Spline.OrthodistantBasis GenerateSpline() {
-                GenerateSplineCalled = true;
-                var start = System.Numerics.Vector3.Zero;
-                var end = new System.Numerics.Vector3(0, 0, 10);
-                return new TranSimCS.Spline.OrthodistantBasis(
-                    new TranSimCS.Spline.Bezier3(start, end),
-                    new TranSimCS.Spline.Bezier3(System.Numerics.Vector3.UnitY),
-                    System.Numerics.Vector2.Zero);
-            }
         }
 
         /// <summary>
-        /// A minimal <see cref="IPathClaim"/> that generates its spline from a single attachment point.
+        /// A minimal <see cref="IPathClaim"/> that generates its spline from two attachment points.
         /// </summary>
         private sealed class StubClaim : IPathClaim {
-            private readonly IPathAttachment attachment;
+            public readonly IPathAttachment attachmentA;
+            public readonly IPathAttachment attachmentB;
 
             /// <summary>Creates a claim that generates its spline from the given attachment point.</summary>
             /// <param name="attachment">The attachment point to generate from.</param>
-            public StubClaim(IPathAttachment attachment) {
-                this.attachment = attachment;
+            public StubClaim(IPathAttachment attachmentA, IPathAttachment attachmentB) {
+                this.attachmentA = attachmentA;
+                this.attachmentB = attachmentB;
             }
 
             /// <inheritdoc/>
@@ -586,8 +555,15 @@ namespace TranSimCSTests {
             /// <inheritdoc/>
             public Obj Object => null!;
 
-            /// <inheritdoc/>
-            public TranSimCS.Spline.OrthodistantBasis GenerateSpline() => attachment.GenerateSpline();
+            public OrthodistantBasis GenerateSpline() {
+                var startFrame = attachmentA.ReferenceFrame;
+                var endFrame = attachmentB.ReferenceFrame;
+                startFrame.O += startFrame.X * attachmentA.Offset;
+                endFrame.O += endFrame.X * attachmentB.Offset;
+                var bezier = GeometryUtils.GenerateJoinSpline(startFrame.O, endFrame.O, startFrame.Z, endFrame.Z);
+                var normal = new Bezier3(startFrame.Y, startFrame.Y, endFrame.Y, endFrame.Y);
+                return new OrthodistantBasis(bezier, normal);
+            }
         }
     }
 }

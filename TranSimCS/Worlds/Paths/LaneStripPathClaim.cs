@@ -6,6 +6,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using TranSimCS.Geometry;
+using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Spline;
 
@@ -28,16 +29,6 @@ namespace TranSimCS.Worlds.Paths {
         /// </summary>
         public LaneStrip Strip { get; }
 
-        /// <summary>
-        /// The attachment point at the start of the strip.
-        /// </summary>
-        public IPathAttachment StartAttachment { get; }
-
-        /// <summary>
-        /// The attachment point at the end of the strip.
-        /// </summary>
-        public IPathAttachment EndAttachment { get; }
-
         /// <inheritdoc/>
         public event Action? ObjectChanged;
 
@@ -52,20 +43,13 @@ namespace TranSimCS.Worlds.Paths {
         /// Creates a claim for the given lane strip and its two attachment points.
         /// </summary>
         /// <param name="strip">The lane strip this claim belongs to.</param>
-        /// <param name="startAttachment">The attachment point at the start of the strip.</param>
-        /// <param name="endAttachment">The attachment point at the end of the strip.</param>
         /// <exception cref="ArgumentNullException">
         /// Thrown when any argument is <see langword="null"/>.
         /// </exception>
-        public LaneStripPathClaim(LaneStrip strip, IPathAttachment startAttachment, IPathAttachment endAttachment) {
+        public LaneStripPathClaim(LaneStrip strip) {
             ArgumentNullException.ThrowIfNull(strip, nameof(strip));
-            ArgumentNullException.ThrowIfNull(startAttachment, nameof(startAttachment));
-            ArgumentNullException.ThrowIfNull(endAttachment, nameof(endAttachment));
             Strip = strip;
-            StartAttachment = startAttachment;
-            EndAttachment = endAttachment;
-            StartAttachment.Changed += OnAttachmentChanged;
-            EndAttachment.Changed += OnAttachmentChanged;
+            Strip.Changed += OnAttachmentChanged;
         }
 
         /// <summary>
@@ -76,8 +60,7 @@ namespace TranSimCS.Worlds.Paths {
         /// </para>
         /// </summary>
         public void Detach() {
-            StartAttachment.Changed -= OnAttachmentChanged;
-            EndAttachment.Changed -= OnAttachmentChanged;
+            Strip.Changed -= OnAttachmentChanged;
         }
 
         /// <summary>
@@ -98,33 +81,11 @@ namespace TranSimCS.Worlds.Paths {
         /// Thrown when either attachment point is dead.
         /// </exception>
         public OrthodistantBasis GenerateSpline() {
-            if (!StartAttachment.IsAlive || !EndAttachment.IsAlive)
+            if (Strip.IsDead)
                 throw new InvalidOperationException("Cannot generate a spline for a path whose attachment points are dead");
-
-            var startFrame = StartAttachment.ReferenceFrame;
-            var endFrame = EndAttachment.ReferenceFrame;
-
-            var startOffset = StartAttachment.Offset;
-            var endOffset = EndAttachment.Offset;
-
-            var startPoint = startFrame.O + startFrame.X * startOffset;
-            var endPoint = endFrame.O + endFrame.X * endOffset;
-
-            var positionSpline = GeometryUtils.GenerateJoinSpline(
-                startPoint,
-                endPoint,
-                startFrame.Z,
-                endFrame.Z
-            );
-
-            var normalSpline = new Bezier3(
-                startFrame.Y,
-                startFrame.Y,
-                endFrame.Y,
-                endFrame.Y
-            );
-
-            return new OrthodistantBasis(positionSpline, normalSpline, new(startOffset, endOffset));
+            if (Strip.IsReverse())
+                return Strip.SplineLUT.spline.Reverse();
+            return Strip.SplineLUT.spline;
         }
 
         /// <summary>

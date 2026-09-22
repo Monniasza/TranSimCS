@@ -63,18 +63,5 @@ namespace TranSimCS.Worlds.Paths {
         /// </para>
         /// </summary>
         public float Offset { get; }
-
-        /// <summary>
-        /// Generates the spline for this attachment point.
-        /// <para>
-        /// The returned spline must be reverse-corrected: it must run in the direction of travel of the
-        /// path, regardless of the orientation of the object backing the attachment point.
-        /// </para>
-        /// </summary>
-        /// <returns>The generated spline basis.</returns>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown when <see cref="IsAlive"/> is <see langword="false"/>.
-        /// </exception>
-        public OrthodistantBasis GenerateSpline();
     }
 }

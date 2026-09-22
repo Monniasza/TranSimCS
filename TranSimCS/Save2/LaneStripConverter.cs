@@ -33,6 +33,9 @@ namespace TranSimCS.Save2 {
                     case "spec":
                         spec = laneSpecConverter.Read(ref reader0, typeof(LaneSpec), options);
                         break;
+                    case "path":
+                        //The path claim
+                        break;
                 }
             });
 
