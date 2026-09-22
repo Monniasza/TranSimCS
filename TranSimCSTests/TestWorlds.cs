@@ -68,6 +68,7 @@ namespace TranSimCSTests {
             RegisterSplineGenerators();
             InitializeMaterials();
             InitializeCarModels();
+            JsonProcessor.Init();
 
             var json = ReadJson(name);
             var world = new TSWorld();

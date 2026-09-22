@@ -37,7 +37,7 @@ namespace TranSimCS.Cars {
             const float distanceToPlanAhead = 1500;
             float countedLength = 0;
             for(int i = 0; i < RouteElementCount; i++) 
-                countedLength += GetRouteElement(i).road.LUT.Length;
+                countedLength += GetRouteElement(i).road.GetSpline().Length;
             if (countedLength > maxRemainingToPlanMore) return;
             while(countedLength < distanceToPlanAhead) {
                 //Plan more segments
@@ -51,7 +51,7 @@ namespace TranSimCS.Cars {
                     break;
                 }
                 var next = candidates.GetRandomElement();
-                countedLength += next.road.LUT.Length;
+                countedLength += next.road.GetSpline().Length;
                 PushRouteElement(next);
             }
         }
@@ -74,8 +74,8 @@ namespace TranSimCS.Cars {
 
         public bool Advance(float meters) {
             RoutePositionFromStart += meters;
-            while (RouteElementCount > 0 && RoutePositionFromStart >= GetRouteElement(0).road.LUT.Length) {
-                RoutePositionFromStart -= GetRouteElement(0).road.LUT.Length;
+            while (RouteElementCount > 0 && RoutePositionFromStart >= GetRouteElement(0).road.GetSpline().Length) {
+                RoutePositionFromStart -= GetRouteElement(0).road.GetSpline().Length;
                 PopRouteElements(1);
             }
                 
@@ -84,7 +84,7 @@ namespace TranSimCS.Cars {
         public int FindIndexFromDistance(float meters) {
             float count = 0;
             for(int i = 0; i < RouteElementCount; ++i) {
-                count += GetRouteElement(i).road.LUT.Length;
+                count += GetRouteElement(i).road.GetSpline().Length;
                 if (count > meters) return i;
             }
             return RouteElementCount;
@@ -100,7 +100,7 @@ namespace TranSimCS.Cars {
 
             float count = 0;
             //Count distances until before the start segment
-            for (int i = 0; i < minSegment; i++) count += GetRouteElement(i).road.LUT.Length;
+            for (int i = 0; i < minSegment; i++) count += GetRouteElement(i).road.GetSpline().Length;
 
             for (int i = minSegment; i <= maxSegment; i++) {
                 var key = GetRouteElement(i);
@@ -109,7 +109,7 @@ namespace TranSimCS.Cars {
                 var endNode = isReverse ? segment.Start : segment.End;
 
                 float segmentStartPosition = count;
-                float segmentLength = key.road.LUT.Length;
+                float segmentLength = key.road.GetSpline().Length;
                 float segmentEndPosition = count + segmentLength;
                 count = segmentEndPosition;
 
@@ -154,7 +154,7 @@ namespace TranSimCS.Cars {
                     var half = sibling0.half;
 
                     var cars = path._carsOnStrip;
-                    var length = path.LUT.Length;
+                    var length = path.GetSpline().Length;
 
                     if (path == segment) continue; //Do not check the same segment
                     if (cars.Count == 0) continue; //No cars on the sibling
@@ -227,14 +227,14 @@ namespace TranSimCS.Cars {
                 if (road.road == null) continue;
                 Debug.Assert(road.road.CurrentState != PathState.Deleted);
 
-                var newDistance = distance - road.road.LUT.Length;
+                var newDistance = distance - road.road.GetSpline().Length;
                 if (newDistance >= 0) {
                     distance = newDistance;
                     continue;
                 }
 
                 const float eps = 0.001f;
-                var currentOrthodistantLut = road.road.LUT;
+                var currentOrthodistantLut = road.road.GetSpline();
                 var positionLUT = road.isReverse ? currentOrthodistantLut.Reverse : currentOrthodistantLut.Forward;
                 var prevXYZT = positionLUT[distance];
                 var t = prevXYZT.W;

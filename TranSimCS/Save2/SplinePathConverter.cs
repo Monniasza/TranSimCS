@@ -109,9 +109,11 @@ namespace TranSimCS.Save2 {
 
             writer.WriteString("guid", value.Guid.ToString());
 
-            writer.WritePropertyName("spline");
-            var orthodistantConverter = new OrthodistantBasisConverter();
-            orthodistantConverter.Write(writer, value.LUT.spline, options);
+            if (value.LUT != null) {
+                writer.WritePropertyName("spline");
+                var orthodistantConverter = new OrthodistantBasisConverter();
+                orthodistantConverter.Write(writer, value.LUT.spline, options);
+            }
 
             var halfLaneConverter = new LaneEndConverter(_world);
 

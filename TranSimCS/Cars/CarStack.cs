@@ -47,15 +47,15 @@ namespace TranSimCS.Cars {
 
                 var stripIndex = car.FindIndexFromDistance(car.RoutePositionFromStart);
                 var routePosition = car.RoutePositionFromStart;
-                for (int i = 0; i < stripIndex; i++) routePosition -= car.GetRouteElement(i).road.LUT.Length;
+                for (int i = 0; i < stripIndex; i++) routePosition -= car.GetRouteElement(i).road.GetSpline().Length;
 
                 var node = car.GetRouteElement(stripIndex);
                 var isReverse = node.isReverse;
                 var strip = node.road;
-                var stripPosition = isReverse ? strip.LUT.Length - routePosition : routePosition;
+                var stripPosition = isReverse ? strip.GetSpline().Length - routePosition : routePosition;
                 CarEntry entry = new(car, stripPosition, isReverse);
                 InsertCarIntoStrip(entry, strip);
-                routePosition -= node.road.LUT.Length;
+                routePosition -= node.road.GetSpline().Length;
             }
 
             //Sort car lists

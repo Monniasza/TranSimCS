@@ -83,7 +83,7 @@ namespace TranSimCS.Worlds.Paths {
         /// never used.
         /// </para>
         /// </summary>
-        public OrthodistantLUT LUT { get; internal set; }
+        public OrthodistantLUT? LUT { get; internal set; }
 
         /// <summary>
         /// The state of this path in its lifecycle.
