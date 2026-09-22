@@ -20,7 +20,7 @@ using TranSimCS.Worlds;
 using TranSimCS.Worlds.Paths;
 
 namespace TranSimCS.Roads.Strip {
-    public class LaneStrip : IEquatable<LaneStrip?>, IDraggableObj, IRoadElement, IExtent, ILaneSpec, IDemolish {
+    public class LaneStrip : IDraggableObj, IRoadElement, IExtent, ILaneSpec, IDemolish {
         //ROAD ELEMENT
         public Guid Guid => Road.Guid;
         public Lane? GetLane() => null;
@@ -176,22 +176,6 @@ namespace TranSimCS.Roads.Strip {
         //Dragging
         IPosition[] IDraggableObj.DraggableComponents() => [StartLane.HalfNode, EndLane.HalfNode];
 
-        public override bool Equals(object? obj) {
-            return Equals(obj as LaneStrip);
-        }
-
-        public bool Equals(LaneStrip? other) {
-            return other is not null &&
-                   EqualityComparer<HalfLane>.Default.Equals(StartLane, other.StartLane) &&
-                   EqualityComparer<HalfLane>.Default.Equals(EndLane, other.EndLane) &&
-                   EqualityComparer<RoadStrip>.Default.Equals(Road, other.Road) &&
-                   EqualityComparer<LaneSpec>.Default.Equals(LaneSpec, other.LaneSpec);
-        }
-
-        public override int GetHashCode() {
-            return HashCode.Combine(StartLane, EndLane, Road, LaneSpec);
-        }
-
         public bool IsBetween(HalfLane start, HalfLane end) {
             return start == StartLane && end == EndLane || start == EndLane && end == StartLane;
         }
@@ -203,14 +187,6 @@ namespace TranSimCS.Roads.Strip {
             if (end == StartLane) return SegmentHalf.Start;
             if (end == EndLane) return SegmentHalf.End;
             return null;
-        }
-
-        public static bool operator ==(LaneStrip? left, LaneStrip? right) {
-            return EqualityComparer<LaneStrip>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(LaneStrip? left, LaneStrip? right) {
-            return !(left == right);
         }
 
         /// <summary>

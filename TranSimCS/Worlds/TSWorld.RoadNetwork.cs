@@ -61,7 +61,7 @@ namespace TranSimCS.Worlds {
 
         private void HandleRemoveRoadSegment(RoadStrip segment) {
             //Unlink lane strips from lanes
-            foreach (var strip in segment.Lanes)
+            foreach (var strip in segment.Lanes.ToArray())
                 HandleRemoveLaneStrip(segment, new(strip));
 
             //Unlink road strip and section
@@ -113,8 +113,6 @@ namespace TranSimCS.Worlds {
             laneStrip.EndLane._connectedLaneStrips.Add(new(laneStrip, SegmentHalf.End));
             laneStrip.StartLane.Lane.connections.Add(laneStrip);
             laneStrip.EndLane.Lane.connections.Add(laneStrip);
-            laneStrip.StartLane.Lane.connections.Add(laneStrip);
-            laneStrip.EndLane.Lane.connections.Add(laneStrip);
 
             //Add paths
             var path = laneStrip.Path;
@@ -136,8 +134,22 @@ namespace TranSimCS.Worlds {
             laneStrip.EndLane._connectedLaneStrips.Remove(new(laneStrip, SegmentHalf.End));
             laneStrip.StartLane.Lane.connections.Remove(laneStrip);
             laneStrip.EndLane.Lane.connections.Remove(laneStrip);
-            laneStrip.StartLane.Lane.connections.Remove(laneStrip);
-            laneStrip.EndLane.Lane.connections.Remove(laneStrip);
+
+            Debug.Assert(
+                !laneStrip.StartLane._connectedLaneStrips.Any(x => x.strip == laneStrip),
+                "Deleted lane strip remains in StartLane._connectedLaneStrips");
+
+            Debug.Assert(
+                !laneStrip.EndLane._connectedLaneStrips.Any(x => x.strip == laneStrip),
+                "Deleted lane strip remains in EndLane._connectedLaneStrips");
+
+            Debug.Assert(
+                !laneStrip.StartLane.Lane.connections.Contains(laneStrip),
+                "Deleted lane strip remains in StartLane.Lane.connections");
+
+            Debug.Assert(
+                !laneStrip.EndLane.Lane.connections.Contains(laneStrip),
+                "Deleted lane strip remains in EndLane.Lane.connections");
         }
 
 
@@ -200,7 +212,7 @@ namespace TranSimCS.Worlds {
             node.RearEnd.ConnectedSection.Value = null;
 
             //Delete all connected road strips
-            foreach (var segment in node.Connections) {
+            foreach (var segment in node.Connections.ToArray()) {
                 RoadSegments.data.Remove(segment); // Remove the segment from the road segments collection
             }
             log.Trace($"Road node id {node.Guid} name {node.Name} removed");

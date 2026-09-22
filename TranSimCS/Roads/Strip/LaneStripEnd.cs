@@ -1,11 +1,10 @@
 using System;
+using System.Collections.Generic;
 using TranSimCS.Roads.Node;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Roads.Strip {
-    public struct LaneStripEnd(LaneStrip strip, SegmentHalf half) : IDraggableObj, IRoadElement {
-        public LaneStrip strip = strip;
-        public SegmentHalf half = half;
+    public record struct LaneStripEnd(LaneStrip strip, SegmentHalf half) : IDraggableObj, IRoadElement, IEquatable<LaneStripEnd> {
         public HalfLane laneEnd => strip.GetHalf(half);
 
         //DRAGGING
