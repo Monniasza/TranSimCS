@@ -12,7 +12,7 @@ using TranSimCS.Worlds;
 namespace TranSimCS.Save2 {
     public class StripRefConverter(TSWorld world) : JsonConverter<LaneStrip> {
         public override LaneStrip? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            HalfLane startLaneEnd, endLaneEnd;
+            HalfLane? startLaneEnd, endLaneEnd;
 
             var laneEndConverter = new LaneEndConverter(world);
 
@@ -22,6 +22,9 @@ namespace TranSimCS.Save2 {
 
             startLaneEnd = laneEndConverter.Read(ref reader, typeof(HalfLane), options);
             endLaneEnd = laneEndConverter.Read(ref reader, typeof(HalfLane), options);
+
+            if (startLaneEnd == null) JsonProcessor.Fail(reader, "Start lane not found");
+            if (endLaneEnd == null) JsonProcessor.Fail(reader, "End lane not found");
 
             JsonProcessor.AssertTokenType(ref reader, JsonTokenType.EndArray);
             

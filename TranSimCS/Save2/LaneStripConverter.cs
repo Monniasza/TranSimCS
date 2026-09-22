@@ -44,8 +44,8 @@ namespace TranSimCS.Save2 {
                 }
             });
 
-            if (start == null) JsonProcessor.Fail(reader, "Missing start property");
-            if (end == null) JsonProcessor.Fail(reader, "Missing end property");
+            if (start == null) JsonProcessor.Fail(reader, "Missing start property or dead lane");
+            if (end == null) JsonProcessor.Fail(reader, "Missing end property or dead lane");
 
             var laneStrip = new LaneStrip(start, end);
             laneStrip.LaneSpec = spec;

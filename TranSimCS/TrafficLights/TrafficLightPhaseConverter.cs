@@ -25,6 +25,7 @@ namespace TranSimCS.TrafficLights {
                     case "green":
                         JsonProcessor.ReadJsonArrayProperties(ref reader0, (ref reader1, idx) => {
                             var lane = laneEndConverter.Read(ref reader1, typeof(HalfLane), options);
+                            if (lane == null) JsonProcessor.Fail(reader1, "Lane not found");
                             lanes.Add(lane);
                         });
                         break;

@@ -84,6 +84,9 @@ namespace TranSimCS.Cars {
                 }
             }
 
+            //Garbage collect unused paths
+            world.Paths.RunGC();
+
             //Validate the car indices
 #if DEBUG
             foreach (var path in world.Paths.Paths.Values) {

@@ -117,12 +117,12 @@ namespace TranSimCS.Save2 {
 
             var halfLaneConverter = new LaneEndConverter(_world);
 
-            if(value.Start != null) {
+            if(value.Start != null && value.Start?.RoadNode?.World != null) {
                 writer.WritePropertyName("start");
                 halfLaneConverter.Write(writer, value.Start, options);
             }
             
-            if(value.End != null) {
+            if(value.End != null && value.End?.RoadNode?.World != null) {
                 writer.WritePropertyName("end");
                 halfLaneConverter.Write(writer, value.End, options);
             }

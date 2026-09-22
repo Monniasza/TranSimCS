@@ -12,7 +12,7 @@ using TranSimCS.Save2;
 namespace TranSimCS.Worlds.Paths {
     public class PathRefConverter(TSWorld world) : JsonConverter<SplinePath> {
         public override SplinePath? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            HalfLane startLaneEnd, endLaneEnd;
+            HalfLane? startLaneEnd, endLaneEnd;
 
             var laneEndConverter = new LaneEndConverter(world);
 
@@ -27,6 +27,9 @@ namespace TranSimCS.Worlds.Paths {
 
             startLaneEnd = laneEndConverter.Read(ref reader, typeof(HalfLane), options);
             endLaneEnd = laneEndConverter.Read(ref reader, typeof(HalfLane), options);
+
+            if (startLaneEnd == null) JsonProcessor.Fail(reader, "Start lane not found");
+            if (endLaneEnd == null) JsonProcessor.Fail(reader, "End lane not found");
 
             JsonProcessor.AssertTokenType(ref reader, JsonTokenType.EndArray);
 

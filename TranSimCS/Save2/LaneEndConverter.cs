@@ -12,7 +12,7 @@ namespace TranSimCS.Save2 {
             _world = world;
         }
 
-        public override HalfLane Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        public override HalfLane? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
             JsonProcessor.ForceRead(ref reader);
             switch (reader.TokenType) {
                 case JsonTokenType.StartArray:
@@ -44,8 +44,9 @@ namespace TranSimCS.Save2 {
                     else if (polarity != '+') JsonProcessor.Fail(reader, $"Unexpected polarity {polarity}");
                     var restOfString = str.Substring(1);
                     var guid = Guid.Parse(restOfString);
-                    var lane = _world.Nodes.LaneXRef[guid];
-                    return lane.GetHalfLane(nodeEnd);
+                    if(_world.Nodes.LaneXRef.TryGetValue(guid, out var lane)) 
+                        return lane.GetHalfLane(nodeEnd);
+                    return null;
                 default:
                     JsonProcessor.FailTokenTypes(ref reader, [JsonTokenType.StartArray, JsonTokenType.String]); //always throws
                     return default;
