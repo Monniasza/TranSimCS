@@ -124,10 +124,10 @@ namespace TranSimCS.Cars {
                 //Merge check: the car furthest forward gets priority.  Without this,
                 //two cars near the merge both yield and deadlock.
                 var rawSiblings = endNode.ConnectedLaneStrips;
-                var distanceToMerge = segmentEndPosition - localPosition - 10;
+                var distanceToMerge = segmentLength - localPosition;
                 Obstacle mergeObstacle = new Obstacle(distanceToMerge, 0);
-                var ownDistanceToMerge = segmentLength - localPosition;
-                foreach (var sibling in rawSiblings) {
+                var ownDistanceToMerge = distanceToMerge;
+                if(ownDistanceToMerge > 0) foreach (var sibling in rawSiblings) {
                     var cars = sibling.strip._carsOnStrip;
                     var length = sibling.strip.SplineLUT.Length;
 

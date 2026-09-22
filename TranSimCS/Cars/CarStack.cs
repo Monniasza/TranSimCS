@@ -45,21 +45,17 @@ namespace TranSimCS.Cars {
                 car.TrimUntilDead();
                 if (car.RouteElementCount == 0) continue;
 
-                const float lookahead = 10;
-                var firstStrip = car.FindIndexFromDistance(car.RoutePositionFromStart);
-                var lastStrip = car.FindIndexFromDistance(car.RoutePositionFromStart + lookahead);
+                var stripIndex = car.FindIndexFromDistance(car.RoutePositionFromStart);
                 var routePosition = car.RoutePositionFromStart;
-                if (lastStrip >= car.RouteElementCount) lastStrip = car.RouteElementCount - 1;
-                for(int i = 0; i < firstStrip; i++) routePosition -= car.GetRouteElement(i).road.SplineLUT.Length;
-                for (int i = firstStrip; i <= lastStrip; i++) {
-                    var node = car.GetRouteElement(i);
-                    var isReverse = node.isReverse;
-                    var strip = node.road;
-                    var stripPosition = isReverse ? strip.SplineLUT.Length - routePosition : routePosition;
-                    CarEntry entry = new(car, stripPosition, isReverse);
-                    InsertCarIntoStrip(entry, strip);
-                    routePosition -= node.road.SplineLUT.Length;
-                }
+                for (int i = 0; i < stripIndex; i++) routePosition -= car.GetRouteElement(i).road.SplineLUT.Length;
+
+                var node = car.GetRouteElement(stripIndex);
+                var isReverse = node.isReverse;
+                var strip = node.road;
+                var stripPosition = isReverse ? strip.SplineLUT.Length - routePosition : routePosition;
+                CarEntry entry = new(car, stripPosition, isReverse);
+                InsertCarIntoStrip(entry, strip);
+                routePosition -= node.road.SplineLUT.Length;
             }
 
             //Sort car lists
