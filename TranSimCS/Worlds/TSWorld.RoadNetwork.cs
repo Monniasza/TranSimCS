@@ -8,6 +8,7 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Section;
 using TranSimCS.Roads.Strip;
 using TranSimCS.TrafficLights;
+using TranSimCS.Worlds.Paths;
 
 namespace TranSimCS.Worlds {
     public partial class TSWorld {
@@ -112,6 +113,10 @@ namespace TranSimCS.Worlds {
             laneStrip.EndLane._connectedLaneStrips.Add(new(laneStrip, SegmentHalf.End));
             laneStrip.StartLane.Lane.connections.Add(laneStrip);
             laneStrip.EndLane.Lane.connections.Add(laneStrip);
+
+            //Add paths
+            var path = laneStrip.Path;
+            AddIfAbsent(path);
         }
         private void HandleRemoveLaneStrip(object? sender, RoadStripEventArgs e) {
             if (sender is not RoadStrip segment) {
@@ -282,6 +287,12 @@ namespace TranSimCS.Worlds {
 
             //Fire events
             tlight.FirePropertyEvent(tlight, new(PropertyNames.DeleteFromWorld));
+        }
+
+        //Paths
+        private void AddIfAbsent(SplinePath path) {
+            if (Paths.Paths.ContainsKey(path.Guid)) return;
+            Paths.AddPath(path);
         }
     }
 }
