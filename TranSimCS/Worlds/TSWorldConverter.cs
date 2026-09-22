@@ -15,6 +15,8 @@ namespace TranSimCS.Save2 {
                 return;
             }
 
+            writer.WriteStartObject();
+
             //Paths are written before the road network, because lane strips reference their respective paths that
             //own them. The path GUID is what allows the same path to be reused after loading.
             writer.WritePropertyName("paths");
@@ -24,8 +26,6 @@ namespace TranSimCS.Save2 {
                 pathConverter.Write(writer, path, options);
             }
             writer.WriteEndArray();
-
-            writer.WriteStartObject();
             
             writer.WritePropertyName("nodes");
             value.Nodes.SaveToJson(writer, options);
