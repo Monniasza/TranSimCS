@@ -17,18 +17,18 @@ namespace TranSimCS.Save2 {
 
             writer.WriteStartObject();
 
+            writer.WritePropertyName("nodes");
+            value.Nodes.SaveToJson(writer, options);
+
             //Paths are written before the road network, because lane strips reference their respective paths that
             //own them. The path GUID is what allows the same path to be reused after loading.
+            var pathConverter = new SplinePathConverter(value);
             writer.WritePropertyName("paths");
             writer.WriteStartArray();
             foreach (var path in value.Paths.Paths.Values) {
-                var pathConverter = new SplinePathConverter(value);
                 pathConverter.Write(writer, path, options);
             }
             writer.WriteEndArray();
-            
-            writer.WritePropertyName("nodes");
-            value.Nodes.SaveToJson(writer, options);
             
             writer.WritePropertyName("segments");
             value.RoadSegments.SaveToJson(writer, options);

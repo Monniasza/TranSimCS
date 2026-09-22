@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TranSimCS.Roads.Node;
 using TranSimCS.Spline;
 
 namespace TranSimCS.Worlds.Paths {
@@ -24,5 +25,13 @@ namespace TranSimCS.Worlds.Paths {
         public OrthodistantBasis GenerateSpline();
         public bool IsAlive();
         public void Detach();
+        /// <summary>
+        /// The starting attachment of this claim
+        /// </summary>
+        public HalfLane? Start { get; }
+        /// <summary>
+        /// The ending attachment of this claim
+        /// </summary>
+        public HalfLane? End { get; }
     }
 }

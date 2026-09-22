@@ -93,14 +93,14 @@ namespace TranSimCS.Roads.Strip {
                 if (_path == null) {
                     //Create and claim the path
                     var claim = new LaneStripPathClaim(this);
-                    _path = new SplinePath(claim, null);
+                    _path = new SplinePath(claim, null, StartLane, EndLane);
                 }
                 return _path;
             }
         }
         internal void ClaimPath(SplinePath path) {
             Debug.Assert(path != null, "Claiming a null path");
-            Debug.Assert(Path == null, "Claiming a path using a LaneStrip with an existing path claim");
+            Debug.Assert(ExistingPath == null, "Claiming a path using a LaneStrip with an existing path claim");
             var claim = new LaneStripPathClaim(this);
             path.Claim(claim);
             _path = path;
@@ -151,56 +151,7 @@ namespace TranSimCS.Roads.Strip {
         public bool IsAlive => Road != null;
         public bool IsDead => Road == null;
 
-        //Car cache. Maintained by CarStack
-        internal List<CarEntry> _carsOnStrip = [];
-        public IReadOnlyList<CarEntry> CarsOnStrip => _carsOnStrip.AsReadOnly();
-        internal void InsertCar(Car car) {
-
-        }
-        internal void RemoveCar(Car car) {
-            for (int i = 0; i < _carsOnStrip.Count; i++) {
-                var entry = _carsOnStrip[i];
-                if(entry.car == car) {
-                    _carsOnStrip.RemoveAt(i);
-                    i--;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Find the index of the first car ahead of <paramref name="position"/>, or <see cref="CarsOnStrip"/>.Count, if not found
-        /// </summary>
-        public int FindFirstAheadIndex(float position) {
-            int min = 0;
-            int max = _carsOnStrip.Count;
-
-            while (min < max) {
-                int mid = (min + max) >> 1;
-                if (_carsOnStrip[mid].positionOnStrip <= position)
-                    min = mid + 1;
-                else
-                    max = mid;
-            }
-            return min;
-        }
-        /// <summary>
-        /// Find the index of the last car behind <paramref name="position"/>, or -1 if not found
-        /// </summary>
-        public int FindLastBehindIndex(float position) {
-            int min = 0;
-            int max = _carsOnStrip.Count;
-
-            while (min < max) {
-                int mid = (min + max) >> 1;
-
-                if (_carsOnStrip[mid].positionOnStrip < position)
-                    min = mid + 1;
-                else
-                    max = mid;
-            }
-
-            return min - 1;
-        }
+        
 
         public void InvalidateMesh() {
             _cache.Invalidate();// Invalidate the cached mesh, forcing it to be regenerated next time

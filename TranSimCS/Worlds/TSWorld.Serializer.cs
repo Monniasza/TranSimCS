@@ -30,7 +30,7 @@ namespace TranSimCS.Worlds {
             options.Converters.Add(new Save2.ObjPosConverter());
             options.Converters.Add(new Save2.LaneSpecConverter());
             options.Converters.Add(new Save2.LaneConverter());
-            options.Converters.Add(new Save2.SplinePathConverter(this));
+            options.Converters.Add(new PathRefConverter(this));
             options.Converters.Add(new Save2.TSWorldConverter());
             options.Converters.Add(new Save2.Vector3iConverter());
 
@@ -94,8 +94,10 @@ namespace TranSimCS.Worlds {
                         if (reader0.TokenType != JsonTokenType.StartArray)
                             JsonProcessor.FailTokenTypes(ref reader0, JsonTokenType.StartArray);
                         while (reader0.Read() && reader0.TokenType != JsonTokenType.EndArray) {
-                            pathConverter.Read(ref reader0, typeof(SplinePath), options);
+                            var path = pathConverter.Read(ref reader0, typeof(SplinePath), options);
+                            Paths.AddPath(path);
                         }
+                        
                         break;
                 }
             }, true);

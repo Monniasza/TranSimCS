@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using TranSimCS.Geometry;
 using TranSimCS.Roads.Strip;
+using TranSimCS.Worlds.Paths;
 
 namespace TranSimCS.Cars {
     // Route planning and obstacle detection
@@ -16,7 +17,12 @@ namespace TranSimCS.Cars {
             int i;
             for(i = 0; i < RouteElementCount; i++) {
                 var strip = GetRouteElement(i).road;
-                if (strip?.Road == null) break;
+                if (strip == null) break;
+                if (i > 0 && strip.CurrentState == Worlds.Paths.PathState.Orphaned) break;
+                if(strip.CurrentState == Worlds.Paths.PathState.Deleted) {
+                    if (i == 0) Debug.Fail("Path got deleted from under the car");
+                    break;
+                }
             }
             if(i == 0) {
                 //The car is dead
@@ -31,7 +37,7 @@ namespace TranSimCS.Cars {
             const float distanceToPlanAhead = 1500;
             float countedLength = 0;
             for(int i = 0; i < RouteElementCount; i++) 
-                countedLength += GetRouteElement(i).road.SplineLUT.Length;
+                countedLength += GetRouteElement(i).road.LUT.Length;
             if (countedLength > maxRemainingToPlanMore) return;
             while(countedLength < distanceToPlanAhead) {
                 //Plan more segments
@@ -40,19 +46,35 @@ namespace TranSimCS.Cars {
                     log.Error($"The car {Guid} has an invalid route entry. Stopping route planning.");
                     break;
                 }
-                var candidates = RouteMethods.FindNext(element.road, element.isReverse, SegmentHalf.End).ToArray();
+                var candidates = FindNext(element.road, element.isReverse, SegmentHalf.End).ToArray();
                 if (candidates.Length == 0) {
                     break;
                 }
                 var next = candidates.GetRandomElement();
-                countedLength += next.LaneStrip.SplineLUT.Length;
-                PushRouteElement(new(next.LaneStrip, next.IsReverse));
+                countedLength += next.road.LUT.Length;
+                PushRouteElement(next);
             }
         }
+
+        public static IEnumerable<RouteElement> FindNext(SplinePath strip, bool isReverse, SegmentHalf half) {
+            static RouteElement FromEnd(LaneStripEnd laneStrip) {
+                var isEntryFromEnd = laneStrip.half == SegmentHalf.End;
+                return new(laneStrip.strip.Path, isEntryFromEnd);
+            }
+
+            ArgumentNullException.ThrowIfNull(strip);
+            if (isReverse) half = half.Inverse();
+            var nextLane = half.GetConditional(strip.Start, strip.End);
+            if (nextLane == null) return [];
+            nextLane = nextLane.OppositeHalf;
+            if (nextLane == null) return [];
+            return nextLane.ConnectedLaneStrips.Select(FromEnd);
+        }
+
         public bool Advance(float meters) {
             RoutePositionFromStart += meters;
-            while (RouteElementCount > 0 && RoutePositionFromStart >= GetRouteElement(0).road.SplineLUT.Length) {
-                RoutePositionFromStart -= GetRouteElement(0).road.SplineLUT.Length;
+            while (RouteElementCount > 0 && RoutePositionFromStart >= GetRouteElement(0).road.LUT.Length) {
+                RoutePositionFromStart -= GetRouteElement(0).road.LUT.Length;
                 PopRouteElements(1);
             }
                 
@@ -61,7 +83,7 @@ namespace TranSimCS.Cars {
         public int FindIndexFromDistance(float meters) {
             float count = 0;
             for(int i = 0; i < RouteElementCount; ++i) {
-                count += GetRouteElement(i).road.SplineLUT.Length;
+                count += GetRouteElement(i).road.LUT.Length;
                 if (count > meters) return i;
             }
             return RouteElementCount;
@@ -77,16 +99,16 @@ namespace TranSimCS.Cars {
 
             float count = 0;
             //Count distances until before the start segment
-            for (int i = 0; i < minSegment; i++) count += GetRouteElement(i).road.SplineLUT.Length;
+            for (int i = 0; i < minSegment; i++) count += GetRouteElement(i).road.LUT.Length;
 
             for (int i = minSegment; i <= maxSegment; i++) {
                 var key = GetRouteElement(i);
                 var segment = key.road;
                 var isReverse = key.isReverse;
-                var endNode = isReverse ? segment.StartLane : segment.EndLane;
+                var endNode = isReverse ? segment.Start : segment.End;
 
                 float segmentStartPosition = count;
-                float segmentLength = key.road.SplineLUT.Length;
+                float segmentLength = key.road.LUT.Length;
                 float segmentEndPosition = count + segmentLength;
                 count = segmentEndPosition;
 
@@ -114,30 +136,32 @@ namespace TranSimCS.Cars {
                     obstacle = obstacle.Combine(carObstacle);
                 }
 
-                var attachedTrafficLight = endNode.TrafficLight;
-                var isGreen = attachedTrafficLight == null || attachedTrafficLight.IsGreen(endNode);
-                if (!isGreen) {
+                var isRed = endNode?.TrafficLight?.IsGreen(endNode) == false;
+                if (isRed) {
                     Obstacle lightObstacle = new(segmentEndPosition - localPosition - 1, 0);
                     obstacle = obstacle.Combine(lightObstacle);
                 }
 
                 //Merge check: the car furthest forward gets priority.  Without this,
                 //two cars near the merge both yield and deadlock.
-                var rawSiblings = endNode.ConnectedLaneStrips;
+                var rawSiblings = endNode?.ConnectedLaneStrips;
                 var distanceToMerge = segmentLength - localPosition;
                 Obstacle mergeObstacle = new Obstacle(distanceToMerge, 0);
                 var ownDistanceToMerge = distanceToMerge;
-                if(ownDistanceToMerge > 0) foreach (var sibling in rawSiblings) {
-                    var cars = sibling.strip._carsOnStrip;
-                    var length = sibling.strip.SplineLUT.Length;
+                if(rawSiblings != null && ownDistanceToMerge > 0) foreach (var sibling0 in rawSiblings) {
+                    var path = sibling0.strip.Path;
+                    var half = sibling0.half;
 
-                    if (sibling.strip == segment) continue; //Do not check the same segment
+                    var cars = path._carsOnStrip;
+                    var length = path.LUT.Length;
+
+                    if (path == segment) continue; //Do not check the same segment
                     if (cars.Count == 0) continue; //No cars on the sibling
 
                     CarEntry? contender = null;
                     float contenderDistanceToMerge = 0;
 
-                    if (sibling.half == SegmentHalf.End) {
+                    if (half == SegmentHalf.End) {
                         //Entries are sorted by position, so the last forward car is
                         //the one closest to this endpoint.
                         for (int j = cars.Count - 1; j >= 0; j--) {
@@ -199,20 +223,21 @@ namespace TranSimCS.Cars {
 
                 //The strip may have been deleted from under us. Skip it instead of dereferencing a
                 //dead strip, which would throw a NullReferenceException.
-                if (road.road == null || road.road.IsDead) continue;
+                if (road.road == null) continue;
+                Debug.Assert(road.road.CurrentState != PathState.Deleted);
 
-                var newDistance = distance - road.road.SplineLUT.Length;
+                var newDistance = distance - road.road.LUT.Length;
                 if (newDistance >= 0) {
                     distance = newDistance;
                     continue;
                 }
 
                 const float eps = 0.001f;
-                var currentStrip = road.ToCarStripPosition(distance);
-                var positionLUT = currentStrip.GetPositionLookup();
+                var currentOrthodistantLut = road.road.LUT;
+                var positionLUT = road.isReverse ? currentOrthodistantLut.Reverse : currentOrthodistantLut.Forward;
                 var prevXYZT = positionLUT[distance];
                 var t = prevXYZT.W;
-                var resample = currentStrip.GetPositionFrame(t);
+                var resample = currentOrthodistantLut.spline.SampleFrame(t);
 
                 //Validation
                 Debug.Assert(float.IsFinite(t), "Invalid spline parameter");

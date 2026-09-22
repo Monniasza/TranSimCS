@@ -66,7 +66,7 @@ namespace TranSimCS.Cars {
         }
 
         public RoutePosition ToRoute() {
-            return new([new RouteInput(LaneStrip, IsReverse)], LaneArcLength);
+            return new([new RouteElement(LaneStrip.Path, IsReverse)], LaneArcLength);
         }
 
         public static bool operator ==(CarStripPosition? left, CarStripPosition? right) {

@@ -56,13 +56,13 @@ namespace TranSimCS.Spatial {
         }
 
 
-        public void Add(T item) {
+        public void Add(T item, bool stale = false) {
             ArgumentNullException.ThrowIfNull(item, nameof(item));
             if(Items.ContainsKey(item)) return;
 
             AABBNode<T> leaf = new AABBNode<T>() {
                 Item = item,
-                Bounds = item.GetBounds(),
+                Bounds = stale ? default : item.GetBounds(),
                 Stale = false,
             };
             Validate(leaf);
@@ -78,7 +78,12 @@ namespace TranSimCS.Spatial {
             var sibling = FindBestSibling(leaf);
             InsertLeaf(leaf, sibling);
             BalanceAVL(leaf);
-            RefitUpwards(leaf);
+            if (stale) {
+                leaf.MarkStale();
+            } else {
+                RefitUpwards(leaf);
+            }
+                
         }
         private AABBNode<T> FindBestSibling(AABBNode<T> leaf) {
             if (root == null) throw new NullReferenceException("Method called with an empty AABBTree");

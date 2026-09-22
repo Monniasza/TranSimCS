@@ -39,6 +39,10 @@ namespace TranSimCS.Worlds.Paths {
         /// </remarks>
         public Obj Object => Strip.Road;
 
+        public HalfLane? Start => Strip.StartLane;
+
+        public HalfLane? End => Strip.EndLane;
+
         /// <summary>
         /// Creates a claim for the given lane strip and its two attachment points.
         /// </summary>

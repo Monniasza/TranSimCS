@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Spline;
 using TranSimCS.Worlds;
@@ -51,26 +52,34 @@ namespace TranSimCS.Save2 {
         /// <param name="typeToConvert">The type being converted.</param>
         /// <param name="options">The serializer options.</param>
         /// <returns>The resolved path, or <see langword="null"/> when the JSON value is null.</returns>
-        public override SplinePath? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            if (reader.TokenType == JsonTokenType.Null) return null;
-
+        public override SplinePath Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
             Guid? guid = null;
             OrthodistantBasis spline = OrthodistantBasis.Identity;
+            HalfLane? startLane = null;
+            HalfLane? endLane = null;
 
             var stripRefConverter = new StripRefConverter(_world);
+            var halfLaneConverter = new LaneEndConverter(_world);
 
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref Utf8JsonReader reader0, string propertyName) => {
-            switch (propertyName.ToLower()) {
-                case "guid":
-                    reader0.Read();
-                    if (reader0.TokenType != JsonTokenType.String)
-                        JsonProcessor.FailTokenTypes(ref reader0, JsonTokenType.String);
-                    guid = Guid.Parse(reader0.GetString()!);
-                    break;
-                case "spline":
-                    var orthodistantConverter = new OrthodistantBasisConverter();
-                    spline = orthodistantConverter.Read(ref reader0, typeof(OrthodistantBasis), options);
-                    break;
+                switch (propertyName.ToLower()) {
+                    case "guid":
+                        reader0.Read();
+                        if (reader0.TokenType != JsonTokenType.String)
+                            JsonProcessor.FailTokenTypes(ref reader0, JsonTokenType.String);
+                        guid = Guid.Parse(reader0.GetString()!);
+                        break;
+                    case "spline":
+                        var orthodistantConverter = new OrthodistantBasisConverter();
+                        spline = orthodistantConverter.Read(ref reader0, typeof(OrthodistantBasis), options);
+                        break;
+                    case "start":
+                        startLane = halfLaneConverter.Read(ref reader0, typeof(HalfLane), options);
+                        break;
+                    case "end":
+                        endLane = halfLaneConverter.Read(ref reader0, typeof(HalfLane), options);
+                        break;
+
                 }
             });
 
@@ -78,8 +87,7 @@ namespace TranSimCS.Save2 {
 
             //Reuse the existing path when one with this GUID is already registered. This is what makes
             //the same path usable again after loading, instead of a duplicate being created.
-            var existing = _world.Paths.FindPath(guid.Value);
-            var path = new SplinePath(null, guid);
+            var path = new SplinePath(null, guid, startLane, endLane);
             path.LUT = new(spline);
             return path;
         }
@@ -104,6 +112,18 @@ namespace TranSimCS.Save2 {
             writer.WritePropertyName("spline");
             var orthodistantConverter = new OrthodistantBasisConverter();
             orthodistantConverter.Write(writer, value.LUT.spline, options);
+
+            var halfLaneConverter = new LaneEndConverter(_world);
+
+            if(value.Start != null) {
+                writer.WritePropertyName("start");
+                halfLaneConverter.Write(writer, value.Start, options);
+            }
+            
+            if(value.End != null) {
+                writer.WritePropertyName("end");
+                halfLaneConverter.Write(writer, value.End, options);
+            }
 
             writer.WriteEndObject();
         }

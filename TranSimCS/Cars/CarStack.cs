@@ -8,6 +8,7 @@ using TranSimCS.Roads.Strip;
 using TranSimCS.Save2;
 using TranSimCS.Setting;
 using TranSimCS.Worlds;
+using TranSimCS.Worlds.Paths;
 using TranSimCS.Worlds.Stack;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -29,13 +30,12 @@ namespace TranSimCS.Cars {
 
         private void World_OnUpdate(float seconds) {
             //Clear car indices
-            foreach (var road in World.RoadSegments.data)
-                foreach (var strip in road.Lanes)
-                    strip._carsOnStrip.Clear();
+            foreach (var path in world.Paths.Paths.Values)
+                path._carsOnStrip.Clear();
 
             //Generate all car indices
-            List<LaneStrip> insertedLaneStrips = [];
-            void InsertCarIntoStrip(CarEntry car, LaneStrip strip) {
+            List<SplinePath> insertedLaneStrips = [];
+            void InsertCarIntoStrip(CarEntry car, SplinePath strip) {
                 if(strip._carsOnStrip.Count == 0) insertedLaneStrips.Add(strip);
                 strip._carsOnStrip.Add(car);
             }
@@ -47,15 +47,15 @@ namespace TranSimCS.Cars {
 
                 var stripIndex = car.FindIndexFromDistance(car.RoutePositionFromStart);
                 var routePosition = car.RoutePositionFromStart;
-                for (int i = 0; i < stripIndex; i++) routePosition -= car.GetRouteElement(i).road.SplineLUT.Length;
+                for (int i = 0; i < stripIndex; i++) routePosition -= car.GetRouteElement(i).road.LUT.Length;
 
                 var node = car.GetRouteElement(stripIndex);
                 var isReverse = node.isReverse;
                 var strip = node.road;
-                var stripPosition = isReverse ? strip.SplineLUT.Length - routePosition : routePosition;
+                var stripPosition = isReverse ? strip.LUT.Length - routePosition : routePosition;
                 CarEntry entry = new(car, stripPosition, isReverse);
                 InsertCarIntoStrip(entry, strip);
-                routePosition -= node.road.SplineLUT.Length;
+                routePosition -= node.road.LUT.Length;
             }
 
             //Sort car lists
@@ -73,30 +73,30 @@ namespace TranSimCS.Cars {
                 var chance = Settings.CarSpawnRate * seconds;
                 foreach (var node in World.Nodes.data) foreach (var lane in node.Lanes) foreach (var strip in lane.Connections) {
                     if (strip.EndLane.Lane == lane) continue; //Strip ends here, do not spawn
-                                                                //Check if a strip is a dead end
+                                                              //Check if a strip is a dead end
+                    var path = strip.Path;
                     var passable = lane.IsLanePassable();
                     if (passable) continue;
                     var decision = rnd.NextSingle() < chance;
                     if (!decision) continue;
-                    var enoughRoom = strip.CarsOnStrip.Count == 0 || strip.CarsOnStrip[0].positionOnStrip >= 5;
+                    var enoughRoom = path.CarsOnStrip.Count == 0 || path.CarsOnStrip[0].positionOnStrip >= 5;
                     if(enoughRoom) Car.LaunchCar(World, strip);
                 }
             }
 
             //Validate the car indices
 #if DEBUG
-            foreach (var segment in world.RoadSegments.data) {
-                foreach (var strip in segment.Lanes) {
-                    for (int i = 1; i < strip._carsOnStrip.Count; i++) {
-                        Debug.Assert(
-                            strip._carsOnStrip[i - 1].positionOnStrip <=
-                            strip._carsOnStrip[i].positionOnStrip,
-                            $"CarsOnStrip not sorted: " +
-                            $"{strip._carsOnStrip[i - 1].positionOnStrip} > " +
-                            $"{strip._carsOnStrip[i].positionOnStrip}");
-                    }
+            foreach (var path in world.Paths.Paths.Values) {
+                for (int i = 1; i < path._carsOnStrip.Count; i++) {
+                    Debug.Assert(
+                        path._carsOnStrip[i - 1].positionOnStrip <=
+                        path._carsOnStrip[i].positionOnStrip,
+                        $"CarsOnStrip not sorted: " +
+                        $"{path._carsOnStrip[i - 1].positionOnStrip} > " +
+                        $"{path._carsOnStrip[i].positionOnStrip}");
                 }
             }
+            
 #endif 
         }
 

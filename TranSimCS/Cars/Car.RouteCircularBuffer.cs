@@ -15,7 +15,7 @@ namespace TranSimCS.Cars {
 
 
         //Route buffer internals
-        internal RouteInput[] _routeBuffer = new RouteInput[16];
+        internal RouteElement[] _routeBuffer = new RouteElement[16];
         internal int _routeBufferHead = 0;
         internal int _routeBufferCount = 0;
         internal int MapIndex(int index) => (index + _routeBufferHead) % _routeBuffer.Length;
@@ -27,7 +27,7 @@ namespace TranSimCS.Cars {
             int elementsBeforeEnd = int.Min(_routeBufferCount, _routeBuffer.Length - _routeBufferHead);
             int elementsAfterEnd = _routeBufferCount - elementsBeforeEnd;
 
-            var newBuffer = new RouteInput[newCapacity];
+            var newBuffer = new RouteElement[newCapacity];
             Array.Copy(_routeBuffer, _routeBufferHead, newBuffer, 0, elementsBeforeEnd); //Copy elements before the end
             if(elementsAfterEnd > 0) Array.Copy(_routeBuffer, 0, newBuffer, elementsBeforeEnd, elementsAfterEnd); //If needed, copy elements after the end
 
@@ -37,7 +37,7 @@ namespace TranSimCS.Cars {
 
         //Basic route algorithms
         public int RouteElementCount => _routeBufferCount;
-        public RouteInput GetRouteElement(int index) => _routeBuffer[MapIndex(index)];
+        public RouteElement GetRouteElement(int index) => _routeBuffer[MapIndex(index)];
         public void PopRouteElements(int count) {
             ArgumentOutOfRangeException.ThrowIfGreaterThan(count, _routeBufferCount, nameof(count));
             _routeBufferHead = MapIndex(count);
@@ -52,7 +52,8 @@ namespace TranSimCS.Cars {
             if (_routeBufferCount == 0)
                 _routeBufferHead = 0;
         }
-        public void PushRouteElement(RouteInput routeElement) {
+        public void PushRouteElement(RouteElement routeElement) {
+            ArgumentNullException.ThrowIfNull(routeElement.road, nameof(routeElement.road));
             GrowCapacity(_routeBufferCount + 1);
             var index = MapIndex(_routeBufferCount);
             _routeBuffer[index] = routeElement;
@@ -60,7 +61,7 @@ namespace TranSimCS.Cars {
         }
 
         public RoutePosition GetRoute() {
-            RouteInput[] routeInputs = new RouteInput[_routeBufferCount];
+            RouteElement[] routeInputs = new RouteElement[_routeBufferCount];
             int elementsBeforeEnd = int.Min(_routeBufferCount, _routeBuffer.Length - _routeBufferHead);
             int elementsAfterEnd = _routeBufferCount - elementsBeforeEnd;
             Array.Copy(_routeBuffer, _routeBufferHead, routeInputs, 0, elementsBeforeEnd); //Copy elements before the end
@@ -71,7 +72,11 @@ namespace TranSimCS.Cars {
         public void SetRoute(RoutePosition route) {
             _routeBufferHead = 0;
             GrowCapacity(route.Route.Length);
-            for (int i = 0; i < route.Route.Length; i++) _routeBuffer[i] = route.Route[i];
+            for (int i = 0; i < route.Route.Length; i++) {
+                var element = route.Route[i];
+                if (element.road == null) throw new ArgumentNullException($"route.Route[{i}].road");
+                _routeBuffer[i] = element;
+            }
             _routeBufferCount = route.Route.Length;
             RoutePositionFromStart = route.Position;
         }

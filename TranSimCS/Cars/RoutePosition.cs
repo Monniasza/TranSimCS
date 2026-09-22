@@ -13,10 +13,10 @@ using TranSimCS.Roads.Strip;
 
 namespace TranSimCS.Cars {
     public struct RoutePosition {
-        public ImmutableArray<RouteInput> Route;
+        public ImmutableArray<RouteElement> Route;
         public float Position;
 
-        public RoutePosition(ImmutableArray<RouteInput> route, float position) {
+        public RoutePosition(ImmutableArray<RouteElement> route, float position) {
             Route = route;
             Position = position;
         }

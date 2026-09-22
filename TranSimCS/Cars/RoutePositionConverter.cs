@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -9,13 +10,14 @@ using System.Threading.Tasks;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Save2;
 using TranSimCS.Worlds;
+using TranSimCS.Worlds.Paths;
 
 namespace TranSimCS.Cars {
     public sealed class RoutePositionConverter(TSWorld world) : JsonConverter<RoutePosition> {
         public override RoutePosition Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
             float position = 0;
-            List<RouteInput> rows = [];
-            StripRefConverter stripConverter = new(world);
+            List<RouteElement> rows = [];
+            PathRefConverter stripConverter = new(world);
             JsonProcessor.ReadJsonObjectProperties(ref reader, (ref reader0, name) => {
                 switch (name) {
                     case "position":
@@ -25,7 +27,8 @@ namespace TranSimCS.Cars {
                     case "strips":
                         JsonProcessor.ReadJsonArrayProperties(ref reader0, (ref reader1, idx) => {
                             //Already on the StartArray of the route element
-                            var strip = stripConverter.Read(ref reader1, typeof(LaneStrip), options);
+                            var strip = stripConverter.Read(ref reader1, typeof(SplinePath), options);
+                            if (strip == null) JsonProcessor.Fail(reader1, "Invalid path");
                             reader1.Read();
                             var isReverse = reader1.GetBoolean();
                             JsonProcessor.AssertTokenType(ref reader1, JsonTokenType.EndArray);
@@ -44,7 +47,7 @@ namespace TranSimCS.Cars {
         }
 
         public override void Write(Utf8JsonWriter writer, RoutePosition value, JsonSerializerOptions options) {
-            var stripSerializer = new StripRefConverter(world);
+            var stripSerializer = new PathRefConverter(world);
             writer.WriteStartObject();
             writer.WriteNumber("position", value.Position);
             writer.WritePropertyName("strips");

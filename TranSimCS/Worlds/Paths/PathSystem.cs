@@ -48,7 +48,7 @@ namespace TranSimCS.Worlds.Paths {
             path.World = Owner;
             if(path.CurrentState is PathState.Active) {
                 //Add a path to the spatial index
-                _pathsSpatial.Add(path);
+                _pathsSpatial.Add(path, true);
             }
             Owner._objects.Add(path.Guid, path);
             _paths.Add(path.Guid, path);
@@ -83,7 +83,7 @@ namespace TranSimCS.Worlds.Paths {
         public SplinePath GetOrMakePath(Guid guid, IPathClaim? claimant) {
             var existing = FindPath(guid);
             if (existing != null) return existing;
-            var path = new SplinePath(claimant, guid);
+            var path = new SplinePath(claimant, guid, null, null);
             AddPath(path);
             return path;
         }

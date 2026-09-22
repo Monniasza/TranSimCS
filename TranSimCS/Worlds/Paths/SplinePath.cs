@@ -8,6 +8,7 @@ using Iesi.Collections.Generic;
 using TranSimCS.Cars;
 using TranSimCS.Geometry;
 using TranSimCS.Roads;
+using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Spatial;
 
@@ -50,6 +51,14 @@ namespace TranSimCS.Worlds.Paths {
     /// </summary>
     public class SplinePath: Obj, IObjMesh {
         //Generated data
+        /// <summary>
+        /// The starting attachment of this claim
+        /// </summary>
+        public HalfLane? Start { get; private set; }
+        /// <summary>
+        /// The ending attachment of this claim
+        /// </summary>
+        public HalfLane? End { get; private set; }
 
         /// <summary>
         /// The claim that generates this path's spline, or <see langword="null"/> when the path is not
@@ -131,10 +140,12 @@ namespace TranSimCS.Worlds.Paths {
                     Claimant = claimant;
                     CurrentState = PathState.Active;
                     Dirty = true;
+                    Start = claimant.Start;
+                    End = claimant.End;
                     //Listen to the claim, so that a change to the thing the path is anchored to marks the
                     //path dirty and its spline is regenerated on next access.
                     Claimant.ObjectChanged += OnClaimantChanged;
-                    World?.Paths._pathsSpatial.Add(this);
+                    World?.Paths._pathsSpatial.Add(this, true);
                     break;
                 case PathState.Active:
                     throw new InvalidOperationException("Claiming an already claimed Path");
@@ -261,6 +272,8 @@ namespace TranSimCS.Worlds.Paths {
             Debug.Assert(Cars.Count == 0);
             Debug.Assert(CurrentState is PathState.Unused or PathState.Orphaned);
             CurrentState = PathState.Deleted;
+            Start = null;
+            End = null;
             if (Claimant is LaneStripPathClaim laneStripClaim)
                 laneStripClaim.Detach();
         }
@@ -277,12 +290,14 @@ namespace TranSimCS.Worlds.Paths {
         /// Passing the GUID of a previously saved path is what allows the same path to be reused after
         /// loading a world.
         /// </param>
-        /// <param name="attachments">The attachment points this path is anchored to.</param>
-        public SplinePath(IPathClaim? claimant, Guid? guid) {
+        public SplinePath(IPathClaim? claimant, Guid? guid, HalfLane? startAttachment, HalfLane? endAttachment) {
+            if (guid != null) Guid = guid.Value;
             CurrentState = PathState.Unused;
             Cars = new(_cars);
+            Start = startAttachment;
+            End = endAttachment;
             if (claimant != null) Claim(claimant);
-            if(guid != null) Guid = guid.Value;
+            
         }
 
         //SPATIAL
@@ -352,6 +367,57 @@ namespace TranSimCS.Worlds.Paths {
         /// <param name="tag">Always set to <see langword="null"/>.</param>
         /// <returns>Always <see langword="false"/>.</returns>
         public bool ComputeIntersection(Ray3 ray, out float distance, out object? tag) => IBVHElement.Reject(ray, out distance, out tag);
+
+        //Car cache. Maintained by CarStack
+        internal List<CarEntry> _carsOnStrip = [];
+        public IReadOnlyList<CarEntry> CarsOnStrip => _carsOnStrip.AsReadOnly();
+        internal void InsertCar(Car car) {
+
+        }
+        internal void RemoveCar(Car car) {
+            for (int i = 0; i < _carsOnStrip.Count; i++) {
+                var entry = _carsOnStrip[i];
+                if (entry.car == car) {
+                    _carsOnStrip.RemoveAt(i);
+                    i--;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Find the index of the first car ahead of <paramref name="position"/>, or <see cref="CarsOnStrip"/>.Count, if not found
+        /// </summary>
+        public int FindFirstAheadIndex(float position) {
+            int min = 0;
+            int max = _carsOnStrip.Count;
+
+            while (min < max) {
+                int mid = (min + max) >> 1;
+                if (_carsOnStrip[mid].positionOnStrip <= position)
+                    min = mid + 1;
+                else
+                    max = mid;
+            }
+            return min;
+        }
+        /// <summary>
+        /// Find the index of the last car behind <paramref name="position"/>, or -1 if not found
+        /// </summary>
+        public int FindLastBehindIndex(float position) {
+            int min = 0;
+            int max = _carsOnStrip.Count;
+
+            while (min < max) {
+                int mid = (min + max) >> 1;
+
+                if (_carsOnStrip[mid].positionOnStrip < position)
+                    min = mid + 1;
+                else
+                    max = mid;
+            }
+
+            return min - 1;
+        }
     }
 
     /// <summary>
