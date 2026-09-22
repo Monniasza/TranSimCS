@@ -116,7 +116,19 @@
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && findstr /s /n /c:\"VehicleTypes\" \"TranSimCS\\Cars\\*.cs\" \"TranSimCS\\Traffic\\*.cs\" \"TranSimCS\\Roads\\Strip\\*.cs\" \"TranSimCS\\Roads\\Section\\*.cs\" 2>nul)",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCSTests/TranSimCSTests.csproj --nologo -v q 2>&1 | tail -25)",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCSTests/TranSimCSTests.csproj --nologo -v q)",
-      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git status --short && echo \"---BUILD---\" && dotnet build TranSimCS/TranSimCS.csproj --nologo -v q 2>&1 | findstr /c:\"error\" /c:\"Error\" /c:\"Ostrze\" /c:\"Build succeeded\" /c:\"Kompilacja\")"
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git status --short && echo \"---BUILD---\" && dotnet build TranSimCS/TranSimCS.csproj --nologo -v q 2>&1 | findstr /c:\"error\" /c:\"Error\" /c:\"Ostrze\" /c:\"Build succeeded\" /c:\"Kompilacja\")",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && pwd)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && ls -Directory)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && find . -name \"*.cs\" -type f | grep -i \"pathclaim\\|lanstrip\\|halflane\\|orthodistant\" | head -20)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCSTests\" && ls -Directory)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test --help | head -20)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test --version 2>&1 || dotnet --version)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test --filter \"FullyQualifiedName~TestSplinePath\" --logger \"console;verbosity=normal\" 2>&1 | Select-Object -Last 80)",
+      "Bash(dotnet build TranSimCSTests\\TranSimCSTests.csproj)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test --filter \"FullyQualifiedName~TestSplinePath\" --logger \"console;verbosity=normal\" 2>&1 | Select-Object -Last 100)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test --filter \"FullyQualifiedName~TestSplinePath\" --logger \"console;verbosity=normal\" 2>&1 | Select-Object -Last 60)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test --filter \"FullyQualifiedName~TestSplinePath\" --logger \"console;verbosity=normal\" 2>&1 | Select-Object -Last 60)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff .abacusai/config.json 2>&1 | Select-Object -First 30)"
     ]
   }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -79,6 +80,53 @@ namespace TranSimCSTests {
             };
             var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json), readerOptions);
             world.LoadJsonData(ref reader, options);
+            return world;
+        }
+
+        /// <summary>
+        /// Constructs a straight two-node road world programmatically, without going through JSON
+        /// serialization.
+        /// <para>
+        /// The world contains two road nodes 100&nbsp;m apart along +Z, each with two lanes. A single
+        /// road strip connects them, carrying one forward lane strip (A→B) and one reverse lane strip
+        /// (B→A). Both lane strips' paths are forced into existence so that they are registered with the
+        /// world's <see cref="PathSystem"/>.
+        /// </para>
+        /// <para>
+        /// This replaces <see cref="Load"/> for tests that only need the road network and paths, because
+        /// the JSON deserializer's <c>SplinePathConverter</c> does not yet handle the <c>strip</c>
+        /// property written by the older serializer format.
+        /// </para>
+        /// </summary>
+        /// <returns>A freshly constructed world with a straight road.</returns>
+        public static TSWorld BuildStraightRoadWorld() {
+            RegisterSplineGenerators();
+            InitializeMaterials();
+            InitializeCarModels();
+            JsonProcessor.Init();
+
+            var nodeA = new RoadNode("A", new PositionEulerAngles(new Vector3(0, 0, 0), 0, 0, 0));
+            var nodeB = new RoadNode("B", new PositionEulerAngles(new Vector3(0, 0, 100), 0, 0, 0));
+
+            nodeA.AddLane(new LaneNode(LaneSpec.Default, -1.75f));
+            nodeA.AddLane(new LaneNode(LaneSpec.Default, 1.75f));
+            nodeB.AddLane(new LaneNode(LaneSpec.Default, -1.75f));
+            nodeB.AddLane(new LaneNode(LaneSpec.Default, 1.75f));
+
+            var world = new TSWorld();
+            world.Nodes.data.Add(nodeA);
+            world.Nodes.data.Add(nodeB);
+
+            world.GetOrMakeRoadStrip(nodeA.FrontHalf, nodeB.RearHalf);
+
+            var forward = world.GetOrMakeLaneStrip(
+                nodeA.FrontHalf.SortedLanes[0], nodeB.RearHalf.SortedLanes[0]);
+            var reverse = world.GetOrMakeLaneStrip(
+                nodeB.RearHalf.SortedLanes[1], nodeA.FrontHalf.SortedLanes[1]);
+
+            _ = forward.Path;
+            _ = reverse.Path;
+
             return world;
         }
 

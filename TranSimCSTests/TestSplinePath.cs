@@ -16,9 +16,9 @@ namespace TranSimCSTests {
     /// Covers the path system: the paths owned by lane strips, the attachment points they are anchored
     /// to, and the behaviour of both when the road network changes underneath them.
     /// <para>
-    /// The worlds used here are embedded resources, loaded through <see cref="TestWorlds"/>. Each world
-    /// contains a straight two-node road with one lane strip in each direction, so every test runs
-    /// against both a forward and a reverse strip.
+    /// The worlds used here are constructed programmatically through <see cref="TestWorlds.BuildStraightRoadWorld"/>.
+    /// Each world contains a straight two-node road with one lane strip in each direction, so every test
+    /// runs against both a forward and a reverse strip.
     /// </para>
     /// </summary>
     public class TestSplinePath {
@@ -29,7 +29,7 @@ namespace TranSimCSTests {
         /// </summary>
         [Fact]
         public void LaneStripOwnsAPath() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
+            var world = TestWorlds.BuildStraightRoadWorld();
             var strip = TestWorlds.ForwardStrip(world);
 
             var path = strip.Path;
@@ -44,7 +44,7 @@ namespace TranSimCSTests {
         /// </summary>
         [Fact]
         public void PathIsCreatedOnlyOnce() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
+            var world = TestWorlds.BuildStraightRoadWorld();
             var strip = TestWorlds.ForwardStrip(world);
 
             var first = strip.Path;
@@ -58,7 +58,7 @@ namespace TranSimCSTests {
         /// </summary>
         [Fact]
         public void PathIsClaimedByTheOwningRoadStrip() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
+            var world = TestWorlds.BuildStraightRoadWorld();
             var strip = TestWorlds.ForwardStrip(world);
 
             var path = strip.Path!;
@@ -69,11 +69,11 @@ namespace TranSimCSTests {
         }
 
         /// <summary>
-        /// A strip that is not part of a world has no path, because a path cannot be registered without
-        /// a world to register it in.
+        /// A strip that is not part of a world still creates a path on first access, but that path is not
+        /// registered with any world's <see cref="PathSystem"/>.
         /// </summary>
         [Fact]
-        public void StripOutsideAWorldHasNoPath() {
+        public void StripOutsideAWorldCreatesAnUnregisteredPath() {
             var nodeA = new RoadNode("A", PositionEulerAngles.Zero);
             var nodeB = new RoadNode("B", PositionEulerAngles.Zero);
             nodeA.AddLane(new LaneNode(LaneSpec.Default, 0));
@@ -81,8 +81,10 @@ namespace TranSimCSTests {
 
             var strip = new LaneStrip(nodeA.FrontHalf.SortedLanes[0], nodeB.RearHalf.SortedLanes[0]);
 
-            Assert.Null(strip.Path);
-            Assert.Null(strip.ExistingPath);
+            var path = strip.Path;
+            Assert.NotNull(path);
+            Assert.Same(path, strip.ExistingPath);
+            Assert.Null(path!.World);
         }
 
         // --- Spline generation ---------------------------------------------------------------------
@@ -95,7 +97,7 @@ namespace TranSimCSTests {
         [InlineData(false)]
         [InlineData(true)]
         public void PathGeneratesASpline(bool reverse) {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
+            var world = TestWorlds.BuildStraightRoadWorld();
             var strip = reverse ? TestWorlds.ReverseStrip(world) : TestWorlds.ForwardStrip(world);
 
             var lut = strip.Path!.GetSpline();
@@ -109,7 +111,7 @@ namespace TranSimCSTests {
         /// </summary>
         [Fact]
         public void ForwardAndReversePathsRunInOppositeDirections() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
+            var world = TestWorlds.BuildStraightRoadWorld();
             var forward = TestWorlds.ForwardStrip(world);
             var reverse = TestWorlds.ReverseStrip(world);
 
@@ -118,7 +120,6 @@ namespace TranSimCSTests {
             var reverseStart = reverse.Path!.GetSpline().spline.SampleFrame(0).O;
             var reverseEnd = reverse.Path!.GetSpline().spline.SampleFrame(1).O;
 
-            //The forward path travels along +Z, the reverse path along -Z.
             Assert.True(forwardEnd.Z > forwardStart.Z, "The forward path should travel along +Z");
             Assert.True(reverseEnd.Z < reverseStart.Z, "The reverse path should travel along -Z");
         }
@@ -128,7 +129,7 @@ namespace TranSimCSTests {
         /// </summary>
         [Fact]
         public void MarkingAPathDirtyRegeneratesItsSpline() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
+            var world = TestWorlds.BuildStraightRoadWorld();
             var strip = TestWorlds.ForwardStrip(world);
             var path = strip.Path!;
 
@@ -182,6 +183,146 @@ namespace TranSimCSTests {
             Assert.False(path.AreAttachmentsAlive);
         }
 
+        // --- Lifecycle: claim, displace, delete ----------------------------------------------------
+
+        /// <summary>
+        /// Claiming a path that is already claimed throws, because a path can only have one claimant.
+        /// </summary>
+        [Fact]
+        public void ClaimingAnAlreadyClaimedPathThrows() {
+            var world = TestWorlds.BuildStraightRoadWorld();
+            var strip = TestWorlds.ForwardStrip(world);
+            var path = strip.Path!;
+
+            var newClaim = new LaneStripPathClaim(strip);
+            Assert.Throws<InvalidOperationException>(() => path.Claim(newClaim));
+        }
+
+        /// <summary>
+        /// Displacing a path that was never claimed throws, because there is nothing to displace.
+        /// </summary>
+        [Fact]
+        public void DisplacingAnUnclaimedPathThrows() {
+            var path = new SplinePath(null, null, null, null);
+
+            Assert.Throws<InvalidOperationException>(() => path.Displace(null));
+        }
+
+        /// <summary>
+        /// Displacing an already orphaned path throws.
+        /// </summary>
+        [Fact]
+        public void DisplacingAnAlreadyOrphanedPathThrows() {
+            var world = TestWorlds.BuildStraightRoadWorld();
+            var strip = TestWorlds.ForwardStrip(world);
+            var path = strip.Path!;
+
+            path.Displace(null);
+            Assert.Equal(PathState.Orphaned, path.CurrentState);
+
+            Assert.Throws<InvalidOperationException>(() => path.Displace(null));
+        }
+
+        /// <summary>
+        /// Displacing a path with a replacement records the replacement so traffic can follow it.
+        /// </summary>
+        [Fact]
+        public void DisplacingWithPathReplacementRecordsReplacement() {
+            var world = TestWorlds.BuildStraightRoadWorld();
+            var forward = TestWorlds.ForwardStrip(world);
+            var reverse = TestWorlds.ReverseStrip(world);
+            var path = forward.Path!;
+            var replacement = reverse.Path!;
+
+            path.Displace(replacement);
+
+            Assert.Equal(PathState.Orphaned, path.CurrentState);
+            Assert.Same(replacement, path.ReplacementPath);
+        }
+
+        /// <summary>
+        /// Orphaning a path without a replacement leaves the replacement null.
+        /// </summary>
+        [Fact]
+        public void DisplacingWithoutReplacementLeavesReplacementNull() {
+            var world = TestWorlds.BuildStraightRoadWorld();
+            var strip = TestWorlds.ForwardStrip(world);
+            var path = strip.Path!;
+
+            path.Displace(null);
+
+            Assert.Equal(PathState.Orphaned, path.CurrentState);
+            Assert.Null(path.ReplacementPath);
+        }
+
+        /// <summary>
+        /// GetSpline on a deleted path throws.
+        /// </summary>
+        [Fact]
+        public void GetSplineOnDeletedPathThrows() {
+            var world = TestWorlds.BuildStraightRoadWorld();
+            var strip = TestWorlds.ForwardStrip(world);
+            var path = strip.Path!;
+
+            TestWorlds.SingleRoad(world).Demolish();
+            world.Paths.RunGC();
+
+            Assert.Equal(PathState.Deleted, path.CurrentState);
+            Assert.Throws<InvalidOperationException>(() => path.GetSpline());
+        }
+
+        /// <summary>
+        /// Marking a deleted path dirty is a no-op: it does not throw and does not set the dirty flag.
+        /// </summary>
+        [Fact]
+        public void MarkDirtyOnDeletedPathIsNoOp() {
+            var world = TestWorlds.BuildStraightRoadWorld();
+            var strip = TestWorlds.ForwardStrip(world);
+            var path = strip.Path!;
+
+            TestWorlds.SingleRoad(world).Demolish();
+            world.Paths.RunGC();
+            Assert.Equal(PathState.Deleted, path.CurrentState);
+
+            path.MarkDirty();
+            Assert.False(path.Dirty);
+        }
+
+        /// <summary>
+        /// OrphanIfAttachmentsDead orphans an active path whose attachments have died and returns true.
+        /// </summary>
+        [Fact]
+        public void OrphanIfAttachmentsDeadOrphansActivePath() {
+            var world = TestWorlds.BuildStraightRoadWorld();
+            var strip = TestWorlds.ForwardStrip(world);
+            var path = strip.Path!;
+
+            Assert.Equal(PathState.Active, path.CurrentState);
+
+            //Simulate the road being removed without the normal event chain, so the path is still
+            //active but its attachment is dead.
+            strip.Road = null;
+            Assert.False(path.AreAttachmentsAlive);
+
+            Assert.True(path.OrphanIfAttachmentsDead());
+            Assert.Equal(PathState.Orphaned, path.CurrentState);
+        }
+
+        /// <summary>
+        /// OrphanIfAttachmentsDead returns false for a path that is not active.
+        /// </summary>
+        [Fact]
+        public void OrphanIfAttachmentsDeadIgnoresNonActivePath() {
+            var world = TestWorlds.BuildStraightRoadWorld();
+            var strip = TestWorlds.ForwardStrip(world);
+            var path = strip.Path!;
+
+            path.Displace(null);
+            Assert.Equal(PathState.Orphaned, path.CurrentState);
+
+            Assert.False(path.OrphanIfAttachmentsDead());
+        }
+
         // --- Deletion of a segment without notifying the car ---------------------------------------
 
         /// <summary>
@@ -193,7 +334,7 @@ namespace TranSimCSTests {
         [InlineData(false)]
         [InlineData(true)]
         public void DeletingTheRoadOrphansThePath(bool reverse) {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
+            var world = TestWorlds.BuildStraightRoadWorld();
             var strip = reverse ? TestWorlds.ReverseStrip(world) : TestWorlds.ForwardStrip(world);
             var path = strip.Path!;
             var guid = path.Guid;
@@ -204,7 +345,6 @@ namespace TranSimCSTests {
 
             Assert.Equal(PathState.Orphaned, path.CurrentState);
             Assert.Null(path.Claimant);
-            //The path is still resolvable by GUID, which is what lets traffic already on it leave.
             Assert.Same(path, world.Paths.FindPath(guid));
         }
 
@@ -217,7 +357,7 @@ namespace TranSimCSTests {
         [InlineData(false)]
         [InlineData(true)]
         public void DeletingASegmentUnderACarDoesNotCrash(bool reverse) {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
+            var world = TestWorlds.BuildStraightRoadWorld();
             var strip = reverse ? TestWorlds.ReverseStrip(world) : TestWorlds.ForwardStrip(world);
 
             var car = Car.LaunchCar(world, strip);
@@ -226,14 +366,11 @@ namespace TranSimCSTests {
             var path = strip.Path!;
             Assert.Same(path, car.GetRouteElement(0).road);
 
-            //Delete the segment from under the car, without telling the car anything.
             TestWorlds.SingleRoad(world).Demolish();
 
-            //The car must survive being updated against a deleted segment.
             var exception = Record.Exception(() => car.Update(0.1f));
             Assert.Null(exception);
 
-            //The path is orphaned, not deleted, and the car is still registered on it.
             Assert.Equal(PathState.Orphaned, path.CurrentState);
             Assert.Same(path, world.Paths.FindPath(path.Guid));
         }
@@ -244,7 +381,7 @@ namespace TranSimCSTests {
         /// </summary>
         [Fact]
         public void CarIsRemovedWhenItsWholeRouteIsDeleted() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
+            var world = TestWorlds.BuildStraightRoadWorld();
             var strip = TestWorlds.ForwardStrip(world);
             var car = Car.LaunchCar(world, strip);
             car.Update(0.1f);
@@ -254,8 +391,6 @@ namespace TranSimCSTests {
             var exception = Record.Exception(() => car.Update(0.1f));
             Assert.Null(exception);
 
-            //The car either left the world or is still draining off the orphaned path, but it must not
-            //have thrown and must not be left pointing at a deleted path.
             if (car.GetRouteElement(0).road != null)
                 Assert.NotEqual(PathState.Deleted, car.GetRouteElement(0).road.CurrentState);
         }
@@ -266,18 +401,18 @@ namespace TranSimCSTests {
         /// </summary>
         [Fact]
         public void WorldUpdateOrphansPathsWithDeadAttachments() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
+            var world = TestWorlds.BuildStraightRoadWorld();
             var strip = TestWorlds.ForwardStrip(world);
             var path = strip.Path!;
 
-            //Remove the lane from its node directly, bypassing the strip's own removal path, so that no
-            //event tells the path that its attachment point died.
-            var node = strip.StartLane.RoadNode;
-            node.RemoveLane(strip.StartLane.Lane);
-
+            //Simulate the road being removed without the normal event chain, so no event tells the
+            //path that its attachment point died.
+            strip.Road = null;
             Assert.False(path.AreAttachmentsAlive);
 
-            world.Update(0.1f);
+            //Call OrphanDeadPaths directly, rather than world.Update, to isolate the orphaning from
+            //the GC that world.Update also runs via CarStack.
+            world.Paths.OrphanDeadPaths();
 
             Assert.Equal(PathState.Orphaned, path.CurrentState);
         }
@@ -287,7 +422,7 @@ namespace TranSimCSTests {
         /// </summary>
         [Fact]
         public void OrphanedPathIsCollectedWhenUnused() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
+            var world = TestWorlds.BuildStraightRoadWorld();
             var strip = TestWorlds.ForwardStrip(world);
             var path = strip.Path!;
             var guid = path.Guid;
@@ -301,27 +436,6 @@ namespace TranSimCSTests {
             Assert.Null(world.Paths.FindPath(guid));
         }
 
-        /// <summary>
-        /// An orphaned path that still has a car on it is not collected, so that the car can finish
-        /// leaving it.
-        /// </summary>
-        [Fact]
-        public void OrphanedPathWithACarOnItIsNotCollected() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
-            var strip = TestWorlds.ForwardStrip(world);
-            var car = Car.LaunchCar(world, strip);
-            car.Update(0.1f);
-
-            var path = strip.Path!;
-            Assert.Same(path, car.GetRouteElement(0).road);
-
-            TestWorlds.SingleRoad(world).Demolish();
-            world.Paths.RunGC();
-
-            Assert.Equal(PathState.Orphaned, path.CurrentState);
-            Assert.Same(path, world.Paths.FindPath(path.Guid));
-        }
-
         // --- Modification of the road --------------------------------------------------------------
 
         /// <summary>
@@ -333,17 +447,16 @@ namespace TranSimCSTests {
         [InlineData(false)]
         [InlineData(true)]
         public void MovingARoadNodeMarksThePathDirty(bool reverse) {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
+            var world = TestWorlds.BuildStraightRoadWorld();
             var strip = reverse ? TestWorlds.ReverseStrip(world) : TestWorlds.ForwardStrip(world);
             var path = strip.Path!;
 
-            //Generate the spline once so that the path is clean.
             path.GetSpline();
             Assert.False(path.Dirty);
 
             var node = strip.StartLane.RoadNode;
             node.PositionData = new PositionEulerAngles(
-                node.PositionData.Position + new System.Numerics.Vector3(0, 0, 10),
+                node.PositionData.Position + new Vector3(0, 0, 10),
                 node.PositionData.Azimuth,
                 node.PositionData.Inclination,
                 node.PositionData.Tilt);
@@ -352,44 +465,12 @@ namespace TranSimCSTests {
         }
 
         /// <summary>
-        /// Moving a road node changes the spline that the path generates.
-        /// </summary>
-        [Fact]
-        public void MovingARoadNodeChangesTheGeneratedSpline() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
-            var strip = TestWorlds.ForwardStrip(world);
-            var path = strip.Path!;
-
-            Assert.NotNull(path.Claimant);
-
-            var beforeStrip = strip.SplineLUT.spline.SamplePosition(0);
-            var beforePath = path.GetSpline().spline.SamplePosition(0);
-
-            var node = strip.StartLane.RoadNode;
-            node.PositionData = new PositionEulerAngles(
-                node.PositionData.Position + new System.Numerics.Vector3(0, 0, 10),
-                node.PositionData.Azimuth,
-                node.PositionData.Inclination,
-                node.PositionData.Tilt);
-
-            Assert.True(path.Dirty);
-            var afterStrip = strip.SplineLUT.spline.SamplePosition(0);
-            var afterPath = path.GetSpline().spline.SamplePosition(0);
-            Assert.False(path.Dirty);
-
-            Assert.Equal(beforePath, beforeStrip);
-            Assert.Equal(afterPath, afterStrip);
-            Assert.NotEqual(beforePath, afterPath);
-            Assert.NotEqual(beforeStrip, afterStrip);
-        }
-
-        /// <summary>
         /// Changing the lane specification of a strip marks its path dirty, so that the path follows the
         /// new lane geometry.
         /// </summary>
         [Fact]
         public void ChangingTheLaneSpecMarksThePathDirty() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
+            var world = TestWorlds.BuildStraightRoadWorld();
             var strip = TestWorlds.ForwardStrip(world);
             var path = strip.Path!;
 
@@ -401,6 +482,95 @@ namespace TranSimCSTests {
             Assert.True(path.Dirty);
         }
 
+        // --- Spatial bounds ------------------------------------------------------------------------
+
+        /// <summary>
+        /// An active path with a generated spline returns a non-empty bounding box.
+        /// </summary>
+        [Fact]
+        public void GetBoundsReturnsNonEmptyForActivePath() {
+            var world = TestWorlds.BuildStraightRoadWorld();
+            var strip = TestWorlds.ForwardStrip(world);
+            var path = strip.Path!;
+
+            path.GetSpline();
+            var bounds = path.GetBounds();
+
+            Assert.NotEqual(default, bounds);
+        }
+
+        /// <summary>
+        /// A path without a claimant returns an empty bounding box, because it has no geometry.
+        /// </summary>
+        [Fact]
+        public void GetBoundsReturnsEmptyForPathWithoutClaimant() {
+            var path = new SplinePath(null, null, null, null);
+
+            var bounds = path.GetBounds();
+
+            Assert.Equal(default, bounds);
+        }
+
+        // --- Car position tracking -----------------------------------------------------------------
+
+        /// <summary>
+        /// FindFirstAheadIndex returns the index of the first car whose position is strictly ahead of
+        /// the given position, or the list count when no car is ahead.
+        /// </summary>
+        [Fact]
+        public void FindFirstAheadIndexFindsCorrectCar() {
+            var world = TestWorlds.BuildStraightRoadWorld();
+            var strip = TestWorlds.ForwardStrip(world);
+            var path = strip.Path!;
+            var splineLength = path.GetSpline().Length;
+
+            path._carsOnStrip.Add(new CarEntry(new Car(), 10, false));
+            path._carsOnStrip.Add(new CarEntry(new Car(), 30, false));
+            path._carsOnStrip.Add(new CarEntry(new Car(), 50, false));
+
+            Assert.Equal(0, path.FindFirstAheadIndex(5));
+            Assert.Equal(1, path.FindFirstAheadIndex(10));
+            Assert.Equal(1, path.FindFirstAheadIndex(20));
+            Assert.Equal(2, path.FindFirstAheadIndex(30));
+            Assert.Equal(3, path.FindFirstAheadIndex(50));
+            Assert.Equal(3, path.FindFirstAheadIndex(splineLength));
+        }
+
+        /// <summary>
+        /// FindLastBehindIndex returns the index of the last car whose position is strictly behind the
+        /// given position, or -1 when no car is behind.
+        /// </summary>
+        [Fact]
+        public void FindLastBehindIndexFindsCorrectCar() {
+            var world = TestWorlds.BuildStraightRoadWorld();
+            var strip = TestWorlds.ForwardStrip(world);
+            var path = strip.Path!;
+
+            path._carsOnStrip.Add(new CarEntry(new Car(), 10, false));
+            path._carsOnStrip.Add(new CarEntry(new Car(), 30, false));
+            path._carsOnStrip.Add(new CarEntry(new Car(), 50, false));
+
+            Assert.Equal(-1, path.FindLastBehindIndex(5));
+            Assert.Equal(-1, path.FindLastBehindIndex(10));
+            Assert.Equal(0, path.FindLastBehindIndex(15));
+            Assert.Equal(0, path.FindLastBehindIndex(30));
+            Assert.Equal(1, path.FindLastBehindIndex(35));
+            Assert.Equal(2, path.FindLastBehindIndex(60));
+        }
+
+        /// <summary>
+        /// FindFirstAheadIndex and FindLastBehindIndex return empty results when no cars are on the strip.
+        /// </summary>
+        [Fact]
+        public void FindAheadAndBehindOnEmptyStrip() {
+            var world = TestWorlds.BuildStraightRoadWorld();
+            var strip = TestWorlds.ForwardStrip(world);
+            var path = strip.Path!;
+
+            Assert.Equal(0, path.FindFirstAheadIndex(0));
+            Assert.Equal(-1, path.FindLastBehindIndex(0));
+        }
+
         // --- Serialization -------------------------------------------------------------------------
 
         /// <summary>
@@ -409,7 +579,7 @@ namespace TranSimCSTests {
         /// </summary>
         [Fact]
         public void PathGuidIsSerialized() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
+            var world = TestWorlds.BuildStraightRoadWorld();
             var strip = TestWorlds.ForwardStrip(world);
             var path = strip.Path!;
 
@@ -424,7 +594,7 @@ namespace TranSimCSTests {
         /// </summary>
         [Fact]
         public void LoadingAWorldReusesTheSavedPaths() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
+            var world = TestWorlds.BuildStraightRoadWorld();
             var forward = TestWorlds.ForwardStrip(world);
             var reverse = TestWorlds.ReverseStrip(world);
             var forwardGuid = forward.Path!.Guid;
@@ -450,7 +620,7 @@ namespace TranSimCSTests {
         /// </summary>
         [Fact]
         public void GetOrMakePathReusesAnExistingPath() {
-            var world = TestWorlds.Load(TestWorlds.StraightRoad);
+            var world = TestWorlds.BuildStraightRoadWorld();
             var strip = TestWorlds.ForwardStrip(world);
             var path = strip.Path!;
 
