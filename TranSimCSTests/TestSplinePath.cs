@@ -224,7 +224,7 @@ namespace TranSimCSTests {
             car.Update(0.1f);
 
             var path = strip.Path!;
-            Assert.Same(path, car.OccupiedPath);
+            Assert.Same(path, car.GetRouteElement(0).road);
 
             //Delete the segment from under the car, without telling the car anything.
             TestWorlds.SingleRoad(world).Demolish();
@@ -256,8 +256,8 @@ namespace TranSimCSTests {
 
             //The car either left the world or is still draining off the orphaned path, but it must not
             //have thrown and must not be left pointing at a deleted path.
-            if (car.OccupiedPath != null)
-                Assert.NotEqual(PathState.Deleted, car.OccupiedPath.CurrentState);
+            if (car.GetRouteElement(0).road != null)
+                Assert.NotEqual(PathState.Deleted, car.GetRouteElement(0).road.CurrentState);
         }
 
         /// <summary>
@@ -313,7 +313,7 @@ namespace TranSimCSTests {
             car.Update(0.1f);
 
             var path = strip.Path!;
-            Assert.Same(path, car.OccupiedPath);
+            Assert.Same(path, car.GetRouteElement(0).road);
 
             TestWorlds.SingleRoad(world).Demolish();
             world.Paths.RunGC();
