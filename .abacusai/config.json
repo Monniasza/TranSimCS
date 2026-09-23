@@ -153,7 +153,15 @@
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git checkout a1bd93f^ -- TranSimCS/Cars/Car.RoutePlanning.cs TranSimCS/Cars/CarStack.cs)",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff HEAD --stat)",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCS.sln -v q --nologo 2>&1 | Select-Object -Last 6)",
-      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCS.sln -v q --nologo 2>&1 | Select-Object -Last 6)"
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCS.sln -v q --nologo 2>&1 | Select-Object -Last 6)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && pwd && ls -la)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && pwd && ls)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && grep -r \"AvailableModes =\" --include=\"*.cs\" | head -5)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && Select-String -Path \"TranSimCS/SilkNet/*.cs\" -Pattern \"AvailableModes\" | head -20)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\"; dotnet build TranSimCS\\TranSimCS.csproj --nologo 2>&1 | Select-Object -Last 40)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\"; dotnet build TranSimCS\\TranSimCS.csproj --nologo 2>&1 | Select-String -Pattern \"error|Bledy|Liczba bledow|Build succeeded|Ostrzezenia:|Czas\" | Select-Object -Last 15)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\"; $out = dotnet build TranSimCS\\TranSimCS.csproj --nologo 2>&1; $errs = $out | Select-String -Pattern \"error CS\"; if ($errs) { \"ERRORS:\"; $errs } else { \"No compile errors. EXIT=$LASTEXITCODE\" })",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\"; $out = dotnet build TranSimCS.sln --nologo 2>&1; $errs = $out | Select-String -Pattern \"error CS\"; if ($errs) { \"ERRORS:\"; $errs } else { \"No compile errors. EXIT=$LASTEXITCODE\" })"
     ]
   }
 }
