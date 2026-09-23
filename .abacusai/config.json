@@ -128,7 +128,23 @@
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test --filter \"FullyQualifiedName~TestSplinePath\" --logger \"console;verbosity=normal\" 2>&1 | Select-Object -Last 100)",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test --filter \"FullyQualifiedName~TestSplinePath\" --logger \"console;verbosity=normal\" 2>&1 | Select-Object -Last 60)",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test --filter \"FullyQualifiedName~TestSplinePath\" --logger \"console;verbosity=normal\" 2>&1 | Select-Object -Last 60)",
-      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff .abacusai/config.json 2>&1 | Select-Object -First 30)"
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff .abacusai/config.json 2>&1 | Select-Object -First 30)",
+      "Bash(Get-ChildItem \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\SilkNet\" | Select-Object Name | head -20)",
+      "Bash(Get-ChildItem \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\Worlds\" -Recurse | Where-Object { $_.Extension -eq \".cs\" } | Select-Object Name | head -50)",
+      "Bash(Get-ChildItem \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\Worlds\" -Recurse | Where-Object { $_.Extension -eq \".cs\" } | Select-Object Name)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git log --oneline -10)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && Get-ChildItem -Recurse -Include \"*.cs\" | Select-Object -First 30 | ForEach-Object { $_.FullName })",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && Get-ChildItem -Recurse -Include \"*.cs\" -Exclude \"*\\obj\\*\", \"*\\external\\*\" | Where-Object { $_.FullName -notmatch '\\\\obj\\\\' -and $_.FullName -notmatch '\\\\external\\\\' } | Select-Object -First 50 | ForEach-Object { $_.FullName })",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && Get-ChildItem -Recurse -Include \"*.cs\" -Path \"*\\TranSimCS\\*\" | Where-Object { $_.FullName -notmatch '\\\\obj\\\\' } | Select-Object -ExpandProperty FullName | Measure-Object -Line)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programovanje\\TranSimCS\" && grep -r \"class PositionEulerAngles\\|struct PositionEulerAngles\" --include=\"*.cs\" | head -5)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && Get-ChildItem -Recurse -Include \"*.cs\" | Select-String -Pattern \"class PositionEulerAngles|struct PositionEulerAngles\" -List | Select-Object -ExpandProperty Path | ForEach-Object { $_.ToString() })",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && Get-ChildItem -Recurse -Include \"*.cs\" | Select-String -Pattern \"public.*AABB|public.*Intersects\" | grep -i \"aabb\" | head -20)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\" && Get-ChildItem \"*.csproj\" -Recurse | Select-Object -First 1 | Get-Content | Select-String \"System.Numerics\" -A 2 -B 2)",
+      "Bash(git -C \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" diff)",
+      "Bash(dotnet build \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS.sln\" 2>&1 | Select-Object -Last 40)",
+      "Bash(dotnet test \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS.sln\" 2>&1 | Select-Object -Last 30)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCS.sln -v q --nologo 2>&1 | Select-Object -Last 8)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCS.sln -v q --nologo 2>&1 | Select-Object -Last 12)"
     ]
   }
 }

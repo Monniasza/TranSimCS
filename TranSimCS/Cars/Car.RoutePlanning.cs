@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Numerics;
 using TranSimCS.Geometry;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Worlds.Paths;
@@ -13,6 +14,14 @@ namespace TranSimCS.Cars {
     // Route planning and obstacle detection
     public partial class Car {
         public float RoutePositionFromStart;
+
+        //Current lane placement, cached once per frame by CarStack so that the spatial
+        //neighbour query in FindObstacle can compute arc-length distances to nearby cars
+        //without scanning per-strip sorted lists.
+        internal SplinePath? currentStrip;
+        internal float currentStripPosition;
+        internal bool currentStripIsReverse;
+
         internal bool TrimUntilDead() {
             int i;
             for(i = 0; i < RouteElementCount; i++) {
@@ -93,7 +102,6 @@ namespace TranSimCS.Cars {
         public Obstacle FindObstacle(float maxDist, float maxVelocity) {
             Obstacle obstacle = new(maxDist, maxVelocity);
 
-            //Find traffic lights
             var minSegment = FindIndexFromDistance(RoutePositionFromStart);
             var maxSegment = FindIndexFromDistance(RoutePositionFromStart + maxDist);
             if (maxSegment >= RouteElementCount) maxSegment = RouteElementCount - 1;
@@ -101,6 +109,13 @@ namespace TranSimCS.Cars {
             float count = 0;
             //Count distances until before the start segment
             for (int i = 0; i < minSegment; i++) count += GetRouteElement(i).road.GetSpline().Length;
+
+            //Lookup tables built in the same pass as the traffic-light check. The spatial
+            //neighbour query below uses them to classify each nearby car as either a queue
+            //leader (on our own route) or a merge contender (on a sibling lane converging at
+            //one of our route endpoints), replacing the former per-strip sorted-list scans.
+            var routeSegMap = new Dictionary<SplinePath, (float startOffset, float length, bool isReverse)>();
+            var mergeSiblingMap = new Dictionary<SplinePath, List<(SegmentHalf half, float sibLen, float ownDistanceToMerge)>>();
 
             for (int i = minSegment; i <= maxSegment; i++) {
                 var key = GetRouteElement(i);
@@ -115,95 +130,96 @@ namespace TranSimCS.Cars {
 
                 float localPosition = RoutePositionFromStart - segmentStartPosition;
 
-                //Find the next car ahead
-                int nextCarAheadIndex = 0;
-                if (isReverse)
-                    nextCarAheadIndex = segment.FindLastBehindIndex(segmentLength - localPosition);
-                else
-                    nextCarAheadIndex = segment.FindFirstAheadIndex(localPosition);
-                if (nextCarAheadIndex >= 0 && nextCarAheadIndex < segment.CarsOnStrip.Count) {
-                    //A car was found
-                    var nextCar = segment.CarsOnStrip[nextCarAheadIndex];
-                    var carPosition = nextCar.positionOnStrip;
-                    if (isReverse) carPosition = segmentLength - carPosition;
-                    var velocity = nextCar.car.Speed;
-                    if (isReverse) velocity *= -1;
+                //Remember this route segment so the spatial query can recognise cars on it
+                //as queue leaders. The first (closest) occurrence wins for a looping route.
+                if (!routeSegMap.ContainsKey(segment))
+                    routeSegMap[segment] = (segmentStartPosition, segmentLength, isReverse);
 
-                    //Validate the lookup
-                    var distToVehicle = carPosition - localPosition;
-                    var distanceToObstacle = distToVehicle - 5;
-
-                    Obstacle carObstacle = new(distanceToObstacle, velocity);
-                    obstacle = obstacle.Combine(carObstacle);
-                }
-
+                //Traffic lights are road state, not neighbours, so they stay position based.
                 var isRed = endNode?.TrafficLight?.IsGreen(endNode) == false;
                 if (isRed) {
                     Obstacle lightObstacle = new(segmentEndPosition - localPosition - 1, 0);
                     obstacle = obstacle.Combine(lightObstacle);
                 }
 
-                //Merge check: the car furthest forward gets priority.  Without this,
-                //two cars near the merge both yield and deadlock.
+                //Merge check: record every sibling lane converging at this endpoint. The
+                //spatial query later finds cars on these siblings near the merge point.
                 var rawSiblings = endNode?.ConnectedLaneStrips;
-                var distanceToMerge = segmentLength - localPosition;
-                Obstacle mergeObstacle = new Obstacle(distanceToMerge, 0);
-                var ownDistanceToMerge = distanceToMerge;
-                if(rawSiblings != null && ownDistanceToMerge > 0) foreach (var sibling0 in rawSiblings) {
+                var ownDistanceToMerge = segmentEndPosition - RoutePositionFromStart;
+                if (rawSiblings != null && ownDistanceToMerge > 0) foreach (var sibling0 in rawSiblings) {
                     var path = sibling0.strip.Path;
-                    var half = sibling0.half;
-
-                    var cars = path._carsOnStrip;
-                    var length = path.GetSpline().Length;
-
                     if (path == segment) continue; //Do not check the same segment
-                    if (cars.Count == 0) continue; //No cars on the sibling
-
-                    CarEntry? contender = null;
-                    float contenderDistanceToMerge = 0;
-
-                    if (half == SegmentHalf.End) {
-                        //Entries are sorted by position, so the last forward car is
-                        //the one closest to this endpoint.
-                        for (int j = cars.Count - 1; j >= 0; j--) {
-                            var car = cars[j];
-                            contenderDistanceToMerge = length - car.positionOnStrip;
-                            if (contenderDistanceToMerge > 10)
-                                break;
-
-                            if (!car.isReverse) {
-                                contender = car;
-                                break;
-                            }
-                        }
-                    } else {
-                        //The first reverse car is closest to this endpoint.
-                        for (int j = 0; j < cars.Count; j++) {
-                            var car = cars[j];
-                            contenderDistanceToMerge = car.positionOnStrip;
-                            if (contenderDistanceToMerge > 10)
-                                break;
-
-                            if (car.isReverse) {
-                                contender = car;
-                                break;
-                            }
-                        }
+                    if (!mergeSiblingMap.TryGetValue(path, out var list)) {
+                        list = new();
+                        mergeSiblingMap[path] = list;
                     }
-
-                    if (contender == null) continue;
-
-                    // A smaller distance means the sibling is further forward. GUID
-                    // breaks exact ties so two cars never both enter the merge.
-                    const float positionTieEpsilon = 0.001f;
-                    var siblingHasPriority =
-                        contenderDistanceToMerge < ownDistanceToMerge - positionTieEpsilon ||
-                        (MathF.Abs(contenderDistanceToMerge - ownDistanceToMerge) <= positionTieEpsilon &&
-                         contender.Value.car.Guid.CompareTo(Guid) < 0);
-                    if (siblingHasPriority)
-                        obstacle = obstacle.Combine(mergeObstacle);
+                    list.Add((sibling0.half, path.GetSpline().Length, ownDistanceToMerge));
                 }
             }
+
+            //Spatial neighbour query. A single query around the car captures both queue
+            //leaders (ahead on our route) and merge contenders (near a converging endpoint)
+            //within maxDist, replacing the former per-strip sorted-list and sibling scans.
+            var spatial = World?.Cars?.carSpatial;
+            if (spatial != null) {
+                var frame = GetPositionFrame();
+                var pos = frame.O;
+                float queryRadius = maxDist + 15f;
+                var extent = new Vector3(queryRadius);
+                var queryBox = new AABB(pos - extent, pos + extent);
+
+                float bestLeaderDist = float.PositiveInfinity;
+                float bestLeaderVel = maxVelocity;
+
+                foreach (var cand in spatial.Query(queryBox)) {
+                    if (ReferenceEquals(cand, this)) continue;
+                    var cstrip = cand.currentStrip;
+                    if (cstrip == null) continue;
+
+                    if (routeSegMap.TryGetValue(cstrip, out var seg)) {
+                        //Queueing: this car is ahead on our route.
+                        float candCoord = seg.isReverse ? (seg.length - cand.currentStripPosition) : cand.currentStripPosition;
+                        float candRoutePos = seg.startOffset + candCoord;
+                        float distAhead = candRoutePos - RoutePositionFromStart;
+                        if (distAhead > 0 && distAhead < bestLeaderDist) {
+                            bestLeaderDist = distAhead;
+                            bestLeaderVel = cand.Speed;
+                            if (seg.isReverse) bestLeaderVel *= -1;
+                        }
+                    } else if (mergeSiblingMap.TryGetValue(cstrip, out var mergeList)) {
+                        //Merging: this car is on a sibling lane converging at our endpoint.
+                        for (int s = 0; s < mergeList.Count; s++) {
+                            var mi = mergeList[s];
+                            if (mi.ownDistanceToMerge <= 0) continue;
+                            bool dirOk;
+                            float contenderDistanceToMerge;
+                            if (mi.half == SegmentHalf.End) {
+                                contenderDistanceToMerge = mi.sibLen - cand.currentStripPosition;
+                                dirOk = !cand.currentStripIsReverse;
+                            } else {
+                                contenderDistanceToMerge = cand.currentStripPosition;
+                                dirOk = cand.currentStripIsReverse;
+                            }
+                            if (!dirOk) continue;
+                            if (contenderDistanceToMerge > 10f || contenderDistanceToMerge <= 0) continue;
+
+                            //A smaller distance means the sibling is further forward. GUID
+                            //breaks exact ties so two cars never both enter the merge.
+                            const float positionTieEpsilon = 0.001f;
+                            var siblingHasPriority =
+                                contenderDistanceToMerge < mi.ownDistanceToMerge - positionTieEpsilon ||
+                                (MathF.Abs(contenderDistanceToMerge - mi.ownDistanceToMerge) <= positionTieEpsilon &&
+                                 cand.Guid.CompareTo(Guid) < 0);
+                            if (siblingHasPriority)
+                                obstacle = obstacle.Combine(new Obstacle(mi.ownDistanceToMerge, 0));
+                        }
+                    }
+                }
+
+                if (bestLeaderDist < float.PositiveInfinity)
+                    obstacle = obstacle.Combine(new Obstacle(bestLeaderDist - 5f, bestLeaderVel));
+            }
+
             return obstacle;
         }
 
