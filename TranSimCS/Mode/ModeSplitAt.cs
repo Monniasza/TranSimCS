@@ -46,7 +46,7 @@ namespace TranSimCS.Mode {
                 if (reference is null) {
                     var hovered = Menu.MouseOver?.As<HalfLane>();
                     if (hovered is not null)
-                        ImGui.TextColored(green, "[LMB] over a half-lane to set it as the reference");
+                        ImGui.TextColored(green, "[LMB] over a half-lane to set it as the reference. The strip between the reference and selection will be one-to-one. ");
                     else
                         ImGui.TextColored(maroon, "Hover a half-lane to set the reference");
                 } else {
