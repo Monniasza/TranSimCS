@@ -29,11 +29,6 @@ namespace TranSimCS.Mode {
         public ModeSplitAt(SilkNetTest menu) {
             Menu = menu;
         }
-
-        //The road strips attached to a half-lane, via its connected lane strips.
-        private static List<RoadStrip> CandidateRoads(HalfLane halfLane) =>
-            halfLane.ConnectedLaneStrips.Select(end => end.strip.Road).OfType<RoadStrip>().Distinct().ToList();
-
         string IMode.Title() => "Split road at one point";
 
         void IMode.DrawUI() {
@@ -99,7 +94,7 @@ namespace TranSimCS.Mode {
             SplitT = 0;
 
             var reference = ReferenceHalfLane;
-            _candidates = reference is null ? new() : CandidateRoads(reference);
+            _candidates = reference is null ? new() : reference.RoadNode.Connections.ToList();
             if (reference is null || _candidates.Count == 0) return;
 
             var selection = Menu.MouseOver;
