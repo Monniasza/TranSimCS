@@ -144,7 +144,16 @@
       "Bash(dotnet build \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS.sln\" 2>&1 | Select-Object -Last 40)",
       "Bash(dotnet test \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS.sln\" 2>&1 | Select-Object -Last 30)",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCS.sln -v q --nologo 2>&1 | Select-Object -Last 8)",
-      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCS.sln -v q --nologo 2>&1 | Select-Object -Last 12)"
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCS.sln -v q --nologo 2>&1 | Select-Object -Last 12)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git show HEAD:TranSimCS/Cars/Car.RoutePlanning.cs | Select-Object -First 210 | Select-Object -Last 120)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff HEAD -- TranSimCS/Cars/Car.RoutePlanning.cs | Select-Object -First 30)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff HEAD -- TranSimCS/Cars/Car.RoutePlanning.cs 2>&1 | Measure-Object -Line)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git log --oneline -5)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git show a1bd93f^:TranSimCS/Cars/Car.RoutePlanning.cs 2>&1 | Select-Object -First 210 | Select-Object -Last 120)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git checkout a1bd93f^ -- TranSimCS/Cars/Car.RoutePlanning.cs TranSimCS/Cars/CarStack.cs)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff HEAD --stat)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCS.sln -v q --nologo 2>&1 | Select-Object -Last 6)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCS.sln -v q --nologo 2>&1 | Select-Object -Last 6)"
     ]
   }
 }

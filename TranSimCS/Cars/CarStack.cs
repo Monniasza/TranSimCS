@@ -7,7 +7,6 @@ using TranSimCS.Roads.Node;
 using TranSimCS.Roads.Strip;
 using TranSimCS.Save2;
 using TranSimCS.Setting;
-using TranSimCS.Spatial;
 using TranSimCS.Worlds;
 using TranSimCS.Worlds.Paths;
 using TranSimCS.Worlds.Stack;
@@ -20,22 +19,10 @@ namespace TranSimCS.Cars {
 
         private readonly TSWorld world;
         public readonly TrackerSpatial<Car, CarStack> trackerSpatial;
-        /// <summary>
-        /// Incremental spatial index of every car, used by <see cref="Car.FindObstacle"/> for
-        /// queue (car-following) and merge neighbour lookups instead of the per-strip sorted
-        /// car lists. Cars are added/removed with the stack and refit lazily as they move.
-        /// </summary>
-        public readonly AABBTree<Car> carSpatial = new();
         public CarStack(TSWorld world) : base(world) {
             this.world = world;
             trackerSpatial = new TrackerSpatial<Car, CarStack>(world);
             stackTrackers.Add(trackerSpatial);
-
-            //Keep the car spatial index in sync with the stack. Cars are inserted stale so
-            //their bounds are computed lazily on the first query, after they have been
-            //positioned by their first Update.
-            data.ItemAdded += car => carSpatial.Add(car, stale: true);
-            data.ItemRemoved += car => carSpatial.Remove(car);
 
             //Add a car every 5 seconds on each lane
             world.OnUpdate += World_OnUpdate;
@@ -55,7 +42,6 @@ namespace TranSimCS.Cars {
 
             foreach(var car in data) {
                 //Trim route elements whose lane strip died (deleted/reversed) before indexing them
-                car.currentStrip = null;
                 car.TrimUntilDead();
                 if (car.RouteElementCount == 0) continue;
 
@@ -67,12 +53,6 @@ namespace TranSimCS.Cars {
                 var isReverse = node.isReverse;
                 var strip = node.road;
                 var stripPosition = isReverse ? strip.GetSpline().Length - routePosition : routePosition;
-                //Cache the car's current lane placement for the spatial neighbour query in
-                //FindObstacle. This is a pre-update snapshot: it is computed before any car
-                //updates, so every querier sees the same consistent set of positions.
-                car.currentStrip = strip;
-                car.currentStripPosition = stripPosition;
-                car.currentStripIsReverse = isReverse;
                 CarEntry entry = new(car, stripPosition, isReverse);
                 InsertCarIntoStrip(entry, strip);
                 routePosition -= node.road.GetSpline().Length;
