@@ -54,7 +54,7 @@ namespace TranSimCS.Mode {
 
         
 
-        string IMode.Title() => "Split road strips";
+        string IMode.Title() => "Split in 2 points";
         void IMode.DrawUI() {
             Vector4 red = new(1, 0, 0, 1);
             Vector4 green = new(0, 1, 0, 1);

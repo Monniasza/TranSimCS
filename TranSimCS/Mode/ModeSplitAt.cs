@@ -29,7 +29,7 @@ namespace TranSimCS.Mode {
         public ModeSplitAt(SilkNetTest menu) {
             Menu = menu;
         }
-        string IMode.Title() => "Split road at one point";
+        string IMode.Title() => "Split in 1 point";
 
         void IMode.DrawUI() {
             Vector4 red = new(1, 0, 0, 1);
