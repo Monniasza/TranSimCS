@@ -54,6 +54,13 @@ namespace TranSimCS.Mode {
                 Window.MouseOver = null;
             }
         }
+        CursorType IMode.GetCursor() {
+            var obj = Window.MouseOver?.SelectedObj;
+            var comp = Window.MouseOver?.Tag;
+            if (obj is IDemolish || comp is IDemolish) return CursorType.Remove;
+            if (obj == null && comp == null) return CursorType.Default;
+            return CursorType.Unavailable;
+        }
         HighlightColors IMode.SelectionColors() => HighlightColors.DemolitionHighlightColor;
     }
 

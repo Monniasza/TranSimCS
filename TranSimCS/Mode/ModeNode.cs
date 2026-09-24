@@ -78,6 +78,11 @@ namespace TranSimCS.Mode {
                 break;
             }
         }
+        CursorType IMode.GetCursor() {
+            if (menu.LeftLanes + menu.RightLanes == 0) return CursorType.Unavailable;
+            if (NewlyCreatedNode != null) return CursorType.Open;
+            return CursorType.Add;
+        }
         void IMode.Draw3D(RenderTarget target, MultiMesh renderMeshPool) {
             if (NewlyCreatedNode == null && Reference == null) return;
             var laneWidth = menu.LaneSpec.Width;

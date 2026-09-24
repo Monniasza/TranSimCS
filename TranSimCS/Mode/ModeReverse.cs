@@ -48,5 +48,12 @@ namespace TranSimCS.Mode {
                 game.MouseOver = null;
             }
         }
+        CursorType IMode.GetCursor() {
+            var tag = game.MouseOver?.Tag;
+            var obj = game.MouseOver?.SelectedObj;
+            if (tag is LaneStrip || obj is RoadStrip) return CursorType.Open;
+            if (tag != null || obj != null) return CursorType.Unavailable;
+            return CursorType.Default;
+        }
     }
 }

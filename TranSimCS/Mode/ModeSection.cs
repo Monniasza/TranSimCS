@@ -137,6 +137,22 @@ namespace TranSimCS.Mode {
             }
         }
 
+        CursorType IMode.GetCursor() {
+            var tag = Menu.MouseOver?.Tag;
+            if (Section == null) {
+                if (tag is RoadSection or HalfLane) return CursorType.Open;
+                if (tag != null) return CursorType.Unavailable;
+                return CursorType.Default;
+            }
+            if (tag is RoadSection) return CursorType.Add;
+            if (tag is HalfLane laneEnd) {
+                var owned = laneEnd.HalfNode.ConnectedSection.Value;
+                return owned == Section ? CursorType.Remove : CursorType.Add;
+            }
+            if (tag != null) return CursorType.Unavailable;
+            return CursorType.Default;
+        }
+
         void IMode.WorldChanged(TSWorld world) {
             Section = null;
         }

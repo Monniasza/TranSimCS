@@ -31,5 +31,6 @@ namespace TranSimCS.Mode {
                     break;
             }
         }
+        CursorType IMode.GetCursor() => Window.MouseOver?.SelectedObj != null ? CursorType.Open : CursorType.Default;
     }
 }

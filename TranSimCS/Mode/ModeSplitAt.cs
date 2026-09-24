@@ -106,6 +106,14 @@ namespace TranSimCS.Mode {
             SplitT = hoveredRoad.ToolBasis.UnTransform(selection.Value.Coordinates).Z;
         }
 
+        CursorType IMode.GetCursor() {
+            if (ReferenceHalfLane == null)
+                return Menu.MouseOver?.As<HalfLane>() != null ? CursorType.Open : CursorType.Default;
+            if (_candidates.Count == 0) return CursorType.Unavailable;
+            if (TargetRoad == null) return CursorType.Default;
+            return SplitT > 0 && SplitT < 1 ? CursorType.Add : CursorType.Unavailable;
+        }
+
         void IMode.OnMousePress(MouseButton button) {
             if (button == MouseButton.Right) {
                 ReferenceHalfLane = null;

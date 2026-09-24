@@ -121,6 +121,8 @@ namespace TranSimCS.Mode {
             }
         }
 
+        CursorType IMode.GetCursor() => State != null ? CursorType.Add : CursorType.Default;
+
         void IMode.OnMousePress(MouseButton button) {
             if (State == null && button == MouseButton.Left) {
                 //Pick a new selection

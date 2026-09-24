@@ -75,6 +75,12 @@ namespace TranSimCS.Mode {
             (_description, actionColor) = GetForAction(nextAction);
         }
 
+        CursorType IMode.GetCursor() => nextAction switch {
+            NextAction.Add => CursorType.Add,
+            NextAction.Delete => CursorType.Remove,
+            _ => CursorType.Open
+        };
+
         void IMode.OnMousePress(MouseButton button) {
             if (button == MouseButton.Right) {
                 SourceNode = DestNode = null;

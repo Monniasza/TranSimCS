@@ -71,6 +71,11 @@ namespace TranSimCS.Mode {
         /// <param name="visible">visible selectors target</param>
         public void AddSelectors(MultiMesh invisible, MultiMesh visible) { }
 
+        /// <summary>
+        /// Returns the cursor type for the current mode state.
+        /// </summary>
+        public CursorType GetCursor() => CursorType.Default;
+
         public HighlightColors SelectionColors() => HighlightColors.DefaultHighlightColor;
     }
 }

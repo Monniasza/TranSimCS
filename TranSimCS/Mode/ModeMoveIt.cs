@@ -106,6 +106,11 @@ namespace TranSimCS.Mode {
                 ObjToDrag = null;
             }
         }
+        CursorType IMode.GetCursor() {
+            if (ObjToDrag != null) return CursorType.Open;
+            if (game.MouseOver?.SelectedObj is IDraggableObj) return CursorType.Open;
+            return CursorType.Default;
+        }
         void IMode.WorldChanged(TSWorld world) {
             ObjToDrag = null;
         }

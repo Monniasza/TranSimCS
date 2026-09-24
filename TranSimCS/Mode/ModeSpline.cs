@@ -143,6 +143,18 @@ namespace TranSimCS.Mode {
                 DragState = null;
             }
         }
+        CursorType IMode.GetCursor() {
+            var selectedRoadStrip = Menu.MouseOver?.SelectedObj;
+            var selectedTag = Menu.MouseOver?.Tag;
+            if (CurrentStrip == null) {
+                if (selectedRoadStrip is RoadStrip) return CursorType.Open;
+                if (selectedRoadStrip != null) return CursorType.Unavailable;
+                return CursorType.Default;
+            }
+            if (selectedTag is RoadStripHalf) return CursorType.Open;
+            if (selectedTag != null) return CursorType.Unavailable;
+            return CursorType.Default;
+        }
         void IMode.AddSelectors(MultiMesh invisible, MultiMesh visible) {
             //Draw selectors
             var renderBin = visible.GetOrCreateRenderBinForced(Materials.White);

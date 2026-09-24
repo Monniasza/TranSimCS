@@ -134,6 +134,26 @@ namespace TranSimCS.Mode {
             }
         }
 
+        CursorType IMode.GetCursor() {
+            var mouseover = game.MouseOver;
+            var tag = mouseover?.Tag;
+            if (SelectedGroup == null) {
+                if (tag is RoadSection section)
+                    return section.TrafficLightGroup == null ? CursorType.Add : CursorType.Open;
+                if (mouseover?.SelectedObj is TrafficLightGroup) return CursorType.Open;
+                if (tag != null) return CursorType.Unavailable;
+                return CursorType.Default;
+            }
+            if (tag is RoadSection sec)
+                return sec.TrafficLightGroup == SelectedGroup ? CursorType.Remove : CursorType.Add;
+            if (tag is TrafficLight light && light.TrafficLightGroup == SelectedGroup)
+                return CursorType.Open;
+            if (tag is LaneStrip strip && GetControlledLane(strip) is HalfLane hl)
+                return hl.HasTrafficLight ? CursorType.Remove : CursorType.Add;
+            if (tag != null) return CursorType.Unavailable;
+            return CursorType.Default;
+        }
+
         // Given a lane strip under the mouse, finds which of its two ends is the half-lane entering
         // a road section controlled by the currently selected group (if any), so it can be given a light.
         private HalfLane? GetControlledLane(LaneStrip strip) {

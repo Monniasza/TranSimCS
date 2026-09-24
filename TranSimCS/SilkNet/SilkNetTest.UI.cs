@@ -3,6 +3,7 @@ using System.IO;
 using System.Numerics;
 using ImGuiNET;
 using TranSimCS.Cars;
+using TranSimCS.Mode;
 using TranSimCS.Mode.NodeEditor;
 using TranSimCS.Roads;
 using TranSimCS.Roads.Node;
@@ -92,6 +93,8 @@ namespace TranSimCS.SilkNet {
 
             Mode.DrawUI();
 
+            DrawCursor();
+
             if (IsStatsOpen) {
                 ImGui.Begin("Stats");
                 ImGui.Text(Stats.Format());
@@ -102,6 +105,48 @@ namespace TranSimCS.SilkNet {
                 ImGui.ShowDemoWindow();
             }
             if (Sticky != null) ShowObjectWindow(Sticky.Value);
+        }
+
+        private void DrawCursor() {
+            if (IsMouseOverUI || CurrentlyOpenModal != null) return;
+
+            var cursor = Mode.GetCursor();
+            if (cursor == CursorType.Default) return;
+
+            ImGui.SetMouseCursor(ImGuiMouseCursor.None);
+
+            var mousePos = ImGui.GetIO().MousePos;
+            var drawList = ImGui.GetForegroundDrawList();
+            const float fontSize = 24f;
+
+            string symbol;
+            Vector4 color;
+            switch (cursor) {
+                case CursorType.Add:
+                    symbol = "+";
+                    color = new Vector4(0, 1, 0, 1);
+                    break;
+                case CursorType.Remove:
+                    symbol = "-";
+                    color = new Vector4(1, 0.27f, 0, 1);
+                    break;
+                case CursorType.Unavailable:
+                    symbol = "X";
+                    color = new Vector4(0.5f, 0, 0, 1);
+                    break;
+                case CursorType.Open:
+                    symbol = "O";
+                    color = new Vector4(1, 1, 1, 1);
+                    break;
+                default:
+                    return;
+            }
+
+            var textSize = ImGui.CalcTextSize(symbol);
+
+            drawList.AddCircleFilled(mousePos, 12f, ImGui.GetColorU32(new Vector4(0, 0, 0, 0.5f)), 16);
+            var textPos = mousePos - textSize;
+            drawList.AddText(ImGui.GetFont(), fontSize, textPos, ImGui.GetColorU32(color), symbol);
         }
 
         /// <summary>

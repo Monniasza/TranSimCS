@@ -106,6 +106,7 @@ namespace TranSimCS.Mode {
             var t = asRoadStrip.ToolBasis.UnTransform(point);
             RoadPosition = new(asRoadStrip, t.Z, SplitLength);
         }
+        CursorType IMode.GetCursor() => RoadPosition != null ? CursorType.Add : CursorType.Default;
         void IMode.OnMousePress(MouseButton button) {
             if (RoadPosition != null && button == MouseButton.Left) {
                 //Split the road

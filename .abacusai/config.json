@@ -169,7 +169,14 @@
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git log --oneline --all | Select-Object -First 30)",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git log --oneline -30)",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git log --oneline --all --diff-filter=A -- \"**/ModeRoadBuilder.cs\" 2>$null; git log --oneline -5 -- \"**/ModeRoadBuilder.cs\")",
-      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git log --oneline -5 -- \"**/RoadBuilderAbomination/**\"; git log --oneline -1 0cf6ab0 --format=\"%B\")"
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git log --oneline -5 -- \"**/RoadBuilderAbomination/**\"; git log --oneline -1 0cf6ab0 --format=\"%B\")",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && find . -name \"*.csproj\" | head -1)",
+      "Bash(dotnet build \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\TranSimCS.csproj\")",
+      "Bash(dotnet build \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\TranSimCS.csproj\" 2>&1 | Select-String -Pattern \"error|Błąd|Liczba błędów|Build succeeded|Zakończone pomyślnie|Ostrzeżenia\" | Select-Object -Last 20)",
+      "Bash(dotnet build \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\TranSimCS.csproj\" --nologo -v:q 2>&1 | Select-Object -Last 3; \"EXITCODE=$LASTEXITCODE\")",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff -- TranSimCS/SilkNet/SilkNetTest.UI.cs TranSimCS/Mode/IMode.cs TranSimCS/Mode/ModeConnection.cs TranSimCS/Mode/ModeSection.cs TranSimCS/Mode/ModeTrafficLights.cs)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff -- TranSimCS/Mode/PickMode.cs TranSimCS/Mode/ModeNode.cs TranSimCS/Mode/ModeDemolish.cs TranSimCS/Mode/ModeSegment.cs TranSimCS/Mode/ModeMoveIt.cs TranSimCS/Mode/ModeReverse.cs TranSimCS/Mode/ModeSplit.cs TranSimCS/Mode/ModeSplitAt.cs TranSimCS/Mode/ModeSpline.cs; git status --short TranSimCS/Mode/CursorType.cs)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCS\\TranSimCS.csproj 2>&1 | Select-Object -Last 5)"
     ]
   }
 }
