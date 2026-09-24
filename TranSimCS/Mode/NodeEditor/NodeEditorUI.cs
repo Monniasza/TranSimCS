@@ -167,9 +167,9 @@ namespace TranSimCS.Mode.NodeEditor {
             ImGui.SameLine();
             if (ImGui.Button("Insert a space on the right")) HalfNodeMethods.InsertSpaceOnRight(lane, clipboard.Width);
 
-            if (ImGui.Button("Pull lanes on the left towards the selection")) HalfNodeMethods.InsertSpaceOnLeft(lane, clipboard.Width);
+            if (ImGui.Button("Pull lanes on the left towards the selection")) HalfNodeMethods.InsertSpaceOnLeft(lane, -clipboard.Width);
             ImGui.SameLine();
-            if (ImGui.Button("Pull lanes on the right towards the selection")) HalfNodeMethods.InsertSpaceOnRight(lane, clipboard.Width);
+            if (ImGui.Button("Pull lanes on the right towards the selection")) HalfNodeMethods.InsertSpaceOnRight(lane, -clipboard.Width);
 
             EditHalfLaneBorders(lane);
 

@@ -161,7 +161,15 @@
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\"; dotnet build TranSimCS\\TranSimCS.csproj --nologo 2>&1 | Select-Object -Last 40)",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\"; dotnet build TranSimCS\\TranSimCS.csproj --nologo 2>&1 | Select-String -Pattern \"error|Bledy|Liczba bledow|Build succeeded|Ostrzezenia:|Czas\" | Select-Object -Last 15)",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\"; $out = dotnet build TranSimCS\\TranSimCS.csproj --nologo 2>&1; $errs = $out | Select-String -Pattern \"error CS\"; if ($errs) { \"ERRORS:\"; $errs } else { \"No compile errors. EXIT=$LASTEXITCODE\" })",
-      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\"; $out = dotnet build TranSimCS.sln --nologo 2>&1; $errs = $out | Select-String -Pattern \"error CS\"; if ($errs) { \"ERRORS:\"; $errs } else { \"No compile errors. EXIT=$LASTEXITCODE\" })"
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\"; $out = dotnet build TranSimCS.sln --nologo 2>&1; $errs = $out | Select-String -Pattern \"error CS\"; if ($errs) { \"ERRORS:\"; $errs } else { \"No compile errors. EXIT=$LASTEXITCODE\" })",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git log --oneline -20)",
+      "Bash(Find-ChildItem -Path \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\SilkNet\" -Name \"*.cs\" | Select-Object -ExpandProperty Name)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff --stat HEAD~10..HEAD | head -20)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff --stat HEAD~5..HEAD)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git log --oneline --all | Select-Object -First 30)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git log --oneline -30)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git log --oneline --all --diff-filter=A -- \"**/ModeRoadBuilder.cs\" 2>$null; git log --oneline -5 -- \"**/ModeRoadBuilder.cs\")",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git log --oneline -5 -- \"**/RoadBuilderAbomination/**\"; git log --oneline -1 0cf6ab0 --format=\"%B\")"
     ]
   }
 }
