@@ -18,11 +18,15 @@ namespace TranSimCS.Roads.Node {
         /// </summary>
         /// <param name="anchor">the lane on whose right side a new lane will be inserted and other lanes shifted to make space</param>
         /// <param name="spec">the lane spec for a new lane</param>
-        public static HalfLane InsertOnRight(this HalfLane anchor, LaneSpec spec) {
+        /// <param name="intoMedian">true for insertion to cut into medians, false to shift medians</param>
+        public static HalfLane InsertOnRight(this HalfLane anchor, LaneSpec spec, bool intoMedian = false) {
             ArgumentNullException.ThrowIfNull(anchor, nameof(anchor));
             if (spec.Width < 0) throw new ArgumentException("width < 0");
 
-            InsertSpaceOnRight(anchor, spec.Width);
+            if (intoMedian)
+                EnsureSpaceOnRight(anchor, spec.Width);
+            else
+                InsertSpaceOnRight(anchor, spec.Width);
 
             float newPosition = anchor.MiddlePosition + (spec.Width + anchor.Width) / 2;
             HalfLane result = anchor.HalfNode.AddLane(new LaneDefinition(newPosition, spec));
@@ -47,20 +51,24 @@ namespace TranSimCS.Roads.Node {
         /// </summary>
         /// <param name="anchor">the lane on whose left side a new lane will be inserted and other lanes shifted to make space</param>
         /// <param name="spec">the lane spec for a new lane</param>
-        public static HalfLane InsertOnLeft(this HalfLane anchor, LaneSpec spec) {
+        /// <param name="intoMedian">true for insertion to cut into medians, false to shift medians</param>
+        public static HalfLane InsertOnLeft(this HalfLane anchor, LaneSpec spec, bool intoMedian = false) {
             ArgumentNullException.ThrowIfNull(anchor, nameof(anchor));
             if (spec.Width < 0) throw new ArgumentException("width < 0");
 
-            InsertSpaceOnLeft(anchor, spec.Width);
+            if (intoMedian)
+                EnsureSpaceOnLeft(anchor, spec.Width);
+            else
+                InsertSpaceOnLeft(anchor, spec.Width);
 
             float newPosition = anchor.MiddlePosition - (spec.Width + anchor.Width) / 2;
             HalfLane result = anchor.HalfNode.AddLane(new LaneDefinition(newPosition, spec));
             return result;
         }
         /// <summary>
-        /// Insert a space on the right of a lane. Provide a negative value to reduce the space.
+        /// Insert a space on the left of a lane. Provide a negative value to reduce the space.
         /// </summary>
-        /// <param name="anchor">the lane on whose right side other lanes will be shifted to make space</param>
+        /// <param name="anchor">the lane on whose left side other lanes will be shifted to make space</param>
         /// <param name="width">amount to move lanes in meters</param>
         public static void InsertSpaceOnLeft(this HalfLane anchor, float width) {
             int startingIndex = anchor.Index;
@@ -70,6 +78,41 @@ namespace TranSimCS.Roads.Node {
                 affectedLanes[i] = anchor.HalfNode.GetLaneByIndex(i);
             for (int i = 0; i < affectedLaneCount; i++)
                 affectedLanes[i].MiddlePosition -= width;
+        }
+
+        private static readonly ScratchArray<(HalfLane lane, float offset)> _ensureSpaceScratch = new();
+        public static void EnsureSpaceOnLeft(this HalfLane anchor, float width) {
+            var index = anchor.Index;
+            var affectedLaneCount = 0;
+            var affectedLanes = _ensureSpaceScratch.GetArray(index);
+            for(int i = 0; i < index; i++) {
+                var laneIndex = index - i - 1;
+                var lane = anchor.HalfNode.GetLaneByIndex(laneIndex);
+                var neighbor = anchor.HalfNode.GetLaneByIndex(laneIndex + 1);
+                var space = neighbor.Bounds.Min - lane.Bounds.Max;
+                width -= space;
+                if (width <= 0) break;
+                affectedLanes[i] = (lane, width);
+                affectedLaneCount++;
+            }
+            for (int i = 0; i < affectedLaneCount; i++) affectedLanes[i].lane.MiddlePosition -= affectedLanes[i].offset;
+        }
+        public static void EnsureSpaceOnRight(this HalfLane anchor, float width) {
+            var index = anchor.Index;
+            var maxLaneCount = anchor.HalfNode.LaneCount - index - 1;
+            var affectedLaneCount = 0;
+            var affectedLanes = _ensureSpaceScratch.GetArray(maxLaneCount);
+            for (int i = 0; i < maxLaneCount; i++) {
+                var laneIndex = index + i + 1;
+                var lane = anchor.HalfNode.GetLaneByIndex(laneIndex);
+                var neighbor = anchor.HalfNode.GetLaneByIndex(laneIndex - 1);
+                var space = lane.Bounds.Min - neighbor.Bounds.Max;
+                width -= space;
+                if (width <= 0) break;
+                affectedLanes[i] = (lane, width);
+                affectedLaneCount++;
+            }
+            for (int i = 0; i < affectedLaneCount; i++) affectedLanes[i].lane.MiddlePosition += affectedLanes[i].offset;
         }
     }
     internal class HalfNodeLanesList(HalfNode halfNode) : IList<HalfLane> {

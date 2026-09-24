@@ -155,21 +155,19 @@ namespace TranSimCS.Mode.NodeEditor {
                 return true;
             }
 
+            if (ImGui.Button("Insert a lane on the left, shift medians")) HalfNodeMethods.InsertOnLeft(lane, clipboard);
             ImGui.SameLine();
-            if (ImGui.Button("Insert a lane on the left")) HalfNodeMethods.InsertOnLeft(lane, clipboard);
+            if (ImGui.Button("Insert a lane on the right, shift medians")) HalfNodeMethods.InsertOnRight(lane, clipboard);
 
+            if (ImGui.Button("Insert a lane on the left, cut medians")) HalfNodeMethods.InsertOnLeft(lane, clipboard, true);
             ImGui.SameLine();
-            if (ImGui.Button("Insert a lane on the right")) HalfNodeMethods.InsertOnRight(lane, clipboard);
+            if (ImGui.Button("Insert a lane on the right, cut medians")) HalfNodeMethods.InsertOnRight(lane, clipboard, true);
 
-            ImGui.SameLine();
             if (ImGui.Button("Insert a space on the left")) HalfNodeMethods.InsertSpaceOnLeft(lane, clipboard.Width);
-
             ImGui.SameLine();
             if (ImGui.Button("Insert a space on the right")) HalfNodeMethods.InsertSpaceOnRight(lane, clipboard.Width);
 
-            ImGui.SameLine();
             if (ImGui.Button("Pull lanes on the left towards the selection")) HalfNodeMethods.InsertSpaceOnLeft(lane, clipboard.Width);
-
             ImGui.SameLine();
             if (ImGui.Button("Pull lanes on the right towards the selection")) HalfNodeMethods.InsertSpaceOnRight(lane, clipboard.Width);
 
