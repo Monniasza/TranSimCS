@@ -47,9 +47,10 @@ namespace TranSimCS.Mode {
                         ImGui.TextColored(maroon, "The road node will not have its orientation set.");
                         ImGui.TextColored(maroon, "[LMB] to start placing. After placement, orient it.");
                     }
-                    ImGui.TextColored(yellow, "[Q/E] to change left lanes. [O/P] to change right lanes.");
-                    ImGui.TextColored(yellow, "[Q/P] to increase lanes. [E/O] to decrease lanes.");
-                    ImGui.TextColored(yellow, "[Q/O] to move the edge left. [E/P] to move the edges right.");
+                    ImGui.TextColored(yellow, "[Q] to add a lane on the left");
+                    ImGui.TextColored(yellow, "[E] to remove a lane on the left");
+                    ImGui.TextColored(yellow, "[O] to remove a lane on the right");
+                    ImGui.TextColored(yellow, "[P] to add a lane on the right");
                 } else {
                     //Node with a preset orientation
                     ImGui.Text("[LMB] to place one or more nodes. [RMB to cancel]");
