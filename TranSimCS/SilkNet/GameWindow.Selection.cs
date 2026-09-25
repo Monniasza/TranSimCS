@@ -7,7 +7,7 @@ using TranSimCS.Select;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.SilkNet {
-    public partial class SilkNetTest {
+    public partial class GameWindow {
         //Selection attributes
         public Selection? MouseOver;
         public Selection? Sticky;

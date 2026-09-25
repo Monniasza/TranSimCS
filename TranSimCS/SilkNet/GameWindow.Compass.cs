@@ -8,7 +8,7 @@ using ImGuiNET;
 using TranSimCS.Geometry;
 
 namespace TranSimCS.SilkNet {
-    public partial class SilkNetTest {
+    public partial class GameWindow {
         public static void DrawCompass(float azimuth) {
             var drawList = ImGui.GetForegroundDrawList();
 

@@ -10,7 +10,7 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.SilkNet.RoadConstruction {
     public class LaneReconcillation {
-        public static LaneCreationState? BuildConnections(LaneCreationState startingState, LaneMappings laneMappings, SilkNetTest menu) {
+        public static LaneCreationState? BuildConnections(LaneCreationState startingState, LaneMappings laneMappings, GameWindow menu) {
             //Get the state
             var destLane = startingState.SnappedLane;
             var destinationNode = destLane?.GetNodeEnd()?.HalfNode;

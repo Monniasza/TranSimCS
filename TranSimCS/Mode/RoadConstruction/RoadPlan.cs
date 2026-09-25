@@ -10,7 +10,7 @@ namespace TranSimCS.SilkNet.RoadConstruction {
         public Vector3 endPos;
         public Vector3 endLateral;
 
-        public SilkNetTest menu;
+        public GameWindow menu;
 
         public void Align(Alignment alignment, float width) {
             var calculatedAlignments = alignment.GetAlignments();

@@ -478,7 +478,7 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// <param name="dest">The destination draft the mapping was derived against.</param>
         /// <param name="window">The window to show the error in.</param>
         /// <returns><see langword="true"/> when the mapping is valid and may be committed.</returns>
-        public bool ValidateOrReport(NodeSpecDraft source, NodeSpecDraft dest, SilkNet.SilkNetTest window) {
+        public bool ValidateOrReport(NodeSpecDraft source, NodeSpecDraft dest, SilkNet.GameWindow window) {
             ArgumentNullException.ThrowIfNull(window, nameof(window));
             if (TryValidate(source, dest, out var error)) return true;
             window.ShowError("Invalid lane mapping", error!);

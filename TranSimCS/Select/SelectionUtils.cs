@@ -5,7 +5,7 @@ using TranSimCS.SilkNet;
 
 namespace TranSimCS.Select {
     public static class SelectionUtils {
-        public static void AddAddLaneSelectors(MultiMesh meshes, SilkNetTest game) {
+        public static void AddAddLaneSelectors(MultiMesh meshes, GameWindow game) {
             var target = meshes.GetOrCreateRenderBinForced(Materials.Add);
             AddAddLaneSelectors(target, game.World.Nodes.data, game.LaneSpec.Width);
         }

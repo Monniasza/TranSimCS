@@ -20,13 +20,13 @@ namespace TranSimCS.Mode {
     /// to the reference to split it at the cursor position. Right-click cancels the reference.
     /// </summary>
     public class ModeSplitAt: IMode {
-        public SilkNetTest Menu { get; }
+        public GameWindow Menu { get; }
         public HalfLane? ReferenceHalfLane { get; private set; }
         public RoadStrip? TargetRoad { get; private set; }
         public float SplitT { get; private set; }
         private List<RoadStrip> _candidates = new();
 
-        public ModeSplitAt(SilkNetTest menu) {
+        public ModeSplitAt(GameWindow menu) {
             Menu = menu;
         }
         string IMode.Title() => "Split in 1 point";

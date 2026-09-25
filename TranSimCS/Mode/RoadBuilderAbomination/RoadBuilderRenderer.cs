@@ -20,7 +20,7 @@ namespace TranSimCS.Mode.RoadBuilder {
     /// </para>
     /// </summary>
     public sealed class RoadBuilderRenderer {
-        private readonly SilkNetTest menu;
+        private readonly GameWindow menu;
 
         //The throwaway node, cached against the draft it was built from.
         private RoadNode? previewNode;
@@ -43,7 +43,7 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// </summary>
         public SimpleMaterial SelectorMaterial { get; set; }
 
-        public RoadBuilderRenderer(SilkNetTest menu) {
+        public RoadBuilderRenderer(GameWindow menu) {
             this.menu = menu;
             SelectorMaterial = Materials.Add;
         }

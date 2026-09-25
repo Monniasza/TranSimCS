@@ -23,16 +23,16 @@ namespace TranSimCS.SilkNet {
             Details = null;
             Actions = actions;
         }
-        public Message(string title, string text, SilkNetTest window, params ImmutableArray<MessageAction> actions) : this(title, text, actions) {
+        public Message(string title, string text, GameWindow window, params ImmutableArray<MessageAction> actions) : this(title, text, actions) {
             Actions = actions.Append(new MessageAction("OK", window.CloseModals)).ToImmutableArray();
         }
-        public Message(string title, string text, string? details, SilkNetTest window, params ImmutableArray<MessageAction> actions) : this(title, text, actions) {
+        public Message(string title, string text, string? details, GameWindow window, params ImmutableArray<MessageAction> actions) : this(title, text, actions) {
             Details = details;
             Actions = actions.Append(new MessageAction("OK", window.CloseModals)).ToImmutableArray();
         }
 
 
-        public static Message ErrorMessage(string message, Exception exception, SilkNetTest window)
+        public static Message ErrorMessage(string message, Exception exception, GameWindow window)
             => new Message(message, exception.Message, exception.ToString(), window);
 
         public void ShowMessage() {

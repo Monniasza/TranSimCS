@@ -14,7 +14,7 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.SilkNet {
     //UI methods for SilkNetTest
-    public partial class SilkNetTest {
+    public partial class GameWindow {
         private void DrawUI() {
             ImGui.BeginMainMenuBar();
             if (ImGui.BeginMenu("File")) {

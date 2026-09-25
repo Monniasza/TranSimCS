@@ -7,7 +7,7 @@ using TranSimCS.SilkNet;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Mode {
-    public class ModeMoveIt(SilkNetTest game) : IMode {
+    public class ModeMoveIt(GameWindow game) : IMode {
         string IMode.Title() => "Move It!";
 
         public Vector3 DragFrom { get; private set; }

@@ -13,7 +13,7 @@ using TranSimCS.Worlds;
 using static TranSimCS.Model.MeshUnroll;
 
 namespace TranSimCS.SilkNet {
-    public partial class SilkNetTest {
+    public partial class GameWindow {
         private MultiMesh mesh = new();
 
         private void Render3D(RenderTarget target) {

@@ -35,7 +35,7 @@ namespace TranSimCS.SilkNet {
     public class RenderManager: IDisposable {
         public readonly Property<Camera> CameraProp;
         public readonly Property<Vector4> AmbientColor;
-        public readonly SilkNetTest window;
+        public readonly GameWindow window;
 
         public static readonly string MeshVertSource;
         public static readonly string FragSource;
@@ -97,7 +97,7 @@ namespace TranSimCS.SilkNet {
             }
         }
 
-        public RenderManager(SilkNetTest gpu) {
+        public RenderManager(GameWindow gpu) {
             this.window = gpu;
             var gl = gpu.OpenGL;
             const int glTrue = (int)GLEnum.True;

@@ -11,10 +11,10 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.Mode {
     internal class ModeSection: IMode {
-        public readonly SilkNetTest Menu;
+        public readonly GameWindow Menu;
         public RoadSection? Section;
 
-        public ModeSection(SilkNetTest world) {
+        public ModeSection(GameWindow world) {
             Menu = world;
         }
 

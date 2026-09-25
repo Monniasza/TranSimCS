@@ -10,7 +10,7 @@ using TranSimCS.SilkNet;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Mode {
-    public class ModeNode(SilkNetTest menu) : IMode {
+    public class ModeNode(GameWindow menu) : IMode {
         // Set if the new node has to be rotated after placement
         public RoadNode? NewlyCreatedNode { get; set; }
         // Position reference for pre-oriented nodes

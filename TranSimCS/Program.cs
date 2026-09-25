@@ -63,7 +63,7 @@ public class Program {
         Materials.ReadAssets();
         Car.Init();
 
-        SilkNetTest snt = new();
+        GameWindow snt = new();
         snt.Start();
     }
 

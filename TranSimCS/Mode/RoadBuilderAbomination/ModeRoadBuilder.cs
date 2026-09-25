@@ -24,7 +24,7 @@ namespace TranSimCS.Mode.RoadBuilder {
     /// </para>
     /// </summary>
     public class ModeRoadBuilder : IMode {
-        public SilkNetTest Menu { get; private set; }
+        public GameWindow Menu { get; private set; }
 
         /// <summary>The tool state: phase, draft, and transient selection.</summary>
         public RoadBuilderState State { get; private set; } = new();
@@ -35,7 +35,7 @@ namespace TranSimCS.Mode.RoadBuilder {
         /// <summary>The lane currently selected for per-lane editing.</summary>
         public LaneId? SelectedLane { get; private set; }
 
-        public ModeRoadBuilder(SilkNetTest menu) {
+        public ModeRoadBuilder(GameWindow menu) {
             Menu = menu;
             Renderer = new RoadBuilderRenderer(menu);
             //Any edit invalidates the cached preview node, so the preview always matches the draft.

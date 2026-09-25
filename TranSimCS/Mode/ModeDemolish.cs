@@ -10,8 +10,8 @@ using TranSimCS.SilkNet;
 
 namespace TranSimCS.Mode {
     public class ModeDemolish: IMode {
-        public SilkNetTest Window { get; private set; }
-        public ModeDemolish(SilkNetTest window) { Window = window; }
+        public GameWindow Window { get; private set; }
+        public ModeDemolish(GameWindow window) { Window = window; }
 
         public string Title() => "Bulldozer";
         void IMode.DrawUI() {

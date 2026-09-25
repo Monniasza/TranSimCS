@@ -44,7 +44,7 @@ namespace TranSimCS.Mode.RoadConstruction {
             $"Creating a segment. Chord-length: {CenterLine.ChordLength()}, arc-length: {CenterLine.ArcLength()}";
         
         //GENERATION
-        public void Generate(SilkNetTest menu) {
+        public void Generate(GameWindow menu) {
             SplineMode = menu.SegmentPresets.RoadMode;
             Alignment = menu.SegmentPresets.Alignment;
 

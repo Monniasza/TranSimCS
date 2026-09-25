@@ -11,8 +11,8 @@ using TranSimCS.SilkNet.RoadConstruction;
 using TranSimCS.Worlds;
 
 namespace TranSimCS.Mode {
-    public class ModeSpline(SilkNetTest menu) : IMode {
-        public SilkNetTest Menu { get; } = menu;
+    public class ModeSpline(GameWindow menu) : IMode {
+        public GameWindow Menu { get; } = menu;
         public RoadStrip? CurrentStrip { get; private set; }
         public SplineDragState? DragState { get; private set; }
         public struct SplineDragState {

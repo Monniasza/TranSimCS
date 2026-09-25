@@ -15,7 +15,7 @@ using TranSimCS.Worlds;
 namespace TranSimCS.Mode {
     public class ModeConnection : IMode {
         //Tool definition
-        public readonly SilkNetTest menu;
+        public readonly GameWindow menu;
 
         //Tool state
         public HalfLane? SourceNode { get; private set; }
@@ -51,7 +51,7 @@ namespace TranSimCS.Mode {
             _ => throw new ArgumentException("Invalid NextAction: " + nextAction)
         };
 
-        public ModeConnection(SilkNetTest menu) {
+        public ModeConnection(GameWindow menu) {
             this.menu = menu;
         }
 

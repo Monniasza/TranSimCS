@@ -10,8 +10,8 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.Mode {
     public class PickMode: IMode {
-        public SilkNetTest Window{ get; private set; }
-        internal PickMode(SilkNetTest window) {
+        public GameWindow Window{ get; private set; }
+        internal PickMode(GameWindow window) {
             Window = window;
         }
 

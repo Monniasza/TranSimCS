@@ -44,11 +44,11 @@ namespace TranSimCS.Mode {
             }
         }
 
-        public SilkNetTest Menu { get; }
+        public GameWindow Menu { get; }
         public RoadT? RoadPosition { get; private set; }
         public float SplitLength = 12;
 
-        public ModeSplit(SilkNetTest menu) {
+        public ModeSplit(GameWindow menu) {
             Menu = menu;
         }
 

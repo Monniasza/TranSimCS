@@ -10,7 +10,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Select;
 
 namespace TranSimCS.SilkNet {
-    public partial class SilkNetTest {
+    public partial class GameWindow {
 
         private void MouseScroll(IMouse mouse, ScrollWheel wheel) {
             ScrollOffset.X += wheel.X;

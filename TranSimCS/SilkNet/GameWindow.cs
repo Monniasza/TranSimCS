@@ -23,7 +23,7 @@ namespace TranSimCS.SilkNet {
     /// <summary>
     /// The Silk.NET-based TranSim window.
     /// </summary>
-    public sealed partial class SilkNetTest {
+    public sealed partial class GameWindow {
         //Static contents
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
 
@@ -87,7 +87,7 @@ namespace TranSimCS.SilkNet {
         public Ray3 MouseRay;
         public Ray3 MouseRayOld;
 
-        public SilkNetTest() {
+        public GameWindow() {
             var pickMode = new PickMode(this);
             //Create modes
             AvailableModes = [

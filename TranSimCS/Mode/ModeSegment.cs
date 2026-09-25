@@ -15,7 +15,7 @@ using TranSimCS.Worlds;
 
 namespace TranSimCS.Mode {
     public class ModeSegment : IMode{ 
-        public SilkNetTest Menu { get; private set; }
+        public GameWindow Menu { get; private set; }
 
         //TOOL STATE
         public LaneCreationState? State { get; private set; }
@@ -69,7 +69,7 @@ namespace TranSimCS.Mode {
         }
             
 
-        public ModeSegment(SilkNetTest menu) {
+        public ModeSegment(GameWindow menu) {
             Menu = menu;
         }
 

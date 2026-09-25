@@ -12,7 +12,7 @@ using TranSimCS.SilkNet.RoadConstruction;
 using TranSimCS.Snapping;
 
 namespace TranSimCS.SilkNet {
-    public partial class SilkNetTest {
+    public partial class GameWindow {
         //Lane properties
         public int LeftLanes;
         public int RightLanes;

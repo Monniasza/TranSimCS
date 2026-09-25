@@ -8,7 +8,7 @@ using TranSimCS.Mode;
 
 namespace TranSimCS.SilkNet {
     // Modes for the OpenGL window
-    public partial class SilkNetTest {
+    public partial class GameWindow {
         public ImmutableArray<IMode> AvailableModes;
         private IMode _mode;
         public IMode Mode {

@@ -19,7 +19,7 @@ namespace TranSimCS.Mode {
     /// click on other sections to attach/detach them, and click on individual lights to toggle them for
     /// the current phase.
     /// </summary>
-    public sealed class ModeTrafficLights(SilkNetTest game) : IMode {
+    public sealed class ModeTrafficLights(GameWindow game) : IMode {
         public string Title() => "Traffic lights";
 
         public TrafficLightGroup? SelectedGroup;
