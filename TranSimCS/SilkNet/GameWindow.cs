@@ -99,7 +99,7 @@ namespace TranSimCS.SilkNet {
             _mode = pickMode;
             snappingGrid = new();
             World = new TSWorld();
-            SegmentPresets.RoadMode = RoadModes[2];
+            SegmentPresets.RoadMode = RoadModes[1];
         }
         public void Start() {
             try {
