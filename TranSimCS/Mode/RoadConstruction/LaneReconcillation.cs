@@ -124,7 +124,7 @@ namespace TranSimCS.SilkNet.RoadConstruction {
             var bounds = destinationNode.OppositeHalf.Bounds;
             if(addLeftLanes > 0) {
                 var rightmostLeftLane = laneMappings.EndingLanes[addLeftLanes - 1];
-                var leftLaneOffset = bounds.Min - rightmostLeftLane.Bounds.Max;
+                var leftLaneOffset = bounds.Max - rightmostLeftLane.Bounds.Min;
                 for(int i = 0; i < addLeftLanes; i++) {
                     LaneNode ln = laneMappings.EndingLanes[i];
                     var halflane = destinationNode.OppositeHalf.AddLane(new LaneNode(ln.LaneSpec, ln.CenterPos + leftLaneOffset, ln.ID));
@@ -132,7 +132,7 @@ namespace TranSimCS.SilkNet.RoadConstruction {
             }
             if (addRightLanes > 0) {
                 var leftmostRightLane = laneMappings.EndingLanes[^addRightLanes];
-                var rightLaneOffset = bounds.Max - leftmostRightLane.Bounds.Min;
+                var rightLaneOffset = bounds.Min - leftmostRightLane.Bounds.Max;
                 for (int i = 1; i <= addRightLanes; i++) {
                     LaneNode ln = laneMappings.EndingLanes[^i];
                     destinationNode.OppositeHalf.AddLane(new LaneNode(ln.LaneSpec, ln.CenterPos + rightLaneOffset, ln.ID));

@@ -176,7 +176,13 @@
       "Bash(dotnet build \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\TranSimCS.csproj\" --nologo -v:q 2>&1 | Select-Object -Last 3; \"EXITCODE=$LASTEXITCODE\")",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff -- TranSimCS/SilkNet/SilkNetTest.UI.cs TranSimCS/Mode/IMode.cs TranSimCS/Mode/ModeConnection.cs TranSimCS/Mode/ModeSection.cs TranSimCS/Mode/ModeTrafficLights.cs)",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff -- TranSimCS/Mode/PickMode.cs TranSimCS/Mode/ModeNode.cs TranSimCS/Mode/ModeDemolish.cs TranSimCS/Mode/ModeSegment.cs TranSimCS/Mode/ModeMoveIt.cs TranSimCS/Mode/ModeReverse.cs TranSimCS/Mode/ModeSplit.cs TranSimCS/Mode/ModeSplitAt.cs TranSimCS/Mode/ModeSpline.cs; git status --short TranSimCS/Mode/CursorType.cs)",
-      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCS\\TranSimCS.csproj 2>&1 | Select-Object -Last 5)"
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCS\\TranSimCS.csproj 2>&1 | Select-Object -Last 5)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git log --oneline -10 -- TranSimCS/Mode/RoadConstruction/LaneReconcillation.cs 2>&1)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git log --oneline -5 -- TranSimCS/Mode/RoadConstruction/LaneMappings.cs 2>&1)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCSTests/TranSimCSTests.csproj --no-restore 2>&1 | Select-Object -Last 30)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCS/TranSimCS.csproj --no-restore -c Debug 2>&1 | Select-Object -Last 5)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCSTests/TranSimCSTests.csproj --no-restore 2>&1 | Select-Object -Last 5)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCS/TranSimCS.csproj --no-restore -c Release 2>&1 | Select-Object -Last 3)"
     ]
   }
 }
