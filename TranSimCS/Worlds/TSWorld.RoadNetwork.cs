@@ -168,6 +168,11 @@ namespace TranSimCS.Worlds {
             }
             section._containedSegments.Clear();
 
+            //Disconnect nodes from this section
+            foreach(var node in section.Nodes.ToArray()) {
+                node.ConnectedSection.Value = null;
+            }
+
             //Detach the traffic light group, if any
             section.TrafficLightGroup = null;
 

@@ -34,10 +34,10 @@ namespace TranSimCS.Roads.Section {
         public readonly Property<RoadFinish> FinishProperty;
 
         //Traffic lights. A section can have at most one traffic light group, but a group can control several sections.
-        public Property<TrafficLightGroup?> TrafficLightGroupProp { get; private set; }
+        public Attachment<TrafficLightGroup> TrafficLightGroupAttachment { get; private set; }
         public TrafficLightGroup? TrafficLightGroup {
-            get => TrafficLightGroupProp.Value;
-            set => TrafficLightGroupProp.Value = value;
+            get => TrafficLightGroupAttachment.Value;
+            set => TrafficLightGroupAttachment.Value = value;
         }
 
         //Half-lanes leading into this section that opted in to having a traffic light (see HalfLane.HasTrafficLight).
@@ -65,17 +65,14 @@ namespace TranSimCS.Roads.Section {
         public RoadSection(Guid? guid = null): base(guid) {
             MainSlopeNodes = new(default, "slopeNodes", this);
             FinishProperty = new(RoadFinish.Embankment, "finish", this);
-            TrafficLightGroupProp = new(null, Guid + PropertyNames.TrafficLightOfSectionSuffix, this);
-            TrafficLightGroupProp.ValueChanged += TrafficLightGroupProp_ValueChanged;
+            TrafficLightGroupAttachment = new(this) {
+                Name = Guid + PropertyNames.TrafficLightOfSectionSuffix,
+                OnTargetAttached = tlg => { tlg.OnSectionAdded(this); tlg.World?.AddIfAbsent(tlg); },
+                OnTargetDetached = tlg => tlg.OnSectionRemoved(this)
+            };
             Mesh = new MeshGenerator<RoadSection>(this, SectionRenderer.GenerateSectionMesh);
             SelectionMesh = new MeshGenerator<RoadSection>(this, SectionRenderer.GenerateSectionSelectionMesh);
             SelectionMesh.OnMeshInvalidated += HandleMeshInvalidated;
-        }
-
-        private void TrafficLightGroupProp_ValueChanged(IProperty<TrafficLightGroup?> property, TrafficLightGroup? oldValue, TrafficLightGroup? newValue) {
-            oldValue?.OnSectionRemoved(this);
-            newValue?.OnSectionAdded(this);
-            newValue?.World?.AddIfAbsent(newValue);
         }
 
         private void HandleMeshInvalidated() {

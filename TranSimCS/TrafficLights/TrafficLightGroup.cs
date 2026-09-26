@@ -25,16 +25,14 @@ namespace TranSimCS.TrafficLights {
         public static readonly TrafficLightPhase EmptyPhase = new TrafficLightPhase(1, ImmutableHashSet<HalfLane>.Empty);
 
         //Structural properties
-        private readonly List<RoadSection> _controlledSections = [];
-        public ReadOnlyCollection<RoadSection> ControlledSections => new(_controlledSections);
+        private readonly AttachmentSet<RoadSection> _controlledSections;
+        public IReadOnlyCollection<RoadSection> ControlledSections => _controlledSections;
         internal void OnSectionAdded(RoadSection section) {
             _controlledSections.Add(section);
-            FirePropertyEvent(this, new(PropertyNames.SectionsOfTrafficLight));
         }
         internal void OnSectionRemoved(RoadSection section) {
             _controlledSections.Remove(section);
             if (_controlledSections.Count < 1) Demolish();
-            FirePropertyEvent(this, new(PropertyNames.SectionsOfTrafficLight));
         }
 
         //Half-lanes controlled by this group, derived from the controlled road sections.
@@ -55,6 +53,9 @@ namespace TranSimCS.TrafficLights {
         public TrafficLightPhase CurrentPhase => (Phases.Count == 0) ? EmptyPhase : Phases[PhaseId];
 
         public TrafficLightGroup(Guid? guid = null): base(guid) {
+            _controlledSections = new AttachmentSet<RoadSection>(this) {
+                Name = PropertyNames.SectionsOfTrafficLight
+            };
             DependencyChanged += HandleDependencyChanged;
         }
 
@@ -221,3 +222,4 @@ namespace TranSimCS.TrafficLights {
         }
     }
 }
+

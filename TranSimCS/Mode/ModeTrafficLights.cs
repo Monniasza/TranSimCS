@@ -116,7 +116,13 @@ namespace TranSimCS.Mode {
                         }
                     } else {
                         if (mouseover?.Tag is RoadSection section) {
-                            section.TrafficLightGroup = section.TrafficLightGroup == SelectedGroup ? null : SelectedGroup;
+                            var adding = section.TrafficLightGroup != SelectedGroup;
+                            section.TrafficLightGroup = adding ? SelectedGroup : null;
+                            if (adding) {
+                                foreach(var node in section.Nodes) foreach(var lane in node.OppositeHalf.SortedLanes) {
+                                    if (lane.HasIncomingLaneStrip) lane.HasTrafficLight = true;
+                                }
+                            }
                             if(SelectedGroup.ControlledSections.Count == 0) {
                                 //Removed all road sections. Delete.
                                 SelectedGroup = null;

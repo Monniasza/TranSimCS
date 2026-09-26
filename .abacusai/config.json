@@ -182,7 +182,32 @@
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCSTests/TranSimCSTests.csproj --no-restore 2>&1 | Select-Object -Last 30)",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCS/TranSimCS.csproj --no-restore -c Debug 2>&1 | Select-Object -Last 5)",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCSTests/TranSimCSTests.csproj --no-restore 2>&1 | Select-Object -Last 5)",
-      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCS/TranSimCS.csproj --no-restore -c Release 2>&1 | Select-Object -Last 3)"
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCS/TranSimCS.csproj --no-restore -c Release 2>&1 | Select-Object -Last 3)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && Get-ChildItem -Recurse -Filter \"*.cs\" -File | ForEach-Object { $_.FullName } | Select-Object -First 50)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\SilkNet\" && grep -n \"void Update\\|OnUpdate\\|World.Update\" GameWindow.cs | head -20)",
+      "Bash(ls -la \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" 2>&1 | head -30)",
+      "Bash(Get-ChildItem -Path \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\" -Filter \"*.cs\" -Recurse -Force | Where-Object { $_.Name -match \"(RoadStrip|RoadSection|TrafficLightGroup|TSWorld|StripRef|LaneEnd|RoadNode)\" } | Select-Object -ExpandProperty FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\" -Filter \"*.cs\" -Recurse -Force | Where-Object { $_.Name -match \"(HalfNode|HalfLane|RoadNodeEnd)\" } | Select-Object -ExpandProperty FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\" -Filter \"*.cs\" -Recurse -Force | Where-Object { $_.Name -match \"LaneStrip\" } | Select-Object -ExpandProperty FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\" -Filter \"*.cs\" -Recurse -Force | Where-Object { $_.Name -match \"PathRef|SplinePath\" } | Select-Object -ExpandProperty FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\" -Filter \"*.cs\" -Recurse -Force | Where-Object { $_.Name -eq \"Lane.cs\" -o $_.Name -eq \"Obj.cs\" } | Select-Object -ExpandProperty FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\" -Filter \"*.cs\" -Recurse -Force | Where-Object { $_.Name -eq \"Lane.cs\" } | Select-Object -ExpandProperty FullName)",
+      "Bash(grep -r \"Attachment\\|Reference\\|Binding\" --include=\"*.cs\" \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\" | head -20)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCS/TranSimCS.csproj --no-restore 2>&1 | Select-Object -Last 15)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCSTests/TranSimCSTests.csproj --filter \"FullyQualifiedName~AttachmentTests|FullyQualifiedName~TrafficLightAttachmentTests\" --no-restore 2>&1 | Select-Object -Last 40)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCSTests/TranSimCSTests.csproj --filter \"FullyQualifiedName~AttachmentTests|FullyQualifiedName~TrafficLightAttachmentTests\" 2>&1 | Select-Object -Last 30)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCSTests/TranSimCSTests.csproj --filter \"FullyQualifiedName~AttachmentTests|FullyQualifiedName~TrafficLightAttachmentTests\" 2>&1 | Select-Object -Last 10)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCSTests/TranSimCSTests.csproj --filter \"FullyQualifiedName~AttachmentTests|FullyQualifiedName~TrafficLightAttachmentTests\" 2>&1 | Select-Object -Last 15)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCS/TranSimCS.csproj 2>&1 | Select-String \"error CS\")",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && Get-Content TranSimCS\\Roads\\Section\\RoadSection.cs | Select-Object -Skip 106 -First 1 | ForEach-Object { $_.Length, $_ })",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff TranSimCS/Roads/Section/RoadSection.cs 2>&1)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff TranSimCS/TrafficLights/TrafficLightGroup.cs 2>&1)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCSTests/TranSimCSTests.csproj --filter \"FullyQualifiedName~AttachmentTests|FullyQualifiedName~TrafficLightAttachmentTests\" 2>&1 | Select-Object -Last 15)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCSTests/TranSimCSTests.csproj 2>&1 | Select-Object -Last 10)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff --stat -- TranSimCS/Roads/Section/RoadSection.cs && echo \"---\" && git status --short -- \"*.cs\")",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff --ignore-space-at-eol --stat -- TranSimCS/TrafficLights/TrafficLightGroup.cs)",
+      "Bash(find //?/C:/Users/Oskar/SynologyDrive/Programowanie/TranSimCS -name \"TSWorld*.cs\" | head -20)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCSTests/TranSimCSTests.csproj 2>&1 | Select-Object -Last 10)"
     ]
   }
 }
