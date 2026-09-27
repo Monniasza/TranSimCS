@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,62 +13,120 @@ using TranSimCS.SilkNet;
 namespace TranSimCS.Mode {
     public class ModeScreenshot(GameWindow window) : IMode {
         public int Scale = 1;
+        public string Filename = "screenshot.png";
 
         public string Title() => "Screenshot";
-        public string Filename = "screenshot.png";
 
         void IMode.DrawUI() {
             if (ImGui.Begin("Screenshot")) {
                 ImGui.Text("Capture high-resolution screenshots");
-                ImGui.DragInt("Scale factor", ref Scale, 0.005f, 1, 16);
+
+                ImGui.DragInt(
+                    "Scale factor",
+                    ref Scale,
+                    0.005f,
+                    1,
+                    16);
 
                 var width = Scale * window.SilkWindow.Size.X;
                 var height = Scale * window.SilkWindow.Size.Y;
+
                 ImGui.Text($"Resolution: {width} * {height}");
-                if (ImGui.Button("Shoot!")) {
-                    Shoot();
-                }
+
+                ImGui.InputText(
+                    "File name",
+                    ref Filename,
+                    1024);
+
+                if (ImGui.Button("Shoot!"))
+                    Shoot(width, height);
             }
+
+            ImGui.End();
         }
 
-        private void Shoot() {
-            //Create a temporary buffer, render to it, dump pixels, and export
+        private unsafe void Shoot(int width, int height) {
             var gl = window.OpenGL;
 
-            var windowSize = window.SilkWindow.Size;
-
-            var width = Scale * windowSize.X;
-            var height = Scale * windowSize.Y;
-
-            var scene = window.RenderContents;
-
-            var oldSize = scene.ScreenSize;
-            var oldTarget = scene.RenderTargetHandle;
-
-            uint framebuffer = 0;
-            uint colorTexture = 0;
-            uint depthBuffer = 0;
+            var framebuffer = gl.GenFramebuffer();
+            var colorTexture = gl.GenTexture();
+            var depthBuffer = gl.GenRenderbuffer();
 
             try {
-                framebuffer = CreateFramebuffer(
-                    gl,
-                    width,
-                    height,
-                    out colorTexture,
-                    out depthBuffer);
+                // Create color texture.
+                gl.BindTexture(TextureTarget.Texture2D, colorTexture);
 
-                scene.ScreenSize = new(width, height);
-                scene.RenderTargetHandle = framebuffer;
+                gl.TexImage2D(
+                    TextureTarget.Texture2D,
+                    0,
+                    InternalFormat.Rgba8,
+                    (uint)width,
+                    (uint)height,
+                    0,
+                    PixelFormat.Rgba,
+                    PixelType.UnsignedByte,
+                    null);
 
-                window.RenderManager.Render(scene);
+                gl.TexParameter(
+                    TextureTarget.Texture2D,
+                    TextureParameterName.TextureMinFilter,
+                    (int)GLEnum.Linear);
 
-                // Read pixels here.
-                var pixels = new byte[width * height * 4];
+                gl.TexParameter(
+                    TextureTarget.Texture2D,
+                    TextureParameterName.TextureMagFilter,
+                    (int)GLEnum.Linear);
 
+                // Create depth buffer.
+                gl.BindRenderbuffer(
+                    RenderbufferTarget.Renderbuffer,
+                    depthBuffer);
+
+                gl.RenderbufferStorage(
+                    RenderbufferTarget.Renderbuffer,
+                    InternalFormat.DepthComponent24,
+                    (uint)width,
+                    (uint)height);
+
+                // Create framebuffer.
                 gl.BindFramebuffer(
                     FramebufferTarget.Framebuffer,
                     framebuffer);
 
+                gl.FramebufferTexture2D(
+                    FramebufferTarget.Framebuffer,
+                    FramebufferAttachment.ColorAttachment0,
+                    TextureTarget.Texture2D,
+                    colorTexture,
+                    0);
+
+                gl.FramebufferRenderbuffer(
+                    FramebufferTarget.Framebuffer,
+                    FramebufferAttachment.DepthAttachment,
+                    RenderbufferTarget.Renderbuffer,
+                    depthBuffer);
+
+                gl.DrawBuffers(1, [DrawBufferMode.ColorAttachment0]);
+
+                var status = gl.CheckFramebufferStatus(
+                    FramebufferTarget.Framebuffer);
+
+                if (status != GLEnum.FramebufferComplete)
+                    throw new Exception(
+                        $"Screenshot framebuffer incomplete: {status}");
+
+                // Render scene.
+                var scene = window.RenderContents;
+
+                scene.ScreenSize = new(width, height);
+                scene.RenderTargetHandle = framebuffer;
+                Debug.Assert(scene.SceneGeometry != null, "No scene geometry");
+
+                window.RenderManager.Render(scene);
+
+                // Read RGBA pixels.
+                var pixels = new byte[width * height * 4];
+                gl.PixelStore(PixelStoreParameter.PackAlignment, 1);
                 unsafe {
                     fixed (byte* ptr = pixels) {
                         gl.ReadPixels(
@@ -80,112 +140,50 @@ namespace TranSimCS.Mode {
                     }
                 }
 
-                // Export pixels here.
                 // OpenGL's origin is bottom-left.
                 FlipVertically(pixels, width, height);
 
-                using var image = new MagickImage(
-                    pixels,
-                    new MagickReadSettings {
-                        Width = (uint)width,
-                        Height = (uint)height,
-                        Format = MagickFormat.Rgba
-                    });
+                using var image = new MagickImage();
+                var settings = new PixelReadSettings(
+                    (uint)width, (uint)height,
+                    StorageType.Char, PixelMapping.RGBA
+                );
 
-                image.Write(Filename);
+                image.ReadPixels(pixels, settings);
+
+                var directory = Path.Combine(Program.UserRoot, "screenshots", Filename);
+                image.Write(directory);
             } finally {
-                scene.ScreenSize = oldSize;
-                scene.RenderTargetHandle = oldTarget;
-
                 gl.BindFramebuffer(
                     FramebufferTarget.Framebuffer,
                     0);
 
-                if (framebuffer != 0)
-                    gl.DeleteFramebuffer(framebuffer);
-
-                if (colorTexture != 0)
-                    gl.DeleteTexture(colorTexture);
-
-                if (depthBuffer != 0)
-                    gl.DeleteRenderbuffer(depthBuffer);
+                gl.DeleteFramebuffer(framebuffer);
+                gl.DeleteTexture(colorTexture);
+                gl.DeleteRenderbuffer(depthBuffer);
             }
         }
 
-        private static unsafe uint CreateFramebuffer(
-            GL gl,
+        private static void FlipVertically(
+            byte[] pixels,
             int width,
-            int height,
-            out uint colorTexture,
-            out uint depthBuffer) {
-            colorTexture = gl.GenTexture();
+            int height) {
+            int rowSize = width * 4;
+            byte[] row = new byte[rowSize];
 
-            gl.BindTexture(TextureTarget.Texture2D, colorTexture);
+            for (int y = 0; y < height / 2; y++) {
+                int top = y * rowSize;
+                int bottom = (height - 1 - y) * rowSize;
 
-            gl.TexImage2D(
-                TextureTarget.Texture2D,
-                0,
-                InternalFormat.Rgba8,
-                (uint)width,
-                (uint)height,
-                0,
-                PixelFormat.Rgba,
-                PixelType.UnsignedByte,
-                null);
+                pixels.AsSpan(top, rowSize)
+                    .CopyTo(row);
 
-            gl.TexParameter(
-                TextureTarget.Texture2D,
-                TextureParameterName.TextureMinFilter,
-                (int)GLEnum.Linear);
+                pixels.AsSpan(bottom, rowSize)
+                    .CopyTo(pixels.AsSpan(top, rowSize));
 
-            gl.TexParameter(
-                TextureTarget.Texture2D,
-                TextureParameterName.TextureMagFilter,
-                (int)GLEnum.Linear);
-
-            depthBuffer = gl.GenRenderbuffer();
-
-            gl.BindRenderbuffer(
-                RenderbufferTarget.Renderbuffer,
-                depthBuffer);
-
-            gl.RenderbufferStorage(
-                RenderbufferTarget.Renderbuffer,
-                InternalFormat.Depth24,
-                (uint)width,
-                (uint)height);
-
-            var framebuffer = gl.GenFramebuffer();
-
-            gl.BindFramebuffer(
-                FramebufferTarget.Framebuffer,
-                framebuffer);
-
-            gl.FramebufferTexture2D(
-                FramebufferTarget.Framebuffer,
-                FramebufferAttachment.ColorAttachment0,
-                TextureTarget.Texture2D,
-                colorTexture,
-                0);
-
-            gl.FramebufferRenderbuffer(
-                FramebufferTarget.Framebuffer,
-                FramebufferAttachment.DepthAttachment,
-                RenderbufferTarget.Renderbuffer,
-                depthBuffer);
-
-            var status = gl.CheckFramebufferStatus(
-                FramebufferTarget.Framebuffer);
-
-            if (status != GLEnum.FramebufferComplete)
-                throw new Exception(
-                    $"Snapshot framebuffer is incomplete: {status}");
-
-            gl.BindFramebuffer(
-                FramebufferTarget.Framebuffer,
-                0);
-
-            return framebuffer;
+                row.AsSpan()
+                    .CopyTo(pixels.AsSpan(bottom, rowSize));
+            }
         }
     }
 }

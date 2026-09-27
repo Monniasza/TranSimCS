@@ -140,6 +140,11 @@ namespace TranSimCS.SilkNet {
             //CONSTANTS
             var gl = window.OpenGL;
 
+            int previousFramebuffer;
+            gl.GetInteger(
+                GetPName.DrawFramebufferBinding,
+                out previousFramebuffer);
+
             //BINDING
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, scene.RenderTargetHandle);
             gl.Viewport(
@@ -160,8 +165,6 @@ namespace TranSimCS.SilkNet {
                 out _);
 
             WorldViewProjection = matrix;
-
-
 
             gl.Enable(EnableCap.DepthTest);
             gl.UseProgram(_meshProgram);
@@ -199,7 +202,9 @@ namespace TranSimCS.SilkNet {
             RenderPass(scene.AmbientColor, groups[(int)MaterialBlendMode.Transparent], 0, ref stats);
 
             Stats = stats;
-            gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+
+            //Restore
+            gl.BindFramebuffer(FramebufferTarget.Framebuffer, (uint)previousFramebuffer);
         }
 
         private readonly List<List<MeshDrawInstance>> GroupListPool = [];

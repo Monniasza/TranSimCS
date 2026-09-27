@@ -14,6 +14,7 @@ public class Program {
     public static string UserRoot { get; private set; }
     public static string SaveRoot { get; private set; }
     public static string LogRoot { get; private set; }
+    public static string ScreenShotRoot { get; private set; }
 
     public static string DataRoot { get; private set; }
 
@@ -35,12 +36,14 @@ public class Program {
         UserRoot = Path.Combine(appdata, "TranSim");
         SaveRoot = Path.Combine(UserRoot, "saves");
         LogRoot = Path.Combine(UserRoot, "logs");
+        ScreenShotRoot = Path.Combine(UserRoot, "screenshots");
         var exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
         DataRoot = Path.GetDirectoryName(exePath);
         
         Directory.CreateDirectory(UserRoot);
         Directory.CreateDirectory(SaveRoot);
         Directory.CreateDirectory(LogRoot);
+        Directory.CreateDirectory(ScreenShotRoot);
 
         var now = DateTime.Now;
         var nowString = now.ToString();
