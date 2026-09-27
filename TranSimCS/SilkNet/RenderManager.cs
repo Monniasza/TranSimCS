@@ -11,6 +11,7 @@ using TranSimCS.Geometry;
 using TranSimCS.Model;
 using TranSimCS.ModelOld;
 using TranSimCS.Property;
+using TranSimCS.Render;
 using TranSimCS.Setting;
 using TranSimCS.Terrain;
 using TranSimCS.Worlds;
@@ -33,18 +34,10 @@ namespace TranSimCS.SilkNet {
     }
 
     public class RenderManager: IDisposable {
-        public readonly Property<Camera> CameraProp;
-        public readonly Property<Vector4> AmbientColor;
         public readonly GameWindow window;
 
         public static readonly string MeshVertSource;
         public static readonly string FragSource;
-
-        public Matrix4x4 WorldViewProjection { get; private set; }
-        public Matrix4x4 World { get; private set; }
-        public Matrix4x4 View { get; private set; }
-        public Matrix4x4 Projection { get; private set; }
-        public event GeometrySupplier? OnRender;
         
         internal uint _instanceBuffer;
         internal uint _vertexShader;
@@ -130,22 +123,7 @@ namespace TranSimCS.SilkNet {
             ShaderUniformData[] fakeUniformData = null;
             gl.BufferData(BufferTargetARB.UniformBuffer, uniformSize, fakeUniformData, BufferUsageARB.DynamicDraw);
             gl.BindBufferBase(BufferTargetARB.UniformBuffer, 0, _uniformBuffer);
-
-            CameraProp = new(Camera.Default, "camera", null);
-            AmbientColor = new(Vector4.One, "ambientColor", null);
-            CameraProp.ValueChanged += (s, old, value) => SetUpEffects();
-            SetUpEffects();
         }
-        private void SetUpEffects() {
-            var windowDimensions = window.SilkWindow.Size;
-            if (windowDimensions.X <= 0 || windowDimensions.Y <= 0) return;
-            WorldViewProjection = Camera.GetCombinedMatrix(windowDimensions.X, windowDimensions.Y, out var world, out var view, out var projection);
-            World = world;
-            View = view;
-            Projection = projection;
-        }
-
-        public Camera Camera { get => CameraProp.Value; set => CameraProp.Value = value; }
 
         // Scratch arrays reused across frames to avoid per-frame allocations in Render()
         public static int GrowCapacity(int current, int needed) {
@@ -156,9 +134,11 @@ namespace TranSimCS.SilkNet {
         }
 
         public RenderStats Stats { get; private set; }
+        public Matrix4x4 WorldViewProjection { get; private set; }
 
-        public void Render() {
-            SetUpEffects();
+        public void Render(RenderScene scene) {
+            var matrix = scene.Camera.GetCombinedMatrix(scene.ScreenSize.Width, scene.ScreenSize.Height, out _, out _, out _);
+            WorldViewProjection = matrix;
 
             //CONSTANTS
             var gl = window.OpenGL;
@@ -175,7 +155,7 @@ namespace TranSimCS.SilkNet {
 
             //CATEGORIZATION & COUNTING
             List<MeshDrawInstance> instances = [];
-            OnRender?.Invoke(instances.Add);
+            scene.SceneGeometry?.Invoke(instances.Add);
 
             var stats = new RenderStats();
 
@@ -191,12 +171,12 @@ namespace TranSimCS.SilkNet {
 
             //Bind per-pass attributes
             gl.Disable(EnableCap.Blend);
-            RenderPass(groups[(int)MaterialBlendMode.Opaque], 0, ref stats);
-            RenderPass(groups[(int)MaterialBlendMode.Cutout], 0.5f, ref stats);
+            RenderPass(scene.AmbientColor, groups[(int)MaterialBlendMode.Opaque], 0, ref stats);
+            RenderPass(scene.AmbientColor, groups[(int)MaterialBlendMode.Cutout], 0.5f, ref stats);
 
             gl.Enable(EnableCap.Blend);
             gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-            RenderPass(groups[(int)MaterialBlendMode.Transparent], 0, ref stats);
+            RenderPass(scene.AmbientColor, groups[(int)MaterialBlendMode.Transparent], 0, ref stats);
 
             Stats = stats;
         }
@@ -231,7 +211,7 @@ namespace TranSimCS.SilkNet {
             return list;
         }
 
-        private void RenderPass(List<MeshDrawInstance>? meshes, float alphaCutoff, ref RenderStats stats) {
+        private void RenderPass(Vector4 ambient, List<MeshDrawInstance>? meshes, float alphaCutoff, ref RenderStats stats) {
             if(meshes == null) return;
 
             var gl = window.OpenGL;
@@ -311,7 +291,7 @@ namespace TranSimCS.SilkNet {
                 //Bind uniforms
                 ShaderUniformData sud = default;
                 sud.AlphaCutoff = alphaCutoff;
-                sud.AmbientColor = AmbientColor.Value;
+                sud.AmbientColor = ambient;
                 sud.WorldViewProjection = WorldViewProjection;
                 sud.EmissiveIsMask = material.EmissiveIsMask;
                 gl.BindBuffer(BufferTargetARB.UniformBuffer, _uniformBuffer);

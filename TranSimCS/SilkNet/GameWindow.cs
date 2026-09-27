@@ -15,6 +15,7 @@ using Silk.NET.Windowing;
 using TranSimCS.Geometry;
 using TranSimCS.Mode;
 using TranSimCS.Mode.RoadBuilder;
+using TranSimCS.Render;
 using TranSimCS.Select;
 using TranSimCS.Terrain;
 using TranSimCS.Worlds;
@@ -40,13 +41,15 @@ namespace TranSimCS.SilkNet {
         public RenderManager RenderManager { get; private set; }
         public ImGuiController ImGuiController { get; private set; }
 
+        public RenderScene RenderContents;
+
         //Counters
         public FPS FramesPerSecond { get; private set; }
         public FPS TicksPerSecond { get; private set; }
         public Stats Stats { get; private set; }
         
         //World contents
-        public Camera camera;
+        public ref Camera camera => ref RenderContents.Camera;
 
         private TSWorld _world;
         public TSWorld World {
@@ -153,7 +156,8 @@ namespace TranSimCS.SilkNet {
             //Create contexts
             OpenGL = SilkWindow.CreateOpenGL();
             RenderManager = new(this);
-            RenderManager.OnRender += Render3D;
+            RenderContents.SceneGeometry += Render3D;
+            RenderContents.Camera = Camera.Default;
             ImGuiController = new(OpenGL, SilkWindow, InputContext);
 
             //Create world data
@@ -185,10 +189,12 @@ namespace TranSimCS.SilkNet {
             ImGuiController.Update((float)dt);
             ImGuiController.MakeCurrent();
 
+            var wvp = RenderContents.Camera.GetCombinedMatrix(SilkWindow.Size.X, SilkWindow.Size.Y, out _, out _, out _);
+
             //Create the pick ray
             if (SilkWindow.Size.X > 0 && SilkWindow.Size.Y > 0) {
                 MouseRayOld = MouseRay;
-                MouseRay = Unprojection.CreatePickRay(MousePosition, new(SilkWindow.Size.X, SilkWindow.Size.Y), RenderManager.View, RenderManager.Projection);
+                MouseRay = Unprojection.CreatePickRay(MousePosition, new(SilkWindow.Size.X, SilkWindow.Size.Y), wvp, Matrix4x4.Identity);
                 VectorMethods.CheckVector(MouseRay.Origin, nameof(MouseRay.Origin));
                 VectorMethods.CheckVector(MouseRay.Direction, nameof(MouseRay.Direction));
             }
@@ -224,8 +230,6 @@ namespace TranSimCS.SilkNet {
             OpenGL.Clear(ClearBufferMask.ColorBufferBit);
             OpenGL.Clear(ClearBufferMask.DepthBufferBit);
 
-            RenderManager.Camera = camera;
-
             //Render GUI
             DrawUI();
             
@@ -235,8 +239,11 @@ namespace TranSimCS.SilkNet {
             stats.Cars = World.Cars.data.Count;
             stats.Buildings = World.Buildings.data.Count;
 
+            //Set up rendering
+            RenderContents.ScreenSize = new(SilkWindow.Size.X, SilkWindow.Size.Y);
+
             //Render all
-            RenderManager.Render();
+            RenderManager.Render(RenderContents);
             ImGuiController.Render();
             FramesPerSecond.Count++;
 

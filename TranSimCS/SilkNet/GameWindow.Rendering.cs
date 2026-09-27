@@ -113,7 +113,7 @@ namespace TranSimCS.SilkNet {
             var coefficient = GeometryUtils.Clamp(sine * 2, -1, 1);
             coefficient = (sine / 2) + 0.5f;
             var interpolatedDayNightVector = lut[seconds];
-            RenderManager.AmbientColor.Value = interpolatedDayNightVector;
+            RenderContents.AmbientColor = interpolatedDayNightVector;
 
             //Render the sun
             var sunDistance = 10000f;
@@ -125,7 +125,7 @@ namespace TranSimCS.SilkNet {
             var startingPoint = pos - (tangent + lateral) / 2;
             //var sunRenderBin = renderHelper.GetOrCreateRenderBinForced(Assets.White);
             var sunRenderBin = mesh.GetOrCreateRenderBinForced(Materials.Sun);
-            sunRenderBin.DrawParallelogram(startingPoint + RenderManager.Camera.Position.ToX0Z(), tangent, lateral, Colors.White);
+            sunRenderBin.DrawParallelogram(startingPoint + RenderContents.Camera.Position.ToX0Z(), tangent, lateral, Colors.White);
 
             //Push meshes
             foreach (var element in meshes) element.GenerateGeometry(target);
