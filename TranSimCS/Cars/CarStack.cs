@@ -30,14 +30,17 @@ namespace TranSimCS.Cars {
 
         private void World_OnUpdate(float seconds) {
             //Clear car indices
-            foreach (var path in world.Paths.Paths.Values)
+            foreach (var path in world.Paths.Paths.Values) {
                 path._carsOnStrip.Clear();
+                path._cars.Clear();
+            }
 
             //Generate all car indices
             List<SplinePath> insertedLaneStrips = [];
             void InsertCarIntoStrip(CarEntry car, SplinePath strip) {
                 if(strip._carsOnStrip.Count == 0) insertedLaneStrips.Add(strip);
                 strip._carsOnStrip.Add(car);
+                strip._cars.Add(car.car);
             }
 
             foreach(var car in data) {

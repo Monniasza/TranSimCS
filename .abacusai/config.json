@@ -207,7 +207,12 @@
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff --stat -- TranSimCS/Roads/Section/RoadSection.cs && echo \"---\" && git status --short -- \"*.cs\")",
       "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && git diff --ignore-space-at-eol --stat -- TranSimCS/TrafficLights/TrafficLightGroup.cs)",
       "Bash(find //?/C:/Users/Oskar/SynologyDrive/Programowanie/TranSimCS -name \"TSWorld*.cs\" | head -20)",
-      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCSTests/TranSimCSTests.csproj 2>&1 | Select-Object -Last 10)"
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCSTests/TranSimCSTests.csproj 2>&1 | Select-Object -Last 10)",
+      "Bash(Measure-Object -Path \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\Cars\\Route.cs\" -Line | Select-Object Lines)",
+      "Bash(Get-Item \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\Cars\\Route.cs\" | Select-Object -Property Name, @{Name=\"Lines\"; Expression={(Get-Content $_.FullName | Measure-Object -Line).Lines}})",
+      "Bash(Get-Item \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\\TranSimCS\\Cars\\RoutePosition.cs\" | Select-Object -Property Name, @{Name=\"Lines\"; Expression={(Get-Content $_.FullName | Measure-Object -Line).Lines}})",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet build TranSimCSTests/TranSimCSTests.csproj 2>&1 | Select-Object -Last 30)",
+      "Bash(cd \"C:\\Users\\Oskar\\SynologyDrive\\Programowanie\\TranSimCS\" && dotnet test TranSimCSTests/TranSimCSTests.csproj --filter \"FullyQualifiedName~TestReverseLaneStrip|FullyQualifiedName~TestSplinePath\" --logger \"console;verbosity=detailed\" 2>&1 | Select-Object -Last 80)"
     ]
   }
 }

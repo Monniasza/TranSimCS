@@ -20,12 +20,14 @@ namespace TranSimCS.Cars {
                 if (strip == null) break;
                 if (i > 0 && strip.CurrentState == Worlds.Paths.PathState.Orphaned) break;
                 if(strip.CurrentState == Worlds.Paths.PathState.Deleted) {
-                    if (i == 0) Debug.Fail("Path got deleted from under the car");
+                    if (i == 0) log.Warn($"The car {Guid} had a path deleted from under it.");
                     break;
                 }
             }
             if(i == 0) {
-                //The car is dead
+                //The car is dead. Clear the route so callers checking RouteElementCount
+                //see zero and skip the car instead of dereferencing the dead path.
+                if(RouteElementCount > 0) PopRouteElements(RouteElementCount);
                 return true;
             }
 

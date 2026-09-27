@@ -202,6 +202,7 @@ namespace TranSimCS.Roads.Strip {
 
             LaneStrip newLaneStrip = new LaneStrip(newStart, newEnd, newSpec);
             road?.AddLaneStrip(newLaneStrip);
+            OrphanPath();
             road?.RemoveLaneStrip(this);
             return newLaneStrip;
         }
