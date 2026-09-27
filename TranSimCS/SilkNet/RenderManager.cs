@@ -137,11 +137,31 @@ namespace TranSimCS.SilkNet {
         public Matrix4x4 WorldViewProjection { get; private set; }
 
         public void Render(RenderScene scene) {
-            var matrix = scene.Camera.GetCombinedMatrix(scene.ScreenSize.Width, scene.ScreenSize.Height, out _, out _, out _);
-            WorldViewProjection = matrix;
-
             //CONSTANTS
             var gl = window.OpenGL;
+
+            //BINDING
+            gl.BindFramebuffer(FramebufferTarget.Framebuffer, scene.RenderTargetHandle);
+            gl.Viewport(
+                0, 0,
+                (uint)scene.ScreenSize.Width,
+                (uint)scene.ScreenSize.Height
+            );
+
+            gl.Clear(
+                ClearBufferMask.ColorBufferBit |
+                ClearBufferMask.DepthBufferBit);
+
+            var matrix = scene.Camera.GetCombinedMatrix(
+                scene.ScreenSize.Width,
+                scene.ScreenSize.Height,
+                out _,
+                out _,
+                out _);
+
+            WorldViewProjection = matrix;
+
+
 
             gl.Enable(EnableCap.DepthTest);
             gl.UseProgram(_meshProgram);
@@ -179,6 +199,7 @@ namespace TranSimCS.SilkNet {
             RenderPass(scene.AmbientColor, groups[(int)MaterialBlendMode.Transparent], 0, ref stats);
 
             Stats = stats;
+            gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
         }
 
         private readonly List<List<MeshDrawInstance>> GroupListPool = [];
