@@ -198,7 +198,13 @@ namespace TranSimCS.SilkNet {
             RenderPass(scene.AmbientColor, groups[(int)MaterialBlendMode.Cutout], 0.5f, ref stats);
 
             gl.Enable(EnableCap.Blend);
-            gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+            gl.BlendFuncSeparate(
+                BlendingFactor.SrcAlpha,
+                BlendingFactor.OneMinusSrcAlpha,
+                BlendingFactor.One,
+                BlendingFactor.OneMinusSrcAlpha
+            );
+            //gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             RenderPass(scene.AmbientColor, groups[(int)MaterialBlendMode.Transparent], 0, ref stats);
 
             Stats = stats;
