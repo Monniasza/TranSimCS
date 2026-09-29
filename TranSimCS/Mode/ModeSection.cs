@@ -60,8 +60,9 @@ namespace TranSimCS.Mode {
                             var pair = Section.MainSlopeNodes.Value;
                             if (halfnode == pair.Start) ImGui.TextColored(yellow, "The node is the start of the main slope");
                             if (halfnode == pair.End) ImGui.TextColored(yellow, "The node is the end of the main slope");
-                            ImGui.Text("[MMB] to set the node as a start of the main slope");
-                            ImGui.Text("[MMB+LCtrl] to set the node as an end of the main slope");
+                            ImGui.Text("[LMB+Q] to set the node as a start of the main slope");
+                            ImGui.Text("[LMB+E] to set the node as an end of the main slope");
+                            ImGui.Text("[Q+E] to remove the slope");
                         } else if (ownedSection == null)
                             ImGui.TextColored(yellow, "[LMB] to switch the road node to the currently edited road section");
                         else {
@@ -79,6 +80,20 @@ namespace TranSimCS.Mode {
                 ImGui.End();
             }
         }
+
+        void IMode.OnKeyPress(Key key) {
+            var q = ImGui.IsKeyDown(ImGuiKey.Q);
+            var e = ImGui.IsKeyDown(ImGuiKey.E);
+            switch (key) {
+                case Key.Q:
+                    if (e) RemoveSlope();
+                    break;
+                case Key.E:
+                    if (q) RemoveSlope();
+                    break;
+            }
+        }
+        void RemoveSlope() => Section!.MainSlopeNodes.Value = new(null, null);
 
         void IMode.OnMousePress(MouseButton button) {
             if (Section == null && button == MouseButton.Left) {
@@ -112,22 +127,27 @@ namespace TranSimCS.Mode {
                                 break;
                             case HalfLane laneEnd:
                                 var nodeEnd = laneEnd.HalfNode;
-                                nodeEnd.ConnectedSection.Value = nodeEnd.ConnectedSection.Value == Section ? null : Section;
+
+                                var q = ImGui.IsKeyDown(ImGuiKey.Q);
+                                var e = ImGui.IsKeyDown(ImGuiKey.E);
+                                if (q) {
+                                    if (e) return; //Q+E removes the slope
+                                    //Set start slope
+                                    var slope = Section.MainSlopeNodes.Value;
+                                    slope.Start = nodeEnd;
+                                    Section.MainSlopeNodes.Value = slope;
+                                } else{
+                                    if (e) {
+                                        //Set end slope
+                                        var slope = Section.MainSlopeNodes.Value;
+                                        slope.End = nodeEnd;
+                                        Section.MainSlopeNodes.Value = slope;
+                                    } else {
+                                        //Toggle membership
+                                        nodeEnd.ConnectedSection.Value = nodeEnd.ConnectedSection.Value == Section ? null : Section;
+                                    }
+                                }
                                 break;
-                        }
-                        break;
-                    case MouseButton.Middle:
-                        //Set a slope node
-                        if (hitObject is IRoadElement element0) {
-                            var node = element0.GetLaneEnd();
-                            if (node == null) return;
-                            var slopeNodes = Section.MainSlopeNodes.Value;
-                            if (ImGui.IsKeyDown(ImGuiKey.LeftCtrl)) {
-                                slopeNodes.End = node?.HalfNode;
-                            } else {
-                                slopeNodes.Start = node?.HalfNode;
-                            }
-                            Section.MainSlopeNodes.Value = slopeNodes;
                         }
                         break;
                     case MouseButton.Right:
