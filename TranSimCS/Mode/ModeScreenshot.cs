@@ -1,25 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ImageMagick;
 using ImGuiNET;
+using NLog;
 using Silk.NET.OpenGL;
 using TranSimCS.SilkNet;
 
 namespace TranSimCS.Mode {
     public class ModeScreenshot(GameWindow window) : IMode {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         public int Scale = 1;
-        public string Filename = "screenshot.png";
+        public string Filename = "screenshot.jpg";
+        public int Quality = 95;
 
         public string Title() => "Screenshot";
 
         void IMode.DrawUI() {
             if (ImGui.Begin("Screenshot")) {
                 ImGui.Text("Capture high-resolution screenshots");
+                ImGui.DragInt("Quality (lossy compression)", ref Quality, 0.1f, 0, 100);
 
                 ImGui.DragInt(
                     "Scale factor",
@@ -46,14 +51,22 @@ namespace TranSimCS.Mode {
         }
 
         private unsafe void Shoot(int width, int height) {
+            //Measure times
+            Stopwatch createBuffersStopwatch = new();
+            Stopwatch renderSceneStopwatch = new();
+            Stopwatch dumpPixelsStopwatch = new();
+            Stopwatch saveStopwatch = new();
+
             var gl = window.OpenGL;
 
             var framebuffer = gl.GenFramebuffer();
             var colorTexture = gl.GenTexture();
             var depthBuffer = gl.GenRenderbuffer();
+            logger.Info($"Shooting {Filename} at {width}*{height}");
 
             try {
                 // Create color texture.
+                createBuffersStopwatch.Start();
                 gl.BindTexture(TextureTarget.Texture2D, colorTexture);
 
                 gl.TexImage2D(
@@ -114,8 +127,11 @@ namespace TranSimCS.Mode {
                 if (status != GLEnum.FramebufferComplete)
                     throw new Exception(
                         $"Screenshot framebuffer incomplete: {status}");
+                createBuffersStopwatch.Stop();
+                logger.Info($"Create buffers: {createBuffersStopwatch.ElapsedMilliseconds} ms");
 
                 // Render scene.
+                renderSceneStopwatch.Start();
                 var scene = window.RenderContents;
 
                 scene.ScreenSize = new(width, height);
@@ -123,8 +139,13 @@ namespace TranSimCS.Mode {
                 Debug.Assert(scene.SceneGeometry != null, "No scene geometry");
 
                 window.RenderManager.Render(scene);
+                renderSceneStopwatch.Stop();
+
+                logger.Info($"Render: {renderSceneStopwatch.ElapsedMilliseconds} ms");
+
 
                 // Read RGBA pixels.
+                dumpPixelsStopwatch.Start();
                 var pixels = new byte[width * height * 4];
                 gl.PixelStore(PixelStoreParameter.PackAlignment, 1);
                 unsafe {
@@ -139,20 +160,31 @@ namespace TranSimCS.Mode {
                             ptr);
                     }
                 }
+                dumpPixelsStopwatch.Stop();
 
-                // OpenGL's origin is bottom-left.
-                FlipVertically(pixels, width, height);
+                logger.Info($"GL to RAM pixel dump: {dumpPixelsStopwatch.ElapsedMilliseconds} ms");
 
+                Stopwatch toMagickSW = Stopwatch.StartNew();
                 using var image = new MagickImage();
                 var settings = new PixelReadSettings(
                     (uint)width, (uint)height,
                     StorageType.Char, PixelMapping.RGBA
                 );
-
                 image.ReadPixels(pixels, settings);
+                image.Quality = (uint)Quality;
+                toMagickSW.Stop();
+                logger.Info($"RAM to Magick.NET dump: {toMagickSW.ElapsedMilliseconds} ms");
 
+                Stopwatch flip = Stopwatch.StartNew();
+                image.Flip();
+                flip.Stop();
+                logger.Info($"Flip: {flip.ElapsedMilliseconds} ms");
+
+                saveStopwatch.Start();
                 var directory = Path.Combine(Program.UserRoot, "screenshots", Filename);
                 image.Write(directory);
+                saveStopwatch.Stop();
+                logger.Info($"Save: {saveStopwatch.ElapsedMilliseconds} ms");
             } finally {
                 gl.BindFramebuffer(
                     FramebufferTarget.Framebuffer,
