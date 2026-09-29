@@ -185,7 +185,11 @@ namespace TranSimCS.Mode {
                 image.Write(directory);
                 saveStopwatch.Stop();
                 logger.Info($"Save: {saveStopwatch.ElapsedMilliseconds} ms");
-            } finally {
+            } catch(Exception e){
+                logger.Error(e);
+                var message = Message.ErrorMessage("Failed to save the screenshot", e, window);
+                window.CurrentlyOpenModal = message.ShowMessage;
+            }finally {
                 gl.BindFramebuffer(
                     FramebufferTarget.Framebuffer,
                     0);
