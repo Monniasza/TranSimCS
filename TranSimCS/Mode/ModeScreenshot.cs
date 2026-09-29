@@ -199,27 +199,5 @@ namespace TranSimCS.Mode {
                 gl.DeleteRenderbuffer(depthBuffer);
             }
         }
-
-        private static void FlipVertically(
-            byte[] pixels,
-            int width,
-            int height) {
-            int rowSize = width * 4;
-            byte[] row = new byte[rowSize];
-
-            for (int y = 0; y < height / 2; y++) {
-                int top = y * rowSize;
-                int bottom = (height - 1 - y) * rowSize;
-
-                pixels.AsSpan(top, rowSize)
-                    .CopyTo(row);
-
-                pixels.AsSpan(bottom, rowSize)
-                    .CopyTo(pixels.AsSpan(top, rowSize));
-
-                row.AsSpan()
-                    .CopyTo(pixels.AsSpan(bottom, rowSize));
-            }
-        }
     }
 }
