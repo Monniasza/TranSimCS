@@ -91,15 +91,14 @@ namespace TranSimCS.SilkNet {
         public Ray3 MouseRayOld;
 
         public GameWindow() {
-            var pickMode = new PickMode(this);
             //Create modes
             AvailableModes = [
-                pickMode, new ModeDemolish(this), new ModeNode(this), new ModeSegment(this),
+                new PickMode(this), new ModeDemolish(this), new ModeNode(this), new ModeSegment(this),
                 new ModeSection(this), new ModeConnection(this), new ModeMoveIt(this),
                 new ModeReverse(this), new ModeSplit(this), new ModeSplitAt(this), new ModeSpline(this),
                 new ModeTrafficLights(this), new ModeScreenshot(this), //new ModeRoadBuilder(this),
             ];
-            _mode = pickMode;
+            _mode = AvailableModes[0];
             snappingGrid = new();
             World = new TSWorld();
             SegmentPresets.RoadMode = RoadModes[1];
@@ -144,7 +143,6 @@ namespace TranSimCS.SilkNet {
             for (int i = 0; i < InputContext.Keyboards.Count; i++) {
                 InputContext.Keyboards[i].KeyDown += KeyDown;
                 InputContext.Keyboards[i].KeyUp += KeyUp;
-                InputContext.Keyboards[i].KeyChar += KeyChar;
             }
             foreach (var mouse in InputContext.Mice) {
                 mouse.Scroll += MouseScroll;
@@ -164,16 +162,6 @@ namespace TranSimCS.SilkNet {
             camera = new(Vector3.Zero, 32, 1, 0.7f);
         }
 
-        
-
-        private TextureGPU LoadTextureFromResource(string resource) {
-            using var stream = TerrainDataBlobs.OpenEmbeddedResource(resource);
-            var image = new MagickImage(stream);
-            image.DetermineBitDepth();
-            image.DetermineColorType();
-            return new(new(image), OpenGL);
-        }
-
         private void OnClose() {
             FramesPerSecond.Dispose();
             ImGuiController.Dispose();
@@ -185,7 +173,7 @@ namespace TranSimCS.SilkNet {
             float dT = (float)dt;
 
             TicksPerSecond.Count++;
-            SilkWindow.Title = $"TranSim. FPS:{FramesPerSecond.FrameRate}, TPS:{TicksPerSecond.FrameRate}";
+            SilkWindow.Title = $"TranSim. World: {SaveTitle} FPS:{FramesPerSecond.FrameRate}, TPS:{TicksPerSecond.FrameRate}";
             ImGuiController.Update((float)dt);
             ImGuiController.MakeCurrent();
 

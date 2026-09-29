@@ -70,9 +70,6 @@ namespace TranSimCS.SilkNet {
             if (ImGui.GetIO().WantTextInput) return;
             Mode.OnKeyRelease(key);
         }
-        private void KeyChar(IKeyboard keyboard, char character) {
-
-        }
 
         public MouseState MouseState { get; private set; }
         public MouseState MouseStateOld { get; private set; }
