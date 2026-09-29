@@ -86,7 +86,21 @@ namespace TranSimCS.SilkNet {
         }
 
         private void MouseMove(IMouse mouse, Vector2 vector) {
+            var deltapos = vector - MousePosition;
             MousePosition = vector;
+
+            if (MouseState.IsMouseButtonDown(MouseButton.Middle)) {
+                //Move the camera
+                var anglePerPx = MathF.PI / 1024;
+                var dangle = anglePerPx * deltapos;
+
+                float newElevation = camera.Elevation + dangle.Y;
+                float newAzimuth = camera.Azimuth + dangle.X;
+                newElevation = GeometryUtils.Clamp(newElevation, -MathF.PI / 2 + 0.01f, MathF.PI / 2 - 0.01f);
+
+                camera.Elevation = newElevation;
+                camera.Azimuth = newAzimuth;
+            }
         }
     }
 }
