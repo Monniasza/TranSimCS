@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -62,6 +63,20 @@ namespace TranSimCS {
             long fields2 = Convert.ToInt64(fields);
             subject2 = (subject2 & ~fields2) | flags2;
             return (T)Enum.ToObject(typeof(T), subject2);
+        }
+
+
+        private static readonly HashSet<string> invalidDeviceNames = [
+            "con", "prn", "aux", "nul",
+            "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9",
+            "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8", "com9"
+        ];
+        public static bool IsTheDeviceNameInvalid(string path) {
+            var lastSegment = Path.GetFileNameWithoutExtension(path).ToLower();
+            return invalidDeviceNames.Contains(lastSegment);
+        }
+        public static void ValidateDeviceName(string path) {
+            if (IsTheDeviceNameInvalid(path)) throw new IOException("The specified device name is invalid");
         }
     }
 }

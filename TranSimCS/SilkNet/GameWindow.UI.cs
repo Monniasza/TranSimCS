@@ -327,6 +327,7 @@ namespace TranSimCS.SilkNet {
         private void SaveTheWorld() {
             var worldPath = Path.Combine(Program.SaveRoot, SaveTitle);
             try {
+                DataUtil.ValidateDeviceName(worldPath);
                 World.SaveToFile(worldPath);
                 CurrentlyOpenModal = null;
             } catch(Exception e) {

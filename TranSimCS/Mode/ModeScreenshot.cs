@@ -182,6 +182,7 @@ namespace TranSimCS.Mode {
 
                 saveStopwatch.Start();
                 var directory = Path.Combine(Program.UserRoot, "screenshots", Filename);
+                DataUtil.ValidateDeviceName(directory);
                 image.Write(directory);
                 saveStopwatch.Stop();
                 logger.Info($"Save: {saveStopwatch.ElapsedMilliseconds} ms");
