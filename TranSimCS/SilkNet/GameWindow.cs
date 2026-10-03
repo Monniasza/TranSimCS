@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -172,15 +172,11 @@ namespace TranSimCS.SilkNet {
 
             ImGuiController.MakeCurrent();
 
-            ImGui.PushFont(largeIconFont);
-            var size = ImGui.CalcTextSize("\uE000");
+            var size = largeIconFont.CalcTextSizeA(largeIconFont.FontSize, float.MaxValue, 0, "\uE000");
             Debug.WriteLine($"Large text size: {size.X} x {size.Y}");
-            ImGui.PopFont();
 
-            ImGui.PushFont(iconFont);
-            var smallsize = ImGui.CalcTextSize("\uE000");
+            var smallsize = iconFont.CalcTextSizeA(iconFont.FontSize, float.MaxValue, 0, "\uE000");
             Debug.WriteLine($"Small text size: {smallsize.X} x {smallsize.Y}");
-            ImGui.PopFont();
 
             //Create world data
             camera = new(Vector3.Zero, 32, 1, 0.7f);
@@ -294,15 +290,8 @@ namespace TranSimCS.SilkNet {
             var iconPath = Path.Combine(Program.DataRoot, "Files", "fonts", "TranSimIcons.ttf");
             VerifyPath(iconPath);
 
-            // Base font
+            // Base font (16px Arial)
             var arial = io.Fonts.AddFontFromFileTTF(fontPath, 16.0f, null, io.Fonts.GetGlyphRangesDefault());
-
-            // 32 px merged icon font
-            _iconFontConfig = ImGuiNative.ImFontConfig_ImFontConfig();
-            _iconFontConfig->MergeMode = 1;
-            _iconFontConfig->PixelSnapH = 1;
-            _iconFontConfig->GlyphMinAdvanceX = 16;
-            _iconFontConfig->GlyphMaxAdvanceX = 16;
 
             _iconGlyphRanges = (ushort*)Marshal.AllocHGlobal(
                 3 * sizeof(ushort));
@@ -311,22 +300,32 @@ namespace TranSimCS.SilkNet {
             _iconGlyphRanges[1] = 0xF8FF;
             _iconGlyphRanges[2] = 0;
 
+            // 16 px merged icon font
+            _iconFontConfig = ImGuiNative.ImFontConfig_ImFontConfig();
+            _iconFontConfig->MergeMode = 1;
+            _iconFontConfig->PixelSnapH = 1;
+            _iconFontConfig->GlyphMinAdvanceX = 16;
+            _iconFontConfig->GlyphMaxAdvanceX = 16;
             _iconFontConfig->GlyphRanges = _iconGlyphRanges;
 
             iconFont = io.Fonts.AddFontFromFileTTF(
-                iconPath, 32.0f, _iconFontConfig
+                iconPath, 16.0f, _iconFontConfig
             );
 
-            // 64 px standalone icon font
+            // 32 px merged large font (32px Arial + 32px icons)
+            largeIconFont = io.Fonts.AddFontFromFileTTF(
+                fontPath, 32.0f, null, io.Fonts.GetGlyphRangesDefault()
+            );
+
             _largeIconFontConfig = ImGuiNative.ImFontConfig_ImFontConfig();
-            _largeIconFontConfig->GlyphRanges = _iconGlyphRanges;
+            _largeIconFontConfig->MergeMode = 1;
             _largeIconFontConfig->PixelSnapH = 1;
-            //_largeIconFontConfig->SizePixels = 64.0f;
             _largeIconFontConfig->GlyphMinAdvanceX = 32;
             _largeIconFontConfig->GlyphMaxAdvanceX = 32;
+            _largeIconFontConfig->GlyphRanges = _iconGlyphRanges;
 
-            largeIconFont = io.Fonts.AddFontFromFileTTF(
-                iconPath, 32.0f, _largeIconFontConfig
+            io.Fonts.AddFontFromFileTTF(
+                iconPath, 64.0f, _largeIconFontConfig
             );
 
 

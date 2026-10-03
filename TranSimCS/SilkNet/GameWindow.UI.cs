@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Numerics;
 using ImGuiNET;
@@ -41,6 +41,8 @@ namespace TranSimCS.SilkNet {
             }
 
             //Show the toolbar
+
+            ImGui.PushFont(largeIconFont);
             var viewport = ImGui.GetMainViewport();
 
             float height = ImGui.GetFrameHeightWithSpacing();
@@ -60,17 +62,22 @@ namespace TranSimCS.SilkNet {
                 ImGuiWindowFlags.NoScrollbar |
                 ImGuiWindowFlags.NoSavedSettings |
                 ImGuiWindowFlags.MenuBar;
-
             if (ImGui.Begin("##BottomMenuBar", menuBarFlags)) {
                 if (ImGui.BeginMenuBar()) {
-                    //ImGui.PushFont(largeIconFont);
-                    foreach (var mode in AvailableModes)
+                    foreach (var mode in AvailableModes) {
                         if (ImGui.MenuItem(mode.Icon().ToString(), "", mode == Mode)) Mode = mode;
-                    //ImGui.PopFont();
+                        if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) {
+                            ImGui.PushFont(iconFont);
+                            ImGui.SetTooltip(mode.Title());
+                            ImGui.PopFont();
+                        }
+                    }
+                        
                     ImGui.EndMenuBar();
                 }
                 ImGui.End();
             }
+            ImGui.PopFont();
 
             if (ImGui.BeginMenu("Settings")) {
                 ImGui.DragInt("Number of spline points", ref Settings.RoadAccuracy, 0.1f, 2, 257);
