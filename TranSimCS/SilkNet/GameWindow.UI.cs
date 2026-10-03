@@ -71,6 +71,8 @@ namespace TranSimCS.SilkNet {
             }
 
             if (ImGui.BeginMenu("Settings")) {
+                ImGui.DragInt("Number of spline points", ref Settings.RoadAccuracy, 0.1f, 2, 257);
+                if (Settings.RoadAccuracy < 2) Settings.RoadAccuracy = 2;
                 ImGui.DragFloat("Car spawn rate", ref Settings.CarSpawnRate);
                 DearUI.MenuToggle("Enable car spawning", ref Settings.SpawnCars);
                 DearUI.MenuToggle("Day/night cycle", ref Settings.DayNightCycle);
