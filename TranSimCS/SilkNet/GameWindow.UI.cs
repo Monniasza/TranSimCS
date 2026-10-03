@@ -71,11 +71,11 @@ namespace TranSimCS.SilkNet {
             }
 
             if (ImGui.BeginMenu("Settings")) {
-                DearUI.InputFloat("Car spawn rate", Settings.CarSpawnRateProp);
-                DearUI.MenuToggle("Enable car spawning", Settings.SpawnCarsProp);
-                DearUI.MenuToggle("Day/night cycle", Settings.DayNightCycleProp);
-                DearUI.InputFloat("Duration of a day", Settings.DayTimeLengthProp, 1, 0);
-                DearUI.MenuToggle("Invert all normals", Settings.InvertAllNormalsProp);
+                ImGui.DragFloat("Car spawn rate", ref Settings.CarSpawnRate);
+                DearUI.MenuToggle("Enable car spawning", ref Settings.SpawnCars);
+                DearUI.MenuToggle("Day/night cycle", ref Settings.DayNightCycle);
+                ImGui.DragFloat("Duration of a day", ref Settings.DayTimeLength, 1, 0);
+                DearUI.MenuToggle("Invert all normals", ref Settings.InvertAllNormals);
                 DearUI.MenuToggle("Select road nodes", ref SelectNodes);
                 DearUI.MenuToggle("Select road segments", ref SelectSegments);
                 DearUI.MenuToggle("Select road sections", ref SelectSections);
@@ -83,6 +83,8 @@ namespace TranSimCS.SilkNet {
                 ImGui.DragFloat("Simulation speed", ref SimulationSpeed, 0.001f, 0, 32);
                 ImGui.EndMenu();
             }
+
+            Settings.Validate();
 
             //Show a compass
             DrawCompass(camera.Azimuth);

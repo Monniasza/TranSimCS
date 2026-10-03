@@ -1,64 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using TranSimCS.Property;
 using TranSimCS.Save2;
 
 namespace TranSimCS.Setting {
     public static class Settings {
-        public static readonly Property<int> RoadAccuracyProp;
-        public static int RoadAccuracy { get => RoadAccuracyProp.Value; set => RoadAccuracyProp.Value = value; }
+        private static SettingsData _data = SettingsData.Default;
 
-        public static readonly Property<bool> InvertAllNormalsProp;
-        public static bool InvertAllNormals { get => InvertAllNormalsProp.Value; set => InvertAllNormalsProp.Value = value; }
+        public static ref SettingsData Data => ref _data;
+        public static ref int RoadAccuracy => ref _data.RoadAccuracy;
+        public static ref bool InvertAllNormals => ref _data.InvertAllNormals;
+        public static ref bool ShowGround => ref _data.ShowGround;
+        public static ref bool DayNightCycle => ref _data.DayNightCycle;
+        public static ref bool SpawnCars => ref _data.SpawnCars;
+        public static ref float CarSpawnRate => ref _data.CarSpawnRate;
+        public static ref float DayTimeLength => ref _data.DayTimeLength;
 
-        public static readonly Property<bool> ShowGroundProp;
-        public static bool ShowGround { get => ShowGroundProp.Value; set => ShowGroundProp.Value = value; }
-        public static readonly Property<bool> DayNightCycleProp;
-        public static bool DayNightCycle { get => DayNightCycleProp.Value; set => DayNightCycleProp.Value = value; }
-        public static readonly Property<bool> SpawnCarsProp;
-        public static bool SpawnCars { get => SpawnCarsProp.Value; set => SpawnCarsProp.Value = value; }
-        public static readonly Property<float> CarSpawnRateProp;
-        public static float CarSpawnRate { get => CarSpawnRateProp.Value; set => CarSpawnRateProp.Value = value; }
-
-        public static readonly Property<float> DayTimeLengthProp;
-        public static float DayTimeLength { get => DayTimeLengthProp.Value; set => DayTimeLengthProp.Value = value; }
-
-        static Settings(){
-            RoadAccuracyProp = new(17, "roadAccuracy", null);
-            RoadAccuracyProp.ValidateChanges += (s, old, value) => {
-                if (value < 2) throw new ArgumentException("Accuracy must be at least 2");
-            };
-            InvertAllNormalsProp = new(false, "invertNormals");
-            ShowGroundProp = new(true, "showGround");
-            DayNightCycleProp = new(true, "dayNightCycle");
-            SpawnCarsProp = new(false, "spawnCars");
-            CarSpawnRateProp = new(0.2f, "carFreq");
-            DayTimeLengthProp = new(60, "dayTimeLength");
+        [Conditional("DEBUG")]
+        public static void Validate() {
+            Debug.Assert(_data.RoadAccuracy >= 2, "Accuracy must be at least 2");
         }
 
-        public static SettingsData GetAll() => new SettingsData() {
-            RoadAccuracy = RoadAccuracy,
-            InvertAllNormals = InvertAllNormals,
-            ShowGround = ShowGround,
-            DayNightCycle = DayNightCycle,
-            SpawnCars = SpawnCars,
-            CarSpawnRate = CarSpawnRate,
-            DayTimeLength = DayTimeLength
-        };
+        public static SettingsData GetAll() {
+            Validate();
+            return _data;
+        }
+
         public static void SetAll(SettingsData data) {
-            RoadAccuracy = data.RoadAccuracy;
-            InvertAllNormals = data.InvertAllNormals;
-            ShowGround = data.ShowGround;
-            DayNightCycle = data.DayNightCycle;
-            SpawnCars = data.SpawnCars;
-            CarSpawnRate = data.CarSpawnRate;
-            DayTimeLength = data.DayTimeLength;
+            _data = data;
+            Validate();
         }
     }
 
