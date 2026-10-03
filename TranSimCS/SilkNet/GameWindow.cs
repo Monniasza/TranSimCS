@@ -19,6 +19,7 @@ using TranSimCS.Mode;
 using TranSimCS.Mode.RoadBuilder;
 using TranSimCS.Render;
 using TranSimCS.Select;
+using TranSimCS.Setting;
 using TranSimCS.Terrain;
 using TranSimCS.Worlds;
 using static Schedulers.JobScheduler;
@@ -179,6 +180,11 @@ namespace TranSimCS.SilkNet {
             unsafe {
                 Marshal.FreeHGlobal((nint)GlyphRangesPtr);
             }
+
+            //Save the settings
+            var settingsPath = Path.Combine(Program.UserRoot, "settings.json");
+            var settingsData = Settings.GetAll();
+            Program.SerializeToFileJson(settingsPath, settingsData);
         }
         
         private void OnUpdate(double dt) {
@@ -298,7 +304,7 @@ namespace TranSimCS.SilkNet {
 
             iconFont = io.Fonts.AddFontFromFileTTF(
                 iconPath,
-                24.0f,
+                32.0f,
                 _iconFontConfig);
             Debug.Assert(io.Fonts.NativePtr != null, "io.Fonts == null");
             io.Fonts.Build();

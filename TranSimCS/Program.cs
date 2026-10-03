@@ -7,6 +7,7 @@ using TranSimCS;
 using TranSimCS.Cars;
 using TranSimCS.Roads.StripGenerator;
 using TranSimCS.Save2;
+using TranSimCS.Setting;
 using TranSimCS.SilkNet;
 using TranSimCS.Terrain;
 
@@ -57,6 +58,9 @@ public class Program {
 
         log.Info("Running from " + DataRoot);
 
+        //Load settings
+        LoadSettingsFile();
+
         //Add spline generators
         StripSplineGenerator.typeRegistry.Register("isotropic", IgnoreSavedTokenConverter<StripSplineGenerator>.FromConstant(ClassicStripSplineGenerator.Instance));
         StripSplineGenerator.typeRegistry.Register("anisotropic", IgnoreSavedTokenConverter<StripSplineGenerator>.FromConstant(AnisotropicStripSplineGenerator.Instance));
@@ -69,6 +73,25 @@ public class Program {
         GameWindow snt = new();
         snt.Start();
     }
+
+    private static void LoadSettingsFile() {
+        var settingsPath = Path.Combine(Program.UserRoot, "settings.json");
+        try {
+            if (!File.Exists(settingsPath)) {
+                //No settings file found, create a new one with default settings
+                log.Info("No settings file found. Creating a new one with default settings.");
+                SerializeToFileJson(settingsPath, SettingsData.Default);
+                return;
+            }
+            var settingsData = DeserializeFromFileJson<SettingsData>(settingsPath);
+            Settings.SetAll(settingsData);
+        } catch (Exception e) {
+            log.Error("Error while loading settings. Reverting to default settings.");
+            Settings.SetAll(SettingsData.Default);
+        }
+    }
+
+
 
     // ===== SYSTEM.TEXT.JSON (NEW METHODS) =====
 
