@@ -19,7 +19,7 @@ namespace TranSimCS {
         public const char Spline = '\uE00A';
         public const char TrafficLights = '\uE00B';
         public const char Screenshot = '\uE00C';
-        public const char Plus = '\uE00D';
-        public const char Minus = '\uE00E';
+        public const char Plus = '\uE00E';
+        public const char Minus = '\uE00D';
     }
 }
