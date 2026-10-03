@@ -29,6 +29,7 @@ namespace TranSimCS.Mode {
         public ModeSplitAt(GameWindow menu) {
             Menu = menu;
         }
+        public char Icon() => FontIcons.SplitAt;
         string IMode.Title() => "Split in 1 point";
 
         void IMode.DrawUI() {

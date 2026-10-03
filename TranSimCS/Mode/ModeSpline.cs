@@ -23,7 +23,7 @@ namespace TranSimCS.Mode {
                 PreviousPosition = previousPosition;
             }
         }
-
+        public char Icon() => FontIcons.Spline;
         string IMode.Title() => "Spline Editor";
         void IMode.DrawUI() {
             Vector4 red = new(1, 0, 0, 1);

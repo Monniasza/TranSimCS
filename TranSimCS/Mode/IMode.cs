@@ -11,6 +11,11 @@ using TranSimCS.Worlds;
 namespace TranSimCS.Mode {
     public interface IMode {
         /// <summary>
+        /// The single-character icon for the mode. Should be a single character that represents the mode in a concise way.
+        /// </summary>
+        /// <returns></returns>
+        public char Icon();
+        /// <summary>
         /// The concise mode title. Should be short and describe how it works.
         /// </summary>s
         public string Title();

@@ -22,6 +22,7 @@ namespace TranSimCS.Mode {
         public LaneMappings? LaneMappings { get; private set; }
 
         //PROPERTIES
+        public char Icon() => FontIcons.Segment;
         string IMode.Title() => "Road Creation Tool 2";
         void IMode.DrawUI() {
             if (ImGui.Begin("Road segment tools")) {

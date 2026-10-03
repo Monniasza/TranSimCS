@@ -17,7 +17,7 @@ namespace TranSimCS.Mode {
         public IPosition? Reference { get; set; }
         // Position of the current state
         public PositionEulerAngles PrePosition { get; set; }
-
+        public char Icon() => FontIcons.Node;
         string IMode.Title() => "Add road nodes";
         void IMode.DrawUI() {
             Vector4 red = new(1, 0, 0, 1);

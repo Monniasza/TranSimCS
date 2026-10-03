@@ -14,7 +14,7 @@ namespace TranSimCS.Mode {
         internal PickMode(GameWindow window) {
             Window = window;
         }
-
+        public char Icon() => FontIcons.Pick;
         public string Title() => $"{FontIcons.Pick} Select";
 
         void IMode.OnClose() {

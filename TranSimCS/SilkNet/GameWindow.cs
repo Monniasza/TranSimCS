@@ -47,9 +47,11 @@ namespace TranSimCS.SilkNet {
         //ImGui
         private ushort* GlyphRangesPtr;
         private ImFontConfig* _iconFontConfig;
+        private ImFontConfig* _largeIconFontConfig;
         private ushort* _iconGlyphRanges;
         public ImGuiController ImGuiController { get; private set; }
         private ImFontPtr iconFont;
+        public ImFontPtr largeIconFont { get; private set; }
 
         public RenderScene RenderContents;
 
@@ -168,6 +170,18 @@ namespace TranSimCS.SilkNet {
             RenderContents.Camera = Camera.Default;
             ImGuiController = new(OpenGL, SilkWindow, InputContext, ConfigureImGui);
 
+            ImGuiController.MakeCurrent();
+
+            ImGui.PushFont(largeIconFont);
+            var size = ImGui.CalcTextSize("\uE000");
+            Debug.WriteLine($"Large text size: {size.X} x {size.Y}");
+            ImGui.PopFont();
+
+            ImGui.PushFont(iconFont);
+            var smallsize = ImGui.CalcTextSize("\uE000");
+            Debug.WriteLine($"Small text size: {smallsize.X} x {smallsize.Y}");
+            ImGui.PopFont();
+
             //Create world data
             camera = new(Vector3.Zero, 32, 1, 0.7f);
         }
@@ -274,8 +288,7 @@ namespace TranSimCS.SilkNet {
 
             var io = ImGui.GetIO();
 
-            //var fontPath = Path.Combine(Program.DataRoot, "Files", "fonts", "ARIAL.TTF");
-            var fontPath = @"C:\Windows\Fonts\arial.ttf";
+            var fontPath = Path.Combine(Program.DataRoot, "Files", "fonts", "ARIAL.TTF");
             VerifyPath(fontPath);
 
             var iconPath = Path.Combine(Program.DataRoot, "Files", "fonts", "TranSimIcons.ttf");
@@ -284,9 +297,7 @@ namespace TranSimCS.SilkNet {
             // Base font
             var arial = io.Fonts.AddFontFromFileTTF(fontPath, 16.0f, null, io.Fonts.GetGlyphRangesDefault());
 
-
-            // Keep the native config alive.
-
+            // 32 px merged icon font
             _iconFontConfig = ImGuiNative.ImFontConfig_ImFontConfig();
             _iconFontConfig->MergeMode = 1;
             _iconFontConfig->PixelSnapH = 1;
@@ -303,12 +314,27 @@ namespace TranSimCS.SilkNet {
             _iconFontConfig->GlyphRanges = _iconGlyphRanges;
 
             iconFont = io.Fonts.AddFontFromFileTTF(
-                iconPath,
-                32.0f,
-                _iconFontConfig);
+                iconPath, 32.0f, _iconFontConfig
+            );
+
+            // 64 px standalone icon font
+            _largeIconFontConfig = ImGuiNative.ImFontConfig_ImFontConfig();
+            _largeIconFontConfig->GlyphRanges = _iconGlyphRanges;
+            _largeIconFontConfig->PixelSnapH = 1;
+            //_largeIconFontConfig->SizePixels = 64.0f;
+            _largeIconFontConfig->GlyphMinAdvanceX = 32;
+            _largeIconFontConfig->GlyphMaxAdvanceX = 32;
+
+            largeIconFont = io.Fonts.AddFontFromFileTTF(
+                iconPath, 32.0f, _largeIconFontConfig
+            );
+
+
             Debug.Assert(io.Fonts.NativePtr != null, "io.Fonts == null");
             io.Fonts.Build();
             Debug.Assert(io.Fonts.IsBuilt(), "Font atlas not built.");
+
+            
 
             var isArialLoaded = arial.IsLoaded();
             if (arial.NativePtr == null || !isArialLoaded)
@@ -316,6 +342,24 @@ namespace TranSimCS.SilkNet {
             var isIconFontLoaded = iconFont.IsLoaded();
             if (iconFont.NativePtr == null || !isIconFontLoaded)
                 throw new Exception($"Failed to load icon font at {iconPath}");
+            var isLargeIconFontLoaded = largeIconFont.IsLoaded();
+            if (largeIconFont.NativePtr == null || !isLargeIconFontLoaded)
+                throw new Exception($"Failed to load large icon font at {iconPath}");
+
+            var glyph = largeIconFont.FindGlyph((char)0xE000);
+            Debug.Assert(glyph.NativePtr != null);
+            Debug.WriteLine(
+                $"Large glyph X: {glyph.X0}..{glyph.X1}, " +
+                $"Y: {glyph.Y0}..{glyph.Y1}, " +
+                $"Advance: {glyph.AdvanceX}");
+
+            var smallGlyph = iconFont.FindGlyph((char)0xE000);
+            Debug.WriteLine(
+                $"Small glyph X: {smallGlyph.X0}..{smallGlyph.X1}, " +
+                $"Y: {smallGlyph.Y0}..{smallGlyph.Y1}, " +
+                $"Advance: {smallGlyph.AdvanceX}");
+
+            
         }
     }
 }

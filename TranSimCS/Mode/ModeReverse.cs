@@ -8,6 +8,7 @@ using TranSimCS.SilkNet;
 
 namespace TranSimCS.Mode {
     public class ModeReverse(GameWindow game): IMode {
+        public char Icon() => FontIcons.Reverse;
         string IMode.Title() => "Reverse lane direction";
         void IMode.DrawUI() {
             Vector4 red = new(1, 0, 0, 1);

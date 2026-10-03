@@ -163,5 +163,7 @@ namespace TranSimCS.Mode {
             DestNode = null;
             LaneStrip = null;
         }
+
+        public char Icon() => FontIcons.Connection;
     }
 }

@@ -19,6 +19,7 @@ namespace TranSimCS.Mode {
         public string Filename = "screenshot.jpg";
         public int Quality = 95;
 
+        public char Icon() => FontIcons.Screenshot;
         public string Title() => "Screenshot";
 
         void IMode.DrawUI() {

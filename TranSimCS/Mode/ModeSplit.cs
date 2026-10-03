@@ -12,6 +12,7 @@ using TranSimCS.Mode.RoadConstruction;
 
 namespace TranSimCS.Mode {
     public class ModeSplit: IMode {
+        public char Icon() => FontIcons.Split;
         public record struct BeforeMiddleAfter(float Before, float Middle, float After) {
             public void Deconstruct(out float before, out float middle, out float after) {
                 before = Before;

@@ -62,6 +62,7 @@ namespace TranSimCS.Mode {
             return CursorType.Unavailable;
         }
         HighlightColors IMode.SelectionColors() => HighlightColors.DemolitionHighlightColor;
+        public char Icon() => FontIcons.Cross;
     }
 
     public interface IDemolish {

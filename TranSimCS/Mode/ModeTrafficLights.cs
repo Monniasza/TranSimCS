@@ -20,6 +20,7 @@ namespace TranSimCS.Mode {
     /// the current phase.
     /// </summary>
     public sealed class ModeTrafficLights(GameWindow game) : IMode {
+        public char Icon() => FontIcons.TrafficLights;
         public string Title() => "Traffic lights";
 
         public TrafficLightGroup? SelectedGroup;

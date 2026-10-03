@@ -17,7 +17,7 @@ namespace TranSimCS.Mode {
         public ModeSection(GameWindow world) {
             Menu = world;
         }
-
+        public char Icon() => FontIcons.Section;
         public string Title() => "Create and modify road sections";
         void IMode.DrawUI() {
             Vector4 red = new(1, 0, 0, 1);

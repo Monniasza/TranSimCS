@@ -63,8 +63,10 @@ namespace TranSimCS.SilkNet {
 
             if (ImGui.Begin("##BottomMenuBar", menuBarFlags)) {
                 if (ImGui.BeginMenuBar()) {
+                    //ImGui.PushFont(largeIconFont);
                     foreach (var mode in AvailableModes)
-                        if (ImGui.MenuItem(mode.Title(), "", mode == Mode)) Mode = mode;
+                        if (ImGui.MenuItem(mode.Icon().ToString(), "", mode == Mode)) Mode = mode;
+                    //ImGui.PopFont();
                     ImGui.EndMenuBar();
                 }
                 ImGui.End();

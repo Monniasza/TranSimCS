@@ -22,6 +22,7 @@ namespace TranSimCS.Mode {
                 ImGui.End();
             }
         }
+        public char Icon() => FontIcons.Move;
 
         public struct MoveState {
             public IDraggableObj Object;

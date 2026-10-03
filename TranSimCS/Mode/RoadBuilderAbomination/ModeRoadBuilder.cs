@@ -24,6 +24,7 @@ namespace TranSimCS.Mode.RoadBuilder {
     /// </para>
     /// </summary>
     public class ModeRoadBuilder : IMode {
+        public char Icon() => FontIcons.Segment;
         public GameWindow Menu { get; private set; }
 
         /// <summary>The tool state: phase, draft, and transient selection.</summary>
