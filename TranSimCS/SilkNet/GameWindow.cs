@@ -261,18 +261,6 @@ namespace TranSimCS.SilkNet {
             Stats = stats;
         }
 
-        private unsafe void ConfigureImGuiTest() {
-            var io = ImGui.GetIO();
-            var fontPath = @"C:\Windows\Fonts\arial.ttf";
-            /*var fontPath = Path.Combine( Program.DataRoot, "Files", "fonts", "arial.ttf");*/
-            var font = io.Fonts.AddFontFromFileTTF(
-                fontPath,
-                16.0f);
-            Debug.Assert(font.NativePtr != null);
-            io.Fonts.Build();
-            Debug.Assert(io.Fonts.IsBuilt());
-        }
-
         private unsafe void ConfigureImGui() {
             void VerifyPath(string path) {
                 if (!File.Exists(path)) throw new FileNotFoundException($"Font file not found: {path}");

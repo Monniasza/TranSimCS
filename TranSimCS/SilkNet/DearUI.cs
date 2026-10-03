@@ -245,7 +245,7 @@ namespace TranSimCS.SilkNet {
             return changed;
         }
 
-        public static void DrawTextCentered(ImDrawListPtr target, string text, Vector2 coords, float alignx = 0.5f, float aligny = 0.5f) {
+        public static void DrawTextCentered(ImDrawListPtr target, string text, Vector2 coords, uint color = 0xFFFFFFFF, float alignx = 0.5f, float aligny = 0.5f) {
             Vector2 textSize =
                 ImGui.CalcTextSize(text);
 
@@ -254,7 +254,7 @@ namespace TranSimCS.SilkNet {
 
             target.AddText(
                 coords,
-                ImGui.GetColorU32(Vector4.One),
+                color,
                 text
             );
         }

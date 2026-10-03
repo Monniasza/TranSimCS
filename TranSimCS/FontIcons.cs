@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace TranSimCS {
     public static class FontIcons {
         public const char Pick = '\uE000';
-        public const char Demolish = '\uE001';
+        public const char Cross = '\uE001';
         public const char Node = '\uE002';
         public const char Segment = '\uE003';
         public const char Section = '\uE004';
@@ -19,5 +19,7 @@ namespace TranSimCS {
         public const char Spline = '\uE00A';
         public const char TrafficLights = '\uE00B';
         public const char Screenshot = '\uE00C';
+        public const char Plus = '\uE00D';
+        public const char Minus = '\uE00E';
     }
 }

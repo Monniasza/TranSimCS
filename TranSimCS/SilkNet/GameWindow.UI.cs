@@ -123,15 +123,15 @@ namespace TranSimCS.SilkNet {
             Vector4 color;
             switch (cursor) {
                 case CursorType.Add:
-                    symbol = "+";
+                    symbol = FontIcons.Plus.ToString();
                     color = new Vector4(0, 1, 0, 1);
                     break;
                 case CursorType.Remove:
-                    symbol = "-";
+                    symbol = FontIcons.Minus.ToString();
                     color = new Vector4(1, 0.27f, 0, 1);
                     break;
                 case CursorType.Unavailable:
-                    symbol = "X";
+                    symbol = FontIcons.Cross.ToString();
                     color = new Vector4(0.5f, 0, 0, 1);
                     break;
                 case CursorType.Open:
@@ -145,8 +145,7 @@ namespace TranSimCS.SilkNet {
             var textSize = ImGui.CalcTextSize(symbol);
 
             drawList.AddCircleFilled(mousePos, 12f, ImGui.GetColorU32(new Vector4(0, 0, 0, 0.5f)), 16);
-            var textPos = mousePos - textSize;
-            drawList.AddText(ImGui.GetFont(), fontSize, textPos, ImGui.GetColorU32(color), symbol);
+            DearUI.DrawTextCentered(drawList, symbol, mousePos, ImGui.GetColorU32(color));
         }
 
         /// <summary>
