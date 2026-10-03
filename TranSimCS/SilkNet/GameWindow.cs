@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -41,10 +42,13 @@ namespace TranSimCS.SilkNet {
         public GL OpenGL { get; private set; }
         public IInputContext InputContext { get; private set; }
         public RenderManager RenderManager { get; private set; }
+
+        //ImGui
+        private ushort* GlyphRangesPtr;
+        private ImFontConfig* _iconFontConfig;
+        private ushort* _iconGlyphRanges;
         public ImGuiController ImGuiController { get; private set; }
         private ImFontPtr iconFont;
-        private ushort* GlyphRangesPtr;
-        private ImFontConfigPtr _iconFontConfig;
 
         public RenderScene RenderContents;
 
@@ -257,37 +261,67 @@ namespace TranSimCS.SilkNet {
             Stats = stats;
         }
 
-        private unsafe void ConfigureImGui() {
-            var glyphRanges = new ushort[] { 0xE000, 0xF8FF, 0x0000 };
-            var iconPath = Path.Combine(Program.DataRoot, "Files", "fonts", "TranSimIcons.ttf");
-            var fontPath = Path.Combine(Program.DataRoot, "Files", "fonts", "arial.ttf");
+        private unsafe void ConfigureImGuiTest() {
             var io = ImGui.GetIO();
-            var configPtr = ImGuiNative.ImFontConfig_ImFontConfig();
+            var fontPath = @"C:\Windows\Fonts\arial.ttf";
+            /*var fontPath = Path.Combine( Program.DataRoot, "Files", "fonts", "arial.ttf");*/
+            var font = io.Fonts.AddFontFromFileTTF(
+                fontPath,
+                16.0f);
+            Debug.Assert(font.NativePtr != null);
+            io.Fonts.Build();
+            Debug.Assert(io.Fonts.IsBuilt());
+        }
+
+        private unsafe void ConfigureImGui() {
+            void VerifyPath(string path) {
+                if (!File.Exists(path)) throw new FileNotFoundException($"Font file not found: {path}");
+            }
+
+            var io = ImGui.GetIO();
+
+            //var fontPath = Path.Combine(Program.DataRoot, "Files", "fonts", "ARIAL.TTF");
+            var fontPath = @"C:\Windows\Fonts\arial.ttf";
+            VerifyPath(fontPath);
+
+            var iconPath = Path.Combine(Program.DataRoot, "Files", "fonts", "TranSimIcons.ttf");
+            VerifyPath(iconPath);
 
             // Base font
-            var arial = io.Fonts.AddFontFromFileTTF(
-                fontPath,
-                16.0f,
-                null,
-            io.Fonts.GetGlyphRangesDefault());
+            var arial = io.Fonts.AddFontFromFileTTF(fontPath, 16.0f, null, io.Fonts.GetGlyphRangesDefault());
 
 
-            _iconFontConfig = new ImFontConfigPtr(
-        ImGuiNative.ImFontConfig_ImFontConfig());
+            // Keep the native config alive.
 
-            
+            _iconFontConfig = ImGuiNative.ImFontConfig_ImFontConfig();
+            _iconFontConfig->MergeMode = 1;
+            _iconFontConfig->PixelSnapH = 1;
+            _iconFontConfig->GlyphMinAdvanceX = 16;
+            _iconFontConfig->GlyphMaxAdvanceX = 16;
 
-            GlyphRangesPtr = (ushort*)Marshal.AllocHGlobal(glyphRanges.Length * sizeof(ushort));
-            for(int i = 0; i < glyphRanges.Length; i++) 
-                GlyphRangesPtr[i] = glyphRanges[i];
-            _iconFontConfig.MergeMode = true;
-            _iconFontConfig.PixelSnapH = true;
-            _iconFontConfig.GlyphMinAdvanceX = 16;
-            _iconFontConfig.GlyphMaxAdvanceX = 16;
-            _iconFontConfig.GlyphRanges = (nint)GlyphRangesPtr;
-            iconFont = io.Fonts.AddFontFromFileTTF(iconPath, 16.0f, _iconFontConfig);
-            
+            _iconGlyphRanges = (ushort*)Marshal.AllocHGlobal(
+                3 * sizeof(ushort));
+
+            _iconGlyphRanges[0] = 0xE000;
+            _iconGlyphRanges[1] = 0xF8FF;
+            _iconGlyphRanges[2] = 0;
+
+            _iconFontConfig->GlyphRanges = _iconGlyphRanges;
+
+            iconFont = io.Fonts.AddFontFromFileTTF(
+                iconPath,
+                24.0f,
+                _iconFontConfig);
+            Debug.Assert(io.Fonts.NativePtr != null, "io.Fonts == null");
+            io.Fonts.Build();
+            Debug.Assert(io.Fonts.IsBuilt(), "Font atlas not built.");
+
+            var isArialLoaded = arial.IsLoaded();
+            if (arial.NativePtr == null || !isArialLoaded)
+                throw new Exception($"Failed to load Arial at {fontPath}");
+            var isIconFontLoaded = iconFont.IsLoaded();
+            if (iconFont.NativePtr == null || !isIconFontLoaded)
+                throw new Exception($"Failed to load icon font at {iconPath}");
         }
-        
     }
 }
