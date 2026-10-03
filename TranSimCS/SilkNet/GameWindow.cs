@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using ImageMagick;
 using ImGuiNET;
 using NLog;
@@ -19,6 +20,7 @@ using TranSimCS.Render;
 using TranSimCS.Select;
 using TranSimCS.Terrain;
 using TranSimCS.Worlds;
+using static Schedulers.JobScheduler;
 
 namespace TranSimCS.SilkNet {
     /// <summary>
@@ -40,6 +42,9 @@ namespace TranSimCS.SilkNet {
         public IInputContext InputContext { get; private set; }
         public RenderManager RenderManager { get; private set; }
         public ImGuiController ImGuiController { get; private set; }
+        private ImFontPtr iconFont;
+        private ushort* GlyphRangesPtr;
+        private ImFontConfigPtr _iconFontConfig;
 
         public RenderScene RenderContents;
 
@@ -156,7 +161,7 @@ namespace TranSimCS.SilkNet {
             RenderManager = new(this);
             RenderContents.SceneGeometry += Render3D;
             RenderContents.Camera = Camera.Default;
-            ImGuiController = new(OpenGL, SilkWindow, InputContext);
+            ImGuiController = new(OpenGL, SilkWindow, InputContext, ConfigureImGui);
 
             //Create world data
             camera = new(Vector3.Zero, 32, 1, 0.7f);
@@ -167,6 +172,9 @@ namespace TranSimCS.SilkNet {
             ImGuiController.Dispose();
             InputContext.Dispose();
             OpenGL.Dispose();
+            unsafe {
+                Marshal.FreeHGlobal((nint)GlyphRangesPtr);
+            }
         }
         
         private void OnUpdate(double dt) {
@@ -219,7 +227,9 @@ namespace TranSimCS.SilkNet {
             OpenGL.Clear(ClearBufferMask.DepthBufferBit);
 
             //Render GUI
+            ImGui.PushFont(iconFont);
             DrawUI();
+            ImGui.PopFont();
             
             stats.Segments = World.RoadSegments.data.Count;
             stats.Nodes = World.Nodes.data.Count;
@@ -245,6 +255,38 @@ namespace TranSimCS.SilkNet {
             stats.MeshInstances = renderStats.InstanceCount;
             stats.MeshModels = renderStats.ModelCount;
             Stats = stats;
+        }
+
+        private unsafe void ConfigureImGui() {
+            var glyphRanges = new ushort[] { 0xE000, 0xF8FF, 0x0000 };
+            var iconPath = Path.Combine(Program.DataRoot, "Files", "fonts", "TranSimIcons.ttf");
+            var fontPath = Path.Combine(Program.DataRoot, "Files", "fonts", "arial.ttf");
+            var io = ImGui.GetIO();
+            var configPtr = ImGuiNative.ImFontConfig_ImFontConfig();
+
+            // Base font
+            var arial = io.Fonts.AddFontFromFileTTF(
+                fontPath,
+                16.0f,
+                null,
+            io.Fonts.GetGlyphRangesDefault());
+
+
+            _iconFontConfig = new ImFontConfigPtr(
+        ImGuiNative.ImFontConfig_ImFontConfig());
+
+            
+
+            GlyphRangesPtr = (ushort*)Marshal.AllocHGlobal(glyphRanges.Length * sizeof(ushort));
+            for(int i = 0; i < glyphRanges.Length; i++) 
+                GlyphRangesPtr[i] = glyphRanges[i];
+            _iconFontConfig.MergeMode = true;
+            _iconFontConfig.PixelSnapH = true;
+            _iconFontConfig.GlyphMinAdvanceX = 16;
+            _iconFontConfig.GlyphMaxAdvanceX = 16;
+            _iconFontConfig.GlyphRanges = (nint)GlyphRangesPtr;
+            iconFont = io.Fonts.AddFontFromFileTTF(iconPath, 16.0f, _iconFontConfig);
+            
         }
         
     }

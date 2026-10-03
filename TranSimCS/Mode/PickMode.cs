@@ -15,7 +15,7 @@ namespace TranSimCS.Mode {
             Window = window;
         }
 
-        public string Title() => "Select";
+        public string Title() => $"{FontIcons.Pick} Select";
 
         void IMode.OnClose() {
             Window.Sticky = null;
