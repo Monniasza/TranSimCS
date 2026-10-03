@@ -21,7 +21,7 @@ OS2Version: 0
 OS2_WeightWidthSlopeOnly: 0
 OS2_UseTypoMetrics: 1
 CreationTime: 1790948633
-ModificationTime: 1791047350
+ModificationTime: 1791054811
 PfmFamily: 17
 TTFWeight: 400
 TTFWidth: 5
@@ -50,7 +50,7 @@ NameList: AGL For New Fonts
 DisplaySize: -48
 AntiAlias: 1
 FitToEm: 0
-WinInfo: 57190 38 10
+WinInfo: 57190 38 14
 BeginPrivate: 0
 EndPrivate
 TeXData: 1 0 0 346030 173015 115343 0 1048576 115343 783286 444596 497025 792723 393216 433062 380633 303038 157286 324010 404750 52429 2506097 1059062 262144
@@ -65,19 +65,18 @@ Fore
 SplineSet
 60 0 m 1049
 4 56 m 1
- 4 40 l 1
- 8 40 l 1
+ 4 36 l 1
+ 8 36 l 1
  8 48 l 1
  56 0 l 1
  60 4 l 1
  12 52 l 1
- 20 52 l 1
- 20 56 l 1
+ 24 52 l 5
+ 24 56 l 5
  4 56 l 1
 244 168 m 1025
 30 48 m 1024
 EndSplineSet
-Validated: 9
 EndChar
 
 StartChar: delete
@@ -381,32 +380,31 @@ LayerCount: 2
 Fore
 SplineSet
 32 56 m 1
- 40 48 l 25
- 36 48 l 1
+ 44 44 l 1
+ 36 44 l 1
  36 32 l 1
- 52 32 l 1
- 52 36 l 1
+ 48 32 l 1
+ 48 40 l 1
  60 28 l 1
- 52 20 l 1
- 52 24 l 1
+ 48 16 l 1
+ 48 24 l 1
  36 24 l 1
- 36 8 l 1
- 40 8 l 1
+ 36 12 l 1
+ 44 12 l 1
  32 0 l 1
- 24 8 l 1
- 28 8 l 1
+ 20 12 l 1
+ 28 12 l 1
  28 24 l 1
- 12 24 l 1
- 12 20 l 1
+ 16 24 l 1
+ 16 16 l 1
  4 28 l 1
- 12 36 l 1
- 12 32 l 1
+ 16 40 l 1
+ 16 32 l 1
  28 32 l 1
- 28 48 l 1
- 24 48 l 25
+ 28 44 l 1
+ 20 44 l 1
  32 56 l 1
 EndSplineSet
-Validated: 1
 EndChar
 
 StartChar: reverse
@@ -562,30 +560,29 @@ Flags: HW
 LayerCount: 2
 Fore
 SplineSet
-32 32 m 24
- 30 32 28 30 28 28 c 24
- 28 26 30 24 32 24 c 24
- 34 24 36 26 36 28 c 24
- 36 30 34 32 32 32 c 24
-32 4 m 24
- 34 4 36 6 36 8 c 24
- 36 10 34 12 32 12 c 24
- 30 12 28 10 28 8 c 24
- 28 6 30 4 32 4 c 24
-32 52 m 24
- 30 52 28 50 28 48 c 24
- 28 46 30 44 32 44 c 24
- 34 44 36 46 36 48 c 24
- 36 50 34 52 32 52 c 24
+26 28 m 0
+ 26 25 29 22 32 22 c 0
+ 35 22 38 25 38 28 c 0
+ 38 31 35 34 32 34 c 0
+ 29 34 26 31 26 28 c 0
+26 12 m 0
+ 26 9 29 6 32 6 c 0
+ 35 6 38 9 38 12 c 0
+ 38 15 35 18 32 18 c 0
+ 29 18 26 15 26 12 c 0
+26 44 m 0
+ 26 41 29 38 32 38 c 0
+ 35 38 38 41 38 44 c 0
+ 38 47 35 50 32 50 c 0
+ 29 50 26 47 26 44 c 0
 32 56 m 1
- 36 56 40 52 40 48 c 1
- 40 8 l 1
- 40 4 36 0 32 0 c 1
- 28 0 24 4 24 8 c 1
- 24 48 l 1
- 24 52 28 56 32 56 c 1
+ 39 56 44 51 44 44 c 1
+ 44 12 l 1
+ 44 5 39 0 32 0 c 1
+ 25 0 20 5 20 12 c 1
+ 20 44 l 1
+ 20 51 25 56 32 56 c 1
 EndSplineSet
-Validated: 1
 EndChar
 
 StartChar: uniE00C
